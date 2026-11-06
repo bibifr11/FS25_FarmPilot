@@ -1,0 +1,39 @@
+FarmPilot:
+bibifr (Fabien) - FarmPilot, based on AutoDrive 3.0.1.4
+
+Original mod: AutoDrive (https://github.com/Stephan-S/FS25_AutoDrive), MIT licence, Copyright (c) 2024 Stephan Schlosser
+
+Main developers:
+Stephan-S
+Axel32019
+TyKonKet
+
+GUI Textures and Design:
+OlfDE
+
+Logo Design:
+FinalsFarming 
+
+Others:
+Anonymous-any
+Roby1164
+Gonimy-Vetrom
+Bandesss
+raxtor
+raupach
+Dzi4d3k
+PromGames
+jala15
+cristiancundari
+Iwan1803
+rogeriodec
+Efratror
+pvaiko
+Datalund
+Bobster82
+criss20ster
+Gariot
+andrefelipeschulle
+
+Tips & Tricks for Lua/FS: 
+DeckerMMIV

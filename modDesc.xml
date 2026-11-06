@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="113">
+	<author>bibifr</author>
+	<title>
+		<en>FarmPilot</en>
+		<fr>FarmPilot</fr>
+		<de>FarmPilot</de>
+	</title>
+	<description>
+		<en>
+<![CDATA[FarmPilot drives your vehicles on a network of routes: tell a tractor near the network to drive to the shop, a field or a sell point, or to unload a combine or a forage harvester.
+Based on AutoDrive 3.0.1.4 by Stephan Schlosser and the AutoDrive team (MIT licence).
+
+Changelog 1.0.0.0:
+- Head-on passing on two-way roads and tracks (one pulls over, the other reverses), traffic rules on two-way tracks
+- Unloaders wait inside the field, parked along the edge on harvested ground
+- Forage harvester: unloader follows from behind, headland turns, backing out when stuck
+- Leaving the field without crossing standing crop, "Strict" field mode
+- Smart driver: drives around obstacles on the road, wide corners at the real radius of the combination, narrow passages, intersections
+- Built-in (former AutoDrive Addon): weighbridge stop with weight display, turn light before turns and crossings, engine stop delay, only low beams on when the engine is stopped, leaves a silo that stays empty, rear implement selected at start
+- Existing AutoDrive users keep their road network and settings (AutoDrive files are reused). If AutoDrive is also active, FarmPilot disables it.
+Full changelog: https://github.com/bibifr/FS25_FarmPilot
+]]>
+		</en>
+		<fr>
+<![CDATA[FarmPilot conduit vos véhicules sur un réseau de routes : envoyez un tracteur proche du réseau au magasin, à un champ ou à un point de vente, ou faites-lui vider une moissonneuse ou une ensileuse.
+Basé sur AutoDrive 3.0.1.4 de Stephan Schlosser et de l'équipe AutoDrive (licence MIT).
+
+Changelog 1.0.0.0 :
+- Croisement face à face sur routes et chemins à double sens (l'un se range, l'autre recule), règles de circulation sur les chemins à double sens
+- Les bennes attendent dans le champ, garées le long de la bordure sur le sol récolté
+- Ensileuse : la benne suit par derrière, demi-tours de bout de rang, recul de dégagement quand elle est coincée
+- Sortie du champ sans passer dans la culture, mode champ « Strict »
+- Conducteur intelligent : contourne les obstacles sur la route, virages larges au vrai rayon de l'attelage, passages étroits, intersections
+- Intégré (ancien AutoDrive Addon) : arrêt sur pont-bascule avec affichage du poids, clignotant avant les virages et croisements, délai de coupure moteur, seuls les phares de base allumés moteur coupé, départ d'un silo qui reste vide, outil arrière sélectionné au lancement
+- Les joueurs d'AutoDrive gardent leur réseau et leurs réglages (les fichiers AutoDrive sont repris). Si AutoDrive est aussi activé, FarmPilot le désactive.
+Changelog complet : https://github.com/bibifr/FS25_FarmPilot
+]]>
+		</fr>
+		<de>
+<![CDATA[FarmPilot fährt deine Fahrzeuge auf einem Routennetz: schicke einen Traktor in der Nähe des Netzes zum Shop, zu einem Feld oder einer Verkaufsstelle, oder lass ihn einen Drescher oder Häcksler abfahren.
+Basiert auf AutoDrive 3.0.1.4 von Stephan Schlosser und dem AutoDrive-Team (MIT-Lizenz).
+Enthält das frühere AutoDrive Addon (Brückenwaage, Blinker, Motor-Abschaltverzögerung, Licht bei Motorstopp, leeres Silo, Heckgerät).
+Bestehende AutoDrive-Netze und Einstellungen werden übernommen. Ist AutoDrive ebenfalls aktiv, deaktiviert FarmPilot es.
+Changelog: https://github.com/bibifr/FS25_FarmPilot
+]]>
+		</de>
+	</description>
+	<version>1.0.0.0</version>
+	<multiplayer supported="true" />
+	<iconFilename>icon_FarmPilot.dds</iconFilename>
+	<extraSourceFiles>
+		<sourceFile filename="register.lua" />
+	</extraSourceFiles>
+
+	<l10n filenamePrefix="translations/translation" />
+
+	<actions>
+		<action name="ADSilomode"/>
+		<action name="ADPreviousMode"/>
+		<action name="ADRecord"/>
+		<action name="ADRecord_Dual"/>
+		<action name="ADRecord_SubPrio"/>
+		<action name="ADRecord_SubPrioDual"/>
+		<action name="ADRecord_TwoWay"/>
+		<action name="ADRecord_Dual_TwoWay"/>
+		<action name="ADRecord_SubPrio_TwoWay"/>
+		<action name="ADRecord_SubPrioDual_TwoWay"/>
+		<action name="ADEnDisable"/>
+		<action name="ADSelectTarget"/>
+		<action name="ADSelectPreviousTarget"/>
+		<action name="ADSelectTargetUnload"/>
+		<action name="ADSelectPreviousTargetUnload"/>
+		<action name="ADActivateDebug"/>
+		<action name="ADDisplayMapPoints"/>
+		<action name="ADDebugSelectNeighbor"/>
+		<action name="ADDebugCreateConnection"/>
+		<action name="ADDebugToggleConnectionInverted"/>
+		<action name="ADDebugChangeNeighbor"/>
+		<action name="ADDebugPreviousNeighbor"/>
+		<action name="ADDebugCreateMapMarker"/>
+		<action name="ADRenameMapMarker"/>
+		<action name="ADDebugDeleteDestination"/>
+		<action name="ADNameDriver"/>
+		<action name="ADSetDestinationFilter"/>
+		<action name="AD_Speed_up"/>
+		<action name="AD_Speed_down"/>
+		<action name="AD_FieldSpeed_up"/>
+		<action name="AD_FieldSpeed_down"/>
+		<action name="ADToggleHud"/>
+		<action name="ADToggleMouse"/>
+		<action name="ADDebugDeleteWayPoint"/>
+		<action name="AD_routes_manager"/>
+		<action name="ADSelectNextFillType"/>
+		<action name="ADSelectPreviousFillType"/>
+		<action name="ADOpenGUI"/>
+		<action name="ADCallDriver"/>
+		<action name="ADGoToVehicle"/>
+		<action name="ADIncLoopCounter"/>
+		<action name="ADDecLoopCounter"/>
+		<action name="ADSwapTargets"/>
+		<action name="ADStartHelper"/>
+		<action name="ADToggleUsedHelper"/>
+		<action name="AD_open_notification_history"/>
+		<action name="AD_continue"/>
+		<action name="ADParkVehicle"/>
+		<action name="ADSetParkDestination"/>
+		<action name="AD_devAction"/>
+		<action name="ADRefuelVehicle"/>	
+		<action name="ADToggleHudExtension"/>	
+		<action name="ADToggleAutomaticUnloadTarget"/>
+		<action name="ADToggleAutomaticPickupTarget"/>
+		<action name="ADToggleLoadByFillLevel"/>
+		<action name="ADRepairVehicle"/>		
+		<action name="ADCopySettings"/>
+		<action name="ADPasteSettings"/>
+		<action name="ADCreateFieldPoints"/>
+	</actions>
+
+	<inputBinding>
+		<actionBinding action="ADToggleHud">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lalt KEY_KP_0" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_17" />
+		</actionBinding>
+		<actionBinding action="ADOpenGUI">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_KP_0" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_16" />
+		</actionBinding>
+		<actionBinding action="ADToggleMouse">
+			<binding device="KB_MOUSE_DEFAULT" input="MOUSE_BUTTON_MIDDLE" axisComponent="+" neutralInput="0" index="3" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_19" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADEnDisable">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_17" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSelectTarget">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_right" axisComponent="+" neutralInput="0" index="1" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_18" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSelectPreviousTarget">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_left" axisComponent="+" neutralInput="0" index="1" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_20" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSelectTargetUnload">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 AXIS_3+" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSelectPreviousTargetUnload">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 AXIS_3-" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADActivateDebug">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_11" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADDebugSelectNeighbor">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_9" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADDebugChangeNeighbor">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 AXIS_4-" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADDebugCreateConnection">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_12" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSelectNextFillType">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_o" axisComponent="+" neutralInput="0" index="1" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 AXIS_2-" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSelectPreviousFillType">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_KP_4" axisComponent="+" neutralInput="0" index="1" />
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 AXIS_2+" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADRecord">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 BUTTON_3" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="AD_routes_manager">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_KP_1" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADSilomode">
+			<binding device="0_XINPUT_GAMEPAD" input="BUTTON_5 BUTTON_6 AXIS_4+" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="AD_open_notification_history">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_m" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADCopySettings">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_c" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADPasteSettings">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_v" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADCreateFieldPoints">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lshift KEY_f" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+	</inputBinding>
+</modDesc>

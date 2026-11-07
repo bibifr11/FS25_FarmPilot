@@ -324,7 +324,7 @@
 		<text name="gui_ad_debugChannelSensor"							text="Sensoren" />
 		<text name="gui_ad_debugChannelNetwork"						text="Netzwerk" />
 		<text name="gui_ad_debugChannelExternalInterface"				text="Externe Schnittstelle" />
-		<text name="gui_ad_debugChannelRender"							text="Rendering" />
+		<text name="gui_ad_debugChannelRender"							text="Darstellung" />
 		<text name="gui_ad_debugChannelRoadNetwork"					text="Streckennetz" />
 		<text name="gui_ad_debugChannelBGA"							text="BGA-Modus" />
 		<text name="gui_ad_debugChannelTrains"							text="Züge" />
@@ -437,60 +437,60 @@
 		<text name="gui_ad_fieldParkWhileWaiting" text="Im Feld warten" />
 		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Ein Überladefahrzeug, das auf den Ruf eines Dreschers wartet, fährt ins Feld und parkt auf einer freien Fläche ohne Bestand, abseits der Wege, damit es die Straße nicht blockiert" />
 		<text name="AD_task_park_in_field" text="Parkt im Feld" />
-		<text name="AD_task_hv_chopper" text="the forage harvester" />
-		<text name="AD_task_hv_combine" text="the combine" />
-		<text name="AD_task_look_for_spot" text="Looking where to park" />
-		<text name="AD_task_search_spot" text="Looking for a place along the field" />
-		<text name="AD_task_plan_to_spot" text="Planning the way to place" />
-		<text name="AD_task_go_park" text="Going to park" />
-		<text name="AD_task_back_off_spot" text="Backing off to leave room" />
-		<text name="AD_task_parked_wait" text="Parked, waiting for a call" />
-		<text name="AD_task_queued_behind" text="In line behind" />
-		<text name="AD_task_waiting_call_short" text="waiting for a call" />
-		<text name="AD_task_wait_roadside" text="Waiting beside the road" />
-		<text name="AD_task_no_spot_retry" text="No place, next try in" />
-		<text name="AD_task_loaded_wait" text="Loaded, waiting for a call" />
-		<text name="AD_task_plan_to" text="Planning the way to" />
-		<text name="AD_task_no_path_retry" text="No way found, next try in" />
-		<text name="AD_task_clear_back" text="No way found, backing up to get free" />
-		<text name="AD_task_no_way_stopped" text="Stuck: no way and no room to back up, waiting" />
-		<text name="AD_task_drive_to" text="Driving to" />
-		<text name="AD_task_plan_next" text="planning the next part" />
+		<text name="AD_task_hv_chopper" text="den Feldhäcksler" />
+		<text name="AD_task_hv_combine" text="den Mähdrescher" />
+		<text name="AD_task_look_for_spot" text="Sucht einen Parkplatz" />
+		<text name="AD_task_search_spot" text="Sucht einen Platz am Feldrand" />
+		<text name="AD_task_plan_to_spot" text="Plant den Weg zum Platz" />
+		<text name="AD_task_go_park" text="Fährt zum Parken" />
+		<text name="AD_task_back_off_spot" text="Setzt zurück, um Platz zu machen" />
+		<text name="AD_task_parked_wait" text="Geparkt, wartet auf Anruf" />
+		<text name="AD_task_queued_behind" text="In der Reihe hinter" />
+		<text name="AD_task_waiting_call_short" text="wartet auf Anruf" />
+		<text name="AD_task_wait_roadside" text="Wartet am Straßenrand" />
+		<text name="AD_task_no_spot_retry" text="Kein Platz, neuer Versuch in" />
+		<text name="AD_task_loaded_wait" text="Beladen, wartet auf Anruf" />
+		<text name="AD_task_plan_to" text="Plant den Weg nach" />
+		<text name="AD_task_no_path_retry" text="Kein Weg gefunden, neuer Versuch in" />
+		<text name="AD_task_clear_back" text="Kein Weg gefunden, setzt zurück, um freizukommen" />
+		<text name="AD_task_no_way_stopped" text="Festgefahren: kein Weg und kein Platz zum Zurücksetzen, wartet" />
+		<text name="AD_task_drive_to" text="Fährt nach" />
+		<text name="AD_task_plan_next" text="plant den nächsten Abschnitt" />
 		<text name="AD_task_near" text="Near" />
-		<text name="AD_task_wait_behind" text="waiting to get behind it" />
-		<text name="AD_task_reverse_by" text="Backing up" />
-		<text name="AD_task_tracks_open_angle" text="along its tracks to open the angle" />
-		<text name="AD_task_band_turn_rescue" text="U-turn in the strip (fallback)" />
-		<text name="AD_task_clear_way_for" text="Clearing the way for" />
-		<text name="AD_task_let_pass" text="Making way for" />
-		<text name="AD_task_stuck_reverse" text="Stuck, reversing" />
-		<text name="AD_task_chase" text="Following" />
-		<text name="AD_task_side_rear" text="from behind" />
-		<text name="AD_task_side_left" text="on the left" />
-		<text name="AD_task_side_right" text="on the right" />
-		<text name="AD_task_join_side_left" text="Moving to the left side of" />
-		<text name="AD_task_join_side_right" text="Moving to the right side of" />
-		<text name="AD_task_join_side_rear" text="Moving behind" />
-		<text name="AD_task_backoff" text="Backing off," />
-		<text name="AD_task_waiting_comma" text="Waiting," />
-		<text name="AD_task_is_turning" text="is turning" />
-		<text name="AD_task_reverse_tracks_clear" text="Backing up along its tracks to clear the way" />
-		<text name="AD_task_back_to_place" text="Backing up to the unloading place" />
-		<text name="AD_task_uturn" text="Turning around" />
-		<text name="AD_task_plan_field_exit" text="Planning the way out of the field" />
-		<text name="AD_task_no_exit_retry" text="No way out found, next try in" />
-		<text name="AD_task_full_parked_aside" text="Full, parked aside to let the next trailer pass" />
+		<text name="AD_task_wait_behind" text="wartet, um sich dahinter zu setzen" />
+		<text name="AD_task_reverse_by" text="Setzt zurück um" />
+		<text name="AD_task_tracks_open_angle" text="in seiner Spur, um den Winkel zu öffnen" />
+		<text name="AD_task_band_turn_rescue" text="Wenden im Streifen (Notlösung)" />
+		<text name="AD_task_clear_way_for" text="Macht den Weg frei für" />
+		<text name="AD_task_let_pass" text="Lässt vorbei" />
+		<text name="AD_task_stuck_reverse" text="Festgefahren, fährt rückwärts" />
+		<text name="AD_task_chase" text="Folgt" />
+		<text name="AD_task_side_rear" text="von hinten" />
+		<text name="AD_task_side_left" text="links" />
+		<text name="AD_task_side_right" text="rechts" />
+		<text name="AD_task_join_side_left" text="Fährt auf die linke Seite von" />
+		<text name="AD_task_join_side_right" text="Fährt auf die rechte Seite von" />
+		<text name="AD_task_join_side_rear" text="Setzt sich hinter" />
+		<text name="AD_task_backoff" text="Setzt zurück," />
+		<text name="AD_task_waiting_comma" text="Wartet," />
+		<text name="AD_task_is_turning" text="wendet" />
+		<text name="AD_task_reverse_tracks_clear" text="Setzt in seiner Spur zurück, um den Weg freizumachen" />
+		<text name="AD_task_back_to_place" text="Setzt zum Abladeplatz zurück" />
+		<text name="AD_task_uturn" text="Wendet" />
+		<text name="AD_task_plan_field_exit" text="Plant den Weg aus dem Feld" />
+		<text name="AD_task_no_exit_retry" text="Keine Ausfahrt gefunden, neuer Versuch in" />
+		<text name="AD_task_full_parked_aside" text="Voll, steht seitlich, um den nächsten Anhänger vorbeizulassen" />
 		<text name="AD_task_full_follow_strip" text="Voll, folgt dem gemähten Streifen bis zu einer Ausfahrt" />
-		<text name="AD_task_full_reverse_tracks" text="Full, backing up along its tracks to let the next one pass" />
-		<text name="AD_task_band_turn_exit" text="U-turn in the strip toward the exit" />
-		<text name="AD_task_planning_way" text="Planning the way" />
-		<text name="AD_task_wait_row_entry" text="In place at the row entry, waiting for" />
-		<text name="AD_task_follow_trail" text="Following the track of" />
-		<text name="AD_task_blocked_reverse" text="Blocked by a vehicle ahead, backing up" />
-		<text name="AD_task_end_row_turn" text="U-turn at the end of the row" />
-		<text name="AD_task_wait_overtake_1" text="Waiting for" />
-		<text name="AD_task_wait_overtake_2" text="to pass" />
-		<text name="AD_task_reverse_to" text="Reversing to" />
+		<text name="AD_task_full_reverse_tracks" text="Voll, setzt in seiner Spur zurück, um den nächsten vorbeizulassen" />
+		<text name="AD_task_band_turn_exit" text="Wenden im Streifen Richtung Ausfahrt" />
+		<text name="AD_task_planning_way" text="Plant den Weg" />
+		<text name="AD_task_wait_row_entry" text="Bereit am Reihenanfang, wartet auf" />
+		<text name="AD_task_follow_trail" text="Folgt der Spur von" />
+		<text name="AD_task_blocked_reverse" text="Von einem Fahrzeug vorne blockiert, setzt zurück um" />
+		<text name="AD_task_end_row_turn" text="Wenden am Reihenende" />
+		<text name="AD_task_wait_overtake_1" text="Wartet, bis" />
+		<text name="AD_task_wait_overtake_2" text="vorbeifährt" />
+		<text name="AD_task_reverse_to" text="Fährt rückwärts nach" />
 		<!-- ancien AutoDrive Addon -->
 		<text name="adAddon_engineStopDelay" text="Motor-Abschaltverzögerung"/>
 		<text name="adAddon_engineStopDelay_tooltip" text="Standzeit, bevor FarmPilot den Motor abstellt. 10 s = FarmPilot-Standard. Nie = der Motor läuft weiter."/>
@@ -503,5 +503,18 @@
 		<text name="adAddon_load" text="Ladung"/>
 		<text name="adAddon_totalWeight" text="Gesamtgewicht"/>
 		<text name="adAddon_player" text="Spieler"/>
+		<text name="gui_ad_obstacleDetourEnabled" text="Hindernis umfahren" />
+		<text name="gui_ad_obstacleDetourEnabled_tooltip" text="Blockiert ein festes Hindernis (umgefallenes Objekt, Mauer, Baum) das Fahrzeug, setzt es zurück, berechnet einen Weg darum herum und kehrt weiter vorne auf seine Route zurück" />
+		<text name="gui_ad_cornerSwingEnabled" text="Weite Kurven" />
+		<text name="gui_ad_cornerSwingEnabled_tooltip" text="In engen Kurven des Streckennetzes folgt das Fahrzeug einem Bogen mit seinem Wenderadius und holt bei der Ein- oder Ausfahrt weit aus, wenn Platz ist" />
+		<text name="gui_ad_avoidEnabled" text="Leichten Hindernissen ausweichen" />
+		<text name="gui_ad_avoidEnabled_tooltip" text="Auf der Straße wird ein Hindernis auf einer Seite der Fahrspur (Pfosten, Ballen, stehendes Fahrzeug) mit einem kleinen seitlichen Versatz ohne Anhalten passiert, wenn die andere Seite frei ist" />
+		<text name="gui_ad_obstacleDetourDelay" text="Wartezeit vor dem Umfahren" />
+		<text name="gui_ad_obstacleDetourDelay_tooltip" text="Wie lange das Fahrzeug von einem festen Hindernis blockiert sein muss, bevor es versucht, es zu umfahren" />
+		<text name="gui_ad_obstacleDetourReverse" text="Zurücksetzen vor dem Umfahren" />
+		<text name="gui_ad_obstacleDetourReverse_tooltip" text="Maximale gerade Rückwärtsstrecke, bevor der Umweg berechnet wird (stoppt früher, wenn hinten etwas ist)" />
+		<text name="AD_obstacleDetour_start" text="wird von einem Hindernis blockiert und setzt zurück, um es zu umfahren" />
+		<text name="AD_obstacleDetour_found" text="umfährt das Hindernis" />
+		<text name="AD_obstacleDetour_failed" text="findet keinen Weg um das Hindernis: Hilfe nötig" />
 	</texts>
 </l10n>

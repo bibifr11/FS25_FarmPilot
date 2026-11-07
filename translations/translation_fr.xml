@@ -13,10 +13,10 @@
 		<text name="input_ADRecord_Dual"								text="AD: Enregistrer une route à double-sens" />
 		<text name="input_ADRecord_SubPrio"							text="AD: Enregistrer une route secondaire" />
 		<text name="input_ADRecord_SubPrioDual"						text="AD: Enregistrer une route secondaire à double-sens" />
-		<text name="input_ADRecord_TwoWay"								text="AD: Record 2 routes simultanous 1 direction normal" />
-		<text name="input_ADRecord_Dual_TwoWay"						text="AD: Record 2 routes simultanous 2 way route" />
-		<text name="input_ADRecord_SubPrio_TwoWay"						text="AD: Record 2 routes simultanous 1 direction secondary route" />
-		<text name="input_ADRecord_SubPrioDual_TwoWay"					text="AD: Record 2 routes simultanous 2 way secondary route" />
+		<text name="input_ADRecord_TwoWay"								text="AD : Enregistrer 2 routes à la fois, sens unique normal" />
+		<text name="input_ADRecord_Dual_TwoWay"						text="AD : Enregistrer 2 routes à la fois, double sens" />
+		<text name="input_ADRecord_SubPrio_TwoWay"						text="AD : Enregistrer 2 routes à la fois, sens unique secondaire" />
+		<text name="input_ADRecord_SubPrioDual_TwoWay"					text="AD : Enregistrer 2 routes à la fois, double sens secondaire" />
 		<text name="input_ADSelectTarget"								text="AD: Sélect. prochaine destination" />
 		<text name="input_ADSelectPreviousTarget"						text="AD: Sélect. destination précédente" />
 		<text name="input_AD_Speed_up"									text="AD: Augmenter la vitesse" />
@@ -60,10 +60,10 @@
 		<text name="input_AD_devAction"								text="AD: Action du développeur" />
 		<text name="input_ADToggleAutomaticPickupTarget"				text="AD: Choix automatique du point de chargement" />
 		<text name="input_ADToggleAutomaticUnloadTarget"				text="AD: Choix automatique du point de déchargement" />
-		<text name="input_ADToggleLoadByFillLevel"						text="AD: Toggle loading by fill level" />
-		<text name="input_ADCopySettings"								text="AD: Copy settings" />
-		<text name="input_ADPasteSettings"								text="AD: Paste settings" />
-		<text name="input_ADCreateFieldPoints"							text="AD: Create Field Points" />
+		<text name="input_ADToggleLoadByFillLevel"						text="AD : Chargement selon le niveau de remplissage" />
+		<text name="input_ADCopySettings"								text="AD : Copier les réglages" />
+		<text name="input_ADPasteSettings"								text="AD : Coller les réglages" />
+		<text name="input_ADCreateFieldPoints"							text="AD : Créer les points de champ" />
 		<text name="hud_avoidFruit"									text="AD: Éviter les cultures" />
 		<text name="hud_startHelper"									text="AD: Démarrer AI/CP à la destination" />
 		<text name="AD_parkVehicle_noPosSet"							text="Pas de parking attribué. Veuillez sélectionner la (Destination actuelle) et corriger avec le clic droit de souris sur le 'P' HUD." />
@@ -81,8 +81,8 @@
 		<text name="AD_No_Refuel_Station"								text="n'a pas pu trouver une station essence pour:" />
 		<text name="AD_No_Repair_Station"								text="n'a pas pu trouver un atelier pour:" />
 		<text name="AD_Wrong_Mode_takeover_from_CP"					text="Ce mode AD ne fonctionne en conbinaison avec le CP" />
-		<text name="AD_Unable_to_start_AIJob"							text="Not able to start AI Helper" />
-		<text name="AD_AIJob_active"									text="AI Helper still active!" />
+		<text name="AD_Unable_to_start_AIJob"							text="Impossible de démarrer l'ouvrier" />
+		<text name="AD_AIJob_active"									text="Ouvrier encore actif !" />
 		<text name="AD_MODE_DRIVETO"									text="Conduite" />
 		<text name="AD_MODE_DELIVERTO"									text="Livraison" />
 		<text name="AD_MODE_PICKUPANDDELIVER"							text="Chargement et livraison" />
@@ -94,16 +94,16 @@
 		<text name="AD_lctrl_for_creation"								text="CTRLG pour créer" />
 		<text name="AD_lalt_for_deletion"								text="ALTG pour effacer" />
 		<text name="AD_lshift_for_reverse"								text="MAJG marche arrière" />
-		<text name="AD_settings_copied"								text="Settings copied" />
-		<text name="AD_settings_pasted"								text="Settings pasted" />
-		<text name="AD_settings_clipboard_empty"						text="Copy settings first!" />
+		<text name="AD_settings_copied"								text="Réglages copiés" />
+		<text name="AD_settings_pasted"								text="Réglages collés" />
+		<text name="AD_settings_clipboard_empty"						text="Copiez d'abord les réglages !" />
 		<text name="gui_ad_Setting"									text="FarmPilot - paramètres" />
 		<text name="gui_ad_collisionHeigth"							text="Hauteur de collision au sol" />
 		<text name="gui_ad_collisionHeigth_tooltip"					text="Réglage de la détection de collision devant le véhicule. Si d'autres véhicules ne sont pas détectés pendant la conduite, réduisez progressivement.(Par défaut 2m)" />
 		<text name="gui_ad_blinkValue"									text="Clignotant automatique" />
 		<text name="gui_ad_blinkValue_tooltip"							text="Angle de braquage pour activer automatiquement les clignotants. (0 = clignotants désactivés)" />
 		<text name="gui_ad_pipe_offset"								text="Décalage de la goulotte" />
-		<text name="gui_ad_pipe_offset_tooltip"						text="Additional offset applied to the detected pipe position" />
+		<text name="gui_ad_pipe_offset_tooltip"						text="Décalage ajouté à la position détectée de la goulotte" />
 		<text name="gui_ad_followDistance"								text="Distance de moissonneuse" />
 		<text name="gui_ad_followDistance_tooltip"						text="Distance depuis l'arrière de la moissonneuse lorsqu'elle est suivie." />
 		<text name="gui_ad_lookahead_turning"							text="Distance de détection (virage)" />
@@ -124,10 +124,10 @@
 		<text name="gui_ad_no"											text="Non" />
 		<text name="gui_ad_FS22"										text="FS 22" />
 		<text name="gui_ad_FS19"										text="FS 19" />
-		<text name="gui_ad_BSMRange"									text="Bunker Silo Manager Range" />
-		<text name="gui_ad_BSMRange_tooltip"							text="In this range vehicles to destination bunker silo one by one get driveway" />
-		<text name="gui_ad_UMRange"									text="Bunker Silo / Unload Manager Range" />
-		<text name="gui_ad_UMRange_tooltip"							text="In this range vehicles to destination bunker silo / same unload destination one by one get driveway" />
+		<text name="gui_ad_BSMRange"									text="Portée du gestionnaire de silo-couloir" />
+		<text name="gui_ad_BSMRange_tooltip"							text="Dans ce rayon, les véhicules allant au silo-couloir passent un par un" />
+		<text name="gui_ad_UMRange"									text="Portée du gestionnaire silo-couloir / déchargement" />
+		<text name="gui_ad_UMRange_tooltip"							text="Dans ce rayon, les véhicules allant au silo-couloir ou au même point de déchargement passent un par un" />
 		<text name="ad_bga_init"										text="Initialisation" />
 		<text name="ad_bga_waiting"									text="En attente de remorque/silo" />
 		<text name="ad_bga_active"										text="Actif" />
@@ -176,8 +176,8 @@
 		<text name="gui_ad_shovelWidth_tooltip"						text="Si la largeur détectée est trop petite, elle peut être augmentée." />
 		<text name="gui_ad_preCallLevel"								text="Appel anticipé pour décharger" />
 		<text name="gui_ad_preCallLevel_tooltip"						text="Défini le niveau de remplissage d'appel du chauffeur pour le déchargement." />
-		<text name="gui_ad_chaseSide"									text="Chopper Unload Side" />
-		<text name="gui_ad_chaseSide_tooltip"							text="Unloader will use only this side from Chppers perspective: automatic, left, behind, right" />
+		<text name="gui_ad_chaseSide"									text="Côté de déchargement de l'ensileuse" />
+		<text name="gui_ad_chaseSide_tooltip"							text="La benne utilise seulement ce côté, vu depuis l'ensileuse : automatique, gauche, derrière, droite" />
 		<text name="gui_ad_none"										text="Aucun" />
 		<text name="gui_ad_onlyPickup"									text="Collecte uniquement" />
 		<text name="gui_ad_onlyDeliver"								text="Livraison uniquement" />
@@ -186,7 +186,7 @@
 		<text name="gui_ad_rotateTargets_tooltip"						text="4 Modes: Aucune destination / uniquement les points de collecte / uniquement les points de livraison / les points de collecte et livraison sont choisis alternativement depuis un dossier (désactivé dans le dossier par défaut). Possible uniquement si gestion par dossier activée)" />
 		<text name="gui_ad_maxTriggerDistance"							text="Distance maximum du déclencheur" />
 		<text name="gui_ad_maxTriggerDistance_tooltip"					text="Distance de détection du déclencheur au point de destination pour le chargement/déchargement." />
-		<text name="gui_ad_useGlobalSetting"							text="Use global setting" />
+		<text name="gui_ad_useGlobalSetting"							text="Utiliser le réglage général" />
 		<text name="gui_ad_useBeaconLights"							text="Gyrophares" />
 		<text name="gui_ad_useBeaconLights_tooltip"					text="Oui - ils seront allumés automatiquement en dehors des champs / Non - pas d'allumage ou extinction automatique" />
 		<text name="gui_ad_worklightsWhenLoading"						text="Feux de travail pendant le chargement/déchargement" />
@@ -220,8 +220,8 @@
 		<text name="gui_ad_shovelHeight_tooltip"						text="Ajuster la hauteur du godet si la détection automatique n'est pas correcte." />
 		<text name="gui_ad_showMarkersOnMap"							text="Afficher les destinations AD" />
 		<text name="gui_ad_showMarkersOnMap_tooltip"					text="Afficher les destinations/marqueurs FarmPilot sur la carte." />
-		<text name="gui_ad_mainMenuMap"								text="Main menu map" />
-		<text name="gui_ad_ingameMap"									text="Ingame map" />
+		<text name="gui_ad_mainMenuMap"								text="Carte du menu principal" />
+		<text name="gui_ad_ingameMap"									text="Carte en jeu" />
 		<text name="gui_ad_both"										text="Both" />
 		<text name="gui_ad_switchToMarkersOnMap"						text="Clic sur destinations" />
 		<text name="gui_ad_switchToMarkersOnMap_tooltip"				text="Définissez la destination en cliquant sur son marqueur depuis la carte." />
@@ -241,10 +241,10 @@
 		<text name="gui_ad_wideHUD_tooltip"							text="Utilisez le mode ATH étendu pour afficher des paramètres supplémentaires dans celui-ci" />
 		<text name="gui_ad_playSounds"									text="Sons" />
 		<text name="gui_ad_playSounds_tooltip"							text="Active les sons lors de clics et des notifications" />
-		<text name="gui_ad_scaleLines"									text="Scale Lines" />
-		<text name="gui_ad_scaleLines_tooltip"							text="Scale Thickness of connection lines" />
-		<text name="gui_ad_scaleMarkerText"							text="Scale Destination Name" />
-		<text name="gui_ad_scaleMarkerText_tooltip"					text="Scale Size of Destination Names" />
+		<text name="gui_ad_scaleLines"									text="Épaisseur des lignes" />
+		<text name="gui_ad_scaleLines_tooltip"							text="Épaisseur des lignes de connexion" />
+		<text name="gui_ad_scaleMarkerText"							text="Taille des noms de destination" />
+		<text name="gui_ad_scaleMarkerText_tooltip"					text="Taille des noms des destinations" />
 		<text name="gui_ad_syncMultiTargets"							text="Synchroniser plusieurs destinations" />
 		<text name="gui_ad_syncMultiTargets_tooltip"					text="Plusieurs conducteurs utilisant le même dossier pour plusieurs destination synchroniseront les destinations suivantes" />
 		<text name="gui_ad_enableParkAtJobFinished"					text="Se garer à la fin du travail" />
@@ -269,34 +269,34 @@
 		<text name="gui_ad_scanConfirmationText"						text="FarmPilot doit-il créer un réseau routier à partir des données de trafic et d'assistance de la carte ?" />
 		<text name="gui_ad_noHarvesterAvailable"						text="Aucune moissoneuse avec la même destination détectée" />
 		<text name="gui_ad_noUnloaderAvailable"						text="Aucun chauffeur avec la même destination disponible" />
-		<text name="gui_ad_remainingDriveTimeInterval"					text="Remaining Drive time" />
-		<text name="gui_ad_remainingDriveTimeInterval_tooltip"			text="For external mods: Interval to calculate the remaining drive time. In case of issues with performance increase or deactivate." />
-		<text name="gui_ad_adpd_showError"								text="FarmPilot: The Network is inconsistent and could not be imported, error code" />
-		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot: Would you like to import the AD Network from the Placeable?" />
-		<text name="gui_ad_pathfinder"									text="Pathfinder algorithm" />
-		<text name="gui_ad_pathfinder_tooltip"							text="Choose which pathfinder algorithm is used (when not on network)" />
-		<text name="gui_ad_pathfinder_astar"							text="A-Star + Dubbins" />
-		<text name="gui_ad_pathfinder_custom"							text="FarmPilot Custom" />
-		<text name="gui_ad_enableRoutesManagerOnDediServer"			text="Routemanager on Server" />
-		<text name="gui_ad_enableRoutesManagerOnDediServer_tooltip"	text="Enable route manager on dedicated servers" />
-		<text name="gui_ad_autostartHelpers"							text="Autostart helpers" />
-		<text name="gui_ad_autostartHelpers_tooltip"					text="Automatically restart active helpers after loading a savegame" />
-		<text name="gui_ad_detectSwath"								text="Swath detection" />
-		<text name="gui_ad_detectSwath_tooltip"						text="Decides if swaths are detected as fruit on field" />
-		<text name="gui_ad_colorAssignmentMode"						text="Custom colors" />
-		<text name="gui_ad_colorAssignmentMode_tooltip"				text="Enables selection of custom colors for FarmPilot" />
-		<text name="gui_ad_FoldImplements"								text="Fold implements" />
-		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot will wait for implements to fold up before starting" />
-		<text name="gui_ad_RecordWhileNotInVehicle"					text="Record without driver" />
+		<text name="gui_ad_remainingDriveTimeInterval"					text="Temps de trajet restant" />
+		<text name="gui_ad_remainingDriveTimeInterval_tooltip"			text="Pour les autres mods : intervalle de calcul du temps de trajet restant. En cas de ralentissements, augmentez-le ou désactivez-le." />
+		<text name="gui_ad_adpd_showError"								text="FarmPilot : le réseau est incohérent et n'a pas pu être importé, code d'erreur" />
+		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot : voulez-vous importer le réseau AD de ce bâtiment ?" />
+		<text name="gui_ad_pathfinder"									text="Algorithme de recherche de chemin" />
+		<text name="gui_ad_pathfinder_tooltip"							text="Algorithme utilisé pour trouver un chemin (hors réseau)" />
+		<text name="gui_ad_pathfinder_astar"							text="A-Star + Dubins" />
+		<text name="gui_ad_pathfinder_custom"							text="FarmPilot maison" />
+		<text name="gui_ad_enableRoutesManagerOnDediServer"			text="Gestionnaire de routes sur le serveur" />
+		<text name="gui_ad_enableRoutesManagerOnDediServer_tooltip"	text="Active le gestionnaire de routes sur les serveurs dédiés" />
+		<text name="gui_ad_autostartHelpers"							text="Relancer les ouvriers" />
+		<text name="gui_ad_autostartHelpers_tooltip"					text="Relance automatiquement les ouvriers actifs après le chargement d'une sauvegarde" />
+		<text name="gui_ad_detectSwath"								text="Détection des andains" />
+		<text name="gui_ad_detectSwath_tooltip"						text="Indique si les andains sont détectés comme culture dans le champ" />
+		<text name="gui_ad_colorAssignmentMode"						text="Couleurs personnalisées" />
+		<text name="gui_ad_colorAssignmentMode_tooltip"				text="Permet de choisir des couleurs personnalisées pour FarmPilot" />
+		<text name="gui_ad_FoldImplements"								text="Replier les outils" />
+		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot attend que les outils soient repliés avant de partir" />
+		<text name="gui_ad_RecordWhileNotInVehicle"					text="Enregistrer sans conducteur" />
 		<text name="gui_ad_RecordWhileNotInVehicle_tooltip"			text="FarmPilot will keep recording if driver leaves the vehicle" />
-		<text name="gui_ad_RecordDriveDirectionOffset"					text="Record offset in driving direction" />
-		<text name="gui_ad_RecordDriveDirectionOffset_tooltip"			text="Move recording from vehicle to the left (-0.1 .. -6m) or right (0.1 .. 6m). Driving reverse wil stop recording!" />
-		<text name="gui_ad_RecordOppositeDriveDirectionOffset"			text="Record offset in opposite driving direction" />
-		<text name="gui_ad_RecordOppositeDriveDirectionOffset_tooltip"	text="Move recording from vehicle to the left (-0.1 .. -6m) or right (0.1 .. 6m). Driving reverse wil stop recording!" />
-		<text name="gui_ad_fieldPointOffset"							text="Fieldpoint Offset" />
-		<text name="gui_ad_fieldPointOffset_tooltip"					text="create field points inside (-0.2 .. -6m) or outside (0.2 .. 6m) erzeugen. 0 at field border" />
-		<text name="gui_ad_maxFieldPointDistance"						text="field point max. distance" />
-		<text name="gui_ad_maxFieldPointDistance_tooltip"				text="create field points with max. distance of 2 .. 25 m" />
+		<text name="gui_ad_RecordDriveDirectionOffset"					text="Décalage d'enregistrement dans le sens de marche" />
+		<text name="gui_ad_RecordDriveDirectionOffset_tooltip"			text="Décale l'enregistrement à gauche (-0,1 à -6 m) ou à droite (0,1 à 6 m) du véhicule. La marche arrière arrête l'enregistrement !" />
+		<text name="gui_ad_RecordOppositeDriveDirectionOffset"			text="Décalage d'enregistrement dans le sens opposé" />
+		<text name="gui_ad_RecordOppositeDriveDirectionOffset_tooltip"	text="Décale l'enregistrement à gauche (-0,1 à -6 m) ou à droite (0,1 à 6 m) du véhicule. La marche arrière arrête l'enregistrement !" />
+		<text name="gui_ad_fieldPointOffset"							text="Décalage des points de champ" />
+		<text name="gui_ad_fieldPointOffset_tooltip"					text="Crée les points de champ à l'intérieur (-0,2 à -6 m) ou à l'extérieur (0,2 à 6 m). 0 = bord du champ" />
+		<text name="gui_ad_maxFieldPointDistance"						text="Distance max. des points de champ" />
+		<text name="gui_ad_maxFieldPointDistance_tooltip"				text="Crée des points de champ espacés de 2 à 25 m maximum" />
 		<text name="gui_ad_settingsPage_title"							text="Paramètres - FarmPilot" />
 		<text name="gui_ad_userSettingsPage_title"						text="Paramètres utilisateur - FarmPilot" />
 		<text name="gui_ad_vehicleSettingsPage_title"					text="Paramètres de véhicules - FarmPilot" />
@@ -326,7 +326,7 @@
 		<text name="gui_ad_debugChannelExternalInterface"				text="Interface externe" />
 		<text name="gui_ad_debugChannelRender"							text="Rendu" />
 		<text name="gui_ad_debugChannelRoadNetwork"					text="Réseau routier" />
-		<text name="gui_ad_debugChannelBGA"							text="BGA Mode" />
+		<text name="gui_ad_debugChannelBGA"							text="Mode méthaniseur" />
 		<text name="gui_ad_debugChannelTrains"							text="Trains" />
 		<text name="gui_ad_debugChannelChaseDisplay"							text="Poursuite (affichage permanent)" />
 		<text name="gui_ad_debugChannelAll"							text="Tous" />
@@ -347,21 +347,21 @@
 		<text name="ad_color_currentConnection"						text="12 ligne vers l'itinéraire" />
 		<text name="ad_color_closestLine"								text="13 ligne du véhicule vers le point le plus proche" />
 		<text name="ad_color_editorHeightLine"							text="14 ligne entre le point au-dessus du véhicule et celui en surface" />
-		<text name="ad_color_previewSingleConnection"					text="15 curve preview OK, single-way connection" />
-		<text name="ad_color_previewDualConnection"					text="16 curve preview OK, dual-way connection" />
-		<text name="ad_color_previewSubPrioSingleConnection"			text="17 curve preview OK, secondary single-way connection" />
-		<text name="ad_color_previewSubPrioDualConnection"				text="18 curve preview OK, secondary dual-way connection" />
-		<text name="ad_color_previewOk"								text="19 curve preview OK, no collision" />
-		<text name="ad_color_previewNotOk"								text="20 curve preview NotOK, has collision" />
-		<text name="ad_color_textInputBackground"						text="21 Background for inputs of text, targets etc." />
+		<text name="ad_color_previewSingleConnection"					text="15 aperçu de courbe OK, connexion sens unique" />
+		<text name="ad_color_previewDualConnection"					text="16 aperçu de courbe OK, connexion double sens" />
+		<text name="ad_color_previewSubPrioSingleConnection"			text="17 aperçu de courbe OK, connexion secondaire sens unique" />
+		<text name="ad_color_previewSubPrioDualConnection"				text="18 aperçu de courbe OK, connexion secondaire double sens" />
+		<text name="ad_color_previewOk"								text="19 aperçu de courbe OK, sans collision" />
+		<text name="ad_color_previewNotOk"								text="20 aperçu de courbe non OK, collision" />
+		<text name="ad_color_textInputBackground"						text="21 fond des saisies de texte, destinations, etc." />
 		<text name="ad_color_hudTextDefault"							text="22 HUD text, normal items" />
 		<text name="ad_color_hudTextHover"								text="23 HUD text, hovering on normal items" />
 		<text name="ad_color_hudTextSpecial"							text="24 HUD text, active items and folders" />
 		<text name="ad_color_hudTextHoverSpecial"						text="25 HUD text, hovering on active items and folders" />
-		<text name="ad_color_header"									text="26 HUD: color of header" />
-		<text name="ad_color_background"								text="27 HUD: background color" />
-		<text name="ad_color_markerText"								text="28 color of destination text" />
-		<text name="ad_color_rightOfWayCenter"							text="29 Right of way Center waypoint" />
+		<text name="ad_color_header"									text="26 HUD : couleur du bandeau" />
+		<text name="ad_color_background"								text="27 HUD : couleur du fond" />
+		<text name="ad_color_markerText"								text="28 couleur du texte des destinations" />
+		<text name="ad_color_rightOfWayCenter"							text="29 point central de priorité" />
 		<text name="button_delete_all"									text="Effacer tout" />
 		<text name="button_reset_selected"								text="Effacer la sélection" />
 		<text name="AD_task_pathfinding"								text="Planifier le parcours" />

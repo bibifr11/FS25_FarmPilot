@@ -3,8 +3,9 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
-## En cours / Unreleased
-- Textes des tâches traduits en français et en allemand (FR/DE task texts translated).
+## 1.0.0.1
+- Allemand : 13 textes manquants ajoutés (contournement d'obstacle, virage large, évitement) / German: 13 missing texts added.
+- Français et allemand : 66 textes restés en anglais traduits / French and German: 66 texts still in English translated.
 
 ## 1.0.0.0
 

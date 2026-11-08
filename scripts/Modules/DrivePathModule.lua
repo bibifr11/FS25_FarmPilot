@@ -75,6 +75,8 @@ end
 function ADDrivePathModule:setPathTo(wayPointId)
     self:reset(self.atTarget)
     self.wayPoints = ADGraphManager:getPathTo(self.vehicle, wayPointId, self.lastUsedWayPoint)
+    -- route par un chemin de terre : une ligne de log (DirtRoadManager.lua)
+    if ADDirtRoads ~= nil then ADDirtRoads.logRoute(self.vehicle, self.wayPoints) end
     -- sharp corners replaced by arcs of the real turning radius (ADCornerModule); the first points stay as they are
     if self.wayPoints ~= nil and #self.wayPoints >= 3 and self.vehicle.ad.cornerModule ~= nil then
         self.wayPoints = self.vehicle.ad.cornerModule:smoothRoute(self.wayPoints, 3)
@@ -117,6 +119,8 @@ end
 
 function ADDrivePathModule:appendPathTo(startWayPointId, wayPointId)
     local appendWayPoints = ADGraphManager:getPathTo(self.vehicle, wayPointId)
+    -- route par un chemin de terre : une ligne de log (DirtRoadManager.lua)
+    if ADDirtRoads ~= nil then ADDirtRoads.logRoute(self.vehicle, appendWayPoints) end
     if appendWayPoints ~= nil and #appendWayPoints >= 3 and self.vehicle.ad.cornerModule ~= nil then
         appendWayPoints = self.vehicle.ad.cornerModule:smoothRoute(appendWayPoints, 2)
     end
@@ -384,6 +388,8 @@ function ADDrivePathModule:followWaypoints(dt)
 
         -- portion Intersection devant : on ralentit pour regarder / s'arrêter avant
         self.speedLimit = math.min(self.speedLimit, ADIntersectionModule.getSpeedLimit(self.vehicle))
+        -- chemin de terre : vitesse maxi du chemin, dès 30 m avant d'y entrer (DirtRoadManager.lua)
+        if ADDirtRoads ~= nil then self.speedLimit = math.min(self.speedLimit, ADDirtRoads.getSpeedLimit(self)) end
 
         if self.vehicle.ad.trailerModule:isUnloadingToBunkerSilo() then
             -- drive through bunker silo

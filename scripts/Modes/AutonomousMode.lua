@@ -350,7 +350,7 @@ end
 -- (07/11, demande Fabien) fin du travail sans champ suivant : si l'outil a sa place de parking et le tracteur la sienne,
 -- le chauffeur pose l'outil à sa place (dételé comme le joueur), puis va garer le tracteur. Masses et cuves ignorées.
 -- Renvoie true si c'est lancé ; sinon false et le chauffeur se gare comme avant.
-function AutonomousMode.parkWithToolDrop(vehicle)
+function AutonomousMode.parkWithToolDrop(vehicle, forcedTool)
     if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.modes == nil then
         return false
     end
@@ -359,7 +359,8 @@ function AutonomousMode.parkWithToolDrop(vehicle)
         return false
     end
     local name = tostring(sm:getName())
-    local tools = ADAutonomousManager.workTools(vehicle)
+    -- forcedTool : outil ou remorque choisi par le bouton parking (AutonomousParkButton.lua)
+    local tools = forcedTool ~= nil and { forcedTool } or ADAutonomousManager.workTools(vehicle)
     if #tools == 0 then
         return false
     end

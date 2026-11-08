@@ -1460,7 +1460,7 @@ end
 function ADGraphManager:toggleWayPointAsSubPrio(wayPointId)
     local wayPoint = self:getWayPointById(wayPointId)
     if wayPoint ~= nil then
-        -- primaire -> secondaire -> primaire + intersection -> secondaire + intersection
+        -- primaire -> secondaire -> chemin de terre -> primaire + intersection -> secondaire + intersection (DirtRoadManager.lua)
         wayPoint.flags = self:getNextPrioFlags(wayPoint.flags)
     end
 
@@ -1483,6 +1483,8 @@ end
 
 -- type suivant : primaire -> secondaire -> primaire + intersection -> secondaire + intersection -> primaire, les autres drapeaux sont gardés
 function ADGraphManager:getNextPrioFlags(flags)
+    -- avec les chemins de terre : primaire -> secondaire -> chemin de terre -> intersections (DirtRoadManager.lua)
+    if ADDirtRoads ~= nil then return ADDirtRoads.nextFlags(flags) end
     flags = flags or 0
     local others = bit32.band(flags, bit32.bnot(AutoDrive.FLAG_SUBPRIO + AutoDrive.FLAG_INTERSECTION))
     local subPrio = bit32.band(flags, AutoDrive.FLAG_SUBPRIO) > 0
@@ -1874,6 +1876,8 @@ function ADGraphManager:createSplineConnection(start, waypoints, target, dualCon
             if subPrio then
                 flags = AutoDrive.FLAG_SUBPRIO
             end
+            -- courbe partant ou arrivant sur un chemin de terre : chemin de terre aussi (DirtRoadManager.lua)
+            if ADDirtRoads ~= nil then flags = ADDirtRoads.inheritFlags(flags, start, target) end
             self:createWayPointWithConnections(wp.x, wp.y, wp.z, {}, {}, flags, false, false, false, nil, sendEvent)
             local createdId = self:getWayPointsCount()
             self:toggleConnectionBetween(

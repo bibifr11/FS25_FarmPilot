@@ -362,6 +362,11 @@
 		<text name="ad_color_background"								text="27 HUD: background color" />
 		<text name="ad_color_markerText"								text="28 color of destination text" />
 		<text name="ad_color_rightOfWayCenter"							text="29 Right of way Center waypoint" />
+		<text name="ad_color_intersectionConnection" text="30 intersection line" />
+		<text name="ad_color_intersectionNode" text="31 intersection point" />
+		<text name="ad_color_dirtSingleConnection" text="32 dirt road line, one way" />
+		<text name="ad_color_dirtDualConnection" text="33 dirt road line, two way" />
+		<text name="ad_color_dirtNode" text="34 dirt road waypoint" />
 		<text name="button_delete_all"									text="Deletar Todos" />
 		<text name="button_reset_selected"								text="Redefinir selecionado" />
 		<text name="AD_task_pathfinding"								text="Planejando Caminho " />
@@ -440,6 +445,13 @@
 		<text name="gui_ad_autonomousNoCp_tooltip" text="What Autonomous mode does when Courseplay is not installed: the driver stops and waits, or the base game worker takes the field (classic mode)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
+		<text name="gui_ad_dirtRoads" text="Dirt roads" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Dirt road points of the network (pink and purple lines in the editor). Allowed: taken only when they save time, at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
+		<text name="gui_ad_dirtRoads_auto" text="Auto (truck: never)" />
+		<text name="gui_ad_dirtRoads_never" text="Never" />
+		<text name="gui_ad_dirtRoads_allowed" text="Allowed" />
+		<text name="gui_ad_dirtRoadSpeed" text="Max speed on dirt roads" />
+		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on dirt road points. The route search uses it: a dirt road is taken only when it saves time" />
 		<text name="AD_task_park_in_field" text="Parking in the field" />
 		<text name="AD_task_hv_chopper" text="the forage harvester" />
 		<text name="AD_task_hv_combine" text="the combine" />

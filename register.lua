@@ -80,6 +80,7 @@ source(Utils.getFilename("scripts/Manager/DrawingManager.lua", g_currentModDirec
 source(Utils.getFilename("scripts/Manager/ChaseDisplay.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/MessagesManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/GraphManager.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/DirtRoadManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/TriggerManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/HarvestManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/InputManager.lua", g_currentModDirectory))

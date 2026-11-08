@@ -3,6 +3,13 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.15
+
+- Chemins de terre : nouveau type de route dans l'éditeur (Maj gauche + clic fait tourner le type), réglage par véhicule (Auto, Jamais, Autorisés ; Auto = jamais pour camions et semis, autorisés pour tracteurs) et vitesse maxi réglable (30 km/h par défaut). Le chemin n'est pris que s'il fait gagner du temps, ou s'il n'y a pas d'autre route.
+- « Envoyer au parking », tous modes : chaque outil ou remorque attelé qui a sa place de parking y est posé, puis le tracteur va à la sienne.
+- Dirt roads: new road type in the editor (left Shift + click cycles the type), per-vehicle setting (Auto, Never, Allowed; Auto = never for trucks and seeding, allowed for tractors) and adjustable max speed (30 km/h by default). A dirt road is only used when it saves time, or when there is no other road.
+- "Send to parking", all modes: every attached tool or trailer with a parking spot is parked there, then the tractor goes to its own.
+
 ## 1.0.1.13
 
 - « Envoyer au parking » : l'outil est d'abord posé à sa place de parking, puis le tracteur va se garer.

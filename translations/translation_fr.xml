@@ -362,6 +362,11 @@
 		<text name="ad_color_background"								text="27 HUD : couleur du fond" />
 		<text name="ad_color_markerText"								text="28 couleur du texte des destinations" />
 		<text name="ad_color_rightOfWayCenter"							text="29 point central de priorité" />
+		<text name="ad_color_intersectionConnection" text="30 ligne d'intersection" />
+		<text name="ad_color_intersectionNode" text="31 point d'intersection" />
+		<text name="ad_color_dirtSingleConnection" text="32 ligne chemin de terre à sens unique" />
+		<text name="ad_color_dirtDualConnection" text="33 ligne chemin de terre à double sens" />
+		<text name="ad_color_dirtNode" text="34 point de passage chemin de terre" />
 		<text name="button_delete_all"									text="Effacer tout" />
 		<text name="button_reset_selected"								text="Effacer la sélection" />
 		<text name="AD_task_pathfinding"								text="Planifier le parcours" />
@@ -402,13 +407,13 @@
 		<text name="gui_ad_editorTip_2"								text="Souris uniquement: sélection 1. point" />
 		<text name="gui_ad_editorTip_3"								text="CTRLG = Créer un point" />
 		<text name="gui_ad_editorTip_4"								text="ALTG = Supprimer un point" />
-		<text name="gui_ad_editorTip_5"								text="MAJG = Basculer point en voie dégagement" />
+		<text name="gui_ad_editorTip_5"								text="MAJG = Type du point (primaire, secondaire, chemin de terre, intersection)" />
 		<text name="gui_ad_editorTip_6"								text="Clic au second point:" />
 		<text name="gui_ad_editorTip_7"								text="Etablir connexion" />
 		<text name="gui_ad_editorTip_8"								text="MAJD = Créer ligne marche AR" />
 		<text name="gui_ad_editorTip_9"								text="1. point est une intersection, 2. point est voisin:" />
 		<text name="gui_ad_editorTip_10"								text="CTRLG: Choix du segment (unique/double sens)" />
-		<text name="gui_ad_editorTip_11"								text="MAJG = Etablir voie de dégagement" />
+		<text name="gui_ad_editorTip_11"								text="MAJG = Type de la section (primaire, secondaire, chemin de terre, intersection)" />
 		<text name="gui_ad_trafficYieldEnabled" text="Croisement face à face" />
 		<text name="gui_ad_trafficYieldEnabled_tooltip" text="Quand deux véhicules FarmPilot se bloquent face à face sur une route à double sens, l'un recule pendant que l'autre se gare sur le bas-côté, puis chacun reprend sa route" />
 		<text name="gui_ad_trafficYieldDelay" text="Délai avant croisement" />
@@ -453,6 +458,13 @@
 		<text name="gui_ad_autonomousNoCp_tooltip" text="Ce que fait le mode Autonome quand Courseplay n'est pas installé : le chauffeur s'arrête et attend, ou l'ouvrier du jeu prend le champ (mode Classique)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Attendre" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Ouvrier du jeu" />
+		<text name="gui_ad_dirtRoads" text="Chemins de terre" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Points « chemin de terre » du réseau (lignes roses et violettes de l'éditeur). Autorisés : pris seulement s'ils font gagner du temps, à vitesse limitée. Jamais : seulement s'il n'y a pas d'autre route. Auto : Jamais pour les camions et les semis, Autorisés pour les tracteurs et les autres véhicules" />
+		<text name="gui_ad_dirtRoads_auto" text="Auto (camion : jamais)" />
+		<text name="gui_ad_dirtRoads_never" text="Jamais" />
+		<text name="gui_ad_dirtRoads_allowed" text="Autorisés" />
+		<text name="gui_ad_dirtRoadSpeed" text="Vitesse maxi sur chemin de terre" />
+		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Vitesse maximale sur les points « chemin de terre ». Le calcul de route en tient compte : un chemin de terre n'est pris que s'il fait gagner du temps" />
 		<text name="AD_task_park_in_field" text="Se gare dans le champ" />
 		<text name="AD_task_hv_chopper" text="l'ensileuse" />
 		<text name="AD_task_hv_combine" text="la moissonneuse" />

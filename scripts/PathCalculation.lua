@@ -44,6 +44,8 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
     local distanceFunc2 = function(a, b, c)
         return ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, 30, true)
     end
+    -- chemins de terre : temps de trajet à leur vitesse maxi, x100 pour un véhicule « Jamais » (DirtRoadManager.lua)
+    if ADDirtRoads ~= nil then distanceFunc2 = ADDirtRoads.wrapDriveTime(distanceFunc2, vehicle) end
 
     local isSubPrio = function(pointToTest) 
         return bit32.band(pointToTest.flags, AutoDrive.FLAG_SUBPRIO) > 0

@@ -4,7 +4,7 @@ AutoDriveSync.MWPC_SNB_SEND_NUM_BITS = 5 -- 0 -> 31
 AutoDriveSync.OIWPC_SEND_NUM_BITS = 6 -- 0 -> 63
 AutoDriveSync.MC_SEND_NUM_BITS = 12 -- 0 -> 4095
 AutoDriveSync.GC_SEND_NUM_BITS = 10 -- 0 -> 1023
-AutoDriveSync.FLAG_SEND_NUM_BITS = 5 -- 0 -> 31
+AutoDriveSync.FLAG_SEND_NUM_BITS = 6 -- 0 -> 63 (FarmPilot : drapeau chemin de terre 32, DirtRoadManager.lua)
 
 AutoDriveSync_mt = Class(AutoDriveSync, Object)
 

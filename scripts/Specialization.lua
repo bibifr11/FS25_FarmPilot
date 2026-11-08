@@ -671,6 +671,8 @@ function AutoDrive:onDrawPreviews()
     else
         color = AutoDrive.currentColors.ad_color_previewSingleConnection
     end
+    -- courbe vers ou depuis un chemin de terre : rose / violet (DirtRoadManager.lua)
+    if ADDirtRoads ~= nil then color = ADDirtRoads.splinePreviewColor(lastWp, targetWp, isDual, collisionFree, color) end
 
     for wpId, wp in pairs(AutoDrive.splineInterpolation.waypoints) do
         if wpId ~= 1 and wpId < (#AutoDrive.splineInterpolation.waypoints - 1) then
@@ -923,6 +925,7 @@ function AutoDrive:onDrawEditorMode()
         local z = point.z
         local isSubPrio = ADGraphManager:getIsPointSubPrio(point.id)
         local isIntersection = ADGraphManager:getIsPointIntersection(point.id)
+        local isDirt = ADDirtRoads ~= nil and ADDirtRoads.isDirt(point) -- chemin de terre (DirtRoadManager.lua)
 
         if isInExtendedEditorMode then
             arrowPosition = DrawingManager.arrows.position.middle
@@ -938,6 +941,8 @@ function AutoDrive:onDrawEditorMode()
                         else
                             if isIntersection then
                                 DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_intersectionNode))
+                            elseif isDirt then
+                                DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_dirtNode))
                             elseif isSubPrio then
                                 DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_subPrioNode))
                             else
@@ -967,6 +972,8 @@ function AutoDrive:onDrawEditorMode()
                             else
                                 if isIntersection then
                                     DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_intersectionNode))
+                                elseif isDirt then
+                                    DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_dirtNode))
                                 elseif isSubPrio then
                                     DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_subPrioNode))
                                 else
@@ -1024,6 +1031,8 @@ function AutoDrive:onDrawEditorMode()
                         if point.id > nWp.id then
                             if redLine then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_intersectionConnection))
+                            elseif isDirt or (ADDirtRoads ~= nil and ADDirtRoads.isDirt(nWp)) then
+                                DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtDualConnection))
                             elseif isSubPrio or targetIsSubPrio then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_subPrioDualConnection))
                             else
@@ -1037,6 +1046,9 @@ function AutoDrive:onDrawEditorMode()
                             if redLine then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_intersectionConnection))
                                 DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_intersectionConnection))
+                            elseif isDirt or (ADDirtRoads ~= nil and ADDirtRoads.isDirt(nWp)) then
+                                DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
+                                DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
                             elseif isSubPrio or targetIsSubPrio then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_subPrioSingleConnection))
                                 DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_subPrioSingleConnection))
@@ -1073,6 +1085,9 @@ function AutoDrive:onDrawEditorMode()
         elseif sectionIntersection or sectionPrio then
             nextSingleColor, nextDualColor = AutoDrive.currentColors.ad_color_intersectionConnection, AutoDrive.currentColors.ad_color_intersectionConnection
         end
+        -- avec les chemins de terre, le type suivant change (DirtRoadManager.lua)
+        if ADDirtRoads ~= nil then nextSingleColor, nextDualColor = ADDirtRoads.previewColors(ADGraphManager:getWayPointById(self.ad.sectionWayPoints[2]), nextSingleColor, nextDualColor) end
+        local sectionDirt = ADDirtRoads ~= nil and ADDirtRoads.isDirtId(self.ad.sectionWayPoints[2]) -- chemin de terre : sens en rose / violet
         local wayPointsDirection = ADGraphManager:getIsWayPointJunction(self.ad.sectionWayPoints[1], self.ad.sectionWayPoints[2])
         for i = 1, #self.ad.sectionWayPoints - 1 do
             local start = ADGraphManager:getWayPointById(self.ad.sectionWayPoints[i])
@@ -1084,7 +1099,10 @@ function AutoDrive:onDrawEditorMode()
                     DrawingManager:addArrowTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, arrowPosition, unpack(nextSingleColor))
                 elseif previewDirection then
                     -- new direction backward
-                    if not sectionPrio then
+                    if sectionDirt then
+                        DrawingManager:addLineTask(target.x, target.y, target.z, start.x, start.y, start.z, 1,  unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))      -- rose
+                        DrawingManager:addArrowTask(target.x, target.y, target.z, start.x, start.y, start.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
+                    elseif not sectionPrio then
                         DrawingManager:addLineTask(target.x, target.y, target.z, start.x, start.y, start.z, 1,  unpack(AutoDrive.currentColors.ad_color_singleConnection))       -- green
                         DrawingManager:addArrowTask(target.x, target.y, target.z, start.x, start.y, start.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_singleConnection))
                     else
@@ -1099,7 +1117,9 @@ function AutoDrive:onDrawEditorMode()
                     DrawingManager:addArrowTask(target.x, target.y, target.z, start.x, start.y, start.z, 1, arrowPosition, unpack(nextSingleColor))
                 elseif previewDirection then
                     -- new direction dual
-                    if not sectionPrio then
+                    if sectionDirt then
+                        DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtDualConnection))  -- violet
+                    elseif not sectionPrio then
                         DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_dualConnection))  -- blue
                     else
                         DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_subPrioDualConnection))    -- dark orange
@@ -1111,7 +1131,10 @@ function AutoDrive:onDrawEditorMode()
                     DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(nextDualColor))
                 elseif previewDirection then
                     -- new direction forward
-                    if not sectionPrio then
+                    if sectionDirt then
+                        DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))        -- rose
+                        DrawingManager:addArrowTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
+                    elseif not sectionPrio then
                         DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_singleConnection))        -- green
                         DrawingManager:addArrowTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_singleConnection))
                     else

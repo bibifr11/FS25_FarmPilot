@@ -81,6 +81,7 @@ AutoDrive.FLAG_TRAFFIC_SYSTEM = 2
 AutoDrive.FLAG_TRAFFIC_SYSTEM_CONNECTION = 4
 AutoDrive.FLAG_FIELD_POINT = 8
 AutoDrive.FLAG_INTERSECTION = 16 -- portion qui coupe ou rejoint une route : regarder avant de traverser
+AutoDrive.FLAG_DIRT_ROAD = 32 -- chemin de terre (DirtRoadManager.lua)
 
 -- add this to measured size of vehicles
 AutoDrive.DIMENSION_ADDITION = 0.2
@@ -470,6 +471,8 @@ function AutoDrive.createNetworkOnMapCache()
 						elseif ADGraphManager:isReverseRoad(node, outNode) then
 							r, g, b, a = unpack(AutoDrive.currentColors.ad_color_reverseConnection)
 						end
+						-- chemin de terre : rose / violet (DirtRoadManager.lua)
+						if ADDirtRoads ~= nil then r, g, b, a = ADDirtRoads.mapColor(node, outNode, r, g, b, a) end
 
 						table.insert(cache, { 
 							startX = startX, startY = startY, endX = endX, endY = endY, rotation = rotation,

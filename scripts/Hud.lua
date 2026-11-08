@@ -132,9 +132,18 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		numButtonRows = 0
 	end
 
+	-- FarmPilot mode Autonome (07/11, choix de Fabien) : 4e ligne « Outil suivant » (08/11 : ordre Champ / Outil / Champ suivant / Outil suivant),
+	-- le HUD grandit d'une ligne dans ce mode seulement (refait au changement de mode, voir drawHud)
+	-- (décidé par drawHud avec le véhicule affiché ; sinon le véhicule suivi)
+	self.fpNextToolRow = self.fpForceNextToolRow
+	if self.fpNextToolRow == nil then
+		self.fpNextToolRow = AutoDriveHud.wantsFpNextToolRow(vehicle)
+	end
+	local pullDownRows = self.fpNextToolRow and 4 or 3
+
 	self.borderX, self.borderY = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
 	self.buttonWidth, self.buttonHeight = getNormalizedScreenValues(uiScale * buttonSize, uiScale * buttonSize)
-	self.width, self.height = getNormalizedScreenValues(((numButtons + self.buttonCollOffset) * (gapSize + buttonSize) + gapSize) * uiScale, ((numButtonRows * (gapSize + buttonSize)) + (3 * (gapSize + iconSize)) + gapSize) * uiScale + self.headerHeight)
+	self.width, self.height = getNormalizedScreenValues(((numButtons + self.buttonCollOffset) * (gapSize + buttonSize) + gapSize) * uiScale, ((numButtonRows * (gapSize + buttonSize)) + (pullDownRows * (gapSize + iconSize)) + gapSize) * uiScale + self.headerHeight)
 	self.gapWidth, self.gapHeight = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
 	self.iconWidth, self.iconHeight = getNormalizedScreenValues(uiScale * iconSize, uiScale * iconSize)
 	self.listItemWidth, self.listItemHeight = getNormalizedScreenValues(uiScale * listItemSize, uiScale * listItemSize)
@@ -147,6 +156,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	AutoDrive.HudChanged = true
 
 	self.hudElements = {}
+	self.fpAutonomousInSlot = false -- FarmPilot : bouton « Parcours Autonome » placé à la place du bouton Courseplay
 
 	self.Speed = "50"
 	self.Target = "Not Ready"
@@ -161,10 +171,12 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		self.Target = ADGraphManager:getMapMarkerById(1).name
 	end
 
+	local extraRow = self.fpNextToolRow and 1 or 0
 	self.row2 = self.posY + (self.pullDownRowOffset + 1) * self.borderY + (self.pullDownRowOffset + 0) * self.buttonHeight
-	self.row3 = self.posY + (self.pullDownRowOffset + 2) * self.borderY + (self.pullDownRowOffset + 1) * self.buttonHeight
-	self.row4 = self.posY + (self.pullDownRowOffset + 3) * self.borderY + (self.pullDownRowOffset + 2) * self.buttonHeight
-	self.rowHeader = self.posY + (self.pullDownRowOffset + 4) * self.borderY + (self.pullDownRowOffset + 3) * self.buttonHeight
+	self.rowFpNextTool = self.posY + (self.pullDownRowOffset + 2) * self.borderY + (self.pullDownRowOffset + 1) * self.buttonHeight
+	self.row3 = self.posY + (self.pullDownRowOffset + 2 + extraRow) * self.borderY + (self.pullDownRowOffset + 1 + extraRow) * self.buttonHeight
+	self.row4 = self.posY + (self.pullDownRowOffset + 3 + extraRow) * self.borderY + (self.pullDownRowOffset + 2 + extraRow) * self.buttonHeight
+	self.rowHeader = self.posY + (self.pullDownRowOffset + 4 + extraRow) * self.borderY + (self.pullDownRowOffset + 3 + extraRow) * self.buttonHeight
 
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.posY - 0 * self.gapHeight, self.width, self.height + 5 * self.gapHeight, "ad_gui.Background", 0, "background"))
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.rowHeader, self.width, self.headerHeight, "ad_gui.Header", 1, "header"))
@@ -181,30 +193,52 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	table.insert(self.hudElements, ADHudButton:new(posX, posY, closeWidth, closeHeight, "input_toggleHudExtension", nil, nil, nil, nil, nil, nil, nil, "", 1, true))
 
 	
+	-- (08/11, Fabien : « chaque champ avec son outil », sinon « ils sont en décalé ») mode Autonome, de haut en bas :
+	-- Champ / Outil / Champ suivant / Outil suivant. Rang (order) = place depuis le haut, pour les listes ouvertes
+	local rowUnload, rowFill, rowNextTool = self.row3, self.row2, self.rowFpNextTool
+	local orderUnload, orderFill = nil, nil
+	if self.fpNextToolRow then
+		rowFill, rowUnload, rowNextTool = self.row3, self.rowFpNextTool, self.row2
+		orderFill, orderUnload = 2, 3
+	end
+
 	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, self.row4, self.iconWidth, self.iconHeight, "input_toggleAutomaticPickupTarget", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleAutomaticPickupTarget", 1, true))
 
 	-- 1st destination
 	self.targetPullDownList = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, self.row4, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_TARGET, 1)
 	table.insert(self.hudElements, self.targetPullDownList)
 
-	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, self.row3, self.iconWidth, self.iconHeight, "input_toggleAutomaticUnloadTarget", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleAutomaticUnloadTarget", 1, true))
+	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, rowUnload, self.iconWidth, self.iconHeight, "input_toggleAutomaticUnloadTarget", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleAutomaticUnloadTarget", 1, true))
 
-	table.insert(self.hudElements, ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, self.row3, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_UNLOAD, 1))
+	local unloadList = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowUnload, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_UNLOAD, 1)
+	unloadList.order = orderUnload
+	table.insert(self.hudElements, unloadList)
+	-- FarmPilot : mode Autonome, fenêtre « Parcours Autonome ». Normalement à la place du bouton Courseplay (voir AddButton) ;
+	-- ici seulement en secours, si ce bouton n'existe pas (même case que le bouton ci-dessus, caché dans ce mode)
+	local fpFallback = ADHudButton:new(self.posX + self.gapWidth, rowUnload, self.iconWidth, self.iconHeight, "input_autonomousCourses", nil, nil, nil, nil, nil, nil, nil, "input_ADAutonomousCourses", 1, false)
+	fpFallback.fpFallback = true
+	table.insert(self.hudElements, fpFallback)
 	
-	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, self.row2, self.iconWidth, self.iconHeight, "input_toggleLoadByFillLevel", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleLoadByFillLevel", 1, true))
+	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, rowFill, self.iconWidth, self.iconHeight, "input_toggleLoadByFillLevel", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleLoadByFillLevel", 1, true))
 
-	table.insert(
-		self.hudElements,
-		ADPullDownList:new(
-			self.posX + 2 * self.gapWidth + self.buttonWidth, --+ self.iconWidth * 5 + self.gapWidth*5
-			self.row2,
-			self.iconWidth * 6 + self.gapWidth * 5,
-			self.listItemHeight,
-			ADPullDownList.TYPE_FILLTYPE,
-			1
-		)
+	local fillList = ADPullDownList:new(
+		self.posX + 2 * self.gapWidth + self.buttonWidth, --+ self.iconWidth * 5 + self.gapWidth*5
+		rowFill,
+		self.iconWidth * 6 + self.gapWidth * 5,
+		self.listItemHeight,
+		ADPullDownList.TYPE_FILLTYPE,
+		1
 	)
-	table.insert(self.hudElements, HudHarvesterInfo:new(self.posX + 2 * self.gapWidth + self.buttonWidth, self.row2, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight))
+	fillList.order = orderFill
+	table.insert(self.hudElements, fillList)
+	table.insert(self.hudElements, HudHarvesterInfo:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowFill, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight))
+	if self.fpNextToolRow then
+		-- liste d'outils comme la ligne « Outil » (même type), pour le champ suivant ; dernière ligne, rang 4
+		local nextTool = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowNextTool, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+		nextTool.fpNext = true
+		nextTool.order = 4
+		table.insert(self.hudElements, nextTool)
+	end
 
 
 	-------- BASE ROW BUTTONS --------------
@@ -323,6 +357,11 @@ function AutoDriveHud:AddButton(primaryAction, secondaryAction, tertiaryAction, 
 	local posY = self.posY + (self.rowCurrent) * self.borderY + (self.rowCurrent - 1) * self.buttonHeight
 	--toolTip = string.sub(g_i18n:getText(toolTip), 4, string.len(g_i18n:getText(toolTip)))
 	table.insert(self.hudElements, ADHudButton:new(posX, posY, self.buttonWidth, self.buttonHeight, primaryAction, secondaryAction, tertiaryAction, quatenaryAction, fithAction, sixthAction, seventhAction, eightthAction, toolTip, state, visible))
+	if primaryAction == "input_startHelper" then
+		-- FarmPilot : en mode Autonome, le bouton Courseplay est caché et remplacé ici par « Parcours Autonome »
+		table.insert(self.hudElements, ADHudButton:new(posX, posY, self.buttonWidth, self.buttonHeight, "input_autonomousCourses", nil, nil, nil, nil, nil, nil, nil, "input_ADAutonomousCourses", 1, false))
+		self.fpAutonomousInSlot = true
+	end
 end
 
 function AutoDriveHud:AddSettingsButton(setting, toolTip, state, visible)
@@ -352,6 +391,12 @@ function AutoDriveHud:refreshHudElementsLayerSequence()
 	end
 end
 
+-- FarmPilot : la 4e ligne « Outil suivant » n'existe qu'en mode Autonome
+function AutoDriveHud.wantsFpNextToolRow(vehicle)
+	return vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule.getFpNextTool ~= nil
+		and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS
+end
+
 function AutoDriveHud:drawHud(vehicle)
 	local controlledVehicle = AutoDrive.getControlledVehicle()
 	if (vehicle ~= nil and vehicle == controlledVehicle) or AutoDrive.aiFrameOpen then
@@ -365,6 +410,10 @@ function AutoDriveHud:drawHud(vehicle)
 		end
 
 		if self.lastUIScale ~= uiScale then
+			self:createHudAt(self.posX, self.posY)
+		elseif self.hudElements ~= nil and AutoDrive.pullDownListExpanded == 0 and (self.fpNextToolRow == true) ~= AutoDriveHud.wantsFpNextToolRow(vehicle) then
+			-- passage en mode Autonome ou retour : une ligne de plus ou de moins
+			self.fpForceNextToolRow = AutoDriveHud.wantsFpNextToolRow(vehicle)
 			self:createHudAt(self.posX, self.posY)
 		end
 		self.lastUIScale = uiScale
@@ -947,6 +996,8 @@ function AutoDriveHud:getModeName(vehicle)
 		return g_i18n:getText("AD_MODE_LOAD")
 	elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_BGA then
 		return g_i18n:getText("AD_MODE_BGA")
+	elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
+		return g_i18n:getText("AD_MODE_AUTONOMOUS")
 	end
 
 	return ""
@@ -977,7 +1028,7 @@ end
 function AutoDriveHud:createMapHotspot(vehicle)
 	local _, textOffsetY = getNormalizedScreenValues(0, -5)
 	vehicle.ad.mapHotspot = AIHotspot.new()
-	vehicle.ad.mapHotspot:setAIHelperName("AD: " .. vehicle.ad.stateModule:getName())
+	vehicle.ad.mapHotspot:setAIHelperName("FP - " .. vehicle.ad.stateModule:getName())
 	vehicle.ad.mapHotspot:setVehicle(vehicle)
 	if vehicle.getOwnerFarmId ~= nil then
 		vehicle.ad.mapHotspot:setOwnerFarmId(vehicle:getOwnerFarmId())
@@ -1033,7 +1084,12 @@ function AutoDrive:ingameMapElementMouseEvent(superFunc, posX, posY, isDown, isU
                 if hotspotPosX and GuiUtils.checkOverlayOverlap(posX, posY, hotspotPosX, hotspotPosY, hotspot:getWidth(), hotspot:getHeight(), nil) then
                     local targetVehicle = AutoDrive.getADFocusVehicle()
                     if targetVehicle ~= nil and AutoDrive.showMarkersOnMainMenuMap() and AutoDrive.getSetting("switchToMarkersOnMap") then
-                        AutoDriveHudInputEventEvent:sendSecondMarkerEvent(targetVehicle, hotspot.markerID)
+                        if targetVehicle.ad ~= nil and targetVehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
+                            -- FarmPilot mode Autonome : clic droit sur la carte = champ suivant
+                            AutoDriveHudInputEventEvent:sendFpNextFieldEvent(targetVehicle, hotspot.markerID)
+                        else
+                            AutoDriveHudInputEventEvent:sendSecondMarkerEvent(targetVehicle, hotspot.markerID)
+                        end
                     end
                     break
                 end

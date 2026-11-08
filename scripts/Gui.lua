@@ -11,6 +11,7 @@ function AutoDrive:loadGUI()
 	AutoDrive.gui.ADNotificationsHistoryGui = ADNotificationsHistoryGui.new()
 	AutoDrive.gui.ADColorSettingsGui = ADColorSettingsGui.new()
 	AutoDrive.gui.ADScanConfirmationGui = ADScanConfirmationGui.new()
+	AutoDrive.gui.ADAutonomousCoursesGui = ADAutonomousCoursesGui.new()
 
     local count = 1
     local result = nil
@@ -58,6 +59,12 @@ function AutoDrive:loadGUI()
     end
 
 	result = g_gui:loadGui(AutoDrive.directory .. "gui/scanConfirmationGUI.xml", "ADScanConfirmationGui", AutoDrive.gui.ADScanConfirmationGui)
+    count = count + 1
+    if result == nil then
+        AutoDrive.debugMsg(nil, "AutoDrive:loadGUI failed count %d", count)
+    end
+
+	result = g_gui:loadGui(AutoDrive.directory .. "gui/autonomousCoursesGUI.xml", "ADAutonomousCoursesGui", AutoDrive.gui.ADAutonomousCoursesGui)
     count = count + 1
     if result == nil then
         AutoDrive.debugMsg(nil, "AutoDrive:loadGUI failed count %d", count)
@@ -150,6 +157,12 @@ end
 function AutoDrive.onOpenRoutesManager()
 	if not AutoDrive.gui.ADRoutesManagerGui.isOpen then
 		g_gui:showDialog("ADRoutesManagerGui")
+	end
+end
+
+function AutoDrive.onOpenAutonomousCourses()
+	if AutoDrive.gui.ADAutonomousCoursesGui ~= nil and not AutoDrive.gui.ADAutonomousCoursesGui.isOpen then
+		g_gui:showDialog("ADAutonomousCoursesGui")
 	end
 end
 

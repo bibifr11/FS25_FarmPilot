@@ -60,9 +60,27 @@ function ADHudIcon.getCorners()
     return ADHudIcon.corners or nil
 end
 
+-- (07/11) images des coins prêtes à être dessinées (sinon « renderOverlay called too soon » dans le log) ;
+-- en attendant, le cadre est dessiné sans coins arrondis
+function ADHudIcon.cornersReady(cs)
+    if cs.ready then
+        return true
+    end
+    if getIsOverlayReady ~= nil then
+        for _, k in ipairs({ "tl", "tr", "bl", "br" }) do
+            local ok, r = pcall(getIsOverlayReady, cs[k])
+            if ok and not r then
+                return false
+            end
+        end
+    end
+    cs.ready = true
+    return true
+end
+
 function ADHudIcon.drawRounded(ov, uiScale, roundTop, roundBottom, color, topLimit)
     local cs = ADHudIcon.getCorners()
-    if cs == nil or ov.x == nil or ov.width == nil then
+    if cs == nil or ov.x == nil or ov.width == nil or not ADHudIcon.cornersReady(cs) then
         return false
     end
     local r, g, b, a = unpack(color)

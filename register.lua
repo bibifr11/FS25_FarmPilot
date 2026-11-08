@@ -39,6 +39,7 @@ source(Utils.getFilename("scripts/Events/ExperimentalFeaturesEvent.lua", g_curre
 source(Utils.getFilename("scripts/Events/MessageEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/InputEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/HudInputEvent.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Events/AutonomousToolEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/DebugSettingsEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/StartStopEvent.lua", g_currentModDirectory))
 
@@ -90,6 +91,8 @@ source(Utils.getFilename("scripts/Manager/UnloadManager.lua", g_currentModDirect
 source(Utils.getFilename("scripts/Tasks/AbstractTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/DriveToDestinationTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/StopAndDisableADTask.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Tasks/DetachToolTask.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Tasks/FetchToolTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/UnloadAtDestinationTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/LoadAtDestinationTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/RestartADTask.lua", g_currentModDirectory))
@@ -136,6 +139,8 @@ source(Utils.getFilename("scripts/Modes/PickupAndDeliverMode.lua", g_currentModD
 source(Utils.getFilename("scripts/Modes/LoadMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/BGAMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderMode.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDirectory))
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))
@@ -150,6 +155,7 @@ source(Utils.getFilename("scripts/Gui/EnterDriverNameGUI.lua", g_currentModDirec
 source(Utils.getFilename("scripts/Gui/EnterGroupNameGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/EnterTargetNameGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/ScanConfirmationGUI.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Gui/AutonomousCoursesGUI.lua", g_currentModDirectory))
 
 source(Utils.getFilename("scripts/Gui/EnterDestinationFilterGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))

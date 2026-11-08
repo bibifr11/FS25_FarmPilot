@@ -5,6 +5,7 @@ AutoDriveHudInputEventEvent.TYPE_FILLTYPE = 3
 AutoDriveHudInputEventEvent.TYPE_TOGGLE_FILLTYPE_SELECTION = 4
 AutoDriveHudInputEventEvent.TYPE_TOGGLE_ALL_FILLTYPE_SELECTIONS = 5
 AutoDriveHudInputEventEvent.CHANGE_LOOP_COUNTER = 6
+AutoDriveHudInputEventEvent.TYPE_FP_NEXT_FIELD = 7 -- FarmPilot mode Autonome : champ suivant (0 = vide)
 
 
 
@@ -68,6 +69,10 @@ function AutoDriveHudInputEventEvent:run(connection)
             self.vehicle.ad.stateModule:toggleAllFillTypeSelections(self.value)
         end
 
+        if self.eventType == self.TYPE_FP_NEXT_FIELD then
+            self.vehicle.ad.stateModule:setFpNextField(self.value)
+        end
+
         if self.eventType == self.CHANGE_LOOP_COUNTER then
             local increment, fast, wheel = ADHudCounterButton.int_to_flags(self.value)
             self.vehicle.ad.stateModule:changeLoopCounter(increment, fast, wheel)
@@ -86,6 +91,13 @@ function AutoDriveHudInputEventEvent:sendSecondMarkerEvent(vehicle, markerId)
     if g_client ~= nil then
         -- Client have to send to server
         g_client:getServerConnection():sendEvent(AutoDriveHudInputEventEvent.new(vehicle, self.TYPE_SECOND_MARKER, markerId))
+    end
+end
+
+function AutoDriveHudInputEventEvent:sendFpNextFieldEvent(vehicle, markerId)
+    if g_client ~= nil then
+        -- Client have to send to server
+        g_client:getServerConnection():sendEvent(AutoDriveHudInputEventEvent.new(vehicle, self.TYPE_FP_NEXT_FIELD, math.max(0, markerId or 0)))
     end
 end
 

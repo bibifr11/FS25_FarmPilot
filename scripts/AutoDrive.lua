@@ -26,6 +26,7 @@ AutoDrive.MODE_DELIVERTO = 3
 AutoDrive.MODE_LOAD = 4
 AutoDrive.MODE_UNLOAD = 5
 AutoDrive.MODE_BGA = 6
+AutoDrive.MODE_AUTONOMOUS = 7 -- FarmPilot : Conduite puis parcours Courseplay de l'outil
 
 AutoDrive.DC_NONE = 0
 AutoDrive.DC_VEHICLEINFO = 1
@@ -171,6 +172,24 @@ function AutoDrive:restartMySavegame()
 	end
 end
 
+-- FarmPilot : pages d'aide dans le menu Aide du jeu (Échap > Aide, liste déroulante FarmPilot)
+function AutoDrive.loadHelpLine()
+	if g_helpLineManager == nil or g_helpLineManager.loadFromXML == nil then
+		return
+	end
+	local ok, err = pcall(function()
+		local filename = Utils.getFilename("gui/helpLine.xml", AutoDrive.directory)
+		local modName = Utils.getModNameAndBaseDirectory(filename)
+		if modName ~= nil and g_helpLineManager.getCategories ~= nil and g_helpLineManager:getCategories(modName) ~= nil then
+			return -- déjà chargé
+		end
+		g_helpLineManager:loadFromXML(filename)
+	end)
+	if not ok then
+		Logging.warning("[FP] Aide non chargée : %s", tostring(err))
+	end
+end
+
 function AutoDrive:loadMap(name)
 	Logging.info("[AD] Start register later loaded mods...")
 	-- second iteration to register AD to vehicle types which where loaded after AD
@@ -188,6 +207,7 @@ function AutoDrive:loadMap(name)
 	end
 
 	AutoDrive:loadGUI()
+	AutoDrive.loadHelpLine()
 
 	Logging.info("[AD] Map title: %s", g_currentMission.missionInfo.map.title)
 
@@ -238,6 +258,11 @@ function AutoDrive:loadMap(name)
 		ADUserDataManager:loadFromXml()
 	end
 
+	-- FarmPilot mode Autonome : choix champ/outil relus depuis la nouvelle partie
+	ADAutonomousManager.loaded = false
+	ADAutonomousManager.assignments = {}
+	ADAutonomousManager.cache = {}
+
 	AutoDrive.Hud:loadHud()
 
 	-- Save Configuration when saving savegame
@@ -262,6 +287,11 @@ function AutoDrive:loadMap(name)
 	FSBaseMission.removeVehicle = Utils.prependedFunction(FSBaseMission.removeVehicle, AutoDrive.preRemoveVehicle)
 
 	ConstructionScreen.draw = Utils.appendedFunction(ConstructionScreen.draw, AutoDrive.constructionScreenDraw)
+
+	-- FarmPilot mode Autonome : champ fini par l'ouvrier du jeu -> champ suivant
+	if AIJobFieldWork ~= nil and AIJobFieldWork.stop ~= nil then
+		AIJobFieldWork.stop = Utils.prependedFunction(AIJobFieldWork.stop, ADAutonomousManager.onAIJobFieldWorkStop)
+	end
 
     ADRoutesManager:load()
 
@@ -563,6 +593,7 @@ function AutoDrive:saveSavegame()
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil start")
 		AutoDrive.saveToXML()
 		ADUserDataManager:saveToXml()
+		ADAutonomousManager:saveToXml()
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil end")
 	end
 	--    Logging.info("[AD] AutoDrive:saveSavegame end")
@@ -702,6 +733,9 @@ function AutoDrive:update(dt)
 	if AutoDrive.isFirstRun == nil then
 		AutoDrive.isFirstRun = false
 		self:init()
+		if ADAutonomousManager ~= nil and ADAutonomousManager.linkCourseplayMouse ~= nil then
+			pcall(ADAutonomousManager.linkCourseplayMouse)
+		end
 		if AutoDrive.devAutoDriveInit ~= nil then
 			AutoDrive.devAutoDriveInit()
 		end

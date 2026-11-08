@@ -19,7 +19,7 @@ Changelog 1.0.0.0:
 - Smart driver: drives around obstacles on the road, wide corners at the real radius of the combination, narrow passages, intersections
 - Built-in (former AutoDrive Addon): weighbridge stop with weight display, turn light before turns and crossings, engine stop delay, only low beams on when the engine is stopped, leaves a silo that stays empty, rear implement selected at start
 - Existing AutoDrive users keep their road network and settings (AutoDrive files are reused). If AutoDrive is also active, FarmPilot disables it.
-Full changelog: https://github.com/bibifr/FS25_FarmPilot
+Full changelog: https://github.com/bibifr11/FS25_FarmPilot
 ]]>
 		</en>
 		<fr>
@@ -34,7 +34,7 @@ Changelog 1.0.0.0 :
 - Conducteur intelligent : contourne les obstacles sur la route, virages larges au vrai rayon de l'attelage, passages étroits, intersections
 - Intégré (ancien AutoDrive Addon) : arrêt sur pont-bascule avec affichage du poids, clignotant avant les virages et croisements, délai de coupure moteur, seuls les phares de base allumés moteur coupé, départ d'un silo qui reste vide, outil arrière sélectionné au lancement
 - Les joueurs d'AutoDrive gardent leur réseau et leurs réglages (les fichiers AutoDrive sont repris). Si AutoDrive est aussi activé, FarmPilot le désactive.
-Changelog complet : https://github.com/bibifr/FS25_FarmPilot
+Changelog complet : https://github.com/bibifr11/FS25_FarmPilot
 ]]>
 		</fr>
 		<de>
@@ -42,11 +42,11 @@ Changelog complet : https://github.com/bibifr/FS25_FarmPilot
 Basiert auf AutoDrive 3.0.1.4 von Stephan Schlosser und dem AutoDrive-Team (MIT-Lizenz).
 Enthält das frühere AutoDrive Addon (Brückenwaage, Blinker, Motor-Abschaltverzögerung, Licht bei Motorstopp, leeres Silo, Heckgerät).
 Bestehende AutoDrive-Netze und Einstellungen werden übernommen. Ist AutoDrive ebenfalls aktiv, deaktiviert FarmPilot es.
-Changelog: https://github.com/bibifr/FS25_FarmPilot
+Changelog: https://github.com/bibifr11/FS25_FarmPilot
 ]]>
 		</de>
 	</description>
-	<version>1.0.0.1</version>
+	<version>1.0.1.8</version>
 	<multiplayer supported="true" />
 	<iconFilename>icon_FarmPilot.dds</iconFilename>
 	<extraSourceFiles>
@@ -115,6 +115,7 @@ Changelog: https://github.com/bibifr/FS25_FarmPilot
 		<action name="ADCopySettings"/>
 		<action name="ADPasteSettings"/>
 		<action name="ADCreateFieldPoints"/>
+		<action name="ADAutonomousCourses"/>
 	</actions>
 
 	<inputBinding>
@@ -187,6 +188,9 @@ Changelog: https://github.com/bibifr/FS25_FarmPilot
 		</actionBinding>
 		<actionBinding action="ADCreateFieldPoints">
 			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lshift KEY_f" axisComponent="+" neutralInput="0" index="1" />
+		</actionBinding>
+		<actionBinding action="ADAutonomousCourses">
+			<binding device="KB_MOUSE_DEFAULT" input="KEY_lctrl KEY_lalt KEY_KP_5" axisComponent="+" neutralInput="0" index="1" />
 		</actionBinding>
 	</inputBinding>
 </modDesc>

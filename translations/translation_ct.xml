@@ -3,67 +3,67 @@
 	<translationContributors>泰迪藍</translationContributors>
 	<texts>
 		<text name="UNKNOWN"											text="未知" />
-		<text name="input_ADToggleHud"									text="AD: 切換 HUD" />
-		<text name="input_ADToggleHudExtension"						text="AD: 顯示 HUD 信息" />
-		<text name="input_ADToggleMouse"								text="AD: 切換滑鼠" />
-		<text name="input_ADEnDisable"									text="AD: 啟用/禁用" />
-		<text name="input_ADSilomode"									text="AD: 更改模式" />
-		<text name="input_ADPreviousMode"								text="AD: 上一模式" />
-		<text name="input_ADRecord"									text="AD: 記錄" />
-		<text name="input_ADRecord_Dual"								text="AD: 記錄雙向路線" />
-		<text name="input_ADRecord_SubPrio"							text="AD: 記錄次要路線" />
-		<text name="input_ADRecord_SubPrioDual"						text="AD: 記錄雙向次要路線" />
-		<text name="input_ADRecord_TwoWay"								text="AD: Record 2 routes simultanous 1 direction normal" />
-		<text name="input_ADRecord_Dual_TwoWay"						text="AD: Record 2 routes simultanous 2 way route" />
-		<text name="input_ADRecord_SubPrio_TwoWay"						text="AD: Record 2 routes simultanous 1 direction secondary route" />
-		<text name="input_ADRecord_SubPrioDual_TwoWay"					text="AD: Record 2 routes simultanous 2 way secondary route" />
-		<text name="input_ADSelectTarget"								text="AD: 選擇下一個目標" />
-		<text name="input_ADSelectPreviousTarget"						text="AD: 選擇上一個目標" />
-		<text name="input_AD_Speed_up"									text="AD: 提高速度" />
-		<text name="input_AD_Speed_down"								text="AD: 降低速度" />
-		<text name="input_AD_routes_manager"							text="AD: 打開路線管理器" />
-		<text name="input_AD_open_notification_history"				text="AD: 打開通知歷史" />
-		<text name="input_AD_open_colorSettings"						text="AD: 顏色分配" />
-		<text name="input_AD_continue"									text="AD: 繼續" />
-		<text name="input_ADSelectTargetUnload"						text="AD: 選擇下一個卸載" />
-		<text name="input_ADSelectPreviousTargetUnload"				text="AD: 選擇上一個卸載" />
-		<text name="input_ADActivateDebug"								text="AD: 編輯模式" />
-		<text name="input_ADDisplayMapPoints"							text="AD: 顯示航點" />
-		<text name="input_ADDebugSelectNeighbor"						text="AD: 選擇相鄰點" />
-		<text name="input_ADDebugChangeNeighbor"						text="AD: 選擇下一個相鄰點" />
-		<text name="input_ADDebugPreviousNeighbor"						text="AD: 選擇上一個相鄰點" />
-		<text name="input_ADDebugCreateConnection"						text="AD: 切換連接" />
-		<text name="input_ADDebugToggleConnectionInverted"				text="AD: 切換反轉之間的連接" />
-		<text name="input_ADDebugCreateMapMarker"						text="AD: 創建/編輯目標" />
-		<text name="input_ADRenameMapMarker"							text="AD: 編輯選定的目標" />
-		<text name="input_ADDebugDeleteWayPoint"						text="AD: 刪除航點" />
-		<text name="input_ADDebugDeleteDestination"					text="AD: 刪除最近的目標" />
-		<text name="input_ADSelectNextFillType"						text="AD: 選擇下一個填充類型" />
-		<text name="input_ADSelectPreviousFillType"					text="AD: 選擇上一個填充類型" />
-		<text name="input_ADOpenGUI"									text="AD: 打開圖形用戶界面" />
-		<text name="input_ADCallDriver"								text="AD: 呼叫司機" />
-		<text name="input_ADGoToVehicle"								text="AD: 前往到達的車輛" />
-		<text name="input_ADNameDriver"								text="AD: 指定司機姓名" />
-		<text name="input_ADSetDestinationFilter"						text="AD: 目的地篩選器" />
-		<text name="input_AD_FieldSpeed_up"							text="AD: 提高田間速度" />
-		<text name="input_AD_FieldSpeed_down"							text="AD: 降低田間速度" />
-		<text name="input_ADIncLoopCounter"							text="AD: 增加循環計數器" />
-		<text name="input_ADDecLoopCounter"							text="AD: 減少循環計數器" />
-		<text name="input_ADbunkerUnloadType"							text="AD: 卸載到拖車或 BGA" />
-		<text name="input_ADParkVehicle"								text="AD: 停放車輛" />
-		<text name="input_ADSetParkDestination"						text="AD: 指定第一個停車目的地" />
-		<text name="input_ADRefuelVehicle"								text="AD: 車輛加油" />
-		<text name="input_ADRepairVehicle"								text="AD: 修理車輛" />
-		<text name="input_ADSwapTargets"								text="AD: 交換目標" />
-		<text name="input_ADStartHelper"								text="AD: 交接給 AI/CP" />
-		<text name="input_ADToggleUsedHelper"							text="AD: 切換 AI/CP" />
-		<text name="input_AD_devAction"								text="AD: 開發人員操作" />
-		<text name="input_ADToggleAutomaticPickupTarget"				text="AD: 切換自動拾取目標" />
-		<text name="input_ADToggleAutomaticUnloadTarget"				text="AD: 切換自動卸載目標" />
-		<text name="input_ADToggleLoadByFillLevel"						text="AD: Toggle loading by fill level" />
-		<text name="input_ADCopySettings"								text="AD: Copy settings" />
-		<text name="input_ADPasteSettings"								text="AD: Paste settings" />
-		<text name="input_ADCreateFieldPoints"							text="AD: Create Field Points" />
+		<text name="input_ADToggleHud"									text="FP - 切換 HUD" />
+		<text name="input_ADToggleHudExtension"						text="FP - 顯示 HUD 信息" />
+		<text name="input_ADToggleMouse"								text="FP - 切換滑鼠" />
+		<text name="input_ADEnDisable"									text="FP - 啟用/禁用" />
+		<text name="input_ADSilomode"									text="FP - 更改模式" />
+		<text name="input_ADPreviousMode"								text="FP - 上一模式" />
+		<text name="input_ADRecord"									text="FP - 記錄" />
+		<text name="input_ADRecord_Dual"								text="FP - 記錄雙向路線" />
+		<text name="input_ADRecord_SubPrio"							text="FP - 記錄次要路線" />
+		<text name="input_ADRecord_SubPrioDual"						text="FP - 記錄雙向次要路線" />
+		<text name="input_ADRecord_TwoWay"								text="FP - Record 2 routes simultanous 1 direction normal" />
+		<text name="input_ADRecord_Dual_TwoWay"						text="FP - Record 2 routes simultanous 2 way route" />
+		<text name="input_ADRecord_SubPrio_TwoWay"						text="FP - Record 2 routes simultanous 1 direction secondary route" />
+		<text name="input_ADRecord_SubPrioDual_TwoWay"					text="FP - Record 2 routes simultanous 2 way secondary route" />
+		<text name="input_ADSelectTarget"								text="FP - 選擇下一個目標" />
+		<text name="input_ADSelectPreviousTarget"						text="FP - 選擇上一個目標" />
+		<text name="input_AD_Speed_up"									text="FP - 提高速度" />
+		<text name="input_AD_Speed_down"								text="FP - 降低速度" />
+		<text name="input_AD_routes_manager"							text="FP - 打開路線管理器" />
+		<text name="input_AD_open_notification_history"				text="FP - 打開通知歷史" />
+		<text name="input_AD_open_colorSettings"						text="FP - 顏色分配" />
+		<text name="input_AD_continue"									text="FP - 繼續" />
+		<text name="input_ADSelectTargetUnload"						text="FP - 選擇下一個卸載" />
+		<text name="input_ADSelectPreviousTargetUnload"				text="FP - 選擇上一個卸載" />
+		<text name="input_ADActivateDebug"								text="FP - 編輯模式" />
+		<text name="input_ADDisplayMapPoints"							text="FP - 顯示航點" />
+		<text name="input_ADDebugSelectNeighbor"						text="FP - 選擇相鄰點" />
+		<text name="input_ADDebugChangeNeighbor"						text="FP - 選擇下一個相鄰點" />
+		<text name="input_ADDebugPreviousNeighbor"						text="FP - 選擇上一個相鄰點" />
+		<text name="input_ADDebugCreateConnection"						text="FP - 切換連接" />
+		<text name="input_ADDebugToggleConnectionInverted"				text="FP - 切換反轉之間的連接" />
+		<text name="input_ADDebugCreateMapMarker"						text="FP - 創建/編輯目標" />
+		<text name="input_ADRenameMapMarker"							text="FP - 編輯選定的目標" />
+		<text name="input_ADDebugDeleteWayPoint"						text="FP - 刪除航點" />
+		<text name="input_ADDebugDeleteDestination"					text="FP - 刪除最近的目標" />
+		<text name="input_ADSelectNextFillType"						text="FP - 選擇下一個填充類型" />
+		<text name="input_ADSelectPreviousFillType"					text="FP - 選擇上一個填充類型" />
+		<text name="input_ADOpenGUI"									text="FP - 打開圖形用戶界面" />
+		<text name="input_ADCallDriver"								text="FP - 呼叫司機" />
+		<text name="input_ADGoToVehicle"								text="FP - 前往到達的車輛" />
+		<text name="input_ADNameDriver"								text="FP - 指定司機姓名" />
+		<text name="input_ADSetDestinationFilter"						text="FP - 目的地篩選器" />
+		<text name="input_AD_FieldSpeed_up"							text="FP - 提高田間速度" />
+		<text name="input_AD_FieldSpeed_down"							text="FP - 降低田間速度" />
+		<text name="input_ADIncLoopCounter"							text="FP - 增加循環計數器" />
+		<text name="input_ADDecLoopCounter"							text="FP - 減少循環計數器" />
+		<text name="input_ADbunkerUnloadType"							text="FP - 卸載到拖車或 BGA" />
+		<text name="input_ADParkVehicle"								text="FP - 停放車輛" />
+		<text name="input_ADSetParkDestination"						text="FP - 指定第一個停車目的地" />
+		<text name="input_ADRefuelVehicle"								text="FP - 車輛加油" />
+		<text name="input_ADRepairVehicle"								text="FP - 修理車輛" />
+		<text name="input_ADSwapTargets"								text="FP - 交換目標" />
+		<text name="input_ADStartHelper"								text="FP - 交接給 AI/CP" />
+		<text name="input_ADToggleUsedHelper"							text="FP - 切換 AI/CP" />
+		<text name="input_AD_devAction"								text="FP - 開發人員操作" />
+		<text name="input_ADToggleAutomaticPickupTarget"				text="FP - 切換自動拾取目標" />
+		<text name="input_ADToggleAutomaticUnloadTarget"				text="FP - 切換自動卸載目標" />
+		<text name="input_ADToggleLoadByFillLevel"						text="FP - Toggle loading by fill level" />
+		<text name="input_ADCopySettings"								text="FP - Copy settings" />
+		<text name="input_ADPasteSettings"								text="FP - Paste settings" />
+		<text name="input_ADCreateFieldPoints"							text="FP - Create Field Points" />
 		<text name="hud_avoidFruit"									text="AD: 避開作物" />
 		<text name="hud_startHelper"									text="AD: 在目的地開始 AI/CP" />
 		<text name="AD_parkVehicle_noPosSet"							text="未指定停車目的地。" />
@@ -436,6 +436,10 @@
 		<text name="gui_ad_trafficYieldDriveSide_left" text="Left" />
 		<text name="gui_ad_fieldParkWhileWaiting" text="Wait inside the field" />
 		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="An unloader waiting for a harvester call drives into the field and parks on free ground without crop, away from the roads, so it does not block the way" />
+		<text name="gui_ad_autonomousNoCp" text="Autonomous without Courseplay" />
+		<text name="gui_ad_autonomousNoCp_tooltip" text="What Autonomous mode does when Courseplay is not installed: the driver stops and waits, or the base game worker takes the field (classic mode)" />
+		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
+		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
 		<text name="AD_task_park_in_field" text="Parking in the field" />
 		<text name="AD_task_hv_chopper" text="the forage harvester" />
 		<text name="AD_task_hv_combine" text="the combine" />
@@ -503,5 +507,133 @@
 		<text name="adAddon_load" text="Load"/>
 		<text name="adAddon_totalWeight" text="Total weight"/>
 		<text name="adAddon_player" text="Player"/>
+			<!-- FarmPilot mode Autonome -->
+		<text name="AD_MODE_AUTONOMOUS" text="Autonomous" />
+		<text name="input_ADAutonomousCourses" text="FP - Autonomous courses (choice per field)" />
+		<text name="AD_autonomous_start" text='Courseplay course "%s" started on field %s' />
+		<text name="AD_autonomous_none" text="no Courseplay course of %s m on field %s, waiting" />
+		<text name="AD_autonomous_several" text="%s courses of %s m on field %s, pick one in the Autonomous courses window (Ctrl+Alt+Numpad 5), waiting" />
+		<text name="AD_autonomous_noField" text="no field here, waiting" />
+		<text name="AD_autonomous_noWidth" text="tool width unknown, waiting" />
+		<text name="AD_autonomous_noTool" text="Autonomous mode: no work tool attached" />
+		<text name="AD_autonomous_aiNoCp" text="Courseplay not found: base game worker started on field %s" />
+		<text name="AD_autonomous_aiFailed" text="the base game worker could not start, waiting" />
+		<text name="AD_autonomous_noCp" text="Courseplay not found on this vehicle, waiting" />
+		<text name="AD_autonomous_cpFailed" text='Courseplay could not start with "%s", waiting' />
+		<text name="AD_autonomous_nextField" text="Next field: %s" />
+		<text name="AD_autonomous_nextFieldNone" text="Next field: none" />
+		<text name="AD_autonomous_nextFieldGo" text="field finished, driving to the next field « %s »" />
+		<text name="AD_task_autonomous_detach" text="Detach the implement" />
+		<text name="AD_task_autonomous_fetch" text="Attach the implement" />
+		<text name="AD_autonomous_dropGo" text="field finished, the implement goes to its place « %s »" />
+		<text name="AD_autonomous_dropDone" text="implement detached, the tractor goes to its place « %s »" />
+		<text name="AD_autonomous_dropFailed" text="the implement could not be detached, stopping here" />
+		<text name="AD_autonomous_dropSeveral" text="several implements attached: no detaching, parking as before" />
+		<text name="AD_autonomous_dropNoToolPark" text="the implement has no park position: parking as before" />
+		<text name="AD_autonomous_dropNoTractorPark" text="the tractor has no park position (other than the implement's): implement kept, parking as before" />
+		<text name="AD_autonomous_tool" text="Implement: %s" />
+		<text name="AD_autonomous_toolNone" text="Implement: the attached one" />
+		<text name="AD_autonomous_toolListNone" text="The attached one" />
+		<text name="AD_autonomous_toolListEntry" text="%s · %d m" />
+		<text name="AD_autonomous_nextTool" text="Next implement: %s" />
+		<text name="AD_autonomous_nextToolNone" text="Next implement: the same" />
+		<text name="AD_autonomous_nextToolListNone" text="The same" />
+		<text name="AD_autonomous_swapGo" text="field finished: the implement goes to its place « %s », then « %s » is attached for the next field « %s »" />
+		<text name="AD_autonomous_swapSeveral" text="next implement « %s »: several implements attached, no implement change, stopping and waiting" />
+		<text name="AD_autonomous_swapNoToolPark" text="next implement « %s »: the attached implement has no park position, stopping and waiting" />
+		<text name="AD_autonomous_fetchGo" text="fetching the implement « %s »" />
+		<text name="AD_autonomous_fetchDone" text="implement « %s » attached, driving to the field" />
+		<text name="AD_autonomous_fetchFailed" text="the implement « %s » could not be attached, stopping" />
+		<text name="AD_autonomous_fetchNoPath" text="no path to the front of the implement « %s »: put the tractor in front of it, in line with it, and start again" />
+		<text name="AD_autonomous_fetchMissed" text="attaching the implement « %s » failed, stopped in front of it" />
+		<text name="AD_autonomous_fetchBusy" text="the implement « %s » is attached to another vehicle" />
+		<text name="AD_autonomous_fetchOther" text="another implement is attached: detach it to fetch « %s », or choose « The attached one » on the « Implement » line" />
+		<text name="AD_autonomous_fetchNoJoint" text="the implement « %s » does not fit the rear hitch of this tractor (or the rear hitch is taken)" />
+		<text name="AD_fpFn_plow" text="Plough" />
+		<text name="AD_fpFn_cultivator" text="Cultivator" />
+		<text name="AD_fpFn_discHarrow" text="Disc harrow" />
+		<text name="AD_fpFn_powerHarrow" text="Power harrow" />
+		<text name="AD_fpFn_subsoiler" text="Subsoiler" />
+		<text name="AD_fpFn_spader" text="Spader" />
+		<text name="AD_fpFn_roller" text="Roller" />
+		<text name="AD_fpFn_weeder" text="Weeder" />
+		<text name="AD_fpFn_mulcher" text="Mulcher" />
+		<text name="AD_fpFn_stonePicker" text="Stone picker" />
+		<text name="AD_fpFn_seeder" text="Seeder" />
+		<text name="AD_fpFn_planter" text="Planter" />
+		<text name="AD_fpFn_fertilizerSpreader" text="Fertilizer spreader" />
+		<text name="AD_fpFn_sprayer" text="Sprayer" />
+		<text name="AD_fpFn_slurryTank" text="Slurry tanker" />
+		<text name="AD_fpFn_manureSpreader" text="Manure spreader" />
+		<text name="AD_fpFn_mower" text="Mower" />
+		<text name="AD_fpFn_tedder" text="Tedder" />
+		<text name="AD_fpFn_windrower" text="Windrower" />
+		<text name="AD_fpFn_baler" text="Baler" />
+		<text name="AD_fpFn_balerSquare" text="Square baler" />
+		<text name="AD_fpFn_balerRound" text="Round baler" />
+		<text name="gui_ad_autonomous_title" text="Autonomous courses" />
+		<text name="gui_ad_autonomous_field" text="Field %s" />
+		<text name="gui_ad_autonomous_fields" text="Fields %s" />
+		<text name="gui_ad_autonomous_autoOne" text="Automatic: %s" />
+		<text name="gui_ad_autonomous_autoSeveral" text="Automatic (%s courses: stop)" />
+		<text name="gui_ad_autonomous_tool" text="Tool: %s, width %s m" />
+		<text name="gui_ad_autonomous_noCourse" text="No saved Courseplay course of %s m." />
+		<text name="gui_ad_autonomous_noVehicle" text="Enter the vehicle with its tool attached." />
+		<text name="gui_ad_autonomous_noCp" text="Courseplay not found on this vehicle." />
+		<text name="gui_ad_autonomous_noWidth" text="Tool width unknown: attach the tool." />
+		<text name="gui_ad_autonomous_change" text="Change" />
+		<text name="gui_ad_autonomous_auto" text="Automatic" />
+			<!-- FarmPilot aide (menu Aide du jeu) -->
+		<text name="fp_help_category" text="FarmPilot" />
+		<text name="fp_help_start_title" text="Getting started" />
+		<text name="fp_help_start_1_title" text="The HUD" />
+		<text name="fp_help_start_1_text" text="Alt + Numpad 0 shows or hides the FarmPilot HUD. Middle mouse button: shows the cursor to click in the HUD. The 1st list is the destination; the lists below (unload, fill type) appear depending on the mode." />
+		<text name="fp_help_start_2_title" text="Main buttons" />
+		<text name="fp_help_start_2_text" text="Start/Stop starts or stops the driver. Mode button: left click = next mode, right click = previous mode. Continue: restarts a waiting driver. Park: sends the vehicle to its park position (right click: sets that position)." />
+		<text name="fp_help_start_3_title" text="Shortcuts" />
+		<text name="fp_help_start_3_text" text="Ctrl + Alt + Right / Left arrow: next / previous destination. Ctrl + Alt + Numpad 0: settings. Ctrl + Alt + M: message history. Shift + C / Shift + V: copy / paste settings from one vehicle to another. All keys can be changed in Options &gt; Controls." />
+		<text name="fp_help_driveto_title" text="Drive mode" />
+		<text name="fp_help_driveto_1_title" text="How it works" />
+		<text name="fp_help_driveto_1_text" text="Pick a destination, then Start. The vehicle follows the road network to the destination, then stops." />
+		<text name="fp_help_driveto_2_title" text="With Courseplay" />
+		<text name="fp_help_driveto_2_text" text="If the HUD button « Start AI/CP at destination » is on (right click: Courseplay, AIVE or game helper), that helper takes over on arrival, with the course already loaded in the vehicle. To let FarmPilot pick the Courseplay course itself, use the Autonomous mode." />
+		<text name="fp_help_autonomous_title" text="Autonomous mode" />
+		<text name="fp_help_autonomous_1_title" text="How it works" />
+		<text name="fp_help_autonomous_1_text" text="Like Drive: pick the field (destination) and start. On arrival, FarmPilot takes the saved Courseplay course that has exactly the width of the attached tool, loads it and starts Courseplay at the first waypoint of the course. A work tool must be attached (tillage, seeder, sprayer, spreader, mower, baler...): with only a tipper, a flatbed or a combine, the mode does not start." />
+		<text name="fp_help_autonomous_2_title" text="Course choice" />
+		<text name="fp_help_autonomous_2_text" text="Only courses saved in Courseplay (Courses menu, all folders) are used, on the arrival field or its field group (AutoSwitch merged fields when AutoSwitch is installed). The width is compared to 10 cm, like the Courseplay settings." />
+		<text name="fp_help_autonomous_3_title" text="Memory" />
+		<text name="fp_help_autonomous_3_text" text="The course used is remembered for this field and this tool, in the savegame. The next year, with the same tool and width, it is used again directly, even if several courses would fit." />
+		<text name="fp_help_autonomous_4_title" text="Stop and wait" />
+		<text name="fp_help_autonomous_4_text" text="If no course has the right width, or several fit without a remembered choice, the driver stops and waits; a message gives the reason. Pick the course in the Autonomous courses window, then start again. Without Courseplay, depending on the setting « Autonomous without Courseplay », the driver waits or the base game worker takes the field (classic mode)." />
+		<text name="fp_help_autonomous_5_title" text="Autonomous courses window" />
+		<text name="fp_help_autonomous_5_text" text="HUD button (in Autonomous mode, in place of the Courseplay button) or Ctrl + Alt + Numpad 5, in the vehicle with the tool attached. One line per field or field group. Change: goes to the next course, then back to Automatic. Automatic: clears the choice. Double click = Change." />
+		<text name="fp_help_autonomous_6_title" text="Next field" />
+		<text name="fp_help_autonomous_6_text" text="In Autonomous mode, the 3rd HUD line is the next field (empty by default). Pick a field in the list, or right-click it on the map; right-click the line to clear it. When the current field is finished, the next field moves to the 1st line, the « Next field » line is cleared and the driver goes to work it. If it is empty, the driver goes to park as before." />
+		<text name="fp_help_autonomous_7_title" text="Implement parked at its place, implement to fetch" />
+		<text name="fp_help_autonomous_7_text" text="End of the work without a next field: if the implement has its park position and the tractor its own, the driver drops the implement at its place, disconnects hoses and PTO (manual attach mod), detaches it, then parks the tractor. Park positions are set as usual (Ctrl + click on P in editor mode: implement selected for the implement's place, no implement selected for the tractor's). Weights are ignored; with several implements attached, it parks as before. The 2nd HUD line (« Implement ») is the implement to fetch before the field, shown by its function and width (farm implements, detached, that fit the tractor's rear hitch). At start, the driver follows your routes to the implement's place (or to the network point in front of it), reverses, attaches it, connects hoses and PTO, lifts it and drives to the field. « The attached one » (or right-click the line): nothing to fetch." />
+		<text name="fp_help_autonomous_8_title" text="Next implement" />
+		<text name="fp_help_autonomous_8_text" text="In Autonomous mode, the 4th HUD line is the implement for the next field (« The same » by default; right-click the line to go back to it). It is only used with a next field. When the current field is finished, the driver drops the attached implement at its park position (as at the end of the work), fetches the next implement (by your roads, reversing, attaching, hoses and PTO), then drives to the next field. The next implement then moves to the « Implement » line and the « Next implement » line goes back to « The same ». If the next implement is used by another vehicle or does not fit this tractor, the attached implement is dropped at its place anyway, then the driver stops there and a message gives the reason: restart when the next implement is free. If the attached implement has no park position or several implements are attached, nothing changes: the driver stops at the end of the field with a message." />
+		<text name="fp_help_deliverto_title" text="Deliver mode" />
+		<text name="fp_help_deliverto_1_title" text="How it works" />
+		<text name="fp_help_deliverto_1_text" text="Pick the unload destination, then Start. The vehicle drives there, unloads its trailer, parks if a park position is set, otherwise stops." />
+		<text name="fp_help_pickupdeliver_title" text="Pick up and deliver mode" />
+		<text name="fp_help_pickupdeliver_1_title" text="How it works" />
+		<text name="fp_help_pickupdeliver_1_text" text="1st list: loading point; 2nd list: unloading point; 3rd list: fill type to load. The vehicle loads, delivers, then starts again." />
+		<text name="fp_help_pickupdeliver_2_title" text="Loops" />
+		<text name="fp_help_pickupdeliver_2_text" text="HUD loop counter: 0 = endless, otherwise number of rounds before stopping. The buttons left of the lists pick the best loading or selling point automatically." />
+		<text name="fp_help_load_title" text="Load mode" />
+		<text name="fp_help_load_1_title" text="How it works" />
+		<text name="fp_help_load_1_text" text="The vehicle loads at the point of the 2nd list (fill type of the 3rd list), then drives to the point of the 1st list and stops. Handy to fill a seeder or sprayer before going to the field." />
+		<text name="fp_help_unloader_title" text="Combine unloader mode" />
+		<text name="fp_help_unloader_1_title" text="How it works" />
+		<text name="fp_help_unloader_1_text" text="The vehicle waits near the field (1st list), comes under the pipe when the combine or forage harvester calls, follows the machine while unloading, then delivers to the point of the 2nd list and comes back." />
+		<text name="fp_help_unloader_2_title" text="Settings" />
+		<text name="fp_help_unloader_2_text" text="Ctrl + Alt + Numpad 0 &gt; Combine unloading: fill level before leaving, side, distances and several trailers per machine." />
+		<text name="fp_help_editor_title" text="Routes and destinations" />
+		<text name="fp_help_editor_1_title" text="Editor" />
+		<text name="fp_help_editor_1_text" text="HUD editor button: record a route while driving, connect points, create, rename or delete a destination." />
+		<text name="fp_help_editor_2_title" text="Tools" />
+		<text name="fp_help_editor_2_text" text="Ctrl + Alt + Numpad 1: routes manager (export or import the road network). Ctrl + Shift + F: create field points." />
 	</texts>
 </l10n>

@@ -2,7 +2,7 @@
 -- AutoDrive allume le clignotant seulement quand l'angle du trajet juste devant dépasse son réglage
 -- « Clignotant automatique » : la distance regardée dépend de la vitesse, donc il clignote trop tard.
 -- Ici le trajet est regardé sur une distance fixe (réglage « Distance clignotant », 50 m par défaut),
--- le clignotant s'allume du côté du virage et s'éteint une fois le virage passé.
+-- le clignotant s'allume du côté du virage et s'éteint une fois le virage passé et le tracteur de nouveau droit.
 -- Le réglage est ajouté à ceux d'AutoDrive (sauvegarde et multijoueur par AutoDrive) et affiché
 -- dans sa page de réglages, juste sous « Clignotant automatique ».
 
@@ -11,7 +11,11 @@ ADAddonTurnLights = {}
 ADAddonTurnLights.DISTANCES = { 20, 30, 40, 50, 60, 70, 80, 100 }
 ADAddonTurnLights.DEFAULT_INDEX = 4     -- 50 m
 ADAddonTurnLights.KEEP_ANGLE = 15       -- degrés de virage encore devant qui gardent le clignotant
-ADAddonTurnLights.OFF_DELAY = 1000      -- ms sans virage devant avant d'éteindre (comme AutoDrive)
+-- (07/11, demande Fabien) après le virage, le clignotant reste allumé le temps de remettre droit :
+-- éteint quand le tracteur est de nouveau dans l'axe de la route (STRAIGHT_ANGLE) après AFTER_MIN m, au plus AFTER_MAX m
+ADAddonTurnLights.AFTER_MIN = 8         -- m roulés depuis la fin du virage devant (environ 5 m après la sortie du virage)
+ADAddonTurnLights.AFTER_MAX = 30        -- m au plus
+ADAddonTurnLights.STRAIGHT_ANGLE = 6    -- degrés entre le tracteur et la route : « droit »
 
 local texts = {}
 for i, v in ipairs(ADAddonTurnLights.DISTANCES) do
@@ -88,6 +92,29 @@ local function currentState(vehicle)
     return spec ~= nil and spec.turnLightState or nil
 end
 
+-- écart en degrés entre le tracteur et le tronçon de route qu'il suit (marche avant comme arrière)
+function ADAddonTurnLights.headingError(module)
+    local wayPoints = module.wayPoints
+    local index = module:getCurrentWayPointIndex()
+    if wayPoints == nil or index == nil or wayPoints[index] == nil then
+        return 0
+    end
+    local node = module.vehicle.components[1].node
+    local x, _, z = getWorldTranslation(node)
+    local dx, _, dz = localDirectionToWorld(node, 0, 0, 1)
+    local b = wayPoints[index]
+    local a = wayPoints[index - 1] or { x = x, z = z }
+    local rx, rz = b.x - a.x, b.z - a.z
+    if rx * rx + rz * rz < 0.01 or dx * dx + dz * dz < 0.0001 then
+        return 0
+    end
+    local angle = math.abs(ADAddonTurnLights.autoDrive.angleBetween({ x = rx, z = rz }, { x = dx, z = dz }))
+    if angle > 90 then
+        angle = 180 - angle
+    end
+    return angle
+end
+
 function ADAddonTurnLights.update(module, minAngle, dt)
     local vehicle = module.vehicle
     local maxDistance = ADAddonTurnLights.autoDrive.getSetting("blinkDistance") or 50
@@ -97,6 +124,7 @@ function ADAddonTurnLights.update(module, minAngle, dt)
     end
     if direction ~= 0 then
         module.adAddonBlinkClear = 0
+        module.adAddonBlinkClearX = nil
         local wanted = direction > 0 and Lights.TURNLIGHT_LEFT or Lights.TURNLIGHT_RIGHT
         local before = currentState(vehicle)
         if module.adAddonBlinkDir ~= direction then
@@ -118,11 +146,25 @@ function ADAddonTurnLights.update(module, minAngle, dt)
             log(vehicle, "le jeu refuse le clignotant (etat %s apres la demande %s)", tostring(after), tostring(wanted))
         end
     elseif (module.adAddonBlinkDir or 0) ~= 0 then
+        -- plus de virage devant : gardé allumé jusqu'à ce que le tracteur soit de nouveau droit
+        local x, _, z = getWorldTranslation(vehicle.components[1].node)
+        if module.adAddonBlinkClearX == nil then
+            module.adAddonBlinkClearX, module.adAddonBlinkClearZ = x, z
+        end
         module.adAddonBlinkClear = (module.adAddonBlinkClear or 0) + dt
-        if module.adAddonBlinkClear >= ADAddonTurnLights.OFF_DELAY then
+        local moved = MathUtil.vector2Length(x - module.adAddonBlinkClearX, z - module.adAddonBlinkClearZ)
+        local err = ADAddonTurnLights.headingError(module)
+        if (moved >= ADAddonTurnLights.AFTER_MIN and err <= ADAddonTurnLights.STRAIGHT_ANGLE) or moved >= ADAddonTurnLights.AFTER_MAX then
             module.adAddonBlinkDir = 0
+            module.adAddonBlinkClearX = nil
             vehicle:setTurnLightState(Lights.TURNLIGHT_OFF)
-            log(vehicle, "virage passe : clignotant eteint")
+            log(vehicle, "virage passe, tracteur droit (%.0f m apres, ecart %.0f deg) : clignotant eteint", moved, err)
+        else
+            -- un autre script a pu l'éteindre entre-temps (le jeu en redressant, un autre mod) : remis
+            local wanted = module.adAddonBlinkDir > 0 and Lights.TURNLIGHT_LEFT or Lights.TURNLIGHT_RIGHT
+            if currentState(vehicle) ~= wanted then
+                vehicle:setTurnLightState(wanted, true)
+            end
         end
     end
 end
@@ -140,6 +182,7 @@ function ADAddonTurnLights.install(autoDrive)
     pathModule.reset = function(self, ...)
         self.adAddonBlinkDir = 0
         self.adAddonBlinkClear = 0
+        self.adAddonBlinkClearX = nil
         return originalReset(self, ...)
     end
 

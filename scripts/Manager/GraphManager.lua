@@ -17,6 +17,9 @@ end
 function ADGraphManager:markChanges()
     self.changes = true
     self.preparedWayPoints = false
+    if ADCornerModule ~= nil then
+        ADCornerModule.endCache = {} -- routes avoiding a too tight end: searched again
+    end
     if ADIntersectionModule ~= nil then
         ADIntersectionModule.clearCache()
     end
@@ -179,6 +182,15 @@ function ADGraphManager:pathFromTo(startWaypointId, targetWaypointId, preferredN
                 preferredNeighbors = {}
             end
             wp = ADPathCalculator:GetPath(startWaypointId, targetWaypointId, preferredNeighbors, vehicle)
+            -- (07/11) a destination behind a turn too tight for the train: another way in (ADCornerModule:avoidTightEnd)
+            if vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.cornerModule ~= nil and vehicle.ad.cornerModule.avoidTightEnd ~= nil and wp ~= nil and #wp >= 3 then
+                local ok, other = pcall(vehicle.ad.cornerModule.avoidTightEnd, vehicle.ad.cornerModule, wp, startWaypointId, targetWaypointId, preferredNeighbors)
+                if ok and other ~= nil then
+                    wp = other
+                elseif not ok then
+                    print(string.format("[AD-Virage] end of the route: error %s", tostring(other)))
+                end
+            end
         end
     end
     return wp
@@ -1115,6 +1127,9 @@ function ADGraphManager:checkResetVehicleDestinations(destination)
                 if secondMarker ~= nil then
                     vehicle.ad.stateModule:setSecondMarker(1)
                 end
+            end
+            if vehicle.ad.stateModule.getFpNextFieldId ~= nil and destination == vehicle.ad.stateModule:getFpNextFieldId() then
+                vehicle.ad.stateModule:setFpNextField(nil)
             end
             if destination == vehicle.ad.stateModule:getCurrentDestinationId() then
                 local marker = ADGraphManager:getMapMarkerById(1)

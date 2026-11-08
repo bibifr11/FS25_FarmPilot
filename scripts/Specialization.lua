@@ -140,6 +140,9 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#mode", "mode")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#firstMarker", "firstMarker")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#secondMarker", "secondMarker")
+    schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fpNextField", "FarmPilot Autonome: next field")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpTool", "FarmPilot Autonome: tool to attach (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpNextTool", "FarmPilot Autonome: tool for the next field (unique id)")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#selectedFillTypes", "selectedFillTypes")
     schemaSavegame:register(XMLValueType.BOOL, "vehicles.vehicle(?).AutoDrive#loadByFillLevel", "loadByFillLevel")
@@ -215,6 +218,7 @@ function AutoDrive:onLoad(savegame)
     self.ad.modes[AutoDrive.MODE_LOAD] = LoadMode:new(self)
     self.ad.modes[AutoDrive.MODE_BGA] = BGAMode:new(self)
     self.ad.modes[AutoDrive.MODE_UNLOAD] = CombineUnloaderMode:new(self)
+    self.ad.modes[AutoDrive.MODE_AUTONOMOUS] = AutonomousMode:new(self)
 
     self.ad.onRouteToPark = false
     self.ad.onRouteToRefuel = false
@@ -911,6 +915,8 @@ function AutoDrive:onDrawEditorMode()
     end
 
     local outPointsSeen = {}
+    local lineHeightState = AutoDrive.getSettingState("lineHeight")   -- (perf 07/11) lu une fois par image
+    local lineHeightValue = AutoDrive.getSetting("lineHeight")
     for _, point in pairs(self:getWayPointsInRange(0, maxDistance)) do
         local x = point.x
         local y = point.y
@@ -921,7 +927,7 @@ function AutoDrive:onDrawEditorMode()
         if isInExtendedEditorMode then
             arrowPosition = DrawingManager.arrows.position.middle
             if AutoDrive.enableSphere == true then
-                if (AutoDrive.mouseIsAtPos(point, 0.01) or point.isSelected) and mouseActiveForAutoDrive then
+                if mouseActiveForAutoDrive and (point.isSelected or AutoDrive.mouseIsAtPos(point, 0.01)) then
                     DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_hoveredNode))
                 else
                     if point.id == self.ad.selectedNodeId then
@@ -946,11 +952,11 @@ function AutoDrive:onDrawEditorMode()
                 end
 
                 -- If the lines are drawn above the vehicle, we have to draw a line to the reference point on the ground and a second cube there for moving the node position
-                if AutoDrive.getSettingState("lineHeight") > 1 then
-                    local gy = y - AutoDrive.drawHeight - AutoDrive.getSetting("lineHeight")
+                if lineHeightState > 1 then
+                    local gy = y - AutoDrive.drawHeight - lineHeightValue
                     DrawingManager:addLineTask(x, y, z, x, gy, z, 1, unpack(AutoDrive.currentColors.ad_color_editorHeightLine))
 
-                    if (AutoDrive.mouseIsAtPos(point, 0.01) or AutoDrive.mouseIsAtPos({x = x, y = gy, z = z}, 0.01)) and mouseActiveForAutoDrive then
+                    if mouseActiveForAutoDrive and (AutoDrive.mouseIsAtPos(point, 0.01) or AutoDrive.mouseIsAtPos({x = x, y = gy, z = z}, 0.01)) then
                         DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_hoveredNode))
                     else
                         if point.id == self.ad.selectedNodeId then
@@ -1264,7 +1270,26 @@ function AutoDrive:stopAutoDrive()
 
             local isStartingAIVE = not self.ad.isStoppingWithError and self.ad.stateModule:getStartHelper() and self.ad.stateModule:getUsedHelper() == ADStateModule.HELPER_AIVE
             local isPassingToCP = not self.ad.isStoppingWithError and self.ad.stateModule:getStartHelper() and self.ad.stateModule:getUsedHelper() == ADStateModule.HELPER_CP
+            -- FarmPilot mode Autonome : parcours Courseplay choisi à l'arrivée
+            local autonomousCourse = self.ad.fpAutonomousCourse
+            self.ad.fpAutonomousCourse = nil
+            if autonomousCourse ~= nil and self.ad.isStoppingWithError then
+                autonomousCourse = nil
+            end
             local isPassingToAI = not self.ad.isStoppingWithError and self.ad.stateModule:getStartHelper() and self.ad.stateModule:getUsedHelper() == ADStateModule.HELPER_AI
+            -- (07/11) mode Autonome « Classique » : ouvrier du jeu sur le champ d'arrivée
+            local autonomousAI = self.ad.fpAutonomousAI == true and not self.ad.isStoppingWithError
+            self.ad.fpAutonomousAI = nil
+            if autonomousCourse ~= nil then
+                -- Courseplay seul, même si le bouton assistant du HUD est réglé sur AIVE / IA du jeu
+                isPassingToCP = true
+                isStartingAIVE = false
+                isPassingToAI = false
+            elseif autonomousAI then
+                isPassingToCP = false
+                isStartingAIVE = false
+                isPassingToAI = true
+            end
 
             if not isStartingAIVE and not isPassingToCP and not isPassingToAI then
                 if not AutoDrive:getIsEntered(self) then
@@ -1290,7 +1315,17 @@ function AutoDrive:stopAutoDrive()
             AutoDriveStartStopEvent:sendStopEvent(self, isPassingToCP or isPassingToAI, isStartingAIVE)
 
 			-- currently the pass to CP is only working correct from this call
-            if self.ad.stateModule:getStartHelper() then
+            if autonomousCourse ~= nil then
+                if not ADAutonomousManager:startCourse(self, autonomousCourse) then
+                    AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_cpFailed", ADAutonomousManager.courseLabel(autonomousCourse))
+                end
+            elseif autonomousAI then
+                local ok, started, why = pcall(ADAutonomousManager.startBaseWorker, self)
+                if not ok or not started then
+                    ADAutonomousManager.log("%s : l'ouvrier du jeu n'a pas pu démarrer (%s)", tostring(self.ad.stateModule:getName()), tostring(ok and why or started))
+                    AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_aiFailed")
+                end
+            elseif self.ad.stateModule:getStartHelper() then
                 if  self.ad.stateModule:getUsedHelper() == ADStateModule.HELPER_CP then
                     AutoDrive.passToExternalMod_CP(self)
                 elseif  self.ad.stateModule:getUsedHelper() == ADStateModule.HELPER_AIVE then

@@ -93,20 +93,29 @@ function ADAddonWeighing.findSiteName(bridge, fillTypeIndex)
     return result
 end
 
+-- (perf 07/11) résultat gardé par bâtiment : les spécialisations d'un bâtiment ne changent pas
+ADAddonWeighing.specCache = setmetatable({}, { __mode = "k" })
+
 function ADAddonWeighing.scanStations()
     local list = {}
+    local cache = ADAddonWeighing.specCache
     local system = g_currentMission ~= nil and g_currentMission.placeableSystem or nil
     if system ~= nil and system.placeables ~= nil then
         for _, placeable in ipairs(system.placeables) do
-            local spec = placeable.spec_weighingStation
+            local spec = cache[placeable]
             if spec == nil then
-                for key, value in pairs(placeable) do
-                    if type(value) == "table" and type(key) == "string" and key:sub(1, 5) == "spec_" and value.triggerVehicleNodes ~= nil then
-                        spec = value
-                        break
+                spec = placeable.spec_weighingStation
+                if spec == nil then
+                    for key, value in pairs(placeable) do
+                        if type(value) == "table" and type(key) == "string" and key:sub(1, 5) == "spec_" and value.triggerVehicleNodes ~= nil then
+                            spec = value
+                            break
+                        end
                     end
                 end
+                cache[placeable] = spec or false
             end
+            if spec == false then spec = nil end
             if spec ~= nil and spec.triggerVehicleNodes ~= nil then
                 spec.adAddonPlaceable = placeable
                 table.insert(list, spec)
@@ -641,6 +650,16 @@ local function corners()
             local ok, o = pcall(createImageOverlay, Utils.getFilename("hud/corner_" .. k .. ".dds", modDir))
             if ok and o ~= nil and o ~= 0 then cornerOv[k] = o else cornerOv = false break end
         end
+    end
+    if cornerOv and not cornerOv.ready then
+        -- (07/11) pas de dessin avant que les images soient prêtes (« renderOverlay called too soon »)
+        if getIsOverlayReady ~= nil then
+            for _, k in ipairs({ "tl", "tr", "bl", "br" }) do
+                local ok, r = pcall(getIsOverlayReady, cornerOv[k])
+                if ok and not r then return nil end
+            end
+        end
+        cornerOv.ready = true
     end
     return cornerOv or nil
 end

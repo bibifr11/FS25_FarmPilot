@@ -56,6 +56,9 @@ ADAvoidModule.QUEUE_LOOK = 30                 -- m beyond the stopped car search
 ADAvoidModule.QUEUE_LATERAL = 3               -- m from my route (plus half the width of that vehicle)
 ADAvoidModule.QUEUE_TIMEOUT = 45000           -- ms: a car standing my way with nothing in front of it may be passed after this
 ADAvoidModule.QUEUE_HOLD = 4000               -- ms: the queue decision stays valid this long (it is renewed at each check)
+ADAvoidModule.SHIFT_LAG = 2                   -- m: the train reaches the shifted line this much later than the line itself
+ADAvoidModule.PUSH_OFFSETS = {1.5, 2.0, 2.5, 3.0} -- m, tried when the train pushes against something it does not see
+ADAvoidModule.PUSH_BACK_MARGIN = 2            -- m backed up on top of what the shift needs
 
 function ADAvoidModule:log(text, ...)
     if ADAvoidModule.DEBUG then
@@ -100,6 +103,7 @@ function ADAvoidModule:reset()
     self.stillObject = nil
     self.stillSince = nil
     self.backNeeded = nil
+    self.backKind = nil
     self.backTimer:timer(false)
     self.rearBlockedTimer:timer(false)
     if self.vehicle.ad ~= nil and self.vehicle.ad.drivePathModule ~= nil then
@@ -456,6 +460,18 @@ function ADAvoidModule:tryStart(dt)
             self.rate = ADAvoidModule.RATE
             self.travelled = 0
             self.passTravel = distance + self:getTrainLength() + ADAvoidModule.PASS_MARGIN
+            -- (08/11, 7R 350: a 1 m shift started 4 m before a pole, the tyre hit it) the shift must be done when the
+            -- nose reaches the obstacle: quicker when it is close, after backing up when it is too close
+            if distance < e / ADAvoidModule.RATE + ADAvoidModule.SHIFT_LAG then
+                self.rate = ADAvoidModule.LANE_RATE
+                local needed = e / ADAvoidModule.LANE_RATE + ADAvoidModule.SHIFT_LAG
+                if distance < needed then
+                    self:startBacking("side", math.min(ADAvoidModule.BACK_MAX, needed - distance), distance, hit.name)
+                    self:log("'%s' %.1f m ahead on side %d, too close to swing out: backing up %.1f m, then shifting %.1f m",
+                        tostring(hit.name), distance, hit.side, self.backNeeded, self.target)
+                    return
+                end
+            end
             self.state = ADAvoidModule.STATE_SHIFTING
             self:log("'%s' %.1f m ahead on side %d: shifting %.1f m to the other side, back after %.0f m (%.0f km/h)",
                 tostring(hit.name), distance, hit.side, self.target, self.passTravel, speed)
@@ -503,8 +519,20 @@ function ADAvoidModule:tryLaneChange(hit, distance, speed)
             hit.isTraffic and "traffic car stopped" or "obstacle", tostring(hit.name), distance, self.target, self.passTravel, speed)
         return
     end
-    self.backNeeded = math.min(ADAvoidModule.BACK_MAX, needed - distance)
-    local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
+    self:startBacking("lane", math.min(ADAvoidModule.BACK_MAX, needed - distance), distance, hit.name)
+    self:log("%s '%s' %.1f m ahead across my line: backing up %.1f m, then lane change %.1f m",
+        hit.isTraffic and "traffic car stopped" or "obstacle", tostring(hit.name), distance, self.backNeeded, self.target)
+end
+
+-- kind: "lane" (lane change beside a stopped car: the lane is chosen again after backing up), "side" (shift beside an
+-- object seen too late: the same shift if still free, another one otherwise), "push" (pushing against something unseen)
+function ADAvoidModule:startBacking(kind, backNeeded, hitDistance, hitName)
+    self.backKind = kind
+    self.backNeeded = backNeeded
+    self.hitDistance = hitDistance
+    self.hitName = hitName
+    self.travelled = 0
+    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
     self.startPos = {x = x, z = z}
     local tx, ty, tz = AutoDrive.localToWorld(self.vehicle, 0, 0, -100)
     self.reverseTarget = {x = tx, y = ty, z = tz}
@@ -512,8 +540,54 @@ function ADAvoidModule:tryLaneChange(hit, distance, speed)
     self.rearBlockedTimer:timer(false)
     self.vehicle.ad.specialDrivingModule:reset()
     self.state = ADAvoidModule.STATE_BACKING
-    self:log("%s '%s' %.1f m ahead across my line: backing up %.1f m, then lane change %.1f m",
-        hit.isTraffic and "traffic car stopped" or "obstacle", tostring(hit.name), distance, self.backNeeded, self.target)
+end
+
+-- a side offset whose corridor is free, at least 0.5 m away from the line followed now: further on the side the
+-- train was already moving to first, then the other side
+function ADAvoidModule:findPushOffset(range)
+    local approach = self.vehicle.ad.approachModule
+    local current = self.offset or 0
+    local sides = {-1, 1}
+    if current > 0.05 then
+        sides = {1, -1}
+    end
+    for _, sign in ipairs(sides) do
+        for _, e in ipairs(ADAvoidModule.PUSH_OFFSETS) do
+            local target = sign * e
+            if math.abs(target - current) >= 0.5 then
+                local clear, reason = approach:isCorridorClear(target, range)
+                if clear then
+                    return target
+                end
+                self.lastReason = reason
+            end
+        end
+    end
+    return nil
+end
+
+-- (08/11, Fabien : « il a essayé de partir ») the train pushes against something the sensors do not see (pole beside
+-- the line, 7R 350 at Champ 56): back up, then pass beside it (called by ADDrivePathModule:handlePushing)
+function ADAvoidModule:startFromPush()
+    if not self.vehicle.isServer or not ADAvoidModule.isEnabled() or self.state == ADAvoidModule.STATE_BACKING then
+        return false
+    end
+    if self.vehicle.ad.approachModule == nil or self:isBusyElsewhere() or self:isOnField() then
+        return false
+    end
+    local range = math.max(ADAvoidModule.HOLD_RANGE, self:getTrainLength() + 10)
+    local target = self:findPushOffset(range)
+    if target == nil then
+        self:log("pushing without moving: no free side to pass (%s)", tostring(self.lastReason))
+        return false
+    end
+    local current = self.offset or 0
+    self.target = target
+    self.rate = ADAvoidModule.LANE_RATE
+    self:startBacking("push", math.min(ADAvoidModule.BACK_MAX, math.abs(target - current) / ADAvoidModule.LANE_RATE + ADAvoidModule.PUSH_BACK_MARGIN), 0.5, "?")
+    self:log("pushing without moving (obstacle not seen by the sensors): backing up %.1f m, then passing %.1f m beside (was %.1f m)",
+        self.backNeeded, target, current)
+    return true
 end
 
 function ADAvoidModule:logLimited(hit, text)
@@ -543,7 +617,18 @@ function ADAvoidModule:handle(dt)
         sdm:reset()
         local distance = (self.hitDistance or 0) + reversed
         -- the lane must still be free from here
-        local target = self:findLane({name = self.hitName}, distance)
+        local target
+        if self.backKind == "side" or self.backKind == "push" then
+            local range = math.max(ADAvoidModule.CLEAR_RANGE, distance + self:getTrainLength() + ADAvoidModule.PASS_MARGIN)
+            if self.backKind == "side" and self.vehicle.ad.approachModule:isCorridorClear(self.target, range) then
+                target = self.target
+            else
+                target = self:findPushOffset(range)
+            end
+        else
+            target = self:findLane({name = self.hitName}, distance)
+        end
+        self.backKind = nil
         if target == nil then
             self:log("backed up %.1f m (rear blocked %s, timeout %s): no free lane any more, giving up", reversed, tostring(rearStop), tostring(timedOut))
             self:reset()

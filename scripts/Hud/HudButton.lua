@@ -71,6 +71,9 @@ function ADHudButton:getNewState(vehicle)
             newState = 4
         elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_BGA then
             newState = 6
+        elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
+            -- FarmPilot : tracteur « A » blanc, jaune quand le chauffeur roule
+            newState = vehicle.ad.stateModule:isActive() and 8 or 7
         else
             newState = 1
         end
@@ -180,6 +183,20 @@ function ADHudButton:getNewState(vehicle)
             newState = (usedHelper * 2) - 1
         end
         self.isVisible = (not AutoDrive.isEditorModeEnabled()) or (AutoDrive.getSetting("wideHUD") and AutoDrive.getSetting("addSettingsToHUD"))
+        -- FarmPilot : caché en mode Autonome (Courseplay y est lancé d'office), remplacé par « Parcours Autonome »
+        self.isVisible = self.isVisible and vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_AUTONOMOUS
+    end
+
+    if self.primaryAction == "input_autonomousCourses" then
+        if self.fpFallback then
+            -- bouton de secours (ligne « Champ suivant ») : seulement si le HUD n'a pas de case Courseplay
+            local inSlot = AutoDrive.Hud ~= nil and AutoDrive.Hud.fpAutonomousInSlot == true
+            self.isVisible = vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS and not inSlot
+        else
+            -- dans la case du bouton Courseplay : mêmes règles d'affichage que lui (case partagée avec l'éditeur)
+            self.isVisible = vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS
+                and ((not AutoDrive.isEditorModeEnabled()) or (AutoDrive.getSetting("wideHUD") and AutoDrive.getSetting("addSettingsToHUD")))
+        end
     end
 
     if self.primaryAction == "input_bunkerUnloadType" then

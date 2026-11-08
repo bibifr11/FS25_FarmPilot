@@ -3,6 +3,36 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.8
+
+### Nouveau mode « Autonome »
+- FarmPilot conduit jusqu'au champ, puis charge et lance le parcours Courseplay enregistré pour ce champ et la largeur de l'outil. La fenêtre « Parcours Autonome » (Ctrl + Alt + 5 pavé numérique) permet de choisir le parcours de chaque champ.
+- HUD en mode Autonome : Champ, Outil, Champ suivant, Outil suivant.
+- Fin du champ : l'outil est posé à sa place de parking, puis le tracteur va chercher l'outil suivant (routes, marche arrière, attelage, flexibles et prise de force) et part au champ suivant. Si l'outil suivant n'est pas disponible, il pose quand même l'outil et s'arrête avec un message.
+- Compatible avec le mod d'attelage manuel (flexibles et prise de force branchés et débranchés automatiquement).
+
+### Conduite
+- Fin de route trop serrée : une manœuvre avant / arrière / avant est calculée avant le départ, ou un détour s'il est plus rapide.
+- Poteaux et piquets sur la route : la route passe à côté. S'il pousse sans avancer, il recule et contourne.
+- Vitesse adaptée dans les virages ; le clignotant reste allumé jusqu'à ce que le tracteur soit droit.
+- Le champ d'arrivée est celui du marqueur de destination.
+- Courseplay laisse le clic droit au HUD et à l'éditeur de FarmPilot.
+- Aide en jeu et textes à jour (FR, EN, DE).
+
+### New "Autonomous" mode
+- FarmPilot drives to the field, then loads and starts the saved Courseplay course for that field and the tool width. The "Autonomous courses" window (Ctrl + Alt + numpad 5) picks the course for each field.
+- HUD in Autonomous mode: Field, Tool, Next field, Next tool.
+- End of field: the tool is parked at its parking spot, then the tractor fetches the next tool (roads, reversing, hitching, hoses and PTO) and drives to the next field. If the next tool is not available, it still parks the tool and stops with a message.
+- Works with the manual attach mod (hoses and PTO connected and disconnected automatically).
+
+### Driving
+- Route end too tight: a forward / reverse / forward manoeuvre is planned before leaving, or a detour if it is faster.
+- Posts and poles on the route: the route goes around them. If it pushes without moving, it backs up and goes around.
+- Speed adapted in bends; the indicator stays on until the tractor is straight.
+- The arrival field is the one of the destination marker.
+- Courseplay leaves the right click to the FarmPilot HUD and editor.
+- In-game help and texts updated (FR, EN, DE).
+
 ## 1.0.0.1
 - Allemand : 13 textes manquants ajoutés (contournement d'obstacle, virage large, évitement) / German: 13 missing texts added.
 - Français et allemand : 66 textes restés en anglais traduits / French and German: 66 texts still in English translated.

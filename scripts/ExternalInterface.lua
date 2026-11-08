@@ -431,6 +431,22 @@ end
 function AutoDrive:onCpFinished()
     AutoDrive.debugPrint(self, AutoDrive.DC_EXTERNALINTERFACEINFO, "AutoDrive:onCpFinished start... enableParkAtJobFinished %s", AutoDrive.getSetting("enableParkAtJobFinished", self))
     if self.isServer then
+        -- FarmPilot mode Autonome : champ fini, champ suivant s'il y en a un (sinon se garer comme avant)
+        local okNext, goneNext = pcall(AutonomousMode.goToNextField, self)
+        if not okNext then
+            ADAutonomousManager.log("ERREUR champ suivant : %s", tostring(goneNext))
+        elseif goneNext then
+            return
+        end
+        -- FarmPilot mode Autonome : outil posé à sa place, puis tracteur garé à la sienne
+        if AutoDrive.getSetting("enableParkAtJobFinished", self) then
+            local okDrop, dropped = pcall(AutonomousMode.parkWithToolDrop, self)
+            if not okDrop then
+                ADAutonomousManager.log("ERREUR dételage au parking : %s", tostring(dropped))
+            elseif dropped then
+                return
+            end
+        end
         if self.ad and self.ad.stateModule and self.startAutoDrive and AutoDrive.getSetting("enableParkAtJobFinished", self) then
             self.ad.onRouteToRefuel = false
             self.ad.onRouteToRepair = false
@@ -1046,6 +1062,27 @@ function AutoDrive:onAIJobFinished()
     then
         AutoDrive:handleAIFieldWorker(self)
     else
+        -- FarmPilot mode Autonome : champ fini par l'ouvrier du jeu (pas arrêté par le joueur) -> champ suivant s'il y en a un
+        local finishedOk = self.ad ~= nil and self.ad.fpAIJobFinishedOk == true
+        if self.ad ~= nil then
+            self.ad.fpAIJobFinishedOk = nil
+        end
+        if finishedOk and self.isServer then
+            local okNext, goneNext = pcall(AutonomousMode.goToNextField, self)
+            if not okNext then
+                ADAutonomousManager.log("ERREUR champ suivant : %s", tostring(goneNext))
+            elseif goneNext then
+                return
+            end
+            if AutoDrive.getSetting("enableParkAtJobFinished", self) then
+                local okDrop, dropped = pcall(AutonomousMode.parkWithToolDrop, self)
+                if not okDrop then
+                    ADAutonomousManager.log("ERREUR dételage au parking : %s", tostring(dropped))
+                elseif dropped then
+                    return
+                end
+            end
+        end
         AutoDrive:handleAIFinished(self) -- stop or park
     end
 end

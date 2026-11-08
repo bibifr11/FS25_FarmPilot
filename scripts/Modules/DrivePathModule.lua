@@ -69,6 +69,7 @@ function ADDrivePathModule:reset(retainLastUsedWaypoint)
         self.vehicle.ad.cornerModule:reset()
     end
     self.lateralOffset = 0
+    self.pushX = nil
 end
 
 function ADDrivePathModule:setPathTo(wayPointId)
@@ -78,6 +79,7 @@ function ADDrivePathModule:setPathTo(wayPointId)
     if self.wayPoints ~= nil and #self.wayPoints >= 3 and self.vehicle.ad.cornerModule ~= nil then
         self.wayPoints = self.vehicle.ad.cornerModule:smoothRoute(self.wayPoints, 3)
     end
+    self.wayPoints = ADDrivePathModule.shiftAroundObstacles(self.vehicle, self.wayPoints, 2)
     local destination = ADGraphManager:getMapMarkerByWayPointId(self:getLastWayPointId())
     self.vehicle.ad.stateModule:setCurrentDestination(destination)
     self:setDirtyFlag()
@@ -118,6 +120,7 @@ function ADDrivePathModule:appendPathTo(startWayPointId, wayPointId)
     if appendWayPoints ~= nil and #appendWayPoints >= 3 and self.vehicle.ad.cornerModule ~= nil then
         appendWayPoints = self.vehicle.ad.cornerModule:smoothRoute(appendWayPoints, 2)
     end
+    appendWayPoints = ADDrivePathModule.shiftAroundObstacles(self.vehicle, appendWayPoints, 2)
 
     if appendWayPoints == nil or (appendWayPoints[2] == nil and (appendWayPoints[1] == nil or (appendWayPoints[1] ~= nil and appendWayPoints[1].id ~= wayPointId))) then
         self.vehicle.ad.isStoppingWithError = true
@@ -139,6 +142,20 @@ function ADDrivePathModule:appendPathTo(startWayPointId, wayPointId)
         end
     end
     self:resetIsReversing()
+end
+
+-- (08/11) a pole or a post on the network line: the route is moved beside it when it is set
+-- (ADPathCalculator.shiftAroundObstacles); any error leaves the route as it was
+function ADDrivePathModule.shiftAroundObstacles(vehicle, wayPoints, firstIndex)
+    if wayPoints == nil or #wayPoints < 3 or ADPathCalculator.shiftAroundObstacles == nil then
+        return wayPoints
+    end
+    local ok, shifted = pcall(ADPathCalculator.shiftAroundObstacles, vehicle, wayPoints, firstIndex)
+    if not ok then
+        print(string.format("[AD-Poteau] %s: error %s, route kept", tostring(vehicle.getName ~= nil and vehicle:getName() or "?"), tostring(shifted)))
+        return wayPoints
+    end
+    return shifted or wayPoints
 end
 
 function ADDrivePathModule:setWayPoints(wayPoints)
@@ -237,8 +254,12 @@ function ADDrivePathModule:isCloseToWaypoint()
     local wp_ahead = self:getNextWayPoint()
     local wp_current = self:getCurrentWayPoint()
     local _, isLastForward, isLastReverse = self:checkForReverseSection()
-    if isLastForward or isLastReverse or (wp_ahead ~= nil and wp_ahead.cornerReverse ~= nil) then
+    if isLastForward or isLastReverse or (wp_ahead ~= nil and (wp_ahead.cornerReverse ~= nil or wp_ahead.endManoeuvre ~= nil)) then
         maxSkipWayPoints = 0
+    end
+    -- manoeuvre at the end of the route (ADCornerModule): the module itself goes on to the destination when done
+    if wp_current ~= nil and wp_current.endManoeuvre ~= nil and not wp_current.endManoeuvreDone then
+        return false
     end
 
     if AutoDrive.getDebugChannelIsSet(AutoDrive.DC_PATHINFO) then
@@ -312,7 +333,15 @@ function ADDrivePathModule:followWaypoints(dt)
     self.distanceToLookAhead = 8
 
     self.speedLimit = self.vehicle.ad.stateModule:getSpeedLimit()
-    if ((g_updateLoopIndex + self.vehicle.id) % AutoDrive.PERF_FRAMES_HIGH == 0) then
+    -- (07/11) limite calculée une image sur 4 (virages, champ, fin de route, silo) : gardée pour les 3 autres images.
+    -- Avant, ces 3 images repartaient à la vitesse maxi de la route : le tracteur réaccélérait dans les virages.
+    local perfFrame = ((g_updateLoopIndex + self.vehicle.id) % AutoDrive.PERF_FRAMES_HIGH == 0) or self.heldSpeedLimit == nil
+        or self.heldSpeedLimitPath ~= self.wayPoints
+    if not perfFrame then
+        self.speedLimit = self.heldSpeedLimit
+        maxSpeedDiff = self.heldMaxSpeedDiff or maxSpeedDiff
+    end
+    if perfFrame then
         self.speedLimit = self.vehicle.ad.stateModule:getSpeedLimit()
         if AutoDrive.checkIsOnField(x, y, z) then
             self.speedLimit = self.vehicle.ad.stateModule:getFieldSpeedLimit() --math.min(self.vehicle.ad.stateModule:getFieldSpeedLimit(), self.speedLimit)
@@ -322,6 +351,13 @@ function ADDrivePathModule:followWaypoints(dt)
 
             if self:isOnRoadNetwork() then
                 self.speedLimit = math.min(self.speedLimit, self:getMaxSpeedForAngle(highestAngle))
+                -- (07/11, Fabien : « vitesse trop haute et pas proportionnelle au virage ») : selon le rayon réel du virage
+                local curveLimit = self:getCurveSpeedLimit()
+                if curveLimit < self.speedLimit then
+                    self.speedLimit = curveLimit
+                    -- virage : on freine dès 2 km/h de trop (6 km/h ailleurs), sinon il entre trop vite
+                    maxSpeedDiff = math.min(maxSpeedDiff, ADDrivePathModule.CURVE_SPEED_DEVIATION)
+                end
             else
                 -- Let's increase the cornering speed for paths generated with the pathfinder module. There are many 45° angles in there that slow the process down otherwise.
                 self.speedLimit = math.min(self.speedLimit, math.max(12, self:getMaxSpeedForAngle(highestAngle) * 2))
@@ -365,6 +401,9 @@ function ADDrivePathModule:followWaypoints(dt)
                 end
             end
         end
+        self.heldSpeedLimit = self.speedLimit
+        self.heldMaxSpeedDiff = maxSpeedDiff
+        self.heldSpeedLimitPath = self.wayPoints
     end
 
     -- anticipated slow-down in front of an obstacle further on the route (ADApproachModule)
@@ -424,6 +463,7 @@ function ADDrivePathModule:followWaypoints(dt)
         end
         self.vehicle.ad.specialDrivingModule:stopVehicle((not self:isOnRoadNetwork()), lx, lz)
         self.vehicle.ad.specialDrivingModule:update(dt)
+        self.pushX = nil
     else
         self.vehicle.ad.specialDrivingModule:releaseVehicle()
         local speedDiff = (self.vehicle.lastSpeedReal * 3600) - self.speedLimit
@@ -450,6 +490,7 @@ function ADDrivePathModule:followWaypoints(dt)
         end
         self.vehicle.ad.trailerModule:handleTrailerReversing(false)
         AutoDrive.driveInDirection(self.vehicle, dt, maxAngle, self.acceleration, 0.8, maxAngle, true, true, lx, lz, self.speedLimit, 1)
+        self:checkIfPushing(dt)
         --local worldX, _, worldZ = AutoDrive.worldToLocal(self.vehicle, self.targetX, y, self.targetZ)
         --print("dt: " .. dt .. " acc: " .. self.acceleration .. " x: " .. worldX .. " z: " .. worldZ .. " speedLimit: " .. self.speedLimit)
         --AIVehicleUtil.driveToPoint(self.vehicle, dt, self.acceleration, true, true, worldX, worldZ, self.speedLimit)
@@ -662,6 +703,114 @@ function ADDrivePathModule:getMaxSpeedForAngle(angle)
     self.maxAngleSpeed = maxSpeed * 1.0 * AutoDrive.getSetting("cornerSpeed", self.vehicle)
 
     return self.maxAngleSpeed
+end
+
+-- (07/11, Fabien : « dans les virages la vitesse est souvent trop haute et pas proportionnelle au virage ») :
+-- l'angle entre deux points voisins ne dit pas si le virage est serré (un virage dessiné ou redessiné avec un point
+-- tous les 2,5 m n'a que des petits angles). Ici : rayon réel du virage = changement de cap / longueur de route sur
+-- une fenêtre de quelques mètres ; vitesse du virage = racine(accélération latérale x rayon) x réglage « Vitesse en
+-- virage » ; et on freine assez tôt pour l'atteindre à l'entrée (décélération CURVE_BRAKE).
+ADDrivePathModule.CURVE_WINDOW = 6          -- m de route (entre milieux de segments) pour mesurer le rayon
+ADDrivePathModule.CURVE_LATERAL = 1.5       -- m/s² d'accélération latérale dans le virage
+ADDrivePathModule.CURVE_BRAKE = 0.6         -- m/s² de décélération prévue avant le virage (freinage doux, commencé tôt)
+ADDrivePathModule.CURVE_SPEED_DEVIATION = 2 -- km/h de trop tolérés avant de freiner quand un virage limite
+ADDrivePathModule.CURVE_MIN_SPEED = 5       -- km/h
+ADDrivePathModule.CURVE_RADIUS_MAX = 300    -- m : plus large = ligne droite
+ADDrivePathModule.CURVE_LOOK_MIN = 40       -- m de route regardés au moins
+ADDrivePathModule.CURVE_LOOK_MAX = 150      -- m au plus
+ADDrivePathModule.CURVE_POINTS_MAX = 150    -- points regardés au plus
+ADDrivePathModule.CURVE_BACK = 12           -- m de route regardés derrière le point visé
+ADDrivePathModule.CURVE_REVERSAL = math.rad(135) -- changement de sens (marche arrière) : on s'arrête là
+
+-- rayon (m) et début (m de route depuis le 1er point regardé) du virage le plus contraignant ; limite en km/h
+function ADDrivePathModule:getCurveSpeedLimit()
+    local wps = self.wayPoints
+    local idx = self:getCurrentWayPointIndex()
+    if wps == nil or idx == nil or wps[idx] == nil or self.isReversing then
+        return math.huge
+    end
+    -- on part quelques points derrière : avec des points serrés, le point visé est souvent déjà après la fin du
+    -- virage alors que le tracteur y est encore
+    local first, back = idx, 0
+    while first > 1 and idx - first < 10 do
+        local a, b = wps[first - 1], wps[first]
+        back = back + math.sqrt((b.x - a.x) ^ 2 + (b.z - a.z) ^ 2)
+        if back > ADDrivePathModule.CURVE_BACK then
+            break
+        end
+        first = first - 1
+    end
+    first = math.max(1, math.min(first, idx - 1))
+    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
+    local v = math.abs(self.vehicle.lastSpeedReal or 0) * 1000
+    local look = math.min(ADDrivePathModule.CURVE_LOOK_MAX, math.max(ADDrivePathModule.CURVE_LOOK_MIN, v * v / (2 * ADDrivePathModule.CURVE_BRAKE) + 30))
+    -- segments k (wps[k] -> wps[k+1]) : cap cumulé (sans saut à ±180°), position de leur milieu sur la route
+    local cum, mid, s = {}, {}, 0
+    local lastHeading = nil
+    local vehAt = nil
+    for k = first, math.min(#wps - 1, first + ADDrivePathModule.CURVE_POINTS_MAX) do
+        local a, b = wps[k], wps[k + 1]
+        if k == idx then
+            -- position du véhicule sur la route : un peu avant le point visé
+            vehAt = s - math.sqrt((a.x - x) ^ 2 + (a.z - z) ^ 2)
+        end
+        local dx, dz = b.x - a.x, b.z - a.z
+        local len = math.sqrt(dx * dx + dz * dz)
+        if len > 0.05 then
+            local h = math.atan2(dx, dz)
+            local c = 0
+            if lastHeading ~= nil then
+                local turn = (h - lastHeading + math.pi) % (2 * math.pi) - math.pi
+                if math.abs(turn) >= ADDrivePathModule.CURVE_REVERSAL then
+                    break
+                end
+                c = cum[#cum] + turn
+            end
+            lastHeading = h
+            cum[#cum + 1] = c
+            mid[#mid + 1] = s + len / 2
+            s = s + len
+            if vehAt ~= nil and s - vehAt > look then
+                break
+            end
+        end
+    end
+    if #cum < 2 then
+        return math.huge
+    end
+    vehAt = vehAt or 0
+    local factor = AutoDrive.getSetting("cornerSpeed", self.vehicle) or 1
+    local best = math.huge
+    local m = 2
+    for j = 1, #cum - 1 do
+        if m <= j then
+            m = j + 1
+        end
+        while m < #cum and mid[m] - mid[j] < ADDrivePathModule.CURVE_WINDOW do
+            m = m + 1
+        end
+        local turn = math.abs(cum[m] - cum[j])
+        local length = mid[m] - mid[j]
+        -- fenêtre déjà derrière le tracteur : ne compte plus
+        if turn > 0.001 and length > 0.5 and mid[m] >= vehAt - 1 then
+            local radius = length / turn
+            if radius < ADDrivePathModule.CURVE_RADIUS_MAX then
+                local vb = math.sqrt(ADDrivePathModule.CURVE_LATERAL * radius) * factor
+                local d = math.max(0, mid[j] - vehAt)
+                local allowed = math.sqrt(vb * vb + 2 * ADDrivePathModule.CURVE_BRAKE * d) * 3.6
+                if allowed < best then
+                    best = allowed
+                    self.curveRadius = radius
+                    self.curveDistance = d
+                end
+            end
+        end
+    end
+    if best == math.huge then
+        self.curveRadius = nil
+        return best
+    end
+    return math.max(ADDrivePathModule.CURVE_MIN_SPEED, best)
 end
 
 function ADDrivePathModule:getSpeedLimitBySteeringAngle()
@@ -889,6 +1038,67 @@ function ADDrivePathModule:checkIfStuck(dt)
             self.minDistanceTimer:timer(false)
         end
     end
+end
+
+-- (08/11, Fabien : « il a essayé de partir », « il ne l'a pas vu ») 7R 350 against a pole beside the line: 1 min 40
+-- pushing at 0 km/h, sensors free, and the 8 s safety above never fired. Pushing = told to drive on (no stop asked,
+-- speed limit at least PUSH_MIN_LIMIT, engine running, on the road network) without moving PUSH_MOVE metres for
+-- PUSH_TIME. Then: back up and pass beside it (ADAvoidModule:startFromPush); pushing again at the same place (twice): back up
+-- and compute a way around (ADObstacleDetourModule:startFromStuck); after that the 8 s safety as before
+ADDrivePathModule.PUSH_TIME = 3000          -- ms
+ADDrivePathModule.PUSH_MOVE = 0.5           -- m
+ADDrivePathModule.PUSH_MIN_LIMIT = 3        -- km/h
+ADDrivePathModule.PUSH_SAME_PLACE = 10      -- m
+ADDrivePathModule.PUSH_GAP = 500            -- ms without a check: the watch starts again
+
+function ADDrivePathModule:checkIfPushing(dt)
+    if not self.vehicle.isServer then
+        return
+    end
+    local ad = self.vehicle.ad
+    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
+    local now = g_time or 0
+    local idle = (self.speedLimit or 0) < ADDrivePathModule.PUSH_MIN_LIMIT or (self.acceleration or 1) <= 0 or not self:isOnRoadNetwork()
+        or (self.vehicle.getIsMotorStarted ~= nil and not self.vehicle:getIsMotorStarted())
+        or (ad.trailerModule ~= nil and ad.trailerModule.isActiveAtTrigger ~= nil and ad.trailerModule:isActiveAtTrigger())
+        or (ad.specialDrivingModule ~= nil and ad.specialDrivingModule:isStoppingVehicle())
+    if idle or self.pushX == nil or self.pushCheckTime == nil or now - self.pushCheckTime > ADDrivePathModule.PUSH_GAP
+        or MathUtil.vector2Length(x - self.pushX, z - self.pushZ) > ADDrivePathModule.PUSH_MOVE then
+        self.pushX, self.pushZ = x, z
+        self.pushTime = 0
+        self.pushCheckTime = now
+        return
+    end
+    self.pushCheckTime = now
+    self.pushTime = (self.pushTime or 0) + dt
+    if self.pushTime < ADDrivePathModule.PUSH_TIME then
+        return
+    end
+    self.pushX = nil
+    self:handlePushing(x, z)
+end
+
+function ADDrivePathModule:handlePushing(x, z)
+    local ad = self.vehicle.ad
+    if self.pushPlaceX ~= nil and MathUtil.vector2Length(x - self.pushPlaceX, z - self.pushPlaceZ) < ADDrivePathModule.PUSH_SAME_PLACE then
+        self.pushCount = (self.pushCount or 0) + 1
+    else
+        self.pushPlaceX, self.pushPlaceZ = x, z
+        self.pushCount = 1
+    end
+    local name = ad.stateModule ~= nil and ad.stateModule:getName() or tostring(self.vehicle.id)
+    local info = string.format("pousse sans avancer depuis %.0f s (limite %.0f km/h, point %d/%d, decalage %.1f m, fois %d ici)",
+        ADDrivePathModule.PUSH_TIME / 1000, self.speedLimit or 0, self.currentWayPoint or 0, self.wayPoints ~= nil and #self.wayPoints or 0,
+        self.lateralOffset or 0, self.pushCount)
+    if self.pushCount == 1 and ad.avoidModule ~= nil and ad.avoidModule.startFromPush ~= nil and ad.avoidModule:startFromPush() then
+        print(string.format("[AD-Pousse] %s: %s : recul puis passage a cote", tostring(name), info))
+        return
+    end
+    if self.pushCount <= 3 and ad.obstacleDetourModule ~= nil and ad.obstacleDetourModule.startFromStuck ~= nil and ad.obstacleDetourModule:startFromStuck() then
+        print(string.format("[AD-Pousse] %s: %s : recul puis contournement calcule", tostring(name), info))
+        return
+    end
+    print(string.format("[AD-Pousse] %s: %s : rien de possible ici, la securite coince (8 s) prend la suite", tostring(name), info))
 end
 
 function ADDrivePathModule:handleBeingStuck()

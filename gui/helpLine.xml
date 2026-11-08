@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<helpLines>
+    <category title="$l10n_fp_help_category">
+        <page title="$l10n_fp_help_start_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_start_1_title"/>
+                <text text="$l10n_fp_help_start_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_start_2_title"/>
+                <text text="$l10n_fp_help_start_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_start_3_title"/>
+                <text text="$l10n_fp_help_start_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_driveto_title" iconSliceId="ad_gui.input_silomode_1">
+            <paragraph>
+                <title text="$l10n_fp_help_driveto_1_title"/>
+                <text text="$l10n_fp_help_driveto_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_driveto_2_title"/>
+                <text text="$l10n_fp_help_driveto_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_autonomous_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_1_title"/>
+                <text text="$l10n_fp_help_autonomous_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_2_title"/>
+                <text text="$l10n_fp_help_autonomous_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_3_title"/>
+                <text text="$l10n_fp_help_autonomous_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_4_title"/>
+                <text text="$l10n_fp_help_autonomous_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_5_title"/>
+                <text text="$l10n_fp_help_autonomous_5_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_6_title"/>
+                <image filename="help/fp_help_autonome_hud.dds" size="1024 1024" uvs="0px 0px 662px 522px" aspectRatio="0.789"/>
+                <text text="$l10n_fp_help_autonomous_6_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_7_title"/>
+                <text text="$l10n_fp_help_autonomous_7_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_autonomous_8_title"/>
+                <text text="$l10n_fp_help_autonomous_8_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_deliverto_title" iconSliceId="ad_gui.input_silomode_2">
+            <paragraph>
+                <title text="$l10n_fp_help_deliverto_1_title"/>
+                <text text="$l10n_fp_help_deliverto_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_pickupdeliver_title" iconSliceId="ad_gui.input_silomode_3">
+            <paragraph>
+                <title text="$l10n_fp_help_pickupdeliver_1_title"/>
+                <text text="$l10n_fp_help_pickupdeliver_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_pickupdeliver_2_title"/>
+                <text text="$l10n_fp_help_pickupdeliver_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_load_title" iconSliceId="ad_gui.input_silomode_4">
+            <paragraph>
+                <title text="$l10n_fp_help_load_1_title"/>
+                <text text="$l10n_fp_help_load_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_unloader_title" iconSliceId="ad_gui.input_silomode_5">
+            <paragraph>
+                <title text="$l10n_fp_help_unloader_1_title"/>
+                <text text="$l10n_fp_help_unloader_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_unloader_2_title"/>
+                <text text="$l10n_fp_help_unloader_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_editor_title" iconSliceId="ad_gui.input_record_1">
+            <paragraph>
+                <title text="$l10n_fp_help_editor_1_title"/>
+                <text text="$l10n_fp_help_editor_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_editor_2_title"/>
+                <text text="$l10n_fp_help_editor_2_text"/>
+            </paragraph>
+        </page>
+    </category>
+</helpLines>

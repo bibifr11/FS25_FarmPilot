@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer"/>
+    <Bitmap profile="dialogFullscreenBg" />
+    <GuiElement profile="fs25_dialogBg" size="900px 600px">
+        <ThreePartBitmap profile="fp_dialogBgMiddleSmall"/>
+        <ThreePartBitmap profile="fp_dialogBgTopSmall"/>
+        <ThreePartBitmap profile="fp_dialogBgBottom"/>
+
+        <BoxLayout profile="ad_common_dialogContentContainer">
+            <Text profile="ad_common_dialogTitle" text="$l10n_gui_ad_autonomous_title"/>
+
+            <ThreePartBitmap profile="ad_common_dialogTitleLineSeparator"/>
+
+            <BoxLayout profile="ad_common_hBox" height="60px">
+                <Text profile="ad_common_dialogText" id="infoText" text="" textAutoWidth="false" width="100%" textMaxNumLines="2"/>
+            </BoxLayout>
+
+            <BoxLayout absoluteSizeOffset="40px 200px" margin="0 0 0 10px">
+                <SmoothList id="courseList" profile="ad_common_list" onDoubleClick="onDoubleClick">
+                    <ListItem profile="ad_common_listItem">
+                        <Text name="listItemText" profile="ad_common_listItemText"/>
+                        <Text name="listItemValue" profile="ad_common_listItemText" width="100%" textAlignment="right"/>
+                    </ListItem>
+                </SmoothList>
+
+                <ThreePartBitmap profile="ad_common_listSliderBox">
+                    <Slider profile="ad_common_listSlider" dataElementId="courseList" />
+                </ThreePartBitmap>
+            </BoxLayout>
+
+            <BoxLayout profile="ad_common_dialogButtonBox">
+                <Button profile="buttonOK" text="$l10n_gui_ad_autonomous_change" onClick="onClickChange" />
+                <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+                <Button profile="buttonActivate" text="$l10n_gui_ad_autonomous_auto" onClick="onClickAuto" />
+                <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+                <Button profile="buttonBack" text="$l10n_button_back" onClick="onClickBack" />
+            </BoxLayout>
+        </BoxLayout>
+    </GuiElement>
+</GUI>

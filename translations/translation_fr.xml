@@ -3,67 +3,67 @@
 	<translationContributors>Anonymous, Sam, Lactic68</translationContributors>
 	<texts>
 		<text name="UNKNOWN"											text="Inconnu" />
-		<text name="input_ADToggleHud"									text="AD: Afficher/masquer ATH" />
-		<text name="input_ADToggleHudExtension"						text="AD: Afficher infos de l'ATH" />
-		<text name="input_ADToggleMouse"								text="AD: Afficher/masquer le curseur" />
-		<text name="input_ADEnDisable"									text="AD: Activer/Désactiver" />
-		<text name="input_ADSilomode"									text="AD: Changer mode" />
-		<text name="input_ADPreviousMode"								text="AD: Mode précédent" />
-		<text name="input_ADRecord"									text="AD: Enregistrer une route à sens unique" />
-		<text name="input_ADRecord_Dual"								text="AD: Enregistrer une route à double-sens" />
-		<text name="input_ADRecord_SubPrio"							text="AD: Enregistrer une route secondaire" />
-		<text name="input_ADRecord_SubPrioDual"						text="AD: Enregistrer une route secondaire à double-sens" />
-		<text name="input_ADRecord_TwoWay"								text="AD : Enregistrer 2 routes à la fois, sens unique normal" />
-		<text name="input_ADRecord_Dual_TwoWay"						text="AD : Enregistrer 2 routes à la fois, double sens" />
-		<text name="input_ADRecord_SubPrio_TwoWay"						text="AD : Enregistrer 2 routes à la fois, sens unique secondaire" />
-		<text name="input_ADRecord_SubPrioDual_TwoWay"					text="AD : Enregistrer 2 routes à la fois, double sens secondaire" />
-		<text name="input_ADSelectTarget"								text="AD: Sélect. prochaine destination" />
-		<text name="input_ADSelectPreviousTarget"						text="AD: Sélect. destination précédente" />
-		<text name="input_AD_Speed_up"									text="AD: Augmenter la vitesse" />
-		<text name="input_AD_Speed_down"								text="AD: Diminuer la vitesse" />
-		<text name="input_AD_routes_manager"							text="AD: Ouvrir le gestionnaire d'itinéraires" />
-		<text name="input_AD_open_notification_history"				text="AD: Ouvrir l'historique des notifications" />
-		<text name="input_AD_open_colorSettings"						text="AD: Choix des couleurs" />
-		<text name="input_AD_continue"									text="AD: Continuer" />
-		<text name="input_ADSelectTargetUnload"						text="AD: Sélect. prochain déchargement" />
-		<text name="input_ADSelectPreviousTargetUnload"				text="AD: Sélect. déchargement précédent" />
-		<text name="input_ADActivateDebug"								text="AD: Activer mode édition" />
-		<text name="input_ADDisplayMapPoints"							text="AD: Afficher les points" />
-		<text name="input_ADDebugSelectNeighbor"						text="AD: Sélect. point à proximité" />
-		<text name="input_ADDebugChangeNeighbor"						text="AD: Sélect. point suivant" />
-		<text name="input_ADDebugPreviousNeighbor"						text="AD: Sélect. point précédent" />
-		<text name="input_ADDebugCreateConnection"						text="AD: Connecter entre" />
-		<text name="input_ADDebugToggleConnectionInverted"				text="AD: Connecter entre (sens inversé)" />
-		<text name="input_ADDebugCreateMapMarker"						text="AD: Créer nouvelle destination" />
-		<text name="input_ADRenameMapMarker"							text="AD: Renommer destination actuelle" />
-		<text name="input_ADDebugDeleteWayPoint"						text="AD: Effacer point de passage" />
-		<text name="input_ADDebugDeleteDestination"					text="AD: Éffacer point destination" />
-		<text name="input_ADSelectNextFillType"						text="AD: Remplissage suivant" />
-		<text name="input_ADSelectPreviousFillType"					text="AD: Remplissage précédent" />
-		<text name="input_ADOpenGUI"									text="AD: Ouvrir l'interface Graphique Utilisateur/GUI" />
-		<text name="input_ADCallDriver"								text="AD: Appeler un chauffeur" />
-		<text name="input_ADGoToVehicle"								text="AD: Entrer dans le vehicule arrivé" />
-		<text name="input_ADNameDriver"								text="AD: Donnez un nom au chauffeur" />
-		<text name="input_ADSetDestinationFilter"						text="AD: Filtre des destinations" />
-		<text name="input_AD_FieldSpeed_up"							text="AD: Augmenter la vitesse aux champs" />
-		<text name="input_AD_FieldSpeed_down"							text="AD: Réduire la vitesse aux champs" />
-		<text name="input_ADIncLoopCounter"							text="AD: Augmenter le nombre de répétitions" />
-		<text name="input_ADDecLoopCounter"							text="AD: Diminuer le nombre de répétitions" />
-		<text name="input_ADbunkerUnloadType"							text="AD: Déchargement dans une benne ou BGA" />
-		<text name="input_ADParkVehicle"								text="AD: Garer le véhicule" />
-		<text name="input_ADSetParkDestination"						text="AD: Désigner la 1ère destination comme parking" />
-		<text name="input_ADRefuelVehicle"								text="AD: Faire le plein du véhicule" />
-		<text name="input_ADRepairVehicle"								text="AD: Réparer le véhicule" />
-		<text name="input_ADSwapTargets"								text="AD: Echanger les destinations" />
-		<text name="input_ADStartHelper"								text="AD: Démarrer le Courseplay ou AIVE" />
-		<text name="input_ADToggleUsedHelper"							text="AD: Basculer entre Courseplay ou AIVE" />
-		<text name="input_AD_devAction"								text="AD: Action du développeur" />
-		<text name="input_ADToggleAutomaticPickupTarget"				text="AD: Choix automatique du point de chargement" />
-		<text name="input_ADToggleAutomaticUnloadTarget"				text="AD: Choix automatique du point de déchargement" />
-		<text name="input_ADToggleLoadByFillLevel"						text="AD : Chargement selon le niveau de remplissage" />
-		<text name="input_ADCopySettings"								text="AD : Copier les réglages" />
-		<text name="input_ADPasteSettings"								text="AD : Coller les réglages" />
-		<text name="input_ADCreateFieldPoints"							text="AD : Créer les points de champ" />
+		<text name="input_ADToggleHud"									text="FP - Afficher/masquer ATH" />
+		<text name="input_ADToggleHudExtension"						text="FP - Afficher infos de l'ATH" />
+		<text name="input_ADToggleMouse"								text="FP - Afficher/masquer le curseur" />
+		<text name="input_ADEnDisable"									text="FP - Activer/Désactiver" />
+		<text name="input_ADSilomode"									text="FP - Changer mode" />
+		<text name="input_ADPreviousMode"								text="FP - Mode précédent" />
+		<text name="input_ADRecord"									text="FP - Enregistrer une route à sens unique" />
+		<text name="input_ADRecord_Dual"								text="FP - Enregistrer une route à double-sens" />
+		<text name="input_ADRecord_SubPrio"							text="FP - Enregistrer une route secondaire" />
+		<text name="input_ADRecord_SubPrioDual"						text="FP - Enregistrer une route secondaire à double-sens" />
+		<text name="input_ADRecord_TwoWay"								text="FP - Enregistrer 2 routes à la fois, sens unique normal" />
+		<text name="input_ADRecord_Dual_TwoWay"						text="FP - Enregistrer 2 routes à la fois, double sens" />
+		<text name="input_ADRecord_SubPrio_TwoWay"						text="FP - Enregistrer 2 routes à la fois, sens unique secondaire" />
+		<text name="input_ADRecord_SubPrioDual_TwoWay"					text="FP - Enregistrer 2 routes à la fois, double sens secondaire" />
+		<text name="input_ADSelectTarget"								text="FP - Sélect. prochaine destination" />
+		<text name="input_ADSelectPreviousTarget"						text="FP - Sélect. destination précédente" />
+		<text name="input_AD_Speed_up"									text="FP - Augmenter la vitesse" />
+		<text name="input_AD_Speed_down"								text="FP - Diminuer la vitesse" />
+		<text name="input_AD_routes_manager"							text="FP - Ouvrir le gestionnaire d'itinéraires" />
+		<text name="input_AD_open_notification_history"				text="FP - Ouvrir l'historique des notifications" />
+		<text name="input_AD_open_colorSettings"						text="FP - Choix des couleurs" />
+		<text name="input_AD_continue"									text="FP - Continuer" />
+		<text name="input_ADSelectTargetUnload"						text="FP - Sélect. prochain déchargement" />
+		<text name="input_ADSelectPreviousTargetUnload"				text="FP - Sélect. déchargement précédent" />
+		<text name="input_ADActivateDebug"								text="FP - Activer mode édition" />
+		<text name="input_ADDisplayMapPoints"							text="FP - Afficher les points" />
+		<text name="input_ADDebugSelectNeighbor"						text="FP - Sélect. point à proximité" />
+		<text name="input_ADDebugChangeNeighbor"						text="FP - Sélect. point suivant" />
+		<text name="input_ADDebugPreviousNeighbor"						text="FP - Sélect. point précédent" />
+		<text name="input_ADDebugCreateConnection"						text="FP - Connecter entre" />
+		<text name="input_ADDebugToggleConnectionInverted"				text="FP - Connecter entre (sens inversé)" />
+		<text name="input_ADDebugCreateMapMarker"						text="FP - Créer nouvelle destination" />
+		<text name="input_ADRenameMapMarker"							text="FP - Renommer destination actuelle" />
+		<text name="input_ADDebugDeleteWayPoint"						text="FP - Effacer point de passage" />
+		<text name="input_ADDebugDeleteDestination"					text="FP - Éffacer point destination" />
+		<text name="input_ADSelectNextFillType"						text="FP - Remplissage suivant" />
+		<text name="input_ADSelectPreviousFillType"					text="FP - Remplissage précédent" />
+		<text name="input_ADOpenGUI"									text="FP - Ouvrir l'interface Graphique Utilisateur/GUI" />
+		<text name="input_ADCallDriver"								text="FP - Appeler un chauffeur" />
+		<text name="input_ADGoToVehicle"								text="FP - Entrer dans le vehicule arrivé" />
+		<text name="input_ADNameDriver"								text="FP - Donnez un nom au chauffeur" />
+		<text name="input_ADSetDestinationFilter"						text="FP - Filtre des destinations" />
+		<text name="input_AD_FieldSpeed_up"							text="FP - Augmenter la vitesse aux champs" />
+		<text name="input_AD_FieldSpeed_down"							text="FP - Réduire la vitesse aux champs" />
+		<text name="input_ADIncLoopCounter"							text="FP - Augmenter le nombre de répétitions" />
+		<text name="input_ADDecLoopCounter"							text="FP - Diminuer le nombre de répétitions" />
+		<text name="input_ADbunkerUnloadType"							text="FP - Déchargement dans une benne ou BGA" />
+		<text name="input_ADParkVehicle"								text="FP - Garer le véhicule" />
+		<text name="input_ADSetParkDestination"						text="FP - Désigner la 1ère destination comme parking" />
+		<text name="input_ADRefuelVehicle"								text="FP - Faire le plein du véhicule" />
+		<text name="input_ADRepairVehicle"								text="FP - Réparer le véhicule" />
+		<text name="input_ADSwapTargets"								text="FP - Echanger les destinations" />
+		<text name="input_ADStartHelper"								text="FP - Démarrer le Courseplay ou AIVE" />
+		<text name="input_ADToggleUsedHelper"							text="FP - Basculer entre Courseplay ou AIVE" />
+		<text name="input_AD_devAction"								text="FP - Action du développeur" />
+		<text name="input_ADToggleAutomaticPickupTarget"				text="FP - Choix automatique du point de chargement" />
+		<text name="input_ADToggleAutomaticUnloadTarget"				text="FP - Choix automatique du point de déchargement" />
+		<text name="input_ADToggleLoadByFillLevel"						text="FP - Chargement selon le niveau de remplissage" />
+		<text name="input_ADCopySettings"								text="FP - Copier les réglages" />
+		<text name="input_ADPasteSettings"								text="FP - Coller les réglages" />
+		<text name="input_ADCreateFieldPoints"							text="FP - Créer les points de champ" />
 		<text name="hud_avoidFruit"									text="AD: Éviter les cultures" />
 		<text name="hud_startHelper"									text="AD: Démarrer AI/CP à la destination" />
 		<text name="AD_parkVehicle_noPosSet"							text="Pas de parking attribué. Veuillez sélectionner la (Destination actuelle) et corriger avec le clic droit de souris sur le 'P' HUD." />
@@ -449,6 +449,10 @@
 		<text name="gui_ad_trafficYieldDriveSide_left" text="Gauche" />
 		<text name="gui_ad_fieldParkWhileWaiting" text="Attente dans le champ" />
 		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Un déchargeur qui attend l'appel d'une moissonneuse entre dans le champ et se gare sur une place libre sans culture, loin des chemins, pour ne pas bloquer la route" />
+		<text name="gui_ad_autonomousNoCp" text="Autonome sans Courseplay" />
+		<text name="gui_ad_autonomousNoCp_tooltip" text="Ce que fait le mode Autonome quand Courseplay n'est pas installé : le chauffeur s'arrête et attend, ou l'ouvrier du jeu prend le champ (mode Classique)" />
+		<text name="gui_ad_autonomousNoCp_wait" text="Attendre" />
+		<text name="gui_ad_autonomousNoCp_ai" text="Ouvrier du jeu" />
 		<text name="AD_task_park_in_field" text="Se gare dans le champ" />
 		<text name="AD_task_hv_chopper" text="l'ensileuse" />
 		<text name="AD_task_hv_combine" text="la moissonneuse" />
@@ -516,5 +520,133 @@
 		<text name="adAddon_load" text="Chargement"/>
 		<text name="adAddon_totalWeight" text="Poids total"/>
 		<text name="adAddon_player" text="Joueur"/>
+			<!-- FarmPilot mode Autonome -->
+		<text name="AD_MODE_AUTONOMOUS" text="Autonome" />
+		<text name="input_ADAutonomousCourses" text="FP - Parcours Autonome (choix par champ)" />
+		<text name="AD_autonomous_start" text="parcours Courseplay « %s » lancé sur le champ %s" />
+		<text name="AD_autonomous_none" text="aucun parcours Courseplay de %s m sur le champ %s, en attente" />
+		<text name="AD_autonomous_several" text="%s parcours de %s m sur le champ %s, choisissez-en un dans la fenêtre Parcours Autonome (Ctrl+Alt+5 du pavé numérique), en attente" />
+		<text name="AD_autonomous_noField" text="aucun champ ici, en attente" />
+		<text name="AD_autonomous_noWidth" text="largeur de l'outil inconnue, en attente" />
+		<text name="AD_autonomous_noTool" text="mode Autonome : aucun outil de travail attelé" />
+		<text name="AD_autonomous_aiNoCp" text="Courseplay introuvable : ouvrier du jeu lancé sur le champ %s" />
+		<text name="AD_autonomous_aiFailed" text="l'ouvrier du jeu n'a pas pu démarrer, en attente" />
+		<text name="AD_autonomous_noCp" text="Courseplay introuvable sur ce véhicule, en attente" />
+		<text name="AD_autonomous_cpFailed" text="Courseplay n'a pas pu démarrer avec « %s », en attente" />
+		<text name="AD_autonomous_nextField" text="Champ suivant : %s" />
+		<text name="AD_autonomous_nextFieldNone" text="Champ suivant : aucun" />
+		<text name="AD_autonomous_nextFieldGo" text="champ fini, départ vers le champ suivant « %s »" />
+		<text name="AD_task_autonomous_detach" text="Dételer l'outil" />
+		<text name="AD_task_autonomous_fetch" text="Atteler l'outil" />
+		<text name="AD_autonomous_dropGo" text="champ fini, l'outil va à sa place « %s »" />
+		<text name="AD_autonomous_dropDone" text="outil dételé, le tracteur va à sa place « %s »" />
+		<text name="AD_autonomous_dropFailed" text="l'outil n'a pas pu être dételé, arrêt ici" />
+		<text name="AD_autonomous_dropSeveral" text="plusieurs outils attelés : pas de dételage, il se gare comme avant" />
+		<text name="AD_autonomous_dropNoToolPark" text="l'outil n'a pas de place de parking : il se gare comme avant" />
+		<text name="AD_autonomous_dropNoTractorPark" text="le tracteur n'a pas de place de parking (à part celle de l'outil) : outil gardé, il se gare comme avant" />
+		<text name="AD_autonomous_tool" text="Outil : %s" />
+		<text name="AD_autonomous_toolNone" text="Outil : celui attelé" />
+		<text name="AD_autonomous_toolListNone" text="Celui attelé" />
+		<text name="AD_autonomous_toolListEntry" text="%s · %d m" />
+		<text name="AD_autonomous_nextTool" text="Outil suivant : %s" />
+		<text name="AD_autonomous_nextToolNone" text="Outil suivant : le même" />
+		<text name="AD_autonomous_nextToolListNone" text="Le même" />
+		<text name="AD_autonomous_swapGo" text="champ fini : l'outil va à sa place « %s », puis « %s » est attelé pour le champ suivant « %s »" />
+		<text name="AD_autonomous_swapSeveral" text="outil suivant « %s » : plusieurs outils attelés, pas de changement d'outil, arrêt et attente" />
+		<text name="AD_autonomous_swapNoToolPark" text="outil suivant « %s » : l'outil attelé n'a pas de place de parking, arrêt et attente" />
+		<text name="AD_autonomous_fetchGo" text="va chercher l'outil « %s »" />
+		<text name="AD_autonomous_fetchDone" text="outil « %s » attelé, départ vers le champ" />
+		<text name="AD_autonomous_fetchFailed" text="l'outil « %s » n'a pas pu être attelé, arrêt" />
+		<text name="AD_autonomous_fetchNoPath" text="pas de chemin jusqu'à l'avant de l'outil « %s » : placez le tracteur devant l'outil, dans son axe, et relancez" />
+		<text name="AD_autonomous_fetchMissed" text="attelage de l'outil « %s » raté, arrêt devant l'outil" />
+		<text name="AD_autonomous_fetchBusy" text="l'outil « %s » est attelé à un autre engin" />
+		<text name="AD_autonomous_fetchOther" text="un autre outil est attelé : dételez-le pour aller chercher « %s », ou choisissez « Celui attelé » sur la ligne « Outil »" />
+		<text name="AD_autonomous_fetchNoJoint" text="l'outil « %s » ne s'attelle pas à l'arrière de ce tracteur (ou l'attelage arrière est déjà pris)" />
+		<text name="AD_fpFn_plow" text="Charrue" />
+		<text name="AD_fpFn_cultivator" text="Cultivateur" />
+		<text name="AD_fpFn_discHarrow" text="Déchaumeur" />
+		<text name="AD_fpFn_powerHarrow" text="Herse rotative" />
+		<text name="AD_fpFn_subsoiler" text="Décompacteur" />
+		<text name="AD_fpFn_spader" text="Bêcheuse" />
+		<text name="AD_fpFn_roller" text="Rouleau" />
+		<text name="AD_fpFn_weeder" text="Désherbeuse" />
+		<text name="AD_fpFn_mulcher" text="Broyeur" />
+		<text name="AD_fpFn_stonePicker" text="Ramasse-pierres" />
+		<text name="AD_fpFn_seeder" text="Semoir" />
+		<text name="AD_fpFn_planter" text="Semoir monograine" />
+		<text name="AD_fpFn_fertilizerSpreader" text="Épandeur d'engrais" />
+		<text name="AD_fpFn_sprayer" text="Pulvérisateur" />
+		<text name="AD_fpFn_slurryTank" text="Tonne à lisier" />
+		<text name="AD_fpFn_manureSpreader" text="Épandeur à fumier" />
+		<text name="AD_fpFn_mower" text="Faucheuse" />
+		<text name="AD_fpFn_tedder" text="Faneuse" />
+		<text name="AD_fpFn_windrower" text="Andaineur" />
+		<text name="AD_fpFn_baler" text="Presse" />
+		<text name="AD_fpFn_balerSquare" text="Presse carrée" />
+		<text name="AD_fpFn_balerRound" text="Presse ronde" />
+		<text name="gui_ad_autonomous_title" text="Parcours Autonome" />
+		<text name="gui_ad_autonomous_field" text="Champ %s" />
+		<text name="gui_ad_autonomous_fields" text="Champs %s" />
+		<text name="gui_ad_autonomous_autoOne" text="Automatique : %s" />
+		<text name="gui_ad_autonomous_autoSeveral" text="Automatique (%s parcours : arrêt)" />
+		<text name="gui_ad_autonomous_tool" text="Outil : %s, largeur %s m" />
+		<text name="gui_ad_autonomous_noCourse" text="Aucun parcours Courseplay enregistré de %s m." />
+		<text name="gui_ad_autonomous_noVehicle" text="Montez dans le véhicule avec son outil attelé." />
+		<text name="gui_ad_autonomous_noCp" text="Courseplay est introuvable sur ce véhicule." />
+		<text name="gui_ad_autonomous_noWidth" text="Largeur de l'outil inconnue : attelez l'outil." />
+		<text name="gui_ad_autonomous_change" text="Changer" />
+		<text name="gui_ad_autonomous_auto" text="Automatique" />
+			<!-- FarmPilot aide (menu Aide du jeu) -->
+		<text name="fp_help_category" text="FarmPilot" />
+		<text name="fp_help_start_title" text="Prise en main" />
+		<text name="fp_help_start_1_title" text="Le HUD" />
+		<text name="fp_help_start_1_text" text="Alt + 0 (pavé numérique) affiche ou masque le HUD FarmPilot. Clic molette : la souris apparaît pour cliquer dans le HUD. La 1re liste est la destination ; les listes en dessous (déchargement, produit) s'affichent selon le mode." />
+		<text name="fp_help_start_2_title" text="Boutons principaux" />
+		<text name="fp_help_start_2_text" text="Marche/Arrêt lance ou arrête le chauffeur. Bouton mode : clic gauche = mode suivant, clic droit = mode précédent. Continuer : relance un chauffeur qui attend. Garer : envoie le véhicule à son point de stationnement (clic droit : choisit ce point)." />
+		<text name="fp_help_start_3_title" text="Raccourcis" />
+		<text name="fp_help_start_3_text" text="Ctrl + Alt + flèche droite / gauche : destination suivante / précédente. Ctrl + Alt + 0 : réglages. Ctrl + Alt + M : historique des messages. Maj + C / Maj + V : copier / coller les réglages d'un véhicule à l'autre. Toutes les touches se changent dans Options &gt; Commandes." />
+		<text name="fp_help_driveto_title" text="Mode Conduite" />
+		<text name="fp_help_driveto_1_title" text="Principe" />
+		<text name="fp_help_driveto_1_text" text="Choisissez une destination puis Marche. Le véhicule suit le réseau de routes jusqu'à la destination, puis s'arrête." />
+		<text name="fp_help_driveto_2_title" text="Avec Courseplay" />
+		<text name="fp_help_driveto_2_text" text="Si le bouton « Démarrer AI/CP à la destination » du HUD est allumé (clic droit : Courseplay, AIVE ou ouvrier du jeu), cet assistant prend la suite à l'arrivée, avec le parcours déjà chargé dans le véhicule. Pour que FarmPilot choisisse lui-même le parcours Courseplay, utilisez le mode Autonome." />
+		<text name="fp_help_autonomous_title" text="Mode Autonome" />
+		<text name="fp_help_autonomous_1_title" text="Principe" />
+		<text name="fp_help_autonomous_1_text" text="Comme Conduite : choisissez le champ (destination) et lancez. À l'arrivée, FarmPilot prend le parcours Courseplay enregistré qui a exactement la largeur de l'outil attelé, le charge et lance Courseplay au premier point du parcours. Il faut un outil de travail attelé (travail du sol, semoir, pulvé, épandeur, faucheuse, presse...) : avec une benne, un plateau ou une moissonneuse seuls, le mode refuse de démarrer." />
+		<text name="fp_help_autonomous_2_title" text="Choix du parcours" />
+		<text name="fp_help_autonomous_2_text" text="Seuls les parcours enregistrés dans Courseplay (menu Parcours, tous les dossiers) comptent, sur le champ d'arrivée ou son groupe de champs (champs réunis d'AutoSwitch quand il est installé). La largeur est comparée à 10 cm près, comme les réglages de Courseplay." />
+		<text name="fp_help_autonomous_3_title" text="Mémoire" />
+		<text name="fp_help_autonomous_3_text" text="Le parcours utilisé est retenu pour ce champ et cet outil, dans la sauvegarde. L'année suivante, avec le même outil et la même largeur, il est repris directement, même s'il existe plusieurs parcours possibles." />
+		<text name="fp_help_autonomous_4_title" text="Arrêt et attente" />
+		<text name="fp_help_autonomous_4_text" text="S'il n'y a aucun parcours à la bonne largeur, ou plusieurs sans choix retenu, le chauffeur s'arrête et attend ; un message en donne la raison. Choisissez le parcours dans la fenêtre Parcours Autonome puis relancez. Sans Courseplay, selon le réglage « Autonome sans Courseplay », le chauffeur attend ou l'ouvrier du jeu prend le champ (mode Classique)." />
+		<text name="fp_help_autonomous_5_title" text="Fenêtre Parcours Autonome" />
+		<text name="fp_help_autonomous_5_text" text="Bouton du HUD (en mode Autonome, à la place du bouton Courseplay) ou Ctrl + Alt + 5 (pavé numérique), dans le véhicule avec l'outil attelé. Une ligne par champ ou groupe de champs. Changer : passe au parcours suivant, puis revient sur Automatique. Automatique : efface le choix. Double-clic = Changer." />
+		<text name="fp_help_autonomous_6_title" text="Champ suivant" />
+		<text name="fp_help_autonomous_6_text" text="En mode Autonome, la 3e ligne du HUD est le champ suivant (vide par défaut). Choisissez-y un champ dans la liste, ou clic droit sur la carte ; clic droit sur la ligne pour la vider. Quand le champ en cours est fini, le champ suivant passe en 1re ligne, la ligne « Champ suivant » se vide et le chauffeur part le travailler. Si elle est vide, il va se garer comme avant." />
+		<text name="fp_help_autonomous_7_title" text="Outil posé à sa place, outil à aller atteler" />
+		<text name="fp_help_autonomous_7_text" text="Fin du travail sans champ suivant : si l'outil a sa place de parking et le tracteur la sienne, le chauffeur pose l'outil à sa place, débranche flexibles et prise de force (mod d'attelage manuel), le dételle, puis va garer le tracteur. Les places se règlent comme d'habitude (Ctrl + clic sur P en mode éditeur : outil sélectionné pour la place de l'outil, aucun outil sélectionné pour celle du tracteur). Les masses sont ignorées ; avec plusieurs outils attelés, il se gare comme avant. La 2e ligne du HUD (« Outil ») est l'outil à aller chercher avant le champ, par sa fonction et sa largeur (outils de la ferme dételés qui s'attellent à l'arrière du tracteur). Au départ, le chauffeur prend vos routes jusqu'à la place de l'outil (ou jusqu'au point du réseau devant l'outil), recule, l'attelle, branche flexibles et prise de force, le relève et part au champ. « Celui attelé » (ou clic droit sur la ligne) : rien à aller chercher." />
+		<text name="fp_help_autonomous_8_title" text="Outil suivant" />
+		<text name="fp_help_autonomous_8_text" text="En mode Autonome, la 4e ligne du HUD est l'outil du champ suivant (« Le même » par défaut ; clic droit sur la ligne pour y revenir). Elle ne sert qu'avec un champ suivant. Quand le champ en cours est fini, le chauffeur pose l'outil attelé à sa place de parking (comme en fin de travail), va chercher l'outil suivant (par vos routes, marche arrière, attelage, flexibles et prise de force), puis part au champ suivant. L'outil suivant passe alors sur la ligne « Outil » et la ligne « Outil suivant » revient sur « Le même ». Si l'outil suivant est pris par un autre engin ou ne s'attelle pas à ce tracteur, l'outil attelé est quand même posé à sa place, puis le chauffeur s'arrête là et un message en donne la raison : relancez quand l'outil suivant est libre. Si l'outil attelé n'a pas de place de parking ou si plusieurs outils sont attelés, rien ne change : le chauffeur s'arrête au bout du champ avec un message." />
+		<text name="fp_help_deliverto_title" text="Mode Livraison" />
+		<text name="fp_help_deliverto_1_title" text="Principe" />
+		<text name="fp_help_deliverto_1_text" text="Choisissez la destination de déchargement puis Marche. Le véhicule y va, décharge sa remorque ou sa benne, se gare si un point de stationnement est réglé, sinon s'arrête." />
+		<text name="fp_help_pickupdeliver_title" text="Mode Chargement et livraison" />
+		<text name="fp_help_pickupdeliver_1_title" text="Principe" />
+		<text name="fp_help_pickupdeliver_1_text" text="1re liste : point de chargement ; 2e liste : point de déchargement ; 3e liste : produit à charger. Le véhicule charge, livre, puis recommence." />
+		<text name="fp_help_pickupdeliver_2_title" text="Boucles" />
+		<text name="fp_help_pickupdeliver_2_text" text="Compteur de boucles du HUD : 0 = sans fin, sinon nombre de tours avant de s'arrêter. Les boutons à gauche des listes choisissent automatiquement le meilleur point de chargement ou de vente." />
+		<text name="fp_help_load_title" text="Mode Chargement" />
+		<text name="fp_help_load_1_title" text="Principe" />
+		<text name="fp_help_load_1_text" text="Le véhicule va charger au point de la 2e liste (produit de la 3e liste), puis conduit jusqu'au point de la 1re liste et s'arrête. Pratique pour remplir un semoir ou un pulvérisateur avant d'aller au champ." />
+		<text name="fp_help_unloader_title" text="Mode Décharger moissonneuse" />
+		<text name="fp_help_unloader_1_title" text="Principe" />
+		<text name="fp_help_unloader_1_text" text="Le véhicule attend près du champ (1re liste), vient sous la goulotte quand la moissonneuse ou l'ensileuse l'appelle, suit la machine pendant le déchargement, puis livre au point de la 2e liste et revient." />
+		<text name="fp_help_unloader_2_title" text="Réglages" />
+		<text name="fp_help_unloader_2_text" text="Ctrl + Alt + 0 &gt; Déchargement moissonneuse : remplissage avant départ, côté, distances et plusieurs remorques par machine." />
+		<text name="fp_help_editor_title" text="Routes et destinations" />
+		<text name="fp_help_editor_1_title" text="Éditeur" />
+		<text name="fp_help_editor_1_text" text="Bouton éditeur du HUD : enregistrer une route en roulant, relier des points, créer, renommer ou supprimer une destination." />
+		<text name="fp_help_editor_2_title" text="Outils" />
+		<text name="fp_help_editor_2_text" text="Ctrl + Alt + 1 (pavé numérique) : gestionnaire d'itinéraires (exporter ou importer le réseau de routes). Ctrl + Maj + F : créer les points de champ." />
 	</texts>
 </l10n>

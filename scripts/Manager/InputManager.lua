@@ -64,6 +64,7 @@ ADInputManager.actionsToInputs = {
     {"ADCopySettings", "input_copySettings", false, true},
     {"ADPasteSettings", "input_pasteSettings", false, true},
     {"ADCreateFieldPoints", "input_createFieldPoints", false, true},
+    {"ADAutonomousCourses", "input_autonomousCourses", false, false},
 }
 
 --[[
@@ -240,6 +241,13 @@ end
 function ADInputManager:input_routesManager()
     if (AutoDrive.getSetting("enableRoutesManagerOnDediServer") and g_dedicatedServer ~= nil) or g_dedicatedServer == nil then
         AutoDrive.onOpenRoutesManager()
+    end
+end
+
+-- FarmPilot : fenêtre « Parcours Autonome »
+function ADInputManager:input_autonomousCourses()
+    if g_dedicatedServer == nil then
+        AutoDrive.onOpenAutonomousCourses()
     end
 end
 
@@ -439,7 +447,11 @@ function ADInputManager:input_previousTarget(vehicle)
 end
 
 function ADInputManager:input_nextTarget_Unload(vehicle)
-    if ADGraphManager:getMapMarkerById(1) ~= nil and ADGraphManager:getWayPointById(1) ~= nil then
+    if ADGraphManager:getMapMarkerById(1) ~= nil and ADGraphManager:getWayPointById(1) ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
+        -- FarmPilot mode Autonome : touche « destination de déchargement suivante » = champ suivant
+        local currentTarget = vehicle.ad.stateModule:getFpNextField() ~= nil and vehicle.ad.stateModule:getFpNextFieldId() or vehicle.ad.stateModule:getFirstMarkerId()
+        vehicle.ad.stateModule:setFpNextField(ADGraphManager:getNextTargetAlphabetically(currentTarget))
+    elseif ADGraphManager:getMapMarkerById(1) ~= nil and ADGraphManager:getWayPointById(1) ~= nil then
         local currentTarget = vehicle.ad.stateModule:getSecondMarkerId()
         local nextTarget = ADGraphManager:getNextTargetAlphabetically(currentTarget)
         vehicle.ad.stateModule:setSecondMarker(nextTarget)
@@ -447,7 +459,10 @@ function ADInputManager:input_nextTarget_Unload(vehicle)
 end
 
 function ADInputManager:input_previousTarget_Unload(vehicle)
-    if ADGraphManager:getMapMarkerById(1) ~= nil and ADGraphManager:getWayPointById(1) ~= nil then
+    if ADGraphManager:getMapMarkerById(1) ~= nil and ADGraphManager:getWayPointById(1) ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
+        local currentTarget = vehicle.ad.stateModule:getFpNextField() ~= nil and vehicle.ad.stateModule:getFpNextFieldId() or vehicle.ad.stateModule:getFirstMarkerId()
+        vehicle.ad.stateModule:setFpNextField(ADGraphManager:getPreviousTargetAlphabetically(currentTarget))
+    elseif ADGraphManager:getMapMarkerById(1) ~= nil and ADGraphManager:getWayPointById(1) ~= nil then
         local currentTarget = vehicle.ad.stateModule:getSecondMarkerId()
         local previousTarget = ADGraphManager:getPreviousTargetAlphabetically(currentTarget)
         vehicle.ad.stateModule:setSecondMarker(previousTarget)

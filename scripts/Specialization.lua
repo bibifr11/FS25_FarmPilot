@@ -455,6 +455,7 @@ function AutoDrive:onUpdate(dt)
         local shouldUStopVehicle = false
         local allowTaskUpdate = (not AutoDrive.getSetting("FoldImplements", self) or (self.ad.foldStartTime + AutoDrive.foldTimeout < g_time))
         allowTaskUpdate = allowTaskUpdate and (self.ad.ALDelayStartTime + AutoDrive.ALDelayTimeout < g_time)
+        allowTaskUpdate, shouldUStopVehicle = ADFoldGuard.update(self, dt, allowTaskUpdate, shouldUStopVehicle) -- outils immobiles et replies avant de partir (AutoDriveFoldGuard.lua)
 
         if allowTaskUpdate then
             -- forage harvester unloader: isolated plants are forgotten by every strict crop check of this update

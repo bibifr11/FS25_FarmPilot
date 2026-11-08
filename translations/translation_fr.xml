@@ -466,6 +466,8 @@
 		<text name="gui_ad_secondaryRoads" text="Routes secondaires" />
 		<text name="gui_ad_secondaryRoads_tooltip" text="Points « secondaire » du réseau. Auto : comme AutoDrive d'origine (prises seulement si la principale est bien plus longue). Autorisées : prises dès qu'elles font gagner du temps. Jamais : seulement s'il n'y a pas d'autre route" />
 		<text name="gui_ad_secondaryRoads_auto" text="Auto (d'origine)" />
+		<text name="AD_cropStuck" text="%s %s : bloqué dans la culture (%s), aucun trajet propre pour en sortir : à dégager à la main" />
+		<text name="AD_foldWait" text="%s %s : j'attends que %s soit replié (%d %%)%s, je ne pars pas" />
 		<text name="gui_ad_dirtRoadSpeed" text="Vitesse maxi sur route tertiaire" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Vitesse maximale sur les points « route tertiaire ». Le calcul de route en tient compte : une route tertiaire n'est prise que si elle fait gagner du temps" />
 		<text name="AD_task_park_in_field" text="Se gare dans le champ" />

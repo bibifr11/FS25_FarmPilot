@@ -1646,6 +1646,7 @@ function CatchCombinePipeTask:tryNoWayWait(noRoute)
         self.vehicle.ad.pathFinderModule:reset()
         self.preplanning = false
     end
+    self:warnStuckInCrop(noRoute) -- benne bloquee dans la culture : message au joueur (FollowCombineCropGuard.lua)
     self.state = CatchCombinePipeTask.STATE_NO_WAY_WAIT
     return true
 end

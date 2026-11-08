@@ -453,6 +453,8 @@
 		<text name="gui_ad_secondaryRoads" text="Nebenstrecken" />
 		<text name="gui_ad_secondaryRoads_tooltip" text="Nebenstrecken-Punkte des Netzes. Auto: wie das originale AutoDrive (nur genutzt, wenn die Hauptstrecke viel länger ist). Erlaubt: genutzt, sobald sie Zeit sparen. Nie: nur wenn es keine andere Strecke gibt" />
 		<text name="gui_ad_secondaryRoads_auto" text="Auto (Original)" />
+		<text name="AD_cropStuck" text="%s %s: steckt im Bestand fest (%s), kein freier Weg hinaus: bitte von Hand befreien" />
+		<text name="AD_foldWait" text="%s %s: warte, bis %s eingeklappt ist (%d %%)%s, fahre nicht los" />
 		<text name="gui_ad_dirtRoadSpeed" text="Höchstgeschwindigkeit auf Tertiärstraßen" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Höchstgeschwindigkeit auf Tertiärstraßen-Punkten. Die Routenberechnung berücksichtigt sie: eine Tertiärstraße wird nur genutzt, wenn sie Zeit spart" />
 		<text name="AD_task_park_in_field" text="Parkt im Feld" />

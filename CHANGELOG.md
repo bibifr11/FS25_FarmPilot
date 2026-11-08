@@ -3,6 +3,13 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.17
+
+- Départ : FarmPilot attend que les outils soient repliés (repli bloqué relancé, outil baissé d'abord relevé), avec un message chaque minute.
+- Moissonneuse : la benne ne roule plus dans la culture encore debout.
+- Start: FarmPilot waits until the tools are folded (a stuck fold is restarted, a lowered tool is raised first), with a message every minute.
+- Combine: the trailer no longer drives into standing crop.
+
 ## 1.0.1.16
 
 - Semoir, plein à la station : la distance est mesurée au point de chargement ; le chauffeur attend que les cuves soient pleines ; la sortie du champ se fait comme en fin de travail.

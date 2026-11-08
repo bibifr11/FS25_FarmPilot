@@ -466,6 +466,8 @@
 		<text name="gui_ad_secondaryRoads" text="Secondary roads" />
 		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Auto: like original AutoDrive (taken only when the main road is much longer). Allowed: taken whenever they save time. Never: only when there is no other route" />
 		<text name="gui_ad_secondaryRoads_auto" text="Auto (original)" />
+		<text name="AD_cropStuck" text="%s %s: stuck in the crop (%s), no clean way out: please clear it by hand" />
+		<text name="AD_foldWait" text="%s %s: waiting for %s to fold (%d %%)%s, not leaving" />
 		<text name="gui_ad_dirtRoadSpeed" text="Max speed on tertiary roads" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on tertiary road points. The route search uses it: a tertiary road is taken only when it saves time" />
 		<text name="AD_task_park_in_field" text="Parking in the field" />

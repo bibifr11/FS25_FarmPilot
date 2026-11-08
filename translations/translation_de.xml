@@ -596,6 +596,32 @@
 		<text name="gui_ad_autonomous_noWidth" text="Arbeitsbreite unbekannt: Gerät anhängen." />
 		<text name="gui_ad_autonomous_change" text="Ändern" />
 		<text name="gui_ad_autonomous_auto" text="Automatisch" />
+		<text name="gui_ad_seeder_title" text="Sämaschinen-Einstellungen" />
+		<text name="gui_ad_seeder_head" text="Sämaschine: %s · Feld: %s" />
+		<text name="gui_ad_seeder_noSeeder" text="Keine Sämaschine in dieser Zeile." />
+		<text name="gui_ad_seeder_pickRefill" text="Nachfüllpunkt wählen (Ändern oder Doppelklick), Zurück zum Zurückkehren." />
+		<text name="gui_ad_seeder_current" text="aktuell" />
+		<text name="gui_ad_seeder_fixed" text="%s (fest)" />
+		<text name="gui_ad_seeder_fruit" text="Zu säende Frucht" />
+		<text name="gui_ad_seeder_load" text="Laden: %s" />
+		<text name="gui_ad_seeder_yes" text="Ja" />
+		<text name="gui_ad_seeder_no" text="Nein" />
+		<text name="gui_ad_seeder_refill" text="Nachfüllpunkt" />
+		<text name="gui_ad_seeder_refillNone" text="zu wählen" />
+		<text name="gui_ad_seeder_statusOk" text="Einstellungen bestätigt: Start erlaubt." />
+		<text name="gui_ad_seeder_statusTodo" text="Noch nicht bestätigt: Start verweigert, bis Sie auf Bestätigen klicken." />
+		<text name="gui_ad_seeder_choose" text="Wählen" />
+		<text name="gui_ad_seeder_validate" text="Bestätigen" />
+		<text name="gui_ad_seeder_needFill" text="Mindestens ein Produkt zum Laden wählen." />
+		<text name="gui_ad_seeder_needRefill" text="Nachfüllpunkt wählen." />
+		<text name="gui_ad_seeder_tooltip" text="Sämaschinen-Einstellungen" />
+		<text name="gui_ad_seeder_tooltipNext" text="Sämaschinen-Einstellungen (nächstes Feld)" />
+		<text name="AD_autonomous_seederTodo" text="Einstellungen der Sämaschine « %s » für « %s » bestätigen (oranges Zahnrad), Start verweigert" />
+		<text name="AD_autonomous_seederFill" text="Sämaschine nicht voll: nachfüllen bei « %s » vor dem Feld" />
+		<text name="AD_autonomous_seederEmpty" text="Sämaschine leer: nachfüllen bei « %s », dann zurück zum Feld" />
+		<text name="AD_autonomous_seederBack" text="nachgefüllt, zurück zum Feld « %s »" />
+		<text name="AD_autonomous_seederOther" text="Courseplay gestoppt (Tank leer), aber die gewählten Produkte sind voll: Stopp" />
+		<text name="AD_autonomous_cpRestartFailed" text="Courseplay konnte nicht am letzten Wegpunkt neu starten, wartet" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />
 		<text name="fp_help_start_title" text="Erste Schritte" />

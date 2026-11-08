@@ -25,10 +25,30 @@ function AutonomousMode:reset()
     self.fetchTool = nil
     self.fetchTask = nil
     self.fetchStuckTimer = nil
+    -- (08/11, demande Fabien) semoir : plein à la zone de ravitaillement, comme le mode Chargement (voir startRefill)
+    self.refillStage = nil
+    self.refillThen = nil
+    self.refillPlan = nil
+    self.refillTask = nil
     self.vehicle.ad.trailerModule:reset()
 end
 
 function AutonomousMode:start(user)
+    -- (08/11, Fabien : « tant que les infos ne sont pas validées le bouton de démarrage est refusé ») semoir sur la ligne
+    -- Outil (ou Outil suivant) : culture, produits et zone de ravitaillement à valider (roue dentée) avant le départ
+    local okB, block = pcall(ADSeederManager.startBlock, self.vehicle)
+    if not okB then
+        ADAutonomousManager.log("ERREUR réglages du semoir : %s", tostring(block))
+        block = nil
+    end
+    if block ~= nil then
+        AutonomousMode.message(self.vehicle, ADMessagesManager.messageTypes.ERROR, 12000, "AD_autonomous_seederTodo", tostring(block.label), tostring(block.field))
+        ADAutonomousManager.log("%s : départ refusé, réglages du semoir « %s » à valider pour « %s »", tostring(self.vehicle.ad.stateModule:getName()), tostring(block.label), tostring(block.field))
+        if self.vehicle.ad.stateModule:isActive() then
+            self.vehicle:stopAutoDrive()
+        end
+        return
+    end
     -- (07/11, demande Fabien) outil choisi dans le HUD et pas encore attelé : on va l'atteler d'abord
     local okF, fetchTool, fetchErr, wanted = pcall(ADAutonomousManager.toolToFetch, self.vehicle)
     if not okF then
@@ -66,6 +86,21 @@ function AutonomousMode:start(user)
         self:startFetch(fetchTool)
         return
     end
+    -- (08/11) semoir réglé attelé : culture mise sur le semoir ; pas plein = plein à la zone d'abord, puis le champ
+    local okP, plan = pcall(ADSeederManager.prepare, self.vehicle)
+    if not okP then
+        ADAutonomousManager.log("ERREUR semoir : %s", tostring(plan))
+        plan = nil
+    end
+    if plan ~= nil and plan.needsFill and plan.marker ~= nil then
+        self:startRefill(plan, "field")
+        return
+    end
+    self:departToField()
+end
+
+-- départ normal vers le champ (1re destination), le parcours Courseplay est choisi à l'arrivée
+function AutonomousMode:departToField()
     self.destinationID = self.vehicle.ad.stateModule:getFirstMarker().id
     ADAutonomousManager.log("%s : départ vers « %s »", tostring(self.vehicle.ad.stateModule:getName()), tostring(self.vehicle.ad.stateModule:getFirstMarker().name))
     self.driveToDestinationTask = DriveToDestinationTask:new(self.vehicle, self.destinationID)
@@ -97,6 +132,17 @@ function AutonomousMode:monitorTasks(dt)
             ADAutonomousManager.log("ERREUR route vers l'outil : %s", tostring(err))
         end
     end
+    if self.refillStage == "load" then
+        local ok, err = pcall(self.monitorRefill, self, dt)
+        if not ok then
+            ADAutonomousManager.log("ERREUR plein du semoir : %s", tostring(err))
+        end
+    end
+end
+
+-- (08/11) plein du semoir : chargé aux zones comme le mode Chargement
+function AutonomousMode:shouldLoadOnTrigger()
+    return self.refillStage == "load"
 end
 
 function AutonomousMode:handleFinishedTask()
@@ -106,6 +152,10 @@ function AutonomousMode:handleFinishedTask()
     end
     if self.fetchStage ~= nil then
         self:handleFetchStage()
+        return
+    end
+    if self.refillStage ~= nil then
+        self:handleRefillStage()
         return
     end
     if self.driveToDestinationTask == nil then
@@ -562,6 +612,147 @@ function AutonomousMode:handleFetchStage()
         AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, AutonomousMode.FETCH_FAIL_KEYS[result] or "AD_autonomous_fetchFailed", label)
         vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
     end
+end
+
+-------------------------------------------------------------------------------
+-- (08/11, demande Fabien) semoir : plein à la zone de ravitaillement, « comme le mode Chargement » :
+--   au départ (semoir pas plein) : plein, puis le champ ;
+--   semoir vide au champ (Courseplay s'arrête, événement onCpEmpty) : sortie du champ, plein, retour au champ,
+--   puis Courseplay repart au dernier point (startCpAtLastWp, comme le mode Chargement avec Courseplay)
+-------------------------------------------------------------------------------
+AutonomousMode.REFILL_EXIT_DISTANCE = 30   -- m : au champ et plus loin que ça de son marqueur = sortie du champ d'abord (mode Chargement)
+
+function AutonomousMode:startRefill(plan, after)
+    local vehicle = self.vehicle
+    local name = tostring(vehicle.ad.stateModule:getName())
+    self.refillPlan = plan
+    self.refillThen = after
+    ADSeederManager.setLoadFillTypes(vehicle, plan.fillTypes)
+    ADAutonomousManager.log("%s : semoir (%s), plein %s à « %s »%s", name, ADSeederManager.fillText(plan.tool, plan.fillTypes),
+        table.concat(plan.settings.fillTypes or {}, "+"), tostring(plan.marker.name), after == "back" and ", puis retour au champ" or ", puis départ au champ")
+    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, after == "back" and "AD_autonomous_seederEmpty" or "AD_autonomous_seederFill", tostring(plan.marker.name))
+    if after == "back" then
+        local x, y, z = getWorldTranslation(vehicle.components[1].node)
+        local fieldMarker = vehicle.ad.stateModule:getFirstMarker()
+        local wp = fieldMarker ~= nil and ADGraphManager:getWayPointById(fieldMarker.id) or nil
+        local dist = wp ~= nil and MathUtil.vector2Length(x - wp.x, z - wp.z) or 0
+        if AutoDrive.checkIsOnField(x, y, z) and dist > AutonomousMode.REFILL_EXIT_DISTANCE then
+            self.refillStage = "exit"
+            self.refillTask = ExitFieldTask:new(vehicle)
+            vehicle.ad.taskModule:addTask(self.refillTask)
+            return
+        end
+    end
+    self:startRefillLoad()
+end
+
+function AutonomousMode:startRefillLoad()
+    self.refillStage = "load"
+    self.refillTask = LoadAtDestinationTask:new(self.vehicle, self.refillPlan.marker.id)
+    self.vehicle.ad.taskModule:addTask(self.refillTask)
+end
+
+-- arrêté au point de ravitaillement : les cuves des produits choisis pleines = fini, même si une autre cuve du semoir
+-- (produit non choisi) est vide (le mode Chargement compte toutes les cuves et attendrait)
+function AutonomousMode:monitorRefill(dt)
+    local task = self.refillTask
+    if task == nil or self.refillPlan == nil or self.vehicle.ad.taskModule:getActiveTask() ~= task then
+        return
+    end
+    if task.state ~= LoadAtDestinationTask.STATE_DRIVING or not self.vehicle.ad.drivePathModule:isTargetReached() then
+        return
+    end
+    if self.vehicle.ad.trailerModule:isActiveAtTrigger() then
+        return
+    end
+    if ADSeederManager.productsFull(self.refillPlan.tool, self.refillPlan.fillTypes, self.vehicle) then
+        task:finished()
+    end
+end
+
+-- étapes : « exit » (sortie du champ) -> « load » (plein) -> « back » (retour au champ) ou départ au champ
+function AutonomousMode:handleRefillStage()
+    local vehicle = self.vehicle
+    local name = tostring(vehicle.ad.stateModule:getName())
+    local stage = self.refillStage
+    self.refillTask = nil
+    if vehicle.ad.isStoppingWithError then
+        self.refillStage = nil
+        self.refillPlan = nil
+        vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
+        return
+    end
+    if stage == "exit" then
+        self:startRefillLoad()
+    elseif stage == "load" then
+        local plan = self.refillPlan
+        ADAutonomousManager.log("%s : plein fait (%s)", name, ADSeederManager.fillText(plan.tool, plan.fillTypes))
+        if self.refillThen == "back" then
+            local fieldMarker = vehicle.ad.stateModule:getFirstMarker()
+            self.refillStage = "back"
+            self.refillTask = DriveToDestinationTask:new(vehicle, fieldMarker.id)
+            vehicle.ad.taskModule:addTask(self.refillTask)
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_seederBack", tostring(fieldMarker.name))
+        else
+            self.refillStage = nil
+            self.refillPlan = nil
+            self.refillThen = nil
+            self:departToField()
+        end
+    else
+        -- « back » : revenu au champ, Courseplay repart au dernier point (voir stopAutoDrive, fpRestartCp)
+        self.refillStage = nil
+        self.refillPlan = nil
+        self.refillThen = nil
+        ADAutonomousManager.log("%s : de retour au champ, Courseplay repart où il s'était arrêté", name)
+        vehicle.ad.fpRestartCp = true
+        vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
+    end
+end
+
+-- bouton « Continuer » au point de ravitaillement (rien à charger, ou le joueur ne veut pas attendre) : on repart
+function AutonomousMode:continue()
+    if self.refillStage == "load" and self.refillTask ~= nil and self.vehicle.ad.taskModule:getActiveTask() == self.refillTask then
+        ADAutonomousManager.log("%s : plein arrêté par le joueur (Continuer)", tostring(self.vehicle.ad.stateModule:getName()))
+        self.refillTask:continue()
+        self.refillTask:finished()
+    end
+end
+
+-- Courseplay arrêté semoir vide (événement onCpEmpty) en mode Autonome : plein à la zone puis retour au champ ;
+-- true si c'est lancé (sinon arrêt comme avant)
+function AutonomousMode.onCpEmpty(vehicle)
+    if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.modes == nil or not vehicle.isServer then
+        return false
+    end
+    local sm = vehicle.ad.stateModule
+    if sm:getMode() ~= AutoDrive.MODE_AUTONOMOUS or sm:isActive() then
+        return false
+    end
+    local name = tostring(sm:getName())
+    local plan = ADSeederManager.prepare(vehicle)
+    if plan == nil or plan.marker == nil then
+        ADAutonomousManager.log("%s : Courseplay arrêté (cuve vide), pas de semoir réglé attelé : arrêt", name)
+        return false
+    end
+    if not plan.needsFill then
+        -- cuves choisies pleines : c'est une autre cuve qui manque, un plein ne servirait à rien (et tournerait en rond)
+        ADAutonomousManager.log("%s : Courseplay arrêté (cuve vide) mais les cuves choisies sont pleines (%s) : arrêt", name, ADSeederManager.fillText(plan.tool, plan.fillTypes))
+        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_seederOther")
+        return false
+    end
+    vehicle.ad.onRouteToRefuel = false
+    vehicle.ad.onRouteToRepair = false
+    vehicle.ad.onRouteToPark = false
+    vehicle.ad.restartCP = false
+    vehicle:startAutoDrive()
+    if not sm:isActive() then
+        return false
+    end
+    local mode = vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS]
+    mode:reset()
+    mode:startRefill(plan, "back")
+    return true
 end
 
 function AutonomousMode:stop()

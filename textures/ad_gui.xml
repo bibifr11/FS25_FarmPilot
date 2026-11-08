@@ -54,6 +54,8 @@
         <slice id="input_silomode_6" uvs="528px 660px 128px 128px"/>
         <slice id="input_silomode_7" uvs="132px 1188px 128px 128px"/>
         <slice id="input_silomode_8" uvs="264px 1188px 128px 128px"/>
+        <slice id="input_fpSeederSettings_1" uvs="396px 1188px 128px 128px"/>
+        <slice id="input_fpSeederSettings_2" uvs="1848px 396px 128px 128px"/>
         <slice id="input_startHelper_1" uvs="660px 660px 128px 128px"/>
         <slice id="input_startHelper_10" uvs="792px 660px 128px 128px"/>
         <slice id="input_startHelper_2" uvs="924px 660px 128px 128px"/>

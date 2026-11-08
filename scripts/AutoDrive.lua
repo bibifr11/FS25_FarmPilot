@@ -594,6 +594,7 @@ function AutoDrive:saveSavegame()
 		AutoDrive.saveToXML()
 		ADUserDataManager:saveToXml()
 		ADAutonomousManager:saveToXml()
+		ADSeederManager:saveToXml()
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil end")
 	end
 	--    Logging.info("[AD] AutoDrive:saveSavegame end")

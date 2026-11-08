@@ -141,6 +141,7 @@ source(Utils.getFilename("scripts/Modes/BGAMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))
@@ -156,6 +157,7 @@ source(Utils.getFilename("scripts/Gui/EnterGroupNameGUI.lua", g_currentModDirect
 source(Utils.getFilename("scripts/Gui/EnterTargetNameGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/ScanConfirmationGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/AutonomousCoursesGUI.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Gui/SeederSettingsGUI.lua", g_currentModDirectory))
 
 source(Utils.getFilename("scripts/Gui/EnterDestinationFilterGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))

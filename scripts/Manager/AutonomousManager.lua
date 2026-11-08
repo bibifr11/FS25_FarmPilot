@@ -532,6 +532,7 @@ local function shortConfigName(object)
     end
     return f
 end
+ADAutonomousManager.shortConfigName = shortConfigName
 
 -- outils attelés (récursif), sans le tracteur lui-même
 local function collectImplements(object, out, depth)
@@ -1323,5 +1324,27 @@ function ADAutonomousManager:startCourse(vehicle, e)
         return false
     end
     log("Courseplay lancé avec « %s »", ADAutonomousManager.courseLabel(e))
+    return true
+end
+
+-- (08/11) après le plein du semoir : Courseplay repart au dernier point du parcours déjà chargé (comme le mode
+-- Chargement avec Courseplay, AutoDrive:RestartCP)
+function ADAutonomousManager:restartCourse(vehicle)
+    if vehicle.startCpAtLastWp == nil then
+        return false
+    end
+    local isControlled = vehicle.spec_enterable ~= nil and vehicle:getIsControlled()
+    if vehicle.spec_enterable ~= nil then
+        vehicle.spec_enterable.isControlled = false
+    end
+    local okS, started = pcall(vehicle.startCpAtLastWp, vehicle)
+    if vehicle.spec_enterable ~= nil then
+        vehicle.spec_enterable.isControlled = isControlled
+    end
+    if not okS or started ~= true then
+        log("Courseplay n'a pas redémarré au dernier point (%s)", tostring(started))
+        return false
+    end
+    log("Courseplay reparti au dernier point")
     return true
 end

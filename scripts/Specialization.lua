@@ -1276,11 +1276,14 @@ function AutoDrive:stopAutoDrive()
             if autonomousCourse ~= nil and self.ad.isStoppingWithError then
                 autonomousCourse = nil
             end
+            -- (08/11) mode Autonome : revenu du plein du semoir, Courseplay repart au dernier point
+            local autonomousRestart = self.ad.fpRestartCp == true and not self.ad.isStoppingWithError
+            self.ad.fpRestartCp = nil
             local isPassingToAI = not self.ad.isStoppingWithError and self.ad.stateModule:getStartHelper() and self.ad.stateModule:getUsedHelper() == ADStateModule.HELPER_AI
             -- (07/11) mode Autonome « Classique » : ouvrier du jeu sur le champ d'arrivée
             local autonomousAI = self.ad.fpAutonomousAI == true and not self.ad.isStoppingWithError
             self.ad.fpAutonomousAI = nil
-            if autonomousCourse ~= nil then
+            if autonomousCourse ~= nil or autonomousRestart then
                 -- Courseplay seul, même si le bouton assistant du HUD est réglé sur AIVE / IA du jeu
                 isPassingToCP = true
                 isStartingAIVE = false
@@ -1318,6 +1321,12 @@ function AutoDrive:stopAutoDrive()
             if autonomousCourse ~= nil then
                 if not ADAutonomousManager:startCourse(self, autonomousCourse) then
                     AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_cpFailed", ADAutonomousManager.courseLabel(autonomousCourse))
+                end
+            elseif autonomousRestart then
+                local okR, restarted = pcall(ADAutonomousManager.restartCourse, ADAutonomousManager, self)
+                if not okR or not restarted then
+                    ADAutonomousManager.log("%s : Courseplay n'a pas pu repartir au dernier point (%s)", tostring(self.ad.stateModule:getName()), tostring(okR and restarted or "erreur"))
+                    AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_cpRestartFailed")
                 end
             elseif autonomousAI then
                 local ok, started, why = pcall(ADAutonomousManager.startBaseWorker, self)

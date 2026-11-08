@@ -3,6 +3,11 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.9
+
+- Semoir en mode Autonome : roue dentée sur la ligne Outil (orange = à régler, verte = validé) qui ouvre la fenêtre « Réglages du semoir » (culture, cuves à remplir, zone de ravitaillement), retenue par champ et par semoir. Au départ il fait le plein si besoin ; quand le semoir est vide au champ, il sort, refait le plein comme en mode Chargement (palettes, big bags, silos), revient et Courseplay repart au dernier point.
+- Seeder in Autonomous mode: gear icon on the Tool line (orange = to set, green = validated) opens the "Seeder settings" window (crop, tanks to fill, refill zone), saved per field and seeder. It fills up before leaving if needed; when the seeder is empty in the field, it leaves, refills like the Load mode (pallets, big bags, silos), comes back and Courseplay resumes at the last point.
+
 ## 1.0.1.8
 
 ### Nouveau mode « Autonome »

@@ -596,6 +596,32 @@
 		<text name="gui_ad_autonomous_noWidth" text="Tool width unknown: attach the tool." />
 		<text name="gui_ad_autonomous_change" text="Change" />
 		<text name="gui_ad_autonomous_auto" text="Automatic" />
+		<text name="gui_ad_seeder_title" text="Seeder settings" />
+		<text name="gui_ad_seeder_head" text="Seeder: %s · Field: %s" />
+		<text name="gui_ad_seeder_noSeeder" text="No seeder on this line." />
+		<text name="gui_ad_seeder_pickRefill" text="Choose the refill point (Change or double click), Back to return." />
+		<text name="gui_ad_seeder_current" text="current" />
+		<text name="gui_ad_seeder_fixed" text="%s (fixed)" />
+		<text name="gui_ad_seeder_fruit" text="Crop to sow" />
+		<text name="gui_ad_seeder_load" text="Load: %s" />
+		<text name="gui_ad_seeder_yes" text="Yes" />
+		<text name="gui_ad_seeder_no" text="No" />
+		<text name="gui_ad_seeder_refill" text="Refill point" />
+		<text name="gui_ad_seeder_refillNone" text="to choose" />
+		<text name="gui_ad_seeder_statusOk" text="Settings validated: start allowed." />
+		<text name="gui_ad_seeder_statusTodo" text="Not validated yet: start refused until you click Validate." />
+		<text name="gui_ad_seeder_choose" text="Choose" />
+		<text name="gui_ad_seeder_validate" text="Validate" />
+		<text name="gui_ad_seeder_needFill" text="Choose at least one product to load." />
+		<text name="gui_ad_seeder_needRefill" text="Choose the refill point." />
+		<text name="gui_ad_seeder_tooltip" text="Seeder settings" />
+		<text name="gui_ad_seeder_tooltipNext" text="Seeder settings (next field)" />
+		<text name="AD_autonomous_seederTodo" text="seeder « %s » settings to validate for « %s » (orange gear), start refused" />
+		<text name="AD_autonomous_seederFill" text="seeder not full: refilling at « %s » before the field" />
+		<text name="AD_autonomous_seederEmpty" text="seeder empty: refilling at « %s », then back to the field" />
+		<text name="AD_autonomous_seederBack" text="refilled, back to the field « %s »" />
+		<text name="AD_autonomous_seederOther" text="Courseplay stopped (empty tank) but the chosen products are full: stopping" />
+		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />
 		<text name="fp_help_start_title" text="Getting started" />

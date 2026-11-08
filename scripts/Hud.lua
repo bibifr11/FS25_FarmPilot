@@ -220,6 +220,9 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	table.insert(self.hudElements, fpFallback)
 	
 	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, rowFill, self.iconWidth, self.iconHeight, "input_toggleLoadByFillLevel", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleLoadByFillLevel", 1, true))
+	-- (08/11, demande Fabien) mode Autonome : roue dentée « Réglages du semoir » à gauche de la ligne « Outil » quand c'est
+	-- un semoir (même case que le bouton ci-dessus, caché dans ce mode) ; orange = à régler (départ refusé), verte = validé
+	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, rowFill, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_seeder_tooltip", 1, false))
 
 	local fillList = ADPullDownList:new(
 		self.posX + 2 * self.gapWidth + self.buttonWidth, --+ self.iconWidth * 5 + self.gapWidth*5
@@ -238,6 +241,10 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		nextTool.fpNext = true
 		nextTool.order = 4
 		table.insert(self.hudElements, nextTool)
+		-- roue dentée du semoir pour le champ suivant
+		local nextGear = ADHudButton:new(self.posX + self.gapWidth, rowNextTool, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_seeder_tooltipNext", 1, false)
+		nextGear.fpNext = true
+		table.insert(self.hudElements, nextGear)
 	end
 
 

@@ -199,6 +199,14 @@ function ADHudButton:getNewState(vehicle)
         end
     end
 
+    if self.primaryAction == "input_fpSeederSettings" then
+        -- (08/11) roue dentée du semoir : visible seulement si la ligne a un semoir ; 1 = à régler, 2 = validé
+        local okS, status = pcall(ADSeederManager.status, vehicle, self.fpNext == true)
+        status = okS and status or "none"
+        self.isVisible = status ~= "none"
+        newState = status == "ok" and 2 or 1
+    end
+
     if self.primaryAction == "input_bunkerUnloadType" then
         if vehicle.ad.stateModule:getBunkerUnloadTypeIsTrigger() then
             newState = 1
@@ -282,6 +290,18 @@ function ADHudButton:act(vehicle, posX, posY, isDown, isUp, button)
         if self.primaryAction == "input_toggleAutomaticUnloadTarget" or self.primaryAction == "input_toggleAutomaticPickupTarget" then
             self:actOnIcons(vehicle, posX, posY, isDown, isUp, button)
             return
+        end
+
+        if self.primaryAction == "input_fpSeederSettings" then
+            -- (08/11) fenêtre « Réglages du semoir » pour la ligne de cette roue dentée
+            if button == 1 and isUp then
+                AutoDrive.onOpenSeederSettings(vehicle, self.fpNext == true)
+                return true
+            end
+            if button > 0 and button < 4 and isDown then
+                return true, true
+            end
+            return false
         end
 
         if button == 1 and isUp and not AutoDrive.leftLSHIFTmodifierKeyPressed and not AutoDrive.leftCTRLmodifierKeyPressed then

@@ -12,6 +12,7 @@ function AutoDrive:loadGUI()
 	AutoDrive.gui.ADColorSettingsGui = ADColorSettingsGui.new()
 	AutoDrive.gui.ADScanConfirmationGui = ADScanConfirmationGui.new()
 	AutoDrive.gui.ADAutonomousCoursesGui = ADAutonomousCoursesGui.new()
+	AutoDrive.gui.ADSeederSettingsGui = ADSeederSettingsGui.new()
 
     local count = 1
     local result = nil
@@ -65,6 +66,12 @@ function AutoDrive:loadGUI()
     end
 
 	result = g_gui:loadGui(AutoDrive.directory .. "gui/autonomousCoursesGUI.xml", "ADAutonomousCoursesGui", AutoDrive.gui.ADAutonomousCoursesGui)
+    count = count + 1
+    if result == nil then
+        AutoDrive.debugMsg(nil, "AutoDrive:loadGUI failed count %d", count)
+    end
+
+	result = g_gui:loadGui(AutoDrive.directory .. "gui/seederSettingsGUI.xml", "ADSeederSettingsGui", AutoDrive.gui.ADSeederSettingsGui)
     count = count + 1
     if result == nil then
         AutoDrive.debugMsg(nil, "AutoDrive:loadGUI failed count %d", count)
@@ -163,6 +170,14 @@ end
 function AutoDrive.onOpenAutonomousCourses()
 	if AutoDrive.gui.ADAutonomousCoursesGui ~= nil and not AutoDrive.gui.ADAutonomousCoursesGui.isOpen then
 		g_gui:showDialog("ADAutonomousCoursesGui")
+	end
+end
+
+-- (08/11) roue dentée du semoir (ligne « Outil » ou « Outil suivant » du mode Autonome)
+function AutoDrive.onOpenSeederSettings(vehicle, isNext)
+	if AutoDrive.gui.ADSeederSettingsGui ~= nil and not AutoDrive.gui.ADSeederSettingsGui.isOpen then
+		ADSeederSettingsGui.context = { vehicle = vehicle, isNext = isNext == true }
+		g_gui:showDialog("ADSeederSettingsGui")
 	end
 end
 

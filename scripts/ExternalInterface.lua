@@ -529,6 +529,15 @@ function AutoDrive:onCpEmpty()
         end
         rootVehicle.ad.isCpEmpty = true
     end
+    -- FarmPilot mode Autonome (08/11) : semoir vide -> plein à la zone de ravitaillement, retour, Courseplay repart
+    if self.isServer then
+        local okR, started = pcall(AutonomousMode.onCpEmpty, self)
+        if not okR then
+            ADAutonomousManager.log("ERREUR semoir vide : %s", tostring(started))
+        elseif started then
+            return
+        end
+    end
     AutoDrive:handleCPFieldWorker(self)
 end
 

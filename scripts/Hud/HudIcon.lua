@@ -224,7 +224,14 @@ function ADHudIcon:addTooltipString(vehicle, currentText)
         if vehicle.ad.toolTipIsSetting then
             currentText = currentText .. " - " .. g_i18n:getText(vehicle.ad.sToolTip)
         else
-            currentText = currentText .. " - " .. string.sub(g_i18n:getText(vehicle.ad.sToolTip), 5, string.len(g_i18n:getText(vehicle.ad.sToolTip)))
+            -- préfixe des touches (« FP - », avant « AD: ») retiré
+            local tip = g_i18n:getText(vehicle.ad.sToolTip)
+            if string.sub(tip, 1, 5) == "FP - " then
+                tip = string.sub(tip, 6)
+            elseif string.sub(tip, 1, 4) == "AD: " then
+                tip = string.sub(tip, 5)
+            end
+            currentText = currentText .. " - " .. tip
         end
 
         if vehicle.ad.sToolTipInfo ~= nil then

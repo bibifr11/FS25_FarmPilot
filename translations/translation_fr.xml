@@ -596,6 +596,32 @@
 		<text name="gui_ad_autonomous_noWidth" text="Largeur de l'outil inconnue : attelez l'outil." />
 		<text name="gui_ad_autonomous_change" text="Changer" />
 		<text name="gui_ad_autonomous_auto" text="Automatique" />
+		<text name="gui_ad_seeder_title" text="Réglages du semoir" />
+		<text name="gui_ad_seeder_head" text="Semoir : %s · Champ : %s" />
+		<text name="gui_ad_seeder_noSeeder" text="Pas de semoir sur cette ligne." />
+		<text name="gui_ad_seeder_pickRefill" text="Choisissez la zone de ravitaillement (Changer ou double clic), Retour pour revenir." />
+		<text name="gui_ad_seeder_current" text="actuelle" />
+		<text name="gui_ad_seeder_fixed" text="%s (fixe)" />
+		<text name="gui_ad_seeder_fruit" text="Culture à semer" />
+		<text name="gui_ad_seeder_load" text="Charger : %s" />
+		<text name="gui_ad_seeder_yes" text="Oui" />
+		<text name="gui_ad_seeder_no" text="Non" />
+		<text name="gui_ad_seeder_refill" text="Zone de ravitaillement" />
+		<text name="gui_ad_seeder_refillNone" text="à choisir" />
+		<text name="gui_ad_seeder_statusOk" text="Réglages validés : départ autorisé." />
+		<text name="gui_ad_seeder_statusTodo" text="Pas encore validé : départ refusé tant que vous n'avez pas cliqué sur Valider." />
+		<text name="gui_ad_seeder_choose" text="Choisir" />
+		<text name="gui_ad_seeder_validate" text="Valider" />
+		<text name="gui_ad_seeder_needFill" text="Choisissez au moins un produit à charger." />
+		<text name="gui_ad_seeder_needRefill" text="Choisissez la zone de ravitaillement." />
+		<text name="gui_ad_seeder_tooltip" text="Réglages du semoir" />
+		<text name="gui_ad_seeder_tooltipNext" text="Réglages du semoir (champ suivant)" />
+		<text name="AD_autonomous_seederTodo" text="réglages du semoir « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
+		<text name="AD_autonomous_seederFill" text="semoir pas plein : plein à « %s » avant le champ" />
+		<text name="AD_autonomous_seederEmpty" text="semoir vide : plein à « %s », puis retour au champ" />
+		<text name="AD_autonomous_seederBack" text="plein fait, retour au champ « %s »" />
+		<text name="AD_autonomous_seederOther" text="Courseplay s'est arrêté (cuve vide) mais les produits choisis sont pleins : arrêt" />
+		<text name="AD_autonomous_cpRestartFailed" text="Courseplay n'a pas pu repartir au dernier point, en attente" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />
 		<text name="fp_help_start_title" text="Prise en main" />

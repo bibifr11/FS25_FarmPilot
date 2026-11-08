@@ -141,6 +141,7 @@ source(Utils.getFilename("scripts/Modes/LoadMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/BGAMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/AutonomousParkButton.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
 

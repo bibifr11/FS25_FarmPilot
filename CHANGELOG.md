@@ -3,6 +3,11 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.13
+
+- « Envoyer au parking » : l'outil est d'abord posé à sa place de parking, puis le tracteur va se garer.
+- "Send to parking": the tool is parked at its spot first, then the tractor parks.
+
 ## 1.0.1.12
 
 - Moissonneuse : le tracteur reste sous la goulotte pendant le déchargement.

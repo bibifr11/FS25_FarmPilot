@@ -598,6 +598,7 @@ function AutoDrive:saveSavegame()
 		ADUserDataManager:saveToXml()
 		ADAutonomousManager:saveToXml()
 		ADSeederManager:saveToXml()
+		if ADSprayerManager ~= nil then ADSprayerManager:saveToXml() end -- réglages des épandeurs, voir SprayerManager.lua
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil end")
 	end
 	--    Logging.info("[AD] AutoDrive:saveSavegame end")

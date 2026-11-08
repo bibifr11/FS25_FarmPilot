@@ -30,6 +30,7 @@ function AutonomousMode:reset()
     self.refillThen = nil
     self.refillPlan = nil
     self.refillTask = nil
+    self.dumpStage = nil -- épandeur : vider le reste en big bags, voir AutonomousSprayerDump.lua
     self.vehicle.ad.trailerModule:reset()
 end
 
@@ -49,6 +50,7 @@ function AutonomousMode:start(user)
         end
         return
     end
+    if ADSprayerManager ~= nil and ADSprayerManager.refuseStart(self) then return end -- épandeur / pulvé : réglages à valider (roue dentée), voir SprayerManager.lua
     -- (07/11, demande Fabien) outil choisi dans le HUD et pas encore attelé : on va l'atteler d'abord
     local okF, fetchTool, fetchErr, wanted = pcall(ADAutonomousManager.toolToFetch, self.vehicle)
     if not okF then
@@ -92,6 +94,7 @@ function AutonomousMode:start(user)
         ADAutonomousManager.log("ERREUR semoir : %s", tostring(plan))
         plan = nil
     end
+    plan = plan or (ADSprayerManager ~= nil and ADSprayerManager.preparePlan(self.vehicle, "field") or nil) -- épandeur / pulvé : même plein que le semoir, voir SprayerManager.lua
     if plan ~= nil and plan.needsFill and plan.marker ~= nil then
         self:startRefill(plan, "field")
         return
@@ -132,6 +135,7 @@ function AutonomousMode:monitorTasks(dt)
             ADAutonomousManager.log("ERREUR route vers l'outil : %s", tostring(err))
         end
     end
+    if ADSprayerManager ~= nil then pcall(ADSprayerManager.monitorTarget, self, dt) end -- épandeur : chargement arrêté à la quantité voulue, voir SprayerManager.lua
     if self.refillStage == "load" then
         local ok, err = pcall(self.monitorRefill, self, dt)
         if not ok then
@@ -158,6 +162,7 @@ function AutonomousMode:handleFinishedTask()
         self:handleRefillStage()
         return
     end
+    if self.dumpStage ~= nil and ADSprayerDump ~= nil then ADSprayerDump.handleStage(self) return end -- épandeur : vider le reste, voir AutonomousSprayerDump.lua
     if self.driveToDestinationTask == nil then
         return
     end
@@ -631,7 +636,7 @@ function AutonomousMode:startRefill(plan, after)
     ADSeederManager.setLoadFillTypes(vehicle, plan.fillTypes)
     ADAutonomousManager.log("%s : semoir (%s), plein %s à « %s »%s", name, ADSeederManager.fillText(plan.tool, plan.fillTypes),
         table.concat(plan.settings.fillTypes or {}, "+"), tostring(plan.marker.name), after == "back" and ", puis retour au champ" or ", puis départ au champ")
-    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, after == "back" and "AD_autonomous_seederEmpty" or "AD_autonomous_seederFill", tostring(plan.marker.name))
+    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, after == "back" and (plan.emptyKey or "AD_autonomous_seederEmpty") or (plan.fillKey or "AD_autonomous_seederFill"), tostring(plan.marker.name)) -- textes de l'épandeur : SprayerManager.lua
     if after == "back" then
         local x, y, z = getWorldTranslation(vehicle.components[1].node)
         local fieldMarker = vehicle.ad.stateModule:getFirstMarker()
@@ -732,6 +737,7 @@ function AutonomousMode.onCpEmpty(vehicle)
     end
     local name = tostring(sm:getName())
     local plan = ADSeederManager.prepare(vehicle)
+    plan = plan or (ADSprayerManager ~= nil and ADSprayerManager.preparePlan(vehicle, "back") or nil) -- épandeur / pulvé vide : même plein que le semoir, voir SprayerManager.lua
     if plan == nil or plan.marker == nil then
         ADAutonomousManager.log("%s : Courseplay arrêté (cuve vide), pas de semoir réglé attelé : arrêt", name)
         return false

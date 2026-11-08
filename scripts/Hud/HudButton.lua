@@ -203,6 +203,7 @@ function ADHudButton:getNewState(vehicle)
         -- (08/11) roue dentée du semoir : visible seulement si la ligne a un semoir ; 1 = à régler, 2 = validé
         local okS, status = pcall(ADSeederManager.status, vehicle, self.fpNext == true)
         status = okS and status or "none"
+        if ADSprayerManager ~= nil then status, self.toolTip = ADSprayerManager.hudGear(vehicle, self.fpNext == true, status) end -- épandeur / pulvé : même roue dentée, voir SprayerManager.lua
         self.isVisible = status ~= "none"
         newState = status == "ok" and 2 or 1
     end

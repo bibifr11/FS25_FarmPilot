@@ -431,6 +431,7 @@ end
 function AutoDrive:onCpFinished()
     AutoDrive.debugPrint(self, AutoDrive.DC_EXTERNALINTERFACEINFO, "AutoDrive:onCpFinished start... enableParkAtJobFinished %s", AutoDrive.getSetting("enableParkAtJobFinished", self))
     if self.isServer then
+        if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : vider le reste en big bags d'abord, voir AutonomousSprayerDump.lua
         -- FarmPilot mode Autonome : champ fini, champ suivant s'il y en a un (sinon se garer comme avant)
         local okNext, goneNext = pcall(AutonomousMode.goToNextField, self)
         if not okNext then
@@ -1077,6 +1078,7 @@ function AutoDrive:onAIJobFinished()
             self.ad.fpAIJobFinishedOk = nil
         end
         if finishedOk and self.isServer then
+            if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : vider le reste en big bags d'abord, voir AutonomousSprayerDump.lua
             local okNext, goneNext = pcall(AutonomousMode.goToNextField, self)
             if not okNext then
                 ADAutonomousManager.log("ERREUR champ suivant : %s", tostring(goneNext))

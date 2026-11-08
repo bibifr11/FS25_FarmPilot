@@ -150,6 +150,8 @@ source(Utils.getFilename("scripts/Modes/AutonomousParkButton.lua", g_currentModD
 source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousRefill.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/SprayerManager.lua", g_currentModDirectory)) -- épandeurs et pulvés en Autonome, voir SprayerManager.lua
+source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory)) -- épandeurs : vider le reste en big bags / IBC
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))
@@ -166,6 +168,7 @@ source(Utils.getFilename("scripts/Gui/EnterTargetNameGUI.lua", g_currentModDirec
 source(Utils.getFilename("scripts/Gui/ScanConfirmationGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/AutonomousCoursesGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SeederSettingsGUI.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Gui/SprayerSettingsGUI.lua", g_currentModDirectory)) -- fenêtre de l'épandeur, voir SprayerSettingsGUI.lua
 
 source(Utils.getFilename("scripts/Gui/EnterDestinationFilterGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))

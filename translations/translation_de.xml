@@ -641,6 +641,27 @@
 		<text name="AD_autonomous_seederEmpty" text="Sämaschine leer: nachfüllen bei « %s », dann zurück zum Feld" />
 		<text name="AD_autonomous_seederBack" text="nachgefüllt, zurück zum Feld « %s »" />
 		<text name="AD_autonomous_seederOther" text="Courseplay gestoppt (Tank leer), aber die gewählten Produkte sind voll: Stopp" />
+		<text name="gui_ad_sprayer_title" text="Streuer-Einstellungen" />
+		<text name="gui_ad_sprayer_head" text="Maschine: %s · Feld: %s" />
+		<text name="gui_ad_sprayer_noSprayer" text="Kein Streuer oder Spritze in dieser Zeile." />
+		<text name="gui_ad_sprayer_pickProduct" text="Produkte, die der Tank annimmt: wählen (Wählen oder Doppelklick), Zurück zum Zurückkehren." />
+		<text name="gui_ad_sprayer_product" text="Zu ladendes Produkt" />
+		<text name="gui_ad_sprayer_quantity" text="Zu ladende Menge" />
+		<text name="gui_ad_sprayer_quantityFull" text="Voll" />
+		<text name="gui_ad_sprayer_quantityField" text="Genau so viel wie für das Feld nötig" />
+		<text name="gui_ad_sprayer_estimate" text="~%d L: %.0f L/ha auf %.1f ha" />
+		<text name="gui_ad_sprayer_noEstimate" text="keine Schätzung möglich, es wird voll geladen" />
+		<text name="gui_ad_sprayer_moreThanTank" text="mehr als ein Tank, es wird voll geladen" />
+		<text name="gui_ad_sprayer_needProduct" text="Wählen Sie das zu ladende Produkt." />
+		<text name="gui_ad_sprayer_tooltip" text="Streuer-Einstellungen" />
+		<text name="gui_ad_sprayer_tooltipNext" text="Streuer-Einstellungen (nächstes Feld)" />
+		<text name="AD_autonomous_sprayerTodo" text="Einstellungen von « %s » für « %s » bestätigen (oranges Zahnrad), Start verweigert" />
+		<text name="AD_autonomous_sprayerFill" text="Tank nicht genug gefüllt: Befüllen bei « %s » vor dem Feld" />
+		<text name="AD_autonomous_sprayerEmpty" text="Tank leer: Befüllen bei « %s », dann zurück zum Feld" />
+		<text name="AD_autonomous_dumpGo" text="Feld fertig: Resttank wird bei « %s » in Big Bags entleert" />
+		<text name="AD_autonomous_dumpFailed" text="Resttank bei « %s » nicht entleert (kein Platz oder abgelehnt): bleibt im Tank" />
+		<text name="AD_task_autonomous_dump" text="Entleert den Rest in Big Bags" />
+		<text name="AD_autonomous_sprayerOtherProduct" text="der Tank enthält noch %s (%.0f L) und das gewählte Produkt ist %s: Tank leeren, Start verweigert" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay konnte nicht am letzten Wegpunkt neu starten, wartet" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />

@@ -641,6 +641,27 @@
 		<text name="AD_autonomous_seederEmpty" text="semoir vide : plein à « %s », puis retour au champ" />
 		<text name="AD_autonomous_seederBack" text="plein fait, retour au champ « %s »" />
 		<text name="AD_autonomous_seederOther" text="Courseplay s'est arrêté (cuve vide) mais les produits choisis sont pleins : arrêt" />
+		<text name="gui_ad_sprayer_title" text="Réglages de l'épandeur" />
+		<text name="gui_ad_sprayer_head" text="Machine : %s · Champ : %s" />
+		<text name="gui_ad_sprayer_noSprayer" text="Pas d'épandeur ni de pulvérisateur sur cette ligne." />
+		<text name="gui_ad_sprayer_pickProduct" text="Produits que la cuve accepte : choisissez (Choisir ou double clic), Retour pour revenir." />
+		<text name="gui_ad_sprayer_product" text="Produit à charger" />
+		<text name="gui_ad_sprayer_quantity" text="Quantité à prendre" />
+		<text name="gui_ad_sprayer_quantityFull" text="Plein" />
+		<text name="gui_ad_sprayer_quantityField" text="Juste ce qu'il faut pour le champ" />
+		<text name="gui_ad_sprayer_estimate" text="~%d L : %.0f L/ha sur %.1f ha" />
+		<text name="gui_ad_sprayer_noEstimate" text="estimation impossible, ce sera le plein" />
+		<text name="gui_ad_sprayer_moreThanTank" text="plus qu'une cuve, ce sera le plein" />
+		<text name="gui_ad_sprayer_needProduct" text="Choisissez le produit à charger." />
+		<text name="gui_ad_sprayer_tooltip" text="Réglages de l'épandeur" />
+		<text name="gui_ad_sprayer_tooltipNext" text="Réglages de l'épandeur (champ suivant)" />
+		<text name="AD_autonomous_sprayerTodo" text="réglages de « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
+		<text name="AD_autonomous_sprayerFill" text="cuve pas assez remplie : plein à « %s » avant le champ" />
+		<text name="AD_autonomous_sprayerEmpty" text="cuve vide : plein à « %s », puis retour au champ" />
+		<text name="AD_autonomous_dumpGo" text="champ fini : vide le reste de la cuve en big bags à « %s »" />
+		<text name="AD_autonomous_dumpFailed" text="reste de la cuve pas vidé à « %s » (pas de place ou refusé) : gardé dans la cuve" />
+		<text name="AD_task_autonomous_dump" text="Vide le reste en big bags" />
+		<text name="AD_autonomous_sprayerOtherProduct" text="la cuve contient encore %s (%.0f L) et le produit choisi est %s : videz la cuve, départ refusé" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay n'a pas pu repartir au dernier point, en attente" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />

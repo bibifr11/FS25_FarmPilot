@@ -3,6 +3,13 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.19
+
+- Épandeurs et pulvérisateurs (traînés ou automoteurs) en mode Autonome : plein comme pour le semoir ; fenêtre « Réglages de l'épandeur » (produit, quantité « Plein » ou « Juste ce qu'il faut », zone de plein).
+- Reste dans la cuve : gardé si le champ suivant prend le même produit, sinon vidé en big bags / IBC à la zone de plein.
+- Spreaders and sprayers (trailed or self-propelled) in Autonomous mode: refill like the seeder; "Spreader settings" window (product, "Full" or "Just enough" quantity, refill zone).
+- Leftover in the tank: kept if the next field uses the same product, otherwise emptied into big bags / IBCs at the refill zone.
+
 ## 1.0.1.18
 
 - Croisements : quand la voie est libre, il avance jusqu'à sa ligne ; il ne recule plus pour rien.

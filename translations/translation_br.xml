@@ -628,6 +628,27 @@
 		<text name="AD_autonomous_seederEmpty" text="seeder empty: refilling at « %s », then back to the field" />
 		<text name="AD_autonomous_seederBack" text="refilled, back to the field « %s »" />
 		<text name="AD_autonomous_seederOther" text="Courseplay stopped (empty tank) but the chosen products are full: stopping" />
+		<text name="gui_ad_sprayer_title" text="Spreader settings" />
+		<text name="gui_ad_sprayer_head" text="Machine: %s · Field: %s" />
+		<text name="gui_ad_sprayer_noSprayer" text="No spreader or sprayer on this line." />
+		<text name="gui_ad_sprayer_pickProduct" text="Products the tank accepts: pick one (Choose or double click), Back to return." />
+		<text name="gui_ad_sprayer_product" text="Product to load" />
+		<text name="gui_ad_sprayer_quantity" text="Quantity to take" />
+		<text name="gui_ad_sprayer_quantityFull" text="Full" />
+		<text name="gui_ad_sprayer_quantityField" text="Just enough for the field" />
+		<text name="gui_ad_sprayer_estimate" text="~%d L: %.0f L/ha over %.1f ha" />
+		<text name="gui_ad_sprayer_noEstimate" text="no estimate possible, it will be full" />
+		<text name="gui_ad_sprayer_moreThanTank" text="more than one tank, it will be full" />
+		<text name="gui_ad_sprayer_needProduct" text="Choose the product to load." />
+		<text name="gui_ad_sprayer_tooltip" text="Spreader settings" />
+		<text name="gui_ad_sprayer_tooltipNext" text="Spreader settings (next field)" />
+		<text name="AD_autonomous_sprayerTodo" text="settings of « %s » to validate for « %s » (orange gear), start refused" />
+		<text name="AD_autonomous_sprayerFill" text="tank not filled enough: filling at « %s » before the field" />
+		<text name="AD_autonomous_sprayerEmpty" text="tank empty: filling at « %s », then back to the field" />
+		<text name="AD_autonomous_dumpGo" text="field done: unloading the rest of the tank into big bags at « %s »" />
+		<text name="AD_autonomous_dumpFailed" text="rest of the tank not unloaded at « %s » (no space or refused): kept in the tank" />
+		<text name="AD_task_autonomous_dump" text="Unloads the rest into big bags" />
+		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />

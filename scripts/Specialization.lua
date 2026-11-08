@@ -1367,6 +1367,7 @@ function AutoDrive:stopAutoDrive()
                     AutoDrive.passToExternalMod_AI(self)
                 end
             end
+            if ADSprayerDump ~= nil then ADSprayerDump.afterStop(self) end -- épandeur : après la vidange, champ suivant / parking, voir AutonomousSprayerDump.lua
         end
     else
         Logging.devError("AutoDrive:stopAutoDrive() must be called only on the server.")

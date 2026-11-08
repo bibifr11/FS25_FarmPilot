@@ -3,6 +3,13 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.12
+
+- Moissonneuse : le tracteur reste sous la goulotte pendant le déchargement.
+- Le mod autoTurnOffTurnLights est neutralisé quand FarmPilot conduit (clignotants gérés par FarmPilot).
+- Combine: the tractor stays under the pipe while unloading.
+- The autoTurnOffTurnLights mod is neutralised while FarmPilot drives (indicators handled by FarmPilot).
+
 ## 1.0.1.11
 
 - Fenêtre « Réglages du semoir » : culture et zone de ravitaillement en listes déroulantes ; seules les cultures de saison sont proposées.

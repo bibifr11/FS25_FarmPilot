@@ -109,6 +109,11 @@ function FollowCombineTask:update(dt)
     self:updateCombineTurn(dt)
     self:updateInnerTurn(dt)
 
+    -- combine emptying into this trailer: stay under its pipe (FollowCombinePipeHold.lua)
+    if self:holdUnderCombinePipe(dt) then
+        return
+    end
+
     if self.lastState ~= self.state then
         FollowCombineTask.debugMsg(self.vehicle, "FollowCombineTask:update %s -> %s", tostring(self:getStateName(self.lastState)), tostring(self:getStateName()))
         self.lastState = self.state

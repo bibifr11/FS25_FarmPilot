@@ -145,6 +145,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirecto
 source(Utils.getFilename("scripts/Modes/AutonomousParkButton.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/AutonomousRefill.lua", g_currentModDirectory))
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))

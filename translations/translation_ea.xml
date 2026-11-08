@@ -364,9 +364,9 @@
 		<text name="ad_color_rightOfWayCenter"							text="29 Right of way Center waypoint" />
 		<text name="ad_color_intersectionConnection" text="30 intersection line" />
 		<text name="ad_color_intersectionNode" text="31 intersection point" />
-		<text name="ad_color_dirtSingleConnection" text="32 dirt road line, one way" />
-		<text name="ad_color_dirtDualConnection" text="33 dirt road line, two way" />
-		<text name="ad_color_dirtNode" text="34 dirt road waypoint" />
+		<text name="ad_color_dirtSingleConnection" text="32 tertiary road line, one way" />
+		<text name="ad_color_dirtDualConnection" text="33 tertiary road line, two way" />
+		<text name="ad_color_dirtNode" text="34 tertiary road waypoint" />
 		<text name="button_delete_all"									text="Eliminar todas" />
 		<text name="button_reset_selected"								text="Resetear seleccionados" />
 		<text name="AD_task_pathfinding"								text="Calculando ruta" />
@@ -407,13 +407,13 @@
 		<text name="gui_ad_editorTip_2"								text="Sólo ratón: Seleccione 1. punto" />
 		<text name="gui_ad_editorTip_3"								text="LCTRL = Crear nodo" />
 		<text name="gui_ad_editorTip_4"								text="LALT = Eliminar nodo" />
-		<text name="gui_ad_editorTip_5"								text="LSHIFT = Punto de alternancia como carretera secundaria" />
+		<text name="gui_ad_editorTip_5"								text="LSHIFT = Point type (main, secondary, tertiary, intersection)" />
 		<text name="gui_ad_editorTip_6"								text="Haciendo clic en el segundo nodo:" />
 		<text name="gui_ad_editorTip_7"								text="Alternar conexión" />
 		<text name="gui_ad_editorTip_8"								text="RSHIFT = Crear carretera inversa" />
 		<text name="gui_ad_editorTip_9"								text="1. nodo es intersección, segundo es vecino:" />
 		<text name="gui_ad_editorTip_10"								text="Alternar tipo de segmento (normal/dual)" />
-		<text name="gui_ad_editorTip_11"								text="LSHIFT = Alternar a carretera secundaria" />
+		<text name="gui_ad_editorTip_11"								text="LSHIFT = Section type (main, secondary, tertiary, intersection)" />
 		<text name="gui_ad_trafficYieldEnabled" text="Head-on passing" />
 		<text name="gui_ad_trafficYieldEnabled_tooltip" text="When two FarmPilot vehicles block each other head-on on a two-way road, one reverses while the other parks on the roadside, then both continue" />
 		<text name="gui_ad_trafficYieldDelay" text="Delay before passing manoeuvre" />
@@ -445,13 +445,16 @@
 		<text name="gui_ad_autonomousNoCp_tooltip" text="What Autonomous mode does when Courseplay is not installed: the driver stops and waits, or the base game worker takes the field (classic mode)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
-		<text name="gui_ad_dirtRoads" text="Dirt roads" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Dirt road points of the network (pink and purple lines in the editor). Allowed: taken only when they save time, at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
+		<text name="gui_ad_dirtRoads" text="Tertiary roads" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Tertiary road points of the network (pink and purple lines in the editor). Allowed: taken only when they save time, at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
 		<text name="gui_ad_dirtRoads_auto" text="Auto (truck: never)" />
 		<text name="gui_ad_dirtRoads_never" text="Never" />
 		<text name="gui_ad_dirtRoads_allowed" text="Allowed" />
-		<text name="gui_ad_dirtRoadSpeed" text="Max speed on dirt roads" />
-		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on dirt road points. The route search uses it: a dirt road is taken only when it saves time" />
+		<text name="gui_ad_secondaryRoads" text="Secondary roads" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Auto: like original AutoDrive (taken only when the main road is much longer). Allowed: taken whenever they save time. Never: only when there is no other route" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (original)" />
+		<text name="gui_ad_dirtRoadSpeed" text="Max speed on tertiary roads" />
+		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on tertiary road points. The route search uses it: a tertiary road is taken only when it saves time" />
 		<text name="AD_task_park_in_field" text="Parking in the field" />
 		<text name="AD_task_hv_chopper" text="the forage harvester" />
 		<text name="AD_task_hv_combine" text="the combine" />

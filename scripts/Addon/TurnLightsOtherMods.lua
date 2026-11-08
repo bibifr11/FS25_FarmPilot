@@ -13,7 +13,7 @@
 -- qui ne s'allume pas à la bonne distance.
 --
 -- Règle : véhicule conduit par FarmPilot = l'onUpdate de ce mod ne fait rien (ses repères de coup de volant
--- sont remis à zéro). Joueur au volant, ou Courseplay, ou l'ouvrier du jeu : ce mod marche comme avant.
+-- sont remis à zéro à chaque passage). Joueur au volant, ou Courseplay, ou l'ouvrier du jeu : ce mod marche comme avant.
 -- ============================================================================================================
 
 ADAddonTurnLightsOtherMods = {}
@@ -35,31 +35,47 @@ function ADAddonTurnLightsOtherMods.isDrivenByFarmPilot(vehicle)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- Mise en place (une fois, dès que la spécialisation de l'autre mod existe)
+-- Mise en place, par véhicule
+-- V1.0.1.13 cherchait la spécialisation une seule fois au démarrage (g_specializationManager) : pas trouvée en jeu
+-- (aucune ligne « sans effet » au log du 08/11 21:48, « éteint par un autre script » toujours là). Maintenant :
+--  1) à chaque passage pendant que FarmPilot conduit, ses repères de coup de volant sont remis à zéro. Son
+--     onUpdate ne peut éteindre qu'au passage qui suit celui où il a posé un repère : remis à zéro entre les deux,
+--     il n'éteint jamais, quel que soit l'ordre des mises à jour ;
+--  2) en plus, sa fonction onUpdate est remplacée, trouvée sur le type du véhicule (specializationsByName).
 -- ------------------------------------------------------------------------------------------------------------
-function ADAddonTurnLightsOtherMods.install()
-    if ADAddonTurnLightsOtherMods.done or g_specializationManager == nil or g_specializationManager.getSpecializationObjectByName == nil then
+local function wrap(spec, label)
+    if type(spec) ~= "table" or type(spec.onUpdate) ~= "function" or spec.fpTurnLightsWrapped then
         return
     end
-    ADAddonTurnLightsOtherMods.done = true
-    for specName, label in pairs(ADAddonTurnLightsOtherMods.KNOWN) do
-        local spec = g_specializationManager:getSpecializationObjectByName(specName)
-        if spec ~= nil and type(spec.onUpdate) == "function" and not spec.fpTurnLightsWrapped then
-            local original = spec.onUpdate
-            spec.fpTurnLightsWrapped = true
-            -- l'événement onUpdate est appelé par spec[eventName](...) : la fonction remplacée ici est celle appelée
-            spec.onUpdate = function(vehicle, ...)
-                if ADAddonTurnLightsOtherMods.isDrivenByFarmPilot(vehicle) then
-                    local drivable = vehicle.spec_drivable
-                    if drivable ~= nil then
-                        drivable.hasSteeredToTurnLeftDirection = false
-                        drivable.hasSteeredToTurnRightDirection = false
-                    end
-                    return
-                end
-                return original(vehicle, ...)
-            end
-            print(string.format("[AD-Clignotant] %s : sans effet pendant que FarmPilot conduit", label))
+    local original = spec.onUpdate
+    spec.fpTurnLightsWrapped = true
+    -- l'événement onUpdate est appelé par spec[eventName](...) : la fonction remplacée ici est celle appelée
+    spec.onUpdate = function(vehicle, ...)
+        if ADAddonTurnLightsOtherMods.isDrivenByFarmPilot(vehicle) then
+            return
         end
+        return original(vehicle, ...)
+    end
+    print(string.format("[AD-Clignotant] %s : sans effet pendant que FarmPilot conduit", label))
+end
+
+-- appelé à chaque passage du clignotant FarmPilot (TurnLights.lua), véhicule conduit par FarmPilot
+function ADAddonTurnLightsOtherMods.update(vehicle)
+    if not ADAddonTurnLightsOtherMods.isDrivenByFarmPilot(vehicle) then
+        return
+    end
+    local drivable = vehicle.spec_drivable
+    if drivable ~= nil then
+        drivable.hasSteeredToTurnLeftDirection = false
+        drivable.hasSteeredToTurnRightDirection = false
+    end
+    local byName = vehicle.specializationsByName
+    for specName, label in pairs(ADAddonTurnLightsOtherMods.KNOWN) do
+        local spec = type(byName) == "table" and byName[specName] or nil
+        if spec == nil and g_specializationManager ~= nil and g_specializationManager.getSpecializationObjectByName ~= nil then
+            local ok, s = pcall(g_specializationManager.getSpecializationObjectByName, g_specializationManager, specName)
+            spec = ok and s or nil
+        end
+        wrap(spec, label)
     end
 end

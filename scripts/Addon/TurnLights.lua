@@ -117,10 +117,6 @@ end
 
 function ADAddonTurnLights.update(module, minAngle, dt)
     local vehicle = module.vehicle
-    -- autres mods qui éteignent le clignotant : sans effet pendant que FarmPilot conduit (TurnLightsOtherMods.lua)
-    if ADAddonTurnLightsOtherMods ~= nil and not ADAddonTurnLightsOtherMods.done then
-        ADAddonTurnLightsOtherMods.install()
-    end
     local maxDistance = ADAddonTurnLights.autoDrive.getSetting("blinkDistance") or 50
     local direction = 0
     if module:isOnRoadNetwork() then
@@ -204,6 +200,11 @@ function ADAddonTurnLights.install(autoDrive)
         rawset(vehicle, "setTurnLightState", own)
         if not ok then
             error(err, 0)
+        end
+        -- autres mods qui éteignent le clignotant : sans effet pendant que FarmPilot conduit, à chaque image
+        -- (TurnLightsOtherMods.lua)
+        if ADAddonTurnLightsOtherMods ~= nil then
+            ADAddonTurnLightsOtherMods.update(vehicle)
         end
         if ((g_updateLoopIndex + vehicle.id) % autoDrive.PERF_FRAMES == 0) then
             if not self.adAddonBlinkSeen then

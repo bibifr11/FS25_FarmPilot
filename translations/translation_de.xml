@@ -364,9 +364,9 @@
 		<text name="ad_color_rightOfWayCenter"							text="29 Verbindungspunkt der Vorfahrt" />
 		<text name="ad_color_intersectionConnection" text="30 Kreuzungslinie" />
 		<text name="ad_color_intersectionNode" text="31 Kreuzungspunkt" />
-		<text name="ad_color_dirtSingleConnection" text="32 Feldweg, Einbahn" />
-		<text name="ad_color_dirtDualConnection" text="33 Feldweg, beide Richtungen" />
-		<text name="ad_color_dirtNode" text="34 Feldweg-Wegpunkt" />
+		<text name="ad_color_dirtSingleConnection" text="32 Tertiärstraße, Einbahn" />
+		<text name="ad_color_dirtDualConnection" text="33 Tertiärstraße, beide Richtungen" />
+		<text name="ad_color_dirtNode" text="34 Tertiärstraßen-Wegpunkt" />
 		<text name="button_delete_all"									text="Alle löschen" />
 		<text name="button_reset_selected"								text="Ausgewählten zurücksetzen" />
 		<text name="AD_task_pathfinding"								text="Berechne Pfad" />
@@ -407,13 +407,13 @@
 		<text name="gui_ad_editorTip_2"								text="Nur Maus: 1. Punkt auswählen" />
 		<text name="gui_ad_editorTip_3"								text="LSTRG = Punkt erstellen" />
 		<text name="gui_ad_editorTip_4"								text="LALT = Punkt löschen" />
-		<text name="gui_ad_editorTip_5"								text="LSHIFT = Punkttyp (Haupt-, Nebenstrecke, Feldweg, Kreuzung)" />
+		<text name="gui_ad_editorTip_5"								text="LSHIFT = Punkttyp (Haupt-, Neben-, Tertiärstrecke, Kreuzung)" />
 		<text name="gui_ad_editorTip_6"								text="Auf zweiten Punkt klicken:" />
 		<text name="gui_ad_editorTip_7"								text="Verbindung erstellen/entfernen" />
 		<text name="gui_ad_editorTip_8"								text="RSHIFT = Rückwärtsstrecke erzeugen" />
 		<text name="gui_ad_editorTip_9"								text="Erster Punkt ist Kreuzungspunkt, zweiter Nachbar:" />
 		<text name="gui_ad_editorTip_10"								text="LSTRG: Streckentyp wechseln" />
-		<text name="gui_ad_editorTip_11"								text="LSHIFT = Abschnittstyp (Haupt-, Nebenstrecke, Feldweg, Kreuzung)" />
+		<text name="gui_ad_editorTip_11"								text="LSHIFT = Abschnittstyp (Haupt-, Neben-, Tertiärstrecke, Kreuzung)" />
 		<text name="gui_ad_trafficYieldEnabled" text="Begegnungsverkehr" />
 		<text name="gui_ad_trafficYieldEnabled_tooltip" text="Wenn sich zwei FarmPilot-Fahrzeuge auf einer Straße mit Gegenverkehr gegenseitig blockieren, setzt eines zurück, während das andere am Straßenrand parkt; danach fahren beide weiter" />
 		<text name="gui_ad_trafficYieldDelay" text="Wartezeit vor Ausweichen" />
@@ -445,13 +445,16 @@
 		<text name="gui_ad_autonomousNoCp_tooltip" text="Was der Autonom-Modus tut, wenn Courseplay nicht installiert ist: der Fahrer hält an und wartet, oder der Helfer des Spiels übernimmt das Feld (klassischer Modus)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Warten" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Helfer des Spiels" />
-		<text name="gui_ad_dirtRoads" text="Feldwege" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Feldweg-Punkte des Netzes (rosa und violette Linien im Editor). Erlaubt: nur genutzt, wenn sie Zeit sparen, mit begrenzter Geschwindigkeit. Nie: nur wenn es keine andere Strecke gibt. Auto: nie für LKW und Sattelzüge, erlaubt für Traktoren und andere Fahrzeuge" />
+		<text name="gui_ad_dirtRoads" text="Tertiärstraßen" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Tertiärstraßen-Punkte des Netzes (rosa und violette Linien im Editor). Erlaubt: nur genutzt, wenn sie Zeit sparen, mit begrenzter Geschwindigkeit. Nie: nur wenn es keine andere Strecke gibt. Auto: nie für LKW und Sattelzüge, erlaubt für Traktoren und andere Fahrzeuge" />
 		<text name="gui_ad_dirtRoads_auto" text="Auto (LKW: nie)" />
 		<text name="gui_ad_dirtRoads_never" text="Nie" />
 		<text name="gui_ad_dirtRoads_allowed" text="Erlaubt" />
-		<text name="gui_ad_dirtRoadSpeed" text="Höchstgeschwindigkeit auf Feldwegen" />
-		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Höchstgeschwindigkeit auf Feldweg-Punkten. Die Routenberechnung berücksichtigt sie: ein Feldweg wird nur genutzt, wenn er Zeit spart" />
+		<text name="gui_ad_secondaryRoads" text="Nebenstrecken" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Nebenstrecken-Punkte des Netzes. Auto: wie das originale AutoDrive (nur genutzt, wenn die Hauptstrecke viel länger ist). Erlaubt: genutzt, sobald sie Zeit sparen. Nie: nur wenn es keine andere Strecke gibt" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (Original)" />
+		<text name="gui_ad_dirtRoadSpeed" text="Höchstgeschwindigkeit auf Tertiärstraßen" />
+		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Höchstgeschwindigkeit auf Tertiärstraßen-Punkten. Die Routenberechnung berücksichtigt sie: eine Tertiärstraße wird nur genutzt, wenn sie Zeit spart" />
 		<text name="AD_task_park_in_field" text="Parkt im Feld" />
 		<text name="AD_task_hv_chopper" text="den Feldhäcksler" />
 		<text name="AD_task_hv_combine" text="den Mähdrescher" />

@@ -21,6 +21,7 @@ function ADAddonSiloEmpty.install(autoDrive)
 
     local originalUpdate = loadTask.update
     loadTask.update = function(self, dt)
+        if self.fpKeepLoading then return originalUpdate(self, dt) end -- plein du semoir FarmPilot : attend plein ou Continuer (Modes/AutonomousRefill.lua)
         local vehicle = self.vehicle
         if self.state == loadTask.STATE_DRIVING and self.trailers ~= nil and #self.trailers > 0
             and vehicle.ad ~= nil and not vehicle.ad.hasAL

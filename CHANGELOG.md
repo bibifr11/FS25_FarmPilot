@@ -3,6 +3,15 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.16
+
+- Semoir, plein à la station : la distance est mesurée au point de chargement ; le chauffeur attend que les cuves soient pleines ; la sortie du champ se fait comme en fin de travail.
+- Clignotants : autoTurnOffTurnLights ne coupe plus les clignotants pendant que FarmPilot conduit.
+- « Chemin de terre » devient « route tertiaire ». Nouveau réglage véhicule « Routes secondaires » : Auto, Jamais, Autorisées (au temps de trajet).
+- Seeder refill at the station: distance measured at the loading point; the driver waits until the tanks are full; leaves the field like at the end of work.
+- Indicators: autoTurnOffTurnLights no longer turns them off while FarmPilot drives.
+- "Dirt road" renamed "tertiary road". New vehicle setting "Secondary roads": Auto, Never, Allowed (by travel time).
+
 ## 1.0.1.15
 
 - Chemins de terre : nouveau type de route dans l'éditeur (Maj gauche + clic fait tourner le type), réglage par véhicule (Auto, Jamais, Autorisés ; Auto = jamais pour camions et semis, autorisés pour tracteurs) et vitesse maxi réglable (30 km/h par défaut). Le chemin n'est pris que s'il fait gagner du temps, ou s'il n'y a pas d'autre route.

@@ -21,6 +21,12 @@
 -- - Jamais : un chemin de terre coûte 100 fois plus ; il n'est pris que s'il n'y a pas d'autre route (ou si la seule
 --   autre route est trop étroite pour l'attelage). Le log le dit.
 -- - Un segment est « chemin de terre » quand l'un de ses deux points l'est (comme les routes secondaires).
+-- - 21:05 Fabien : « on l'appellera route tertiaire, comme ça on s'y retrouve en principale, secondaire et
+--   tertiaire. On peut rajouter la même option en secondaire (Auto, Jamais ou Autorisé) » : nom affiché « route
+--   tertiaire » (le code garde « dirt ») ; réglage véhicule « Routes secondaires » :
+--   Auto = comme AutoDrive d'origine (secondaire 20 fois plus chère, prise quand la principale est bien plus
+--   longue) ; Autorisées = au temps de trajet, comme une principale ; Jamais = 100 fois plus chère, seulement s'il
+--   n'y a pas d'autre route.
 -- ============================================================================================================
 
 ADDirtRoads = {}
@@ -33,6 +39,8 @@ ADDirtRoads.SEARCH_SPEED = 30               -- km/h : vitesse maxi du calcul de 
 ADDirtRoads.DEFAULT_ROUTE_SPEED = 40        -- km/h : vitesse sur route quand le calcul se fait sans véhicule
 ADDirtRoads.TRUCK_SPEED = 75                -- km/h : au-delà, un véhicule hors catégorie tracteur compte comme camion
 ADDirtRoads.LOOK_AHEAD = 30                 -- m : ralentir avant d'entrer sur un chemin de terre
+
+ADDirtRoads.SECONDARY_FACTOR_AUTO = 20      -- coût d'une route secondaire dans AutoDrive d'origine (PathCalculation.lua)
 
 ADDirtRoads.MODE_AUTO = 1
 ADDirtRoads.MODE_NEVER = 2
@@ -57,6 +65,20 @@ AutoDrive.settings.dirtRoads = {
     isCopyPaste = true
 }
 
+-- réglage véhicule : routes secondaires (Fabien 08/11 21:05)
+AutoDrive.settings.secondaryRoads = {
+    values = { ADDirtRoads.MODE_AUTO, ADDirtRoads.MODE_NEVER, ADDirtRoads.MODE_ALLOWED },
+    texts = { "gui_ad_secondaryRoads_auto", "gui_ad_dirtRoads_never", "gui_ad_dirtRoads_allowed" },
+    default = 1,
+    current = 1,
+    text = "gui_ad_secondaryRoads",
+    tooltip = "gui_ad_secondaryRoads_tooltip",
+    translate = true,
+    isVehicleSpecific = true,
+    isUserSpecific = false,
+    isCopyPaste = true
+}
+
 -- réglage général : menu général FP
 AutoDrive.settings.dirtRoadSpeed = {
     values = { 15, 20, 25, 30, 35, 40, 50 },
@@ -71,7 +93,7 @@ AutoDrive.settings.dirtRoadSpeed = {
 }
 
 local function log(fmt, ...)
-    print("[FarmPilot Chemins] " .. string.format(fmt, ...))
+    print("[FarmPilot Routes] " .. string.format(fmt, ...))
 end
 ADDirtRoads.log = log
 
@@ -207,6 +229,20 @@ function ADDirtRoads.wrapDriveTime(baseFunc, vehicle)
     end
 end
 
+-- routes secondaires : coût par véhicule (réglage « Routes secondaires », Fabien 08/11 21:05)
+function ADDirtRoads.secondaryFactor(vehicle)
+    local mode = ADDirtRoads.MODE_AUTO
+    if vehicle ~= nil and AutoDrive.getSetting ~= nil then
+        mode = AutoDrive.getSetting("secondaryRoads", vehicle) or ADDirtRoads.MODE_AUTO
+    end
+    if mode == ADDirtRoads.MODE_NEVER then
+        return ADDirtRoads.NEVER_FACTOR
+    elseif mode == ADDirtRoads.MODE_ALLOWED then
+        return 1
+    end
+    return ADDirtRoads.SECONDARY_FACTOR_AUTO
+end
+
 -- ------------------------------------------------------------------------------------------------------------
 -- Conduite (DrivePathModule.lua) : vitesse limitée et log de la route
 -- ------------------------------------------------------------------------------------------------------------
@@ -267,9 +303,9 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     local name = (vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil) and vehicle.ad.stateModule:getName() or tostring(vehicle.getName ~= nil and vehicle:getName() or "?")
     local allowed, why = ADDirtRoads.isAllowed(vehicle)
     if allowed then
-        log("%s : route par chemin de terre (%d points, %d km/h maxi sur le chemin, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)
+        log("%s : route par route tertiaire (%d points, %d km/h maxi dessus, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)
     else
-        log("%s : chemins de terre interdits (%s) mais pas d'autre route possible : je passe par le chemin (%d points)", tostring(name), why, count)
+        log("%s : routes tertiaires interdites (%s) mais pas d'autre route possible : je passe par la tertiaire (%d points)", tostring(name), why, count)
     end
 end
 

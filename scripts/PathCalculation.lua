@@ -46,6 +46,8 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
     end
     -- chemins de terre : temps de trajet à leur vitesse maxi, x100 pour un véhicule « Jamais » (DirtRoadManager.lua)
     if ADDirtRoads ~= nil then distanceFunc2 = ADDirtRoads.wrapDriveTime(distanceFunc2, vehicle) end
+    -- routes secondaires : Auto x20 (d'origine), Autorisées x1, Jamais x100 (réglage véhicule, DirtRoadManager.lua)
+    local subPrioFactor = ADDirtRoads ~= nil and ADDirtRoads.secondaryFactor(vehicle) or 20
 
     local isSubPrio = function(pointToTest) 
         return bit32.band(pointToTest.flags, AutoDrive.FLAG_SUBPRIO) > 0
@@ -121,7 +123,7 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
                         if toBeAdded then --or (#point.incoming > 1)
                             local factor = 1
                             if isSubPrio(outPoint) then
-                                factor = 20
+                                factor = subPrioFactor
                             end
                             local preventTurnaroundWeight = 0
                             if point.id == startID then
@@ -150,7 +152,7 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
 
                         local factor = 1
                         if isSubPrio(outPoint) then
-                            factor = 20
+                            factor = subPrioFactor
                         end
 
                         --distance = distance + (distanceFunc(outPoint.x - point.x, outPoint.z - point.z) + (addedWeights[outPoint.id] or 0)) * factor

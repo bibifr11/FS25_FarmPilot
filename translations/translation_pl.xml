@@ -607,6 +607,8 @@
 		<text name="gui_ad_seeder_head" text="Seeder: %s · Field: %s" />
 		<text name="gui_ad_seeder_noSeeder" text="No seeder on this line." />
 		<text name="gui_ad_seeder_pickRefill" text="Choose the refill point (Change or double click), Back to return." />
+		<text name="gui_ad_refill_filtered" text="Only places where you can get: %s" />
+		<text name="gui_ad_refill_noneFound" text="No place found with: %s. All places are shown" />
 		<text name="gui_ad_seeder_current" text="current" />
 		<text name="gui_ad_seeder_fixed" text="%s (fixed)" />
 		<text name="gui_ad_seeder_fruit" text="Crop to sow" />

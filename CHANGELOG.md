@@ -3,6 +3,11 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.20
+
+- Fenêtres du semoir et de l'épandeur : la liste des zones de plein ne montre que les marqueurs proches d'un endroit qui a le produit choisi (station, silo, magasin, big bag, IBC, palette). Si aucun ne correspond, toute la liste est affichée.
+- Seeder and spreader windows: the refill zone list only shows markers near a place that has the chosen product (station, silo, shop, big bag, IBC, pallet). If none match, the whole list is shown.
+
 ## 1.0.1.19
 
 - Épandeurs et pulvérisateurs (traînés ou automoteurs) en mode Autonome : plein comme pour le semoir ; fenêtre « Réglages de l'épandeur » (produit, quantité « Plein » ou « Juste ce qu'il faut », zone de plein).

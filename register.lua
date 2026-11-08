@@ -151,7 +151,8 @@ source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDi
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousRefill.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/SprayerManager.lua", g_currentModDirectory)) -- épandeurs et pulvés en Autonome, voir SprayerManager.lua
-source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory)) -- épandeurs : vider le reste en big bags / IBC
+source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/RefillSources.lua", g_currentModDirectory)) -- zones de plein filtrées selon le produit -- épandeurs : vider le reste en big bags / IBC
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))

@@ -620,6 +620,8 @@
 		<text name="gui_ad_seeder_head" text="Sämaschine: %s · Feld: %s" />
 		<text name="gui_ad_seeder_noSeeder" text="Keine Sämaschine in dieser Zeile." />
 		<text name="gui_ad_seeder_pickRefill" text="Nachfüllpunkt wählen (Ändern oder Doppelklick), Zurück zum Zurückkehren." />
+		<text name="gui_ad_refill_filtered" text="Nur Orte, an denen es gibt: %s" />
+		<text name="gui_ad_refill_noneFound" text="Kein Ort gefunden mit: %s. Alle Orte werden angezeigt" />
 		<text name="gui_ad_seeder_current" text="aktuell" />
 		<text name="gui_ad_seeder_fixed" text="%s (fest)" />
 		<text name="gui_ad_seeder_fruit" text="Zu säende Frucht" />

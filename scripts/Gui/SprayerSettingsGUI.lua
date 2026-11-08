@@ -156,9 +156,11 @@ function ADSprayerSettingsGui:refreshItems()
         end
     elseif self.mode == "markers" then
         info = g_i18n:getText("gui_ad_seeder_pickRefill")
+        local allowed, filterInfo = nil, nil
+        if ADRefillSources ~= nil then allowed, filterInfo = ADRefillSources.filter(self) if filterInfo ~= nil then info = info .. "\n" .. filterInfo end end -- (Fabien 21:24) zones où l'on trouve le produit, voir RefillSources.lua
         local markers = {}
         for _, m in pairs(ADGraphManager:getMapMarkers()) do
-            if m ~= nil and m.name ~= nil then
+            if m ~= nil and m.name ~= nil and (allowed == nil or allowed[m.name]) then
                 markers[#markers + 1] = m
             end
         end

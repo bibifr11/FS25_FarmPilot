@@ -116,6 +116,7 @@ function ADAddonTurnLights.headingError(module)
 end
 
 function ADAddonTurnLights.update(module, minAngle, dt)
+    if ADAddonTurnLightsBends ~= nil then return ADAddonTurnLightsBends.update(module, minAngle, dt) end -- 08/11 virages, ecarts, distance, marche arriere : TurnLightsBends.lua
     local vehicle = module.vehicle
     local maxDistance = ADAddonTurnLights.autoDrive.getSetting("blinkDistance") or 50
     local direction = 0

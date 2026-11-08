@@ -512,3 +512,4 @@ function ADObstacleDetourModule:fail(reason)
     AutoDriveMessageEvent.sendMessageOrNotification(self.vehicle, ADMessagesManager.messageTypes.ERROR, "$l10n_AD_Driver_of; %s $l10n_AD_obstacleDetour_failed;", 5000, self.vehicle.ad.stateModule:getName())
     self:setState(ADObstacleDetourModule.STATE_IDLE)
 end
+if ADObstacleDetourQueue ~= nil then ADObstacleDetourQueue.install(ADObstacleDetourModule) end -- 08/11 vehicule arrete devant en file (pont-bascule) : ObstacleDetourQueue.lua

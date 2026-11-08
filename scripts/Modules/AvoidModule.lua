@@ -728,3 +728,4 @@ function ADAvoidModule:update(dt)
     end
     return ADAvoidModule.SPEED
 end
+if ADObstacleDetourQueue ~= nil then ADObstacleDetourQueue.installAvoid(ADAvoidModule) end -- 08/11 vehicule arrete devant en file (pont-bascule) : ObstacleDetourQueue.lua

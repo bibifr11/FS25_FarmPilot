@@ -3,6 +3,15 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.18
+
+- Croisements : quand la voie est libre, il avance jusqu'à sa ligne ; il ne recule plus pour rien.
+- Bascule et files d'attente : il attend derrière le véhicule qui va dans le même sens, sans le contourner.
+- Clignotants : allumés à la bonne distance avant le virage, pas pour un simple écart, gardés à l'arrêt ; warnings non touchés.
+- Intersections: when the way is clear it moves up to its line and no longer reverses for nothing.
+- Weighbridge and queues: waits behind a vehicle going the same way instead of overtaking it.
+- Indicators: on at the set distance before a bend, not for a small swerve, kept on when stopped; hazard lights untouched.
+
 ## 1.0.1.17
 
 - Départ : FarmPilot attend que les outils soient repliés (repli bloqué relancé, outil baissé d'abord relevé), avec un message chaque minute.

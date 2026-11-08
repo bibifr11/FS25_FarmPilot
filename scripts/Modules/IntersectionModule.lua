@@ -947,3 +947,4 @@ end
 function ADIntersectionModule.clearCache()
     ADIntersectionModule.zones = {}
 end
+if ADIntersectionHold ~= nil then ADIntersectionHold.install(ADIntersectionModule) end -- 08/11 attente a la ligne, recul, patience : IntersectionHold.lua

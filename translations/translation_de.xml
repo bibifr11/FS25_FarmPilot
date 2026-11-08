@@ -597,6 +597,9 @@
 		<text name="gui_ad_autonomous_change" text="Ändern" />
 		<text name="gui_ad_autonomous_auto" text="Automatisch" />
 		<text name="gui_ad_seeder_title" text="Sämaschinen-Einstellungen" />
+		<text name="gui_ad_seeder_pickFruit" text="In dieser Saison säbare Früchte: wählen (Wählen oder Doppelklick), Zurück zum Zurückkehren." />
+		<text name="gui_ad_seeder_noFruitInSeason" text="Keine Frucht dieser Sämaschine ist in dieser Saison säbar." />
+		<text name="gui_ad_seeder_outOfSeason" text="%s (außerhalb der Saison)" />
 		<text name="gui_ad_seeder_head" text="Sämaschine: %s · Feld: %s" />
 		<text name="gui_ad_seeder_noSeeder" text="Keine Sämaschine in dieser Zeile." />
 		<text name="gui_ad_seeder_pickRefill" text="Nachfüllpunkt wählen (Ändern oder Doppelklick), Zurück zum Zurückkehren." />

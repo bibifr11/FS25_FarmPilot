@@ -3,6 +3,13 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.11
+
+- Fenêtre « Réglages du semoir » : culture et zone de ravitaillement en listes déroulantes ; seules les cultures de saison sont proposées.
+- Virages : un virage n'est plus redessiné si l'attelage passe sur la route telle qu'elle est dessinée (plus de coupures de voie inutiles).
+- "Seeder settings" window: crop and refill zone as drop-down lists; only in-season crops are offered.
+- Bends: a bend is no longer redrawn when the train fits the route as drawn (no more needless lane cutting).
+
 ## 1.0.1.9
 
 - Semoir en mode Autonome : roue dentée sur la ligne Outil (orange = à régler, verte = validé) qui ouvre la fenêtre « Réglages du semoir » (culture, cuves à remplir, zone de ravitaillement), retenue par champ et par semoir. Au départ il fait le plein si besoin ; quand le semoir est vide au champ, il sort, refait le plein comme en mode Chargement (palettes, big bags, silos), revient et Courseplay repart au dernier point.

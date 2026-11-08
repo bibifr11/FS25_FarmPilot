@@ -597,6 +597,9 @@
 		<text name="gui_ad_autonomous_change" text="Change" />
 		<text name="gui_ad_autonomous_auto" text="Automatic" />
 		<text name="gui_ad_seeder_title" text="Seeder settings" />
+		<text name="gui_ad_seeder_pickFruit" text="Crops that can be sown this season: choose (Choose or double click), Back to return." />
+		<text name="gui_ad_seeder_noFruitInSeason" text="No crop of this seeder can be sown this season." />
+		<text name="gui_ad_seeder_outOfSeason" text="%s (out of season)" />
 		<text name="gui_ad_seeder_head" text="Seeder: %s · Field: %s" />
 		<text name="gui_ad_seeder_noSeeder" text="No seeder on this line." />
 		<text name="gui_ad_seeder_pickRefill" text="Choose the refill point (Change or double click), Back to return." />

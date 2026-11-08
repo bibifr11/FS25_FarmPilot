@@ -912,6 +912,12 @@ function ADCornerModule:handleBend(wayPoints, out, first, last, angle, drawnRadi
     end
     append(original, tail(wayPoints, exits[1]))
     local originalClear, originalReason = self:simulate(original, self:straightPose(prev.x, prev.z, a0), reference)
+    -- (08/11 10:13, Fabien : « que quand c'est nécessaire, pas partout ; si l'angle du virage est bon on touche pas ») :
+    -- l'attelage passe la route dessinée = virage gardé tel quel, pas de route coupée
+    if originalClear then
+        self:log("%s: kept as it is (the train passes as drawn)", where)
+        return false, first
+    end
 
     -- 2. forward candidates from the entry points
     local drawnAfter = {}

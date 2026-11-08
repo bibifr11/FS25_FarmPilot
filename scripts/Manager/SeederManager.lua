@@ -113,6 +113,16 @@ function ADSeederManager.fruitChoices(tool)
             out[#out + 1] = { index = fruitIndex, name = ft.name, title = (fill ~= nil and fill.title) or ft.name }
         end
     end
+    -- (08/11, Fabien : « les cultures de saison possibles uniquement ») : semable maintenant, d'après le calendrier du jeu
+    -- (celui que le semoir lui-même vérifie : FruitTypeDesc:getIsPlantableInPeriod)
+    local outside = false
+    if tool.getCanPlantOutsideSeason ~= nil then
+        local okO, o = pcall(tool.getCanPlantOutsideSeason, tool)
+        outside = okO and o == true
+    end
+    for _, e in ipairs(out) do
+        e.inSeason = outside or ADSeederManager.isPlantableNow(e.index)
+    end
     local allowed = spec.allowsSeedChanging ~= false
     if tool.getIsSeedChangeAllowed ~= nil then
         local ok, a = pcall(tool.getIsSeedChangeAllowed, tool)
@@ -121,6 +131,16 @@ function ADSeederManager.fruitChoices(tool)
         end
     end
     return out, allowed and #out > 1
+end
+
+function ADSeederManager.isPlantableNow(fruitIndex)
+    local mission = g_currentMission
+    local ft = g_fruitTypeManager ~= nil and g_fruitTypeManager:getFruitTypeByIndex(fruitIndex) or nil
+    if ft == nil or ft.getIsPlantableInPeriod == nil or mission == nil or mission.missionInfo == nil or mission.environment == nil then
+        return true
+    end
+    local ok, r = pcall(ft.getIsPlantableInPeriod, ft, mission.missionInfo.growthMode, mission.environment.currentPeriod)
+    return not ok or r == true
 end
 
 function ADSeederManager.currentFruit(tool)

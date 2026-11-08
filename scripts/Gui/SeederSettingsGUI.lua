@@ -76,6 +76,18 @@ function ADSeederSettingsGui:loadContext()
     end
     if not known then
         draft.fruit = ADSeederManager.currentFruit(ctx.tool)
+        -- culture du semoir hors saison : la première de saison à la place
+        for _, f in ipairs(self.fruits) do
+            if f.name == draft.fruit and not f.inSeason and self.fruitChangeable then
+                for _, g in ipairs(self.fruits) do
+                    if g.inSeason then
+                        draft.fruit = g.name
+                        break
+                    end
+                end
+                break
+            end
+        end
     end
     self.draft = draft
 end
@@ -119,6 +131,17 @@ function ADSeederSettingsGui:refreshItems()
     local info
     if self.ctx == nil or self.draft == nil then
         info = g_i18n:getText("gui_ad_seeder_noSeeder")
+    elseif self.mode == "fruits" then
+        -- (08/11, Fabien) liste déroulante : cultures semables en cette saison seulement
+        info = g_i18n:getText("gui_ad_seeder_pickFruit")
+        for _, f in ipairs(self.fruits or {}) do
+            if f.inSeason then
+                self.rows[#self.rows + 1] = { kind = "fruitPick", name = f.name, text = f.title, value = f.name == self.draft.fruit and g_i18n:getText("gui_ad_seeder_current") or "" }
+            end
+        end
+        if #self.rows == 0 then
+            info = g_i18n:getText("gui_ad_seeder_noFruitInSeason")
+        end
     elseif self.mode == "markers" then
         info = g_i18n:getText("gui_ad_seeder_pickRefill")
         local markers = {}
@@ -143,8 +166,15 @@ function ADSeederSettingsGui:refreshItems()
         local d = self.draft
         -- culture
         local fruitValue = fruitTitle(self, d.fruit)
+        for _, f in ipairs(self.fruits or {}) do
+            if f.name == d.fruit and not f.inSeason then
+                fruitValue = string.format(g_i18n:getText("gui_ad_seeder_outOfSeason"), fruitValue)
+            end
+        end
         if not self.fruitChangeable then
             fruitValue = string.format(g_i18n:getText("gui_ad_seeder_fixed"), fruitValue)
+        else
+            fruitValue = fruitValue .. "  >"
         end
         self.rows[#self.rows + 1] = { kind = "fruit", text = g_i18n:getText("gui_ad_seeder_fruit"), value = fruitValue }
         -- produits à charger (choix multiple)
@@ -157,7 +187,7 @@ function ADSeederSettingsGui:refreshItems()
         -- zone de ravitaillement
         self.rows[#self.rows + 1] = {
             kind = "refill", text = g_i18n:getText("gui_ad_seeder_refill"),
-            value = d.refill or g_i18n:getText("gui_ad_seeder_refillNone")
+            value = (d.refill or g_i18n:getText("gui_ad_seeder_refillNone")) .. "  >"
         }
         local status
         if self.message ~= nil then
@@ -171,15 +201,16 @@ function ADSeederSettingsGui:refreshItems()
     end
     self.infoText:setText(info or "")
     if self.changeButton ~= nil then
-        self.changeButton:setText(g_i18n:getText(self.mode == "markers" and "gui_ad_seeder_choose" or "gui_ad_autonomous_change"))
+        self.changeButton:setText(g_i18n:getText(self.mode ~= "settings" and "gui_ad_seeder_choose" or "gui_ad_autonomous_change"))
     end
     if self.validateButton ~= nil then
-        self.validateButton:setDisabled(self.mode == "markers" or self.ctx == nil)
+        self.validateButton:setDisabled(self.mode ~= "settings" or self.ctx == nil)
     end
     self.settingsList:reloadData()
-    if self.mode == "markers" and self.draft ~= nil and self.draft.refill ~= nil then
+    local current = self.draft ~= nil and ((self.mode == "markers" and self.draft.refill) or (self.mode == "fruits" and self.draft.fruit)) or nil
+    if current ~= nil then
         for i, r in ipairs(self.rows) do
-            if r.name == self.draft.refill then
+            if r.name == current then
                 pcall(self.settingsList.setSelectedIndex, self.settingsList, i)
                 if self.settingsList.makeCellVisible ~= nil then
                     pcall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
@@ -218,14 +249,16 @@ function ADSeederSettingsGui:act(row)
     local d = self.draft
     if row.kind == "fruit" then
         if self.fruitChangeable and #self.fruits > 0 then
-            local nextIndex = 1
-            for i, f in ipairs(self.fruits) do
-                if f.name == d.fruit then
-                    nextIndex = i % #self.fruits + 1
-                end
-            end
-            d.fruit = self.fruits[nextIndex].name
+            self.mode = "fruits"
+            self:refreshItems()
         end
+        return
+    elseif row.kind == "fruitPick" then
+        d.fruit = row.name
+        self.mode = "settings"
+        self:refreshItems()
+        pcall(self.settingsList.setSelectedIndex, self.settingsList, 1)
+        return
     elseif row.kind == "fill" then
         if hasFill(d, row.name) then
             local kept = {}
@@ -290,7 +323,7 @@ function ADSeederSettingsGui:onClickValidate()
 end
 
 function ADSeederSettingsGui:onClickBack(forceBack, usedMenuButton)
-    if self.mode == "markers" then
+    if self.mode ~= "settings" then
         self.mode = "settings"
         self:refreshItems()
         return false

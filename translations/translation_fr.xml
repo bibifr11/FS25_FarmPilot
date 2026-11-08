@@ -597,6 +597,9 @@
 		<text name="gui_ad_autonomous_change" text="Changer" />
 		<text name="gui_ad_autonomous_auto" text="Automatique" />
 		<text name="gui_ad_seeder_title" text="Réglages du semoir" />
+		<text name="gui_ad_seeder_pickFruit" text="Cultures semables en cette saison : choisissez (Choisir ou double clic), Retour pour revenir." />
+		<text name="gui_ad_seeder_noFruitInSeason" text="Aucune culture de ce semoir n'est semable en cette saison." />
+		<text name="gui_ad_seeder_outOfSeason" text="%s (hors saison)" />
 		<text name="gui_ad_seeder_head" text="Semoir : %s · Champ : %s" />
 		<text name="gui_ad_seeder_noSeeder" text="Pas de semoir sur cette ligne." />
 		<text name="gui_ad_seeder_pickRefill" text="Choisissez la zone de ravitaillement (Changer ou double clic), Retour pour revenir." />

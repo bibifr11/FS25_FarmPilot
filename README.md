@@ -2,7 +2,9 @@
 
 # FarmPilot (FS25)
 
-**FR** · [EN](#english)
+**FR** · [EN](#english) · [Discord](https://discord.gg/yrFBwCgtA7) · [Téléchargement / Download](../../releases/latest)
+
+<p align="center"><img src="docs/autonome.jpg" width="800" alt="FarmPilot Autonome"></p>
 
 FarmPilot conduit vos véhicules sur un réseau de routes dans Farming Simulator 25 : envoyez un tracteur au magasin, à un champ ou à un point de vente, ou faites-lui vider une moissonneuse ou une ensileuse.
 
@@ -14,6 +16,8 @@ FarmPilot est basé sur **AutoDrive 3.0.1.4** de Stephan Schlosser et de l'équi
 - Ensileuse : la benne suit par derrière, gère les demi-tours de bout de rang et se dégage quand elle est coincée.
 - Sortie du champ sans passer dans la culture, et un mode champ « Strict ».
 - Conducteur intelligent : contourne les obstacles, prend les virages au vrai rayon de l'attelage, gère les passages étroits et les intersections.
+- Mode **Autonome** (avec Courseplay) : travaille le champ puis repart seul ; épandeurs et pulvés (vide le reste en big bags), presse à balles qui suit les andains de la moissonneuse, remorque à balles (ramassage et dépôt), bouton parking (outil reposé à sa place, tracteur garé).
+- Bennes : attelage automatique au départ et échange de bennes ; temps d'attente « silo vide » réglable par véhicule.
 - L'ancien AutoDrive Addon est intégré : pont-bascule, clignotant avant les virages, délai de coupure moteur, feux moteur coupé, silo vide, outil arrière. Désactivez FS25_AutoDriveAddon si vous l'aviez.
 
 Le détail complet est dans le [CHANGELOG](CHANGELOG.md).
@@ -36,6 +40,8 @@ Les mods qui déclarent AutoDrive comme mod requis (par exemple certains carrefo
 
 ## English
 
+[Discord](https://discord.gg/yrFBwCgtA7) · [Download](../../releases/latest)
+
 FarmPilot drives your vehicles on a network of routes in Farming Simulator 25: send a tractor to the shop, a field or a sell point, or let it unload a combine or a forage harvester.
 
 FarmPilot is based on **AutoDrive 3.0.1.4** by Stephan Schlosser and the AutoDrive team (MIT licence, see [LICENSE](LICENSE) and [credits.txt](credits.txt)). Many thanks to the whole AutoDrive team.
@@ -46,6 +52,8 @@ FarmPilot is based on **AutoDrive 3.0.1.4** by Stephan Schlosser and the AutoDri
 - Forage harvester: the unloader follows from behind, handles headland turns and backs out when stuck.
 - Leaving the field without driving through the crop, and a "Strict" field mode.
 - Smart driver: drives around obstacles, takes corners at the real radius of the combination, handles narrow passages and intersections.
+- **Autonomous** mode (with Courseplay): works the field then drives off on its own; spreaders and sprayers (leftovers emptied into big bags), baler following the combine's windrows, bale trailer (collect and drop), parking button (implement put back in its place, tractor parked).
+- Trailers: automatic hitching at start and trailer swap; "empty silo" wait time per vehicle.
 - The former AutoDrive Addon is built in: weighbridge, turn light before turns, engine stop delay, lights with the engine off, empty silo, rear implement. Disable FS25_AutoDriveAddon if you had it.
 
 Full details are in the [CHANGELOG](CHANGELOG.md).
@@ -63,3 +71,7 @@ Just replace AutoDrive with FarmPilot in your savegame. FarmPilot reuses:
 For a new install or a new savegame, everything is saved under the FarmPilot name (`FarmPilot_config.xml`, `modSettings/FS25_FarmPilot`).
 
 Mods that list AutoDrive as a required mod (for example some placeable crossings) may refuse to load without AutoDrive.
+
+---
+
+Traductions / Translations : merci à huseyinsayar (Türkçe).

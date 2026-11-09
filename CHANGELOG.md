@@ -3,6 +3,20 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.33
+
+🇫🇷 FR
+- Écart sur la voie rétabli : un trajet vers le réseau qui échouait pouvait marquer une partie de la route et empêcher l'écart devant un obstacle (relancer la partie une fois installé).
+- Semoir : les silos de la ferme (et les points d'achat) sont proposés comme zone de ravitaillement.
+- Remorque à balles : si une balle bloque le départ, elle recule de 10 m puis recalcule son trajet.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Swerving on the lane restored: a failed path to the network could mark part of the route and prevent swerving around an obstacle (restart the savegame once installed).
+- Seeder: farm silos (and buying points) are offered as refill zones.
+- Bale trailer: if a bale blocks the start, it reverses 10 m then recalculates its route.
+
 ## 1.0.1.32
 
 🇫🇷 FR

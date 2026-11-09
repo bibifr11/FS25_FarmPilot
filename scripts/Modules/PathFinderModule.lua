@@ -583,6 +583,9 @@ function PathFinderModule:restartAtNextWayPoint()
         local storedTargetWayPointId = self.targetWayPointId
         local storedDestinationId = self.destinationId
         self:startPathPlanningTo(targetNode, vecToNextPoint)
+        -- (09/11) toujours vers le réseau : startPathPlanningTo le remet à false, et toute la route du réseau
+        -- ajoutée devenait des points calculés (plus d'écart ni de contournement, zone interdite sur la route)
+        self.goingToNetwork = true
         self.retryCounter = storedRetryCounter
         self.destinationId = storedDestinationId
         self.fallBackMode1 = false  -- disable restrict to field
@@ -1866,10 +1869,15 @@ function PathFinderModule:createWayPoints()
 
         -- See comment above
         if not self.goingToNetwork then
+            self:markPathFinderPoints()
+        end
+        --[==[ Mis de côté (09/11)
+        if not self.goingToNetwork then
             for i = 1, #self.wayPoints, 1 do
                 self.wayPoints[i].isPathFinderPoint = true
             end
         end
+        ]==]
     end
 end
 
@@ -2892,9 +2900,32 @@ function PathFinderModule:appendWayPointsNew()
 
     -- See comment above
     if not self.goingToNetwork then
+        self:markPathFinderPoints()
+    end
+    --[==[ Mis de côté (09/11)
+    if not self.goingToNetwork then
         for i = 1, #self.wayPoints, 1 do
             self.wayPoints[i].isPathFinderPoint = true
         end
+    end
+    ]==]
+end
+
+-- (09/11) toute la route passe en points calculés ; un point du réseau lui-même (pathFromTo rend les points du
+-- graphe) est marqué sur une copie : marqué sur place, il le restait pour toutes les routes suivantes jusqu'au
+-- rechargement (plus d'écart, de contournement ni de virage arrondi sur ce bout de route)
+function PathFinderModule:markPathFinderPoints()
+    for i = 1, #self.wayPoints, 1 do
+        local wp = self.wayPoints[i]
+        if wp.id ~= nil and ADGraphManager:getWayPointById(wp.id) == wp then
+            local copy = {}
+            for key, value in pairs(wp) do
+                copy[key] = value
+            end
+            wp = copy
+            self.wayPoints[i] = wp
+        end
+        wp.isPathFinderPoint = true
     end
 end
 

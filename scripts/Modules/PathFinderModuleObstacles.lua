@@ -107,7 +107,10 @@ end
 PathFinderModule.START_DISTANCES_SHORTER = {5, 3, 1.5}
 
 -- longest start distance (up to PATHFINDER_START_DISTANCE) whose corridor, vehicle -> start point + turning radius at train width, hits no obstacle
+-- (09/11) startObstructed : vrai quand même le plus court départ touche un obstacle (balle juste devant le tracteur) ;
+-- lu par BaleCollectTask.lua pour reculer avant un nouveau calcul
 function PathFinderModule:getFreeStartDistance(vehicleWorldX, vehicleWorldZ, dirX, dirZ)
+    self.startObstructed = false
     local maxDistance = self.PATHFINDER_START_DISTANCE
     local distances = {maxDistance}
     for _, d in ipairs(PathFinderModule.START_DISTANCES_SHORTER) do
@@ -143,6 +146,7 @@ function PathFinderModule:getFreeStartDistance(vehicleWorldX, vehicleWorldZ, dir
         end
     end
     local shortest = distances[#distances]
+    self.startObstructed = true
     print(string.format("[AD-Start] %s: obstacle right in front of the vehicle, path starts %.1f m in front", tostring(self.vehicle:getName()), shortest))
     return shortest
 end

@@ -37,6 +37,9 @@ AutonomousMode.FETCH_NEAR_START = 3     -- m : le tracteur y est déjà
 AutonomousMode.FETCH_HANDOVER = 12      -- m entre les points d'attelage : sur la route, dans l'axe de l'outil, on passe à l'attelage
 AutonomousMode.FETCH_STUCK_TIME = 8000  -- ms arrêté sur la route près de l'outil (obstacle = l'outil) : on passe à l'attelage
 AutonomousMode.FETCH_STUCK_RANGE = 30   -- m
+AutonomousMode.FETCH_PLACE_LATERAL = 2.5  -- m : point d'attelage de l'outil à moins de ça de l'axe de sa place
+AutonomousMode.FETCH_PLACE_ANGLE = 30     -- ° : outil dans l'axe de sa place à moins de ça (dans un sens ou dans l'autre)
+AutonomousMode.FETCH_PLACE_AXIS = 6       -- m de route avant le point de la place pour en prendre l'axe
 -- plein du semoir (voir startRefill) ; AutonomousRefill.lua le met à math.huge (plus d'étape « exit »)
 AutonomousMode.REFILL_EXIT_DISTANCE = 30   -- m : au champ et plus loin que ça de son marqueur = sortie du champ d'abord (mode Chargement)
 
@@ -550,6 +553,37 @@ end
 -- réseau d'abord : vers la place de parking de l'outil s'il y est (routes en marche arrière dans la place), sinon vers
 -- le point du réseau le plus proche de l'avant de l'outil ; la recherche de chemin ne sert qu'à finir
 
+-- (09/11) outil rangé dans l'axe de sa place ? axe = derniers FETCH_PLACE_AXIS m de route avant le point de la place.
+-- true, écart du point d'attelage à l'axe (m), angle de l'outil avec l'axe (°) ; sans route qui arrive : true
+function AutonomousMode.toolInPlace(mwp, hitch)
+    local prev, cur = nil, mwp
+    for _ = 1, 20 do
+        local inc = cur.incoming ~= nil and cur.incoming[1] or nil
+        local p = inc ~= nil and ADGraphManager:getWayPointById(inc) or nil
+        if p == nil or p == mwp then
+            break
+        end
+        prev, cur = p, p
+        if MathUtil.vector2Length(mwp.x - p.x, mwp.z - p.z) >= AutonomousMode.FETCH_PLACE_AXIS then
+            break
+        end
+    end
+    if prev == nil then
+        return true
+    end
+    local hx, hz = mwp.x - prev.x, mwp.z - prev.z
+    local len = MathUtil.vector2Length(hx, hz)
+    if len < 0.5 then
+        return true
+    end
+    hx, hz = hx / len, hz / len
+    local ox, oz = hitch.x - mwp.x, hitch.z - mwp.z
+    local lateral = math.abs(ox * hz - oz * hx)
+    local cosA = math.min(1, math.abs(hitch.dirX * hx + hitch.dirZ * hz))
+    local angle = math.deg(math.acos(cosA))
+    return lateral <= AutonomousMode.FETCH_PLACE_LATERAL and angle <= AutonomousMode.FETCH_PLACE_ANGLE, lateral, angle
+end
+
 -- point du réseau où aller avant l'attelage, et pourquoi (« marker » ou « front ») ; nil : directement à l'attelage
 function AutonomousMode.fetchRoutePoint(vehicle, tool)
     local hitch = ADAutonomousManager.toolHitch(vehicle, tool)
@@ -568,7 +602,13 @@ function AutonomousMode.fetchRoutePoint(vehicle, tool)
     local marker = park ~= nil and park >= 1 and ADGraphManager:getMapMarkerById(park) or nil
     local mwp = marker ~= nil and ADGraphManager:getWayPointById(marker.id) or nil
     if mwp ~= nil and MathUtil.vector2Length(mwp.x - hitch.x, mwp.z - hitch.z) <= AutonomousMode.FETCH_MARKER_NEAR and not startHere(mwp) then
-        return mwp, "marker", marker.name
+        -- (09/11) seulement si l'outil y est rangé dans l'axe : en travers, la route de la place bute sur l'outil
+        local inPlace, lateral, angle = AutonomousMode.toolInPlace(mwp, hitch)
+        if inPlace then
+            return mwp, "marker", marker.name
+        end
+        ADAutonomousManager.log("%s : « %s » pas rangé dans l'axe de sa place « %s » (écart %.1f m, angle %.0f°) : route vers le point du réseau devant l'outil",
+            tostring(vehicle.ad.stateModule:getName()), ADAutonomousManager.toolLabel(tool), tostring(marker.name), lateral or -1, angle or -1)
     end
     -- 2) le point du réseau le plus proche de l'avant de l'outil
     local length = (vehicle.size ~= nil and vehicle.size.length) or 6

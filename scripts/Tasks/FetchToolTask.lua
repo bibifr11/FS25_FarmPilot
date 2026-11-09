@@ -8,6 +8,8 @@
 --   FarmPilot).
 -- - Déjà devant l'outil, dans son axe, le nez à l'opposé : marche arrière tout de suite.
 -- - Attelage raté : il avance dans l'axe de l'outil et recommence, au plus RETRIES fois.
+-- - (09/11) Pas de chemin jusque devant l'outil (hangar, machines autour) : il avance tout droit de ROOM_DISTANCE m
+--   (recule si l'avant est bloqué) et recalcule, au plus ROOM_MOVES fois, avant d'abandonner.
 -- - (07/11) mod d'attelage manuel : flexibles et prise de force branchés après l'attelage, comme le joueur.
 -- - Le résultat (self.result = "ok" ou la raison de l'échec) est lu par AutonomousMode:handleFinishedTask.
 --
@@ -27,6 +29,7 @@ ADFetchToolTask.STATE_STOPPING = 4
 ADFetchToolTask.STATE_REVERSE = 5
 ADFetchToolTask.STATE_ATTACHED = 6
 ADFetchToolTask.STATE_FORWARD = 7
+ADFetchToolTask.STATE_ROOM = 8
 
 ADFetchToolTask.FRONT_MARGIN = 12         -- m entre l'avant de l'outil et l'arrière du tracteur placé devant
 ADFetchToolTask.LOOK_AHEAD = 5            -- m : la marche arrière vise un point de l'axe de l'outil, à cette distance derrière le tracteur
@@ -43,6 +46,11 @@ ADFetchToolTask.CONNECT_TIME = 500        -- ms après l'attelage : flexibles et
 ADFetchToolTask.RETRIES = 2               -- attelage raté : on avance dans l'axe et on recommence, au plus ce nombre de fois
 ADFetchToolTask.FORWARD_ROOM = 10         -- m d'avance (en plus de la longueur du tracteur) pour reprendre l'axe
 ADFetchToolTask.FORWARD_TIMEOUT = 30000   -- ms
+ADFetchToolTask.ROOM_DISTANCE = 10        -- m tout droit quand il n'y a pas de chemin, avant un nouveau calcul
+ADFetchToolTask.ROOM_MOVES = 2            -- fois au plus
+ADFetchToolTask.ROOM_SPEED = 5            -- km/h
+ADFetchToolTask.ROOM_BLOCKED = 1500       -- ms bloqué par un obstacle : on s'arrête là
+ADFetchToolTask.ROOM_TIMEOUT = 25000      -- ms
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Création
@@ -60,6 +68,7 @@ function ADFetchToolTask:setUp()
     self.timer = 0
     self.minDistance = math.huge
     self.retries = 0
+    self.roomMoves = 0
     self.vehicle.ad.specialDrivingModule:stopVehicle()
 end
 
@@ -166,6 +175,10 @@ function ADFetchToolTask:update(dt)
         if pf:hasFinished() then
             local path = pf:getPath()
             if path == nil or #path == 0 then
+                -- (09/11) un peu de place d'abord, puis nouveau calcul
+                if self:startRoom() then
+                    return
+                end
                 self:finish("noPath")
                 return
             end
@@ -192,6 +205,8 @@ function ADFetchToolTask:update(dt)
         self:updateReverse(dt)
     elseif self.state == ADFetchToolTask.STATE_FORWARD then
         self:updateForward(dt)
+    elseif self.state == ADFetchToolTask.STATE_ROOM then
+        self:updateRoom(dt)
     elseif self.state == ADFetchToolTask.STATE_ATTACHED then
         self:holdVehicle(dt)
         if not self.connected and self.timer >= ADFetchToolTask.CONNECT_TIME then
@@ -277,6 +292,75 @@ function ADFetchToolTask:updateForward(dt)
     local aim = math.max(along, 0) + 8
     local point = { x = hitch.x + hitch.dirX * aim, y = hitch.y, z = hitch.z + hitch.dirZ * aim }
     self.vehicle.ad.specialDrivingModule:driveToPoint(dt, point, 4, true, 0.6, 8, true)
+end
+
+-- (09/11) pas de chemin jusque devant l'outil : tout droit en avant (en arrière si l'avant est bloqué), puis nouveau
+-- calcul ; false si c'est déjà fait ROOM_MOVES fois ou si les deux côtés sont bloqués
+function ADFetchToolTask:startRoom()
+    if self.roomMoves >= ADFetchToolTask.ROOM_MOVES then
+        return false
+    end
+    local v = self.vehicle
+    local frontBlocked = v.ad.sensors ~= nil and v.ad.sensors.frontSensor ~= nil and v.ad.sensors.frontSensor:pollInfo() == true
+    local dir = 1
+    if frontBlocked then
+        if v.ad.collisionDetectionModule:checkReverseCollision() then
+            ADAutonomousManager.log("%s : pas de chemin devant l'outil, avant et arrière bloqués", tostring(v.ad.stateModule:getName()))
+            self.roomMoves = ADFetchToolTask.ROOM_MOVES
+            return false
+        end
+        dir = -1
+    end
+    self.roomMoves = self.roomMoves + 1
+    self.roomDir = dir
+    local x, _, z = getWorldTranslation(v.components[1].node)
+    self.roomStart = { x = x, z = z }
+    local tx, ty, tz = AutoDrive.localToWorld(v, 0, 0, 100 * dir)
+    self.roomTarget = { x = tx, y = ty, z = tz }
+    self.roomBlockedTime = 0
+    v.ad.specialDrivingModule:releaseVehicle()
+    ADAutonomousManager.log("%s : pas de chemin devant l'outil, on %s de %d m tout droit puis nouveau calcul (%d/%d)", tostring(v.ad.stateModule:getName()),
+        dir > 0 and "avance" or "recule", ADFetchToolTask.ROOM_DISTANCE, self.roomMoves, ADFetchToolTask.ROOM_MOVES)
+    self:setState(ADFetchToolTask.STATE_ROOM)
+    return true
+end
+
+function ADFetchToolTask:updateRoom(dt)
+    local v = self.vehicle
+    local sdm = v.ad.specialDrivingModule
+    local x, _, z = getWorldTranslation(v.components[1].node)
+    local done = MathUtil.vector2Length(x - self.roomStart.x, z - self.roomStart.z)
+    local blocked
+    if self.roomDir > 0 then
+        blocked = v.ad.sensors ~= nil and v.ad.sensors.frontSensor ~= nil and v.ad.sensors.frontSensor:pollInfo() == true
+    else
+        blocked = v.ad.collisionDetectionModule:checkReverseCollision() == true
+    end
+    self.roomBlockedTime = blocked and self.roomBlockedTime + dt or 0
+    if done >= ADFetchToolTask.ROOM_DISTANCE or self.roomBlockedTime >= ADFetchToolTask.ROOM_BLOCKED or self.timer >= ADFetchToolTask.ROOM_TIMEOUT then
+        ADAutonomousManager.log("%s : %.1f m faits%s, nouveau calcul", tostring(v.ad.stateModule:getName()), done, blocked and " (obstacle)" or "")
+        self:holdVehicle(dt)
+        self:setState(ADFetchToolTask.STATE_PLAN)
+        return
+    end
+    if blocked then
+        self:holdVehicle(dt)
+    elseif self.roomDir > 0 then
+        sdm:driveToPoint(dt, self.roomTarget, ADFetchToolTask.ROOM_SPEED, false, 0.6, ADFetchToolTask.ROOM_SPEED, true)
+    else
+        -- même marche arrière que vers l'outil (reverseTo), vers un point loin derrière, tout droit
+        sdm.reverseNode = sdm:getReverseNode()
+        if sdm.reverseNode == nil then
+            self:holdVehicle(dt)
+            self:setState(ADFetchToolTask.STATE_PLAN)
+            return
+        end
+        sdm.reverseTarget = self.roomTarget
+        sdm.currentWayPointIndex = 0
+        sdm.wayPoints = {}
+        sdm:getBasicStates()
+        sdm:reverseToPoint(dt, ADFetchToolTask.ROOM_SPEED)
+    end
 end
 
 function ADFetchToolTask:reverseTo(dt, hitch, maxSpeed)

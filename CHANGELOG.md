@@ -3,6 +3,28 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.39
+
+🇫🇷 FR
+- Destinations : au chargement de la partie, une destination ne devient plus « 1_6 », « 1_4 »… (marqueurs de debug). Destination, déchargement, champ suivant et place de parking sont retrouvés par leur nom. Une partie déjà décalée : destination à rechoisir une fois.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Destinations: when loading the savegame, a destination no longer turns into "1_6", "1_4"… (debug markers). Destination, unload, next field and parking spot are found back by name. A savegame already shifted: pick the destination again once.
+
+## 1.0.1.38
+
+🇫🇷 FR
+- Remorque à balles : approche directe vers la balle quand le chemin est trop serré (le bras prend les balles dans tous les sens) ; plus de balles laissées « pas de chemin ».
+- Bouton >> pendant le premier trajet vers le champ : balles chargées = dépôt tout de suite ; remorque vide = champ laissé.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Bale trailer: direct approach to the bale when the path is too tight (the arm picks bales from any side); no more bales left behind with "no path".
+- >> button during the first trip to the field: bales loaded = drop straight away; empty trailer = field left.
+
 ## 1.0.1.37
 
 🇫🇷 FR

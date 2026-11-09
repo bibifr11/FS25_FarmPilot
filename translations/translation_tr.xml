@@ -725,6 +725,8 @@
 		<text name="AD_autonomous_balesLast" text="son balyalar (%d): '%s' konumuna bırakılıyor" />
 		<text name="AD_autonomous_balesContinue" text="drop-off requested (%d bales): « %s »" />
 		<text name="AD_autonomous_balesContinueEmpty" text="no bales on the trailer: field %s left, moving on" />
+		<text name="AD_autonomous_fuelBack" text="out of fuel: refuelling at « %s », then back to the field" />
+		<text name="AD_autonomous_fuelNext" text="fuel at %s: refuelling at « %s » before the next field" />
 		<text name="AD_autonomous_balesBack" text="bırakma işlemi tamamlandı, '%s' tarlasına dönülüyor" />
 		<text name="AD_autonomous_balesUnloadFailed" text="balyalar '%s' konumuna bırakılamadı (günlüğe bakın), bekleniyor" />
 		<text name="AD_autonomous_balesNoWork" text="balya yükleyici kolu dışarı çıkmıyor, bekleniyor" />

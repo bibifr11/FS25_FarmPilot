@@ -92,6 +92,7 @@ function AutonomousMode:reset()
     self.refillTask = nil
     self.dumpStage = nil -- épandeur : vider le reste en big bags, voir AutonomousSprayerDump.lua
     if ADBaleCollect ~= nil then ADBaleCollect.reset(self) end -- remorque à balles : étapes du ramassage, voir AutonomousBales.lua
+    if ADFuelRun ~= nil then ADFuelRun.reset(self) end -- plein de carburant, voir AutonomousFuel.lua
     self.vehicle.ad.trailerModule:reset()
 end
 
@@ -224,6 +225,7 @@ function AutonomousMode:shouldLoadOnTrigger()
 end
 
 function AutonomousMode:handleFinishedTask()
+    if self.fuelStage ~= nil and ADFuelRun ~= nil then ADFuelRun.handleStage(self) return end -- plein de carburant : pompe, retour, voir AutonomousFuel.lua
     if self.parkStage ~= nil then
         self:handleParkStage()
         return
@@ -317,6 +319,7 @@ function AutonomousMode.goToNextField(vehicle)
         end
         return false
     end
+    if ADFuelRun ~= nil and ADFuelRun.beforeNextField(vehicle) then return true end -- peu de carburant : plein d'abord, voir AutonomousFuel.lua
     local doneName = tostring(sm:getFirstMarkerName() or "?")
     local name = tostring(sm:getName())
     -- (07/11, 4e ligne « Outil suivant ») : outil à changer avant le champ suivant ?

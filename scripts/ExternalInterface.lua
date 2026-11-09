@@ -556,6 +556,7 @@ end
 
 function AutoDrive:onCpFuelEmpty() -- refuel
     AutoDrive.debugPrint(self, AutoDrive.DC_EXTERNALINTERFACEINFO, "AutoDrive:onCpFuelEmpty start... autoRefuel %s", AutoDrive.getSetting("autoRefuel", self))
+    if ADFuelRun ~= nil and ADFuelRun.onCpFuelEmpty(self) then return end -- mode Autonome : plein puis retour au champ, voir AutonomousFuel.lua
     if self.isServer then
         self.ad.restartCP = false
         if self.ad and self.ad.stateModule and self.startAutoDrive and AutoDrive.getSetting("autoRefuel", self) then

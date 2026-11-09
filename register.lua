@@ -238,6 +238,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentMod
 source(Utils.getFilename("scripts/Manager/RefillSources.lua", g_currentModDirectory)) -- zones de plein filtrées selon le produit
 source(Utils.getFilename("scripts/Manager/BaleLoaderManager.lua", g_currentModDirectory)) -- remorque à balles en Autonome : réglages, balles du champ
 source(Utils.getFilename("scripts/Modes/AutonomousBales.lua", g_currentModDirectory)) -- remorque à balles : dépôt, retour, fin de champ
+source(Utils.getFilename("scripts/Modes/AutonomousFuel.lua", g_currentModDirectory)) -- plein de carburant : Courseplay à sec, avant le champ suivant
 source(Utils.getFilename("scripts/Modes/TrailerHitch.lua", g_currentModDirectory)) -- modes avec benne : remorque à atteler, reposée à sa place
 source(Utils.getFilename("scripts/Modes/TrailerSwap.lua", g_currentModDirectory)) -- échange de bennes à la livraison
 

@@ -126,6 +126,7 @@ function ADTaskModule:update(dt)
 end
 
 function ADTaskModule:hasToRefuel()
+    if self.vehicle.ad.fpFuelRun then return false end -- plein du mode Autonome en cours, voir AutonomousFuel.lua
     local ret = false
     if AutoDrive.getSetting("autoRefuel", self.vehicle) or self.vehicle.ad.onRouteToRefuel then
         local refuelFillTypes = AutoDrive.getRequiredRefuels(self.vehicle, self.vehicle.ad.onRouteToRefuel)

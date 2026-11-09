@@ -723,6 +723,8 @@
 		<text name="AD_autonomous_balesNone" text="keine Ballen mehr auf Feld %s" />
 		<text name="AD_autonomous_balesFull" text="Wagen voll (%d Ballen): Abladen bei « %s », dann zurück zum Feld" />
 		<text name="AD_autonomous_balesLast" text="letzte Ballen (%d): Abladen bei « %s »" />
+		<text name="AD_autonomous_balesContinue" text="Abladen angefordert (%d Ballen): « %s »" />
+		<text name="AD_autonomous_balesContinueEmpty" text="keine Ballen auf dem Wagen: Feld %s verlassen, es geht weiter" />
 		<text name="AD_autonomous_balesBack" text="abgeladen, zurück zum Feld « %s »" />
 		<text name="AD_autonomous_balesUnloadFailed" text="Ballen bei « %s » nicht abgeladen (siehe Log), wartet" />
 		<text name="AD_autonomous_balesNoWork" text="der Greifarm des Ballensammelwagens fährt nicht aus, wartet" />

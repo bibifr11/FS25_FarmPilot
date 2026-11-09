@@ -21,6 +21,8 @@
 --   le départ du chemin. Le tracteur recule tout droit de BACKOFF_DISTANCE m puis recalcule ; ce n'est pas compté
 --   comme un essai raté. Au plus BACKOFF_MAX reculs de suite au même endroit, ensuite essai raté comme avant.
 --   Même recul avant de rendre la main pour le dépôt si une balle est juste devant ou si le dernier départ était bloqué.
+-- - (09/11) Bouton >> (Continuer) : fin « continue » dès que le bras a fini sa balle, bras rentré ; ensuite dépôt
+--   tout de suite, ou champ laissé si la remorque est vide (AutonomousBales.lua).
 --
 -- Lancé par AutonomousBales.lua (étape « collect »).
 -- ============================================================================================================
@@ -292,6 +294,13 @@ function ADBaleCollectTask:update(dt)
     if self.state ~= "grab" and self.state ~= "prepare" and self.state ~= "fold" and self.state ~= "backoff" and ADBaleLoaderManager.isBusy(loader) then
         self.countBefore = self.countBefore or ADBaleLoaderManager.loadedCount(loader)
         self:setState("grab")
+    end
+
+    -- >> : fin demandée, une fois la balle en cours chargée (pas pendant un recul)
+    if self.depositRequested and self.result == nil and self.state ~= "grab" and self.state ~= "backoff" then
+        self:holdVehicle(dt)
+        self:finish("continue")
+        return
     end
 
     if self.state == "prepare" then
@@ -587,7 +596,7 @@ function ADBaleCollectTask:finish(result)
     self:claim(nil)
     log("%s : ramassage fini (%s), %d balle(s) ramassée(s), %d chargée(s)", self:name(), tostring(result), self.picked,
         ADBaleLoaderManager.loadedCount(self.loader))
-    if result == "full" or result == "noBales" then
+    if result == "full" or result == "noBales" or result == "continue" then
         -- bras rentré avant la route
         self.foldRequested = false
         self:setState("fold")

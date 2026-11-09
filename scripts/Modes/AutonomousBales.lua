@@ -12,8 +12,11 @@
 --   (champ suivant, sinon remorque posée à sa place et tracteur garé : AutoDrive:onCpFinished).
 -- - Aucune balle au champ à l'arrivée et remorque vide : message, puis la même suite.
 -- - Erreur (bras qui ne sort pas, remorque dételée, déchargement refusé) : message, arrêt et attente.
+-- - (09/11) Bouton >> (Continuer) avec des balles chargées : dépôt tout de suite (après la balle en cours), puis
+--   retour au champ s'il en reste. Remorque vide : champ laissé, la suite habituelle d'un champ fini.
 --
--- Branché par une ligne dans : AutonomousMode.lua (reset ; handleFinishedTask : étapes et arrivée au champ),
+-- Branché par une ligne dans : AutonomousMode.lua (reset ; handleFinishedTask : étapes et arrivée au champ ;
+-- continue : bouton >>),
 -- Specialization.lua (stopAutoDrive : afterStop).
 -- ============================================================================================================
 
@@ -110,8 +113,8 @@ function ADBaleCollect.startCollect(mode, first)
     vehicle.ad.taskModule:addTask(mode.baleTask)
 end
 
--- back = true : il reste des balles, retour au champ après le dépôt
-function ADBaleCollect.goDeposit(mode, back)
+-- back = true : il reste des balles, retour au champ après le dépôt ; msgKey : message à la place de « pleine »
+function ADBaleCollect.goDeposit(mode, back, msgKey)
     local vehicle, ctx = mode.vehicle, mode.baleCtx
     local deposit = ctx.settings.deposit ~= nil and ADGraphManager:getMapMarkerByName(ctx.settings.deposit) or nil
     if deposit == nil then
@@ -126,7 +129,47 @@ function ADBaleCollect.goDeposit(mode, back)
     mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, deposit.id)
     vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     log("%s : %d balle(s) sur la remorque, dépôt à « %s »%s", nameOf(vehicle), loaded, tostring(deposit.name), back and ", puis retour au champ" or "")
-    message(vehicle, "INFO", back and "AD_autonomous_balesFull" or "AD_autonomous_balesLast", loaded, tostring(deposit.name))
+    message(vehicle, "INFO", msgKey or (back and "AD_autonomous_balesFull" or "AD_autonomous_balesLast"), loaded, tostring(deposit.name))
+end
+
+-- (09/11) bouton >> (Continuer) : dépôt tout de suite avec les balles chargées, retour au champ s'il en reste.
+-- Remorque vide : champ laissé, suite d'un champ fini (champ suivant, parking). true = bouton pris ici.
+function ADBaleCollect.onContinue(mode)
+    local vehicle, ctx, stage = mode.vehicle, mode.baleCtx, mode.baleStage
+    if ctx == nil or ctx.tool == nil then
+        return false
+    end
+    local loaded = ADBaleLoaderManager.loadedCount(ctx.tool)
+    if stage == "toDeposit" or stage == "unload" then
+        log("%s : >> : déjà en route vers le dépôt", nameOf(vehicle))
+        return true
+    end
+    if stage == "collect" and mode.baleTask ~= nil and mode.baleTask.result == nil then
+        -- fin du ramassage après la balle en cours ; la suite (dépôt ou champ laissé) selon la remorque, voir handleStage
+        if loaded > 0 then
+            log("%s : >> : dépôt demandé avec %d balle(s), après la balle en cours", nameOf(vehicle), loaded)
+        else
+            log("%s : >> : aucune balle sur la remorque, champ %s laissé", nameOf(vehicle), tostring(ctx.fieldNum))
+        end
+        mode.baleTask.depositRequested = true
+        return true
+    end
+    if stage == "toField" and loaded == 0 then
+        log("%s : >> : aucune balle sur la remorque, champ %s laissé avant d'y retourner", nameOf(vehicle), tostring(ctx.fieldNum))
+        vehicle.ad.taskModule:abortCurrentTask()
+        message(vehicle, "INFO", "AD_autonomous_balesContinueEmpty", tostring(ctx.fieldNum))
+        ADBaleCollect.finishField(mode)
+        return true
+    end
+    if stage == "toField" then
+        -- balles restées sur la remorque au retour : demi-tour vers le dépôt
+        log("%s : >> : %d balle(s) sur la remorque, dépôt au lieu du retour au champ", nameOf(vehicle), loaded)
+        vehicle.ad.taskModule:abortCurrentTask()
+        mode.driveToDestinationTask = nil
+        ADBaleCollect.goDeposit(mode, true, "AD_autonomous_balesContinue")
+        return true
+    end
+    return false
 end
 
 -- (hook AutonomousMode:handleFinishedTask) fin d'une étape
@@ -145,7 +188,17 @@ function ADBaleCollect.handleStage(mode)
     if stage == "collect" then
         local result = task ~= nil and task.result or "?"
         local loaded = ADBaleLoaderManager.loadedCount(ctx.tool)
-        if result == "full" or (result == "noBales" and loaded > 0) then
+        if result == "continue" then
+            -- >> : dépôt tout de suite, retour s'il reste des balles ; remorque vide : champ laissé
+            local list = loaded > 0 and ADBaleLoaderManager.findBales(ctx.tool, ctx.fieldNums, ctx.settings.wrap, task ~= nil and task.left or nil) or {}
+            if loaded > 0 then
+                ADBaleCollect.goDeposit(mode, #list > 0, "AD_autonomous_balesContinue")
+            else
+                -- remorque vide : champ laissé, suite d'un champ fini
+                message(vehicle, "INFO", "AD_autonomous_balesContinueEmpty", tostring(ctx.fieldNum))
+                ADBaleCollect.finishField(mode)
+            end
+        elseif result == "full" or (result == "noBales" and loaded > 0) then
             local back = false
             if result == "full" then
                 local list = ADBaleLoaderManager.findBales(ctx.tool, ctx.fieldNums, ctx.settings.wrap, task ~= nil and task.left or nil)

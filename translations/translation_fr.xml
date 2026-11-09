@@ -723,6 +723,8 @@
 		<text name="AD_autonomous_balesNone" text="plus de balle à ramasser au champ %s" />
 		<text name="AD_autonomous_balesFull" text="remorque pleine (%d balles) : dépôt à « %s », puis retour au champ" />
 		<text name="AD_autonomous_balesLast" text="dernières balles (%d) : dépôt à « %s »" />
+		<text name="AD_autonomous_balesContinue" text="dépôt demandé (%d balles) : « %s »" />
+		<text name="AD_autonomous_balesContinueEmpty" text="aucune balle sur la remorque : champ %s laissé, suite du travail" />
 		<text name="AD_autonomous_balesBack" text="dépôt fait, retour au champ « %s »" />
 		<text name="AD_autonomous_balesUnloadFailed" text="dépôt des balles à « %s » pas fait (voir le log), en attente" />
 		<text name="AD_autonomous_balesNoWork" text="le bras de la remorque à balles ne sort pas, en attente" />

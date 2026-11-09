@@ -723,6 +723,8 @@
 		<text name="AD_autonomous_balesNone" text="no more bales to collect on field %s" />
 		<text name="AD_autonomous_balesFull" text="loader full (%d bales): drop-off at « %s », then back to the field" />
 		<text name="AD_autonomous_balesLast" text="last bales (%d): drop-off at « %s »" />
+		<text name="AD_autonomous_balesContinue" text="drop-off requested (%d bales): « %s »" />
+		<text name="AD_autonomous_balesContinueEmpty" text="no bales on the trailer: field %s left, moving on" />
 		<text name="AD_autonomous_balesBack" text="drop-off done, back to field « %s »" />
 		<text name="AD_autonomous_balesUnloadFailed" text="bales not dropped off at « %s » (see the log), waiting" />
 		<text name="AD_autonomous_balesNoWork" text="the bale loader arm does not come out, waiting" />

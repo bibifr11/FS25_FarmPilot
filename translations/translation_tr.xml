@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <l10n>
-	<translationContributors>HSayar, Cyber-Syntax</translationContributors>
+	<translationContributors>HSayar, Cyber-Syntax, huseyinsayar</translationContributors>
     <texts>
         <text name="UNKNOWN"											text="Bilinmeyen" />
         <text name="input_ADToggleHud"									text="FP - HUD Göster/Gizle" />
@@ -103,7 +103,7 @@
 		<text name="gui_ad_blinkValue"									text="Otomatik Sinyal" />
 		<text name="gui_ad_blinkValue_tooltip"							text="Sinyalleri otomatik olarak etkinleştirmek için direksiyon açısı. (0 = dönüş ışığı otomatik devre dışı bırakılır)" />
 		<text name="gui_ad_pipe_offset"								text="Boru Ofseti" />
-		<text name="gui_ad_pipe_offset_tooltip"						text="Additional offset applied to the detected pipe position" />
+		<text name="gui_ad_pipe_offset_tooltip"						text="Algılanan boru konumuna ek kaydırma (ofset) uygulandı" />
 		<text name="gui_ad_followDistance"								text="Biçerdöver mesafesi" />
 		<text name="gui_ad_followDistance_tooltip"						text="Biçerdöverin arkasını takip ederken uzak durulan mesafe" />
 		<text name="gui_ad_lookahead_turning"							text="İleriye bakma mesafesi (dönüş)" />
@@ -118,19 +118,19 @@
 		<text name="gui_ad_useFolders_tooltip"							text="Hedefleri yapılandırmak için klasörleri kullanın" />
 		<text name="gui_ad_wait"										text="Bekle" />
 		<text name="gui_ad_drive"										text="Sür" />
-		<text name="gui_ad_off"										text="Off" />
+		<text name="gui_ad_off"										text="Kapalı" />
 		<text name="gui_ad_yes"										text="Evet" />
-		<text name="gui_ad_strict"										text="Strict" />
+		<text name="gui_ad_strict"										text="Kesinlikle (Strict)" />
 		<text name="gui_ad_no"											text="Hayır" />
 		<text name="gui_ad_FS22"										text="FS 22" />
 		<text name="gui_ad_FS19"										text="FS 19" />
-		<text name="gui_ad_BSMRange"									text="Bunker Silo Manager Range" />
-		<text name="gui_ad_BSMRange_tooltip"							text="In this range vehicles to destination bunker silo one by one get driveway" />
-		<text name="gui_ad_UMRange"									text="Bunker Silo / Unload Manager Range" />
-		<text name="gui_ad_UMRange_tooltip"							text="In this range vehicles to destination bunker silo / same unload destination one by one get driveway" />
-		<text name="ad_bga_init"										text="Başlatılıyor" />
-		<text name="ad_bga_waiting"									text="Treyler / silo bekleniyor" />
-		<text name="ad_bga_active"										text="Aktif" />
+		<text name="gui_ad_BSMRange"									text="BSM: Bunker Silo Yönetim Mesafesi" />
+		<text name="gui_ad_BSMRange_tooltip"							text="BSM: Bu alanda araçlar, varış noktası olan sığınak siloya tek tek giriş yapar." />
+		<text name="gui_ad_UMRange"									text="UM: Bunker Silosu / Boşaltma Yönetim Mesafesi" />
+		<text name="gui_ad_UMRange_tooltip"							text="UM: Bu alanda, araçlar varış noktası olan sığınak siloya (bunker silo) —yani aynı boşaltma noktasına— tek tek giriş yaparlar." />
+		<text name="ad_bga_init"										text="BGA: Başlatılıyor" />
+		<text name="ad_bga_waiting"									text="BGA: Treyler / silo bekleniyor" />
+		<text name="ad_bga_active"										text="BGA: Aktif" />
 		<text name="gui_ad_autoConnect_start"							text="Otomatik bağlan (başlat)" />
 		<text name="gui_ad_autoConnect_start_tooltip"					text="Kayıt başlangıcında uygun düğümü otomatik olarak bağlayın" />
 		<text name="gui_ad_autoConnect_end"							text="Otomatik bağlan (son)" />
@@ -176,7 +176,7 @@
 		<text name="gui_ad_pathFinderTime_tooltip"						text="Yol bulma algoritmasının birleştirmeye / birleştirmeden çarpışmasız yolu aramasına ne kadar süre izin verileceğini belirler. (Potansiyel fps etkisi)" />
 		<text name="gui_ad_lineHeight"									text="Satır yüksekliği" />
 		<text name="gui_ad_lineHeight_tooltip"							text="Düzenleyici modunda satır yüksekliği. Ya zemin seviyesinde ya da traktörün üstünde" />
-		<text name="gui_ad_ground"										text="Zemin kat" />
+		<text name="gui_ad_ground"										text="Zemin seviyesinde" />
 		<text name="gui_ad_aboveDriver"								text="Traktörün üstünde" />
 		<text name="gui_ad_enableTrafficDetection"						text="Çarpışma algılama" />
 		<text name="gui_ad_enableTrafficDetection_tooltip"				text="Yapay zeka trafiğini, işaretleri, çitleri vb. Algılayan gelişmiş çarpışma algılama Off, detect FS 22 or FS 19 collision" />
@@ -184,29 +184,29 @@
 		<text name="gui_ad_shovelWidth_tooltip"						text="Otomatik olarak algılanan kepçe genişliği çok küçükse bu değer ile artırılabilir." />
 		<text name="gui_ad_preCallLevel"								text="Çağrı öncesi seviyesi" />
 		<text name="gui_ad_preCallLevel_tooltip"						text="Ayarlanan doldurma seviyesinde ön çağrı boşaltıcı." />
-		<text name="gui_ad_chaseSide"									text="Chopper Unload Side" />
-		<text name="gui_ad_chaseSide_tooltip"							text="Unloader will use only this side from Chppers perspective: automatic, left, behind, right" />
+		<text name="gui_ad_chaseSide"									text="Silaj Makinesi Boşaltma Tarafı" />
+		<text name="gui_ad_chaseSide_tooltip"							text="Boşaltıcı (römorklu araç), Chopper'ın perspektifinden sadece bu tarafı kullanacaktır: otomatik, sol, arka, sağ." />
 		<text name="gui_ad_none"										text="Yok" />
-		<text name="gui_ad_onlyPickup"									text="sadece Pickup" />
-		<text name="gui_ad_onlyDeliver"								text="sadece teslim et" />
-		<text name="gui_ad_PickupandDeliver"							text="Toplama ve Teslim Etme" />
+		<text name="gui_ad_onlyPickup"									text="Sadece topla" />
+		<text name="gui_ad_onlyDeliver"								text="Sadece teslim et" />
+		<text name="gui_ad_PickupandDeliver"							text="Toplama ve teslim etme" />
 		<text name="gui_ad_rotateTargets"								text="Döngü Toplama ve Teslim Etme" />
 		<text name="gui_ad_rotateTargets_tooltip"						text="4 Mod: Hedeflerde değişiklik yok / yalnızca Toplama Hedefleri / yalnızca Hedefleri Teslim Et / Klasördeki Alım ve Teslim Hedefleri döngü halinde (varsayılan klasörle değil) (yalnızca klasörleri kullan etkinse dikkate alınır)" />
 		<text name="gui_ad_maxTriggerDistance"							text="Maksimum tetik mesafesi" />
 		<text name="gui_ad_maxTriggerDistance_tooltip"					text="Tetikleyicilerin algılandığı ve etkinleştirildiği hedefe olan mesafe." />
-		<text name="gui_ad_useGlobalSetting"							text="Use global setting" />
+		<text name="gui_ad_useGlobalSetting"							text="Genel ayarları kullan" />
 		<text name="gui_ad_useBeaconLights"							text="Uyarı ışıkları" />
 		<text name="gui_ad_useBeaconLights_tooltip"					text="Evet - Alanların dışında otomatik olarak uyarı ışıkları kullan / Hayır - uyarı ışıkları otomatik olarak açılmayacak veya kapanmayacak" />
-		<text name="gui_ad_worklightsWhenLoading"						text="Worklight when Loading / Unloading" />
-		<text name="gui_ad_worklightsWhenLoading_tooltip"				text="Yes - Use working lights when loading or unloading at a trigger" />
-		<text name="gui_ad_worklightsWhenSilo"							text="Worklight when in a Silo Bunker" />
-		<text name="gui_ad_worklightsWhenSilo_tooltip"					text="Yes - Use working lights when in a silo bunker" />
-		<text name="gui_ad_hazardLightReverse"							text="Hazard Lights" />
-		<text name="gui_ad_hazardLightReverse_tooltip"					text="Yes - Use hazard lights while reverse driving" />
-		<text name="gui_ad_activeUnloading"							text="Active unloading" />
-		<text name="gui_ad_activeUnloading_tooltip"					text="Unload harvesters while driving." />
-		<text name="gui_ad_restrictToField"							text="Yol bulucuyu alanla sınırla" />
-		<text name="gui_ad_restrictToField_tooltip"					text="Boşaltıcı sahaya zaten park edilmişse, yol bulucuyu alan sınırlarıyla sınırlayacaktır." />
+		<text name="gui_ad_worklightsWhenLoading"						text="Yükleme / Boşaltma Sırasında Çalışma Işıkları" />
+		<text name="gui_ad_worklightsWhenLoading_tooltip"				text="Evet - Bir dolum noktasında (trigger) yükleme veya boşaltma yapılırken çalışma lambalarını kullan" />
+		<text name="gui_ad_worklightsWhenSilo"							text="Siloda Çalışma Işıkları" />
+		<text name="gui_ad_worklightsWhenSilo_tooltip"					text="Evet - Silo bunkerindeyken çalışma lambalarını kullan" />
+		<text name="gui_ad_hazardLightReverse"							text="Dörtlü İkaz Lambaları" />
+		<text name="gui_ad_hazardLightReverse_tooltip"					text="Evet - Geri viteste giderken dörtlü ikaz lambalarını kullan" />
+		<text name="gui_ad_activeUnloading"							text="Aktif Boşaltma" />
+		<text name="gui_ad_activeUnloading_tooltip"					text="Biçerdöverleri sürüş halindeyken boşalt." />
+		<text name="gui_ad_restrictToField"							text="Yol bulucuyu tarla ile sınırla" />
+		<text name="gui_ad_restrictToField_tooltip"					text="Boşaltıcı tarlaya zaten park edilmişse, yol bulucuyu tarla sınırlarıyla sınırlayacaktır." />
 		<text name="gui_ad_showTooltips"								text="Araç ipuçlarını göster" />
 		<text name="gui_ad_showTooltips_tooltip"						text="Gösterge Paneli'nde düğme araç ipuçlarını gösterin." />
 		<text name="gui_ad_enterTargetNameTitle_add"					text="Hedef Ekle" />
@@ -219,8 +219,8 @@
 		<text name="gui_ad_enterGroupNameText"							text="Klasör adını girin:" />
 		<text name="gui_ad_autoRefuel"									text="Otomatik Yakıt Doldurma" />
 		<text name="gui_ad_autoRefuel_tooltip"							text="Yakıt seviyesi düşükken yakıt ikmali hedefine (yakıt tetiğine yakın) gidin." />
-		<text name="gui_ad_autoRepair"									text="Automatic Repairing" />
-		<text name="gui_ad_autoRepair_tooltip"							text="Drive to workshop destination (close to repair trigger) when wear level is too high." />
+		<text name="gui_ad_autoRepair"									text="Otamatik Tamir etme" />
+		<text name="gui_ad_autoRepair_tooltip"							text="Aşınma seviyesi çok yüksek olduğunda, atölye hedefine (onarım tetikleyicisinin yakınına) sürün." />
 		<text name="gui_ad_filter"										text="Filtrele" />
 		<text name="gui_ad_enterDestinationFilterTitle"				text="Hedefin filtre metnini değiştir" />
 		<text name="gui_ad_enterDestinationFilterText"					text="Filtre metni ekleyin:" />
@@ -228,83 +228,83 @@
 		<text name="gui_ad_shovelHeight_tooltip"						text="Otomatik olarak algılanırsa kepçe yüksekliği yanlıştır. Hedef zemin yüksekliğini ayarlamak için bunu kullanın" />
 		<text name="gui_ad_showMarkersOnMap"							text="İşaretçileri göster" />
 		<text name="gui_ad_showMarkersOnMap_tooltip"					text="Oyun içi haritada işaretçileri / hedefleri göster" />
-		<text name="gui_ad_mainMenuMap"								text="Main menu map" />
-		<text name="gui_ad_ingameMap"									text="Ingame map" />
-		<text name="gui_ad_both"										text="Both" />
+		<text name="gui_ad_mainMenuMap"								text="Ana menü haritası" />
+		<text name="gui_ad_ingameMap"									text="Oyun içi haritası" />
+		<text name="gui_ad_both"										text="Her ikisi de" />
 		<text name="gui_ad_switchToMarkersOnMap"						text="İşaretçilere geç" />
 		<text name="gui_ad_switchToMarkersOnMap_tooltip"				text="Harita etkin noktalarına tıklandığında hedef / boşaltma hedefi ayarlayın" />
 		<text name="gui_ad_cornerSpeed"								text="Dönüş hızı" />
 		<text name="gui_ad_cornerSpeed_tooltip"						text="Bağımsız araç için dönüş hızını ayarlayın. Kütle ve mevcut hız, fren noktasını etkilemeye devam edecek" />
 		<text name="gui_ad_callSecondUnloader"							text="2. Boşaltıcıyı çağır." />
 		<text name="gui_ad_callSecondUnloader_tooltip"					text="Mevcut boşaltıcı ön doldurma seviyesine ulaştığında 2. Boşaltıcıyı çağır:" />
-		<text name="gui_ad_followOnlyOnField"							text="Boşaltıcıyı alanla sınırla" />
+		<text name="gui_ad_followOnlyOnField"							text="Boşaltıcıyı tarla ile sınırla" />
 		<text name="gui_ad_followOnlyOnField_tooltip"					text="Aktif olarak boşaltma sırasında boşaltıcıyı tarlayla kısıtlayın" />
 		<text name="gui_ad_addSettingsToHUD"							text="HUD'ye ayarlar ekleyin" />
-		<text name="gui_ad_addSettingsToHUD_tooltip"					text="Bu menüyü açmadan ayarları değiştirmek için Gösterge Paneli'ne düğmeler ekler" />
+		<text name="gui_ad_addSettingsToHUD_tooltip"					text="Bu menüyü açmadan ayarları değiştirmek için gösterge paneli'ne düğmeler ekler" />
 		<text name="gui_ad_iconSetToUse"								text="Logo kişiselleştirme" />
 		<text name="gui_ad_iconSetToUse_tooltip"						text="Varsayılan logo veya kişiselleştirilmiş logo - Seçim genişletilebilir." />
 		<text name="gui_ad_secondEditorModeAllowed"					text="2. düzenleyici modunu kullanın" />
 		<text name="gui_ad_secondEditorModeAllowed_tooltip"			text="LCTRL'yi basılı tutmak yerine rota manipülasyonu için 2. düzenleyici modunu kullanın" />
 		<text name="gui_ad_wideHUD"									text="Geniş HUD" />
 		<text name="gui_ad_wideHUD_tooltip"							text="HUD'da birkaç ayar düğmesine daha izin veren geniş HUD modunu kullanın" />
-		<text name="gui_ad_playSounds"									text="Sound" />
-		<text name="gui_ad_playSounds_tooltip"							text="Enables the sound effects for mouse clicks and notifications" />
-		<text name="gui_ad_scaleLines"									text="Scale Lines" />
-		<text name="gui_ad_scaleLines_tooltip"							text="Scale Thickness of connection lines" />
-		<text name="gui_ad_scaleMarkerText"							text="Scale Destination Name" />
-		<text name="gui_ad_scaleMarkerText_tooltip"					text="Scale Size of Destination Names" />
+		<text name="gui_ad_playSounds"									text="Ses" />
+		<text name="gui_ad_playSounds_tooltip"							text="Fare tıklamaları ve bildirimler için ses efektlerini etkinleştirir" />
+		<text name="gui_ad_scaleLines"									text="Bağlantı çizgi ölçeği" />
+		<text name="gui_ad_scaleLines_tooltip"							text="Bağlantı çizgilerinin kalınlığını ölçeklendirir" />
+		<text name="gui_ad_scaleMarkerText"							text="İşaretli Metin Ölçeği" />
+		<text name="gui_ad_scaleMarkerText_tooltip"					text="İşaretli Metin boyutunu ölçeklendirir" />
 		<text name="gui_ad_syncMultiTargets"							text="Birden çok hedefi senkronize et" />
 		<text name="gui_ad_syncMultiTargets_tooltip"					text="Birden çok hedef için aynı klasörü kullanan birden çok sürücü, sonraki hedefleri senkronize edecek" />
 		<text name="gui_ad_enableParkAtJobFinished"					text="Park işi tamamlandı" />
-		<text name="gui_ad_enableParkAtJobFinished_tooltip"			text="Yalnızca Alma ve Teslim Et, Teslim Et Modlarında mevcuttur: İş bittiğinde, aracın / ataşmanın depolanmış park konumuna sürülür. Dedi-Server'da sadece araç park yeri için mevcuttur!" />
+		<text name="gui_ad_enableParkAtJobFinished_tooltip"			text="Yalnızca Topla ve teslim et, Teslim Et modlarında kullanılabilir: Görev tamamlandığında; araç veya ataşman, kayıtlı park konumuna götürülür. Dedi-Server (adanmış sunucu) üzerinde ise yalnızca araç park yeri için kullanılabilir!" />
 		<text name="gui_ad_autoTipSide"								text="Otomatik Boşaltma Tarafı" />
 		<text name="gui_ad_autoTipSide_tooltip"						text="Evet - FarmPilot otomatik olarak boşaltma tarafını seç / Hayır - önceden seçilmiş olan boşaltma tarafı kullanılacaktır" />
 		<text name="gui_ad_autoTrailerCover"							text="Otomatik römork kapakları" />
 		<text name="gui_ad_autoTrailerCover_tooltip"					text="Evet - FarmPilot gerektiğinde römork kapaklarını açıp kapat / Hayır - römork kapakları FarmPilot tarafından açılmayacak veya kapanmayacak" />
-		<text name="gui_ad_useForwardTurningManoeuvre"					text="Forwards turning manoeuvre" />
-		<text name="gui_ad_useForwardTurningManoeuvre_tooltip"			text="Yes - FarmPilot unloaders try to plan a path forwards to adapt to 90° turns of the combine. / No - Unloaders will reverse before turn" />
-		<text name="gui_ad_ALUnload"									text="AutoLoad: Unload Position" />
-		<text name="gui_ad_ALUnload_tooltip"							text="Off-no automatic unload, center-unload on loading platform, left / right vehicle unload position (Position depend on vehicle setup, not AD!)" />
-		<text name="gui_ad_Text_all"									text="All" />
-		<text name="gui_ad_AL_off"										text="Unload Off" />
-		<text name="gui_ad_AL_center"									text="Unload center" />
-		<text name="gui_ad_AL_left"									text="Unload left" />
-		<text name="gui_ad_AL_behind"									text="Unload behind" />
-		<text name="gui_ad_AL_right"									text="Unload right" />
-		<text name="gui_ad_ALUnloadWaitTime"							text="AutoLoad: wait time after unload" />
-		<text name="gui_ad_ALUnloadWaitTime_tooltip"					text="Wait time after unloading, before continue to drive - useful for unload center: 0-no wait, wait selected time" />
-		<text name="gui_ad_scanConfirmationTextTitle"					text="FarmPilot - Network Generation" />
-		<text name="gui_ad_scanConfirmationText"						text="Should FarmPilot generate a route network from the traffic and helper data on the map?" />
-		<text name="gui_ad_noHarvesterAvailable"						text="No harvester with same target found" />
-		<text name="gui_ad_noUnloaderAvailable"						text="No driver with same target available" />
-		<text name="gui_ad_remainingDriveTimeInterval"					text="Remaining Drive time" />
-		<text name="gui_ad_remainingDriveTimeInterval_tooltip"			text="For external mods: Interval to calculate the remaining drive time. In case of issues with performance increase or deactivate." />
-		<text name="gui_ad_adpd_showError"								text="FarmPilot: The Network is inconsistent and could not be imported, error code" />
-		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot: Would you like to import the AD Network from the Placeable?" />
-		<text name="gui_ad_pathfinder"									text="Pathfinder algorithm" />
-		<text name="gui_ad_pathfinder_tooltip"							text="Choose which pathfinder algorithm is used (when not on network)" />
+		<text name="gui_ad_useForwardTurningManoeuvre"					text="İleri Dönüş Manevrası" />
+		<text name="gui_ad_useForwardTurningManoeuvre_tooltip"			text="Evet - FarmPilot boşaltıcıları, biçerdöverin 90°'lik dönüşlerine uyum sağlamak için ileri yönde bir rota planlamaya çalışır. / Hayır - Boşaltıcılar dönmeden önce geri vites yapar" />
+		<text name="gui_ad_ALUnload"									text="AutoLoad: Boşaltma Konumu" />
+		<text name="gui_ad_ALUnload_tooltip"							text="Kapalı - Otomatik boşaltma yok, orta - yükleme platformunda ortadan boşalt, sol / sağ - araç boşaltma konumu (Konum araç ayarına bağlıdır, AD'ye değil!)" />
+		<text name="gui_ad_Text_all"									text="Tümü" />
+		<text name="gui_ad_AL_off"										text="AL: Boşaltma Kapalı" />
+		<text name="gui_ad_AL_center"									text="AL: Ortadan Boşalt" />
+		<text name="gui_ad_AL_left"									text="AL: Soldan Boşalt" />
+		<text name="gui_ad_AL_behind"									text="AL: Arkadan Boşalt" />
+		<text name="gui_ad_AL_right"									text="AL: Sağdan Boşalt" />
+		<text name="gui_ad_ALUnloadWaitTime"							text="AL: Boşaltma sonrası bekleme süresi" />
+		<text name="gui_ad_ALUnloadWaitTime_tooltip"					text="AL: Boşaltma sonrasında sürüşe devam etmeden önceki bekleme süresi - ortadan boşaltma için faydalıdır: 0-bekleme yok, seçilen süre kadar bekler" />
+		<text name="gui_ad_scanConfirmationTextTitle"					text="FarmPilot - Ağ Oluşturma" />
+		<text name="gui_ad_scanConfirmationText"						text="FarmPilot, haritadaki trafik ve yardımcı verilerinden bir rota ağı oluştursun mu?" />
+		<text name="gui_ad_noHarvesterAvailable"						text="Aynı hedefe sahip biçerdöver bulunamadı" />
+		<text name="gui_ad_noUnloaderAvailable"						text="Aynı hedefe sahip uygun sürücü yok" />
+		<text name="gui_ad_remainingDriveTimeInterval"					text="Kalan Sürüş Süresi" />
+		<text name="gui_ad_remainingDriveTimeInterval_tooltip"			text="Harici modlar için: Kalan sürüş süresini hesaplama aralığı. Performans sorunları yaşanması durumunda süreyi artırın veya devre dışı bırakın." />
+		<text name="gui_ad_adpd_showError"								text="FarmPilot: Ağ tutarsız ve içe aktarılamadı, hata kodu" />
+		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot: Yerleştirilebilir (Placeable) öğeden AD Ağını içe aktarmak ister misiniz?" />
+		<text name="gui_ad_pathfinder"									text="Yol Bulucu (Pathfinder) Algoritması" />
+		<text name="gui_ad_pathfinder_tooltip"							text="Hangi yol bulucu algoritmasının kullanılacağını seçin (ağ üzerinde değilken)" />
 		<text name="gui_ad_pathfinder_astar"							text="A-Star + Dubbins" />
-		<text name="gui_ad_pathfinder_custom"							text="FarmPilot Custom" />
-		<text name="gui_ad_enableRoutesManagerOnDediServer"			text="Routemanager on Server" />
-		<text name="gui_ad_enableRoutesManagerOnDediServer_tooltip"	text="Enable route manager on dedicated servers" />
-		<text name="gui_ad_autostartHelpers"							text="Autostart helpers" />
-		<text name="gui_ad_autostartHelpers_tooltip"					text="Automatically restart active helpers after loading a savegame" />
-		<text name="gui_ad_detectSwath"								text="Swath detection" />
-		<text name="gui_ad_detectSwath_tooltip"						text="Decides if swaths are detected as fruit on field" />
-		<text name="gui_ad_colorAssignmentMode"						text="Custom colors" />
-		<text name="gui_ad_colorAssignmentMode_tooltip"				text="Enables selection of custom colors for FarmPilot" />
-		<text name="gui_ad_FoldImplements"								text="Fold implements" />
-		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot will wait for implements to fold up before starting" />
-		<text name="gui_ad_RecordWhileNotInVehicle"					text="Record without driver" />
-		<text name="gui_ad_RecordWhileNotInVehicle_tooltip"			text="FarmPilot will keep recording if driver leaves the vehicle" />
-		<text name="gui_ad_RecordDriveDirectionOffset"					text="Record offset in driving direction" />
-		<text name="gui_ad_RecordDriveDirectionOffset_tooltip"			text="Move recording from vehicle to the left (-0.1 .. -6m) or right (0.1 .. 6m). Driving reverse wil stop recording!" />
-		<text name="gui_ad_RecordOppositeDriveDirectionOffset"			text="Record offset in opposite driving direction" />
-		<text name="gui_ad_RecordOppositeDriveDirectionOffset_tooltip"	text="Move recording from vehicle to the left (-0.1 .. -6m) or right (0.1 .. 6m). Driving reverse wil stop recording!" />
-		<text name="gui_ad_fieldPointOffset"							text="Fieldpoint Offset" />
-		<text name="gui_ad_fieldPointOffset_tooltip"					text="create field points inside (-0.2 .. -6m) or outside (0.2 .. 6m) erzeugen. 0 at field border" />
-		<text name="gui_ad_maxFieldPointDistance"						text="field point max. distance" />
-		<text name="gui_ad_maxFieldPointDistance_tooltip"				text="create field points with max. distance of 2 .. 25 m" />
+		<text name="gui_ad_pathfinder_custom"							text="FarmPilot Özel" />
+		<text name="gui_ad_enableRoutesManagerOnDediServer"			text="Sunucuda (dedicated) Rota Yöneticisi" />
+		<text name="gui_ad_enableRoutesManagerOnDediServer_tooltip"	text="Özel (dedicated) sunucularda rota yöneticisini etkinleştir" />
+		<text name="gui_ad_autostartHelpers"							text="Yardımcıları Otomatik Başlat" />
+		<text name="gui_ad_autostartHelpers_tooltip"					text="Bir kayıt dosyası yüklendikten sonra aktif yardımcıları otomatik olarak yeniden başlat" />
+		<text name="gui_ad_detectSwath"								text="Ekin Yığını (Swath) Tespiti" />
+		<text name="gui_ad_detectSwath_tooltip"						text="Ekin yığınlarının tarlada ürün olarak algılanıp algılanmayacağına karar verir" />
+		<text name="gui_ad_colorAssignmentMode"						text="Özel Renkler" />
+		<text name="gui_ad_colorAssignmentMode_tooltip"				text="FarmPilot için özel renklerin seçilmesini etkinleştirir" />
+		<text name="gui_ad_FoldImplements"								text="Ekipmanları Katla" />
+		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot, harekete geçmeden önce ekipmanların tamamen katlanmasını bekler" />
+		<text name="gui_ad_RecordWhileNotInVehicle"					text="Sürücü Olmadan Kaydet" />
+		<text name="gui_ad_RecordWhileNotInVehicle_tooltip"			text="Sürücü araçtan ayrılsa bile FarmPilot kayda devam eder" />
+		<text name="gui_ad_RecordDriveDirectionOffset"					text="Sürüş Yönünde Kayıt ek kaydırma (Ofseti)" />
+		<text name="gui_ad_RecordDriveDirectionOffset_tooltip"			text="Kayıt hattını araçtan sola (-0.1 .. -6m) veya sağa (0.1 .. 6m) kaydırır. Geri gitmek kaydı durdurur!" />
+		<text name="gui_ad_RecordOppositeDriveDirectionOffset"			text="Ters Sürüş Yönünde Kayıt ek kaydırma (Ofseti)" />
+		<text name="gui_ad_RecordOppositeDriveDirectionOffset_tooltip"	text="Kayıt hattını araçtan sola (-0.1 .. -6m) veya sağa (0.1 .. 6m) kaydırır. Geri gitmek kaydı durdurur!" />
+		<text name="gui_ad_fieldPointOffset"							text="Tarla Noktası ek kaydırma (Ofseti)" />
+		<text name="gui_ad_fieldPointOffset_tooltip"					text="Tarla noktalarını içeride (-0.2 .. -6m) veya dışarıda (0.2 .. 6m) oluşturur. Tarla sınırında 0'dır" />
+		<text name="gui_ad_maxFieldPointDistance"						text="Tarla Noktasına olan en uzak Mesafe" />
+		<text name="gui_ad_maxFieldPointDistance_tooltip"				text="Tarla noktalarını en fazla 2 .. 25 m aralıkla oluşturur" />
 		<text name="gui_ad_settingsPage_title"							text="Ayarlar - FarmPilot" />
 		<text name="gui_ad_userSettingsPage_title"						text="Kullanıcı Ayarları - FarmPilot" />
 		<text name="gui_ad_vehicleSettingsPage_title"					text="Araç Ayarları - FarmPilot" />
@@ -370,19 +370,19 @@
         <text name="ad_color_background"								text="27 HUD: arkaplan rengi" />
         <text name="ad_color_markerText"								text="28 hedef metni rengi" />
         <text name="ad_color_rightOfWayCenter"							text="29 Geçiş üstünlüğü Merkez ara noktası" />
-		<text name="ad_color_intersectionConnection" text="30 intersection line" />
-		<text name="ad_color_intersectionNode" text="31 intersection point" />
-		<text name="ad_color_dirtSingleConnection" text="32 tertiary road line, one way" />
-		<text name="ad_color_dirtDualConnection" text="33 tertiary road line, two way" />
-		<text name="ad_color_dirtNode" text="34 tertiary road waypoint" />
+		<text name="ad_color_intersectionConnection" text="30 - Kavşak bağlantı çizgisi" />
+		<text name="ad_color_intersectionNode" text="31 - Kavşak bağlantı noktası" />
+		<text name="ad_color_dirtSingleConnection" text="32 - Tek yönlü ara yol çizgisi" />
+		<text name="ad_color_dirtDualConnection" text="33 - Çift yönlü ara yol çizgisi" />
+		<text name="ad_color_dirtNode" text="34 - Ara yol geçiş noktası" />
         <text name="button_delete_all"									text="Tümünü Sil" />
         <text name="button_reset_selected"								text="Seçileni sıfırla" />
-        <text name="AD_task_pathfinding"								text="Planlanan yol" />
+        <text name="AD_task_pathfinding"								text="Yol planlanıyor" />
         <text name="AD_task_catch_up_with_combine"						text="Biçerdövere yetişiyor" />
         <text name="AD_task_clearcrop"									text="Ekin temizleniyor" />
         <text name="AD_task_drive_to_destination"						text="Hedefe sürülüyor" />
         <text name="AD_task_drive_to_vehicle"							text="Hedef araca sürülüyor" />
-        <text name="AD_task_step_aside"							text="Stepping aside for the harvester" />
+        <text name="AD_task_step_aside"							text="Biçerdöver için kenara çekiliyor" />
         <text name="AD_task_drive_to_combine_pipe"						text="Biçerdöver borusuna sürülüyor" />
         <text name="AD_task_unloading_combine"							text="Biçerdöver boşaltılıyor" />
         <text name="AD_task_reversing_from_combine"					text="Biçerdöverden geri çıkılıyor" />
@@ -406,175 +406,188 @@
         <text name="AD_task_reversing_from_collision"					text="Temiz alan aranıyor" />
         <text name="AD_task_drive_to_park"								text="Park yerine sürülüyor" />
         <text name="AD_task_unload_area_in_fruit"						text="Boşaltma alanı engellendi" />
-        <text name="gui_CPAD_off"										text="kapalı" />
-        <text name="gui_CPAD_simple"									text="basit" />
-        <text name="gui_CPAD_full"										text="tam" />
+        <text name="gui_CPAD_off"										text="Kapalı" />
+        <text name="gui_CPAD_simple"									text="Basit" />
+        <text name="gui_CPAD_full"										text="Tam" />
         <text name="gui_ad_combineCPADHudMouse"						text="CP/AD Düğmelerini birleştir" />
-        <text name="gui_ad_combineCPADHudMouse_tooltip"				text="kapalı: varsayılan / basit: CP: ikincil fare eylemi > fare aç + kapa, AD: HUD deşitir > her iki HUD aç + kapa / tam: basit gibidir ancak HUD'lar tek adımda değişir / Gereksinim: CP ayarlarından sağ tıklama HUD'u kapatın" />
+        <text name="gui_ad_combineCPADHudMouse_tooltip"				text="Kapalı: varsayılan / Basit: CP: ikincil fare eylemi &gt; fare aç + kapa, AD: HUD deşitir &gt; her iki HUD aç + kapa / Tam: basit gibidir ancak HUD'lar tek adımda değişir / Gereksinim: CP ayarlarından sağ tıklama HUD'u kapatın" />
         <text name="gui_ad_editorTip_1"								text="Basit sol tıklama:" />
         <text name="gui_ad_editorTip_2"								text="Sadece fare: 1. noktayı seç" />
-        <text name="gui_ad_editorTip_3"								text="LCTRL = Nokta oluştur" />
-        <text name="gui_ad_editorTip_4"								text="LALT = Noktayı sil" />
-        <text name="gui_ad_editorTip_5"								text="LSHIFT = Point type (main, secondary, tertiary, intersection)" />
+        <text name="gui_ad_editorTip_3"								text="LCTRL (Sol Ctrl Tuşu) = Nokta oluştur" />
+        <text name="gui_ad_editorTip_4"								text="LALT (Sol Alt Tuşu) = Noktayı sil" />
+        <text name="gui_ad_editorTip_5"								text="LSHIFT (Sol Shift Tuşu) = Point type (main, secondary, tertiary, intersection)" />
         <text name="gui_ad_editorTip_6"								text="İkinci noktaya tıklama:" />
         <text name="gui_ad_editorTip_7"								text="Bağlantıyı değiştir" />
-        <text name="gui_ad_editorTip_8"								text="RSHIFT = Yan yol, ters yönlü yol oluştur" />
+        <text name="gui_ad_editorTip_8"								text="RSHIFT = (Sağ Shift Tuşu) Yan yol, ters yönlü yol oluştur" />
         <text name="gui_ad_editorTip_9"								text="1. nokta kavşak, ikincisi komşusudur:" />
-        <text name="gui_ad_editorTip_10"								text="LCTRL: Segment türünü değiştir (normal/çift yönlü)" />
-        <text name="gui_ad_editorTip_11"								text="LSHIFT = Section type (main, secondary, tertiary, intersection)" />
-    		<text name="gui_ad_trafficYieldEnabled" text="Head-on passing" />
-		<text name="gui_ad_trafficYieldEnabled_tooltip" text="When two FarmPilot vehicles block each other head-on on a two-way road, one reverses while the other parks on the roadside, then both continue" />
-		<text name="gui_ad_trafficYieldDelay" text="Delay before passing manoeuvre" />
-		<text name="gui_ad_trafficYieldDelay_tooltip" text="How long both vehicles must be blocked head-on before the passing manoeuvre starts" />
-		<text name="gui_ad_trafficYieldMaxReverse" text="Max reverse distance when passing" />
-		<text name="gui_ad_trafficYieldMaxReverse_tooltip" text="Maximum distance the yielding vehicle may reverse to make room" />
-		<text name="AD_trafficYield_giveWay" text="is reversing to let an oncoming vehicle pass" />
-		<text name="AD_ty_waitFor" text="Waiting for" />
-		<text name="AD_ty_toPass" text="to pass" />
-		<text name="AD_ty_toPark" text="to pull over" />
-		<text name="AD_ty_toReverse" text="to back up" />
-		<text name="AD_ty_toClear" text="to clear the track" />
-		<text name="AD_ty_leaveTrack" text="to leave the track" />
-		<text name="AD_ty_reverseFor" text="Backing up for" />
-		<text name="AD_ty_parkFor" text="Pulling over for" />
-		<text name="AD_ty_crossing" text="Junction, waiting:" />
-		<text name="AD_ty_queue" text="Queuing behind" />
-		<text name="AD_trafficYield_failed" text="found no space to pass the oncoming vehicle" />
-		<text name="AD_trafficYield_giveUp" text="cannot pass the oncoming vehicle, no space and no junction found: please intervene" />
-		<text name="gui_ad_trafficYieldMargin" text="Passing clearance" />
-		<text name="gui_ad_trafficYieldMargin_tooltip" text="Free space left between both vehicle combinations when passing (the roadside spot adapts to the real width and length of both combinations)" />
-		<text name="gui_ad_trafficYieldDriveSide" text="Driving side" />
-		<text name="gui_ad_trafficYieldDriveSide_tooltip" text="Side where the yielding vehicle looks for a spot first: right for right-hand traffic, left for left-hand traffic (UK, Australia...). The other side is only used as a last resort" />
-		<text name="gui_ad_trafficYieldDriveSide_right" text="Right" />
-		<text name="gui_ad_trafficYieldDriveSide_left" text="Left" />
-		<text name="gui_ad_fieldParkWhileWaiting" text="Wait inside the field" />
-		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="An unloader waiting for a harvester call drives into the field and parks on free ground without crop, away from the roads, so it does not block the way" />
-		<text name="gui_ad_autonomousNoCp" text="Autonomous without Courseplay" />
-		<text name="gui_ad_autonomousNoCp_tooltip" text="What Autonomous mode does when Courseplay is not installed: the driver stops and waits, or the base game worker takes the field (classic mode)" />
-		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
-		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
-		<text name="gui_ad_dirtRoads" text="Tertiary roads" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Tertiary road points of the network (pink and purple lines in the editor). Only to reach a destination on them or at their end (or to leave from there), never as a shortcut. Allowed: at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
-		<text name="gui_ad_dirtRoads_auto" text="Auto (truck: never)" />
-		<text name="gui_ad_dirtRoads_never" text="Never" />
-		<text name="gui_ad_dirtRoads_allowed" text="Allowed" />
-		<text name="gui_ad_secondaryRoads" text="Secondary roads" />
-		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Auto: shortcuts taken whenever they save time for tractors; trucks and semis like original AutoDrive (only when the main road is much longer). Allowed: taken whenever they save time. Never: only when there is no other route" />
-		<text name="gui_ad_secondaryRoads_auto" text="Auto (truck: original)" />
-		<text name="AD_cropStuck" text="%s %s: stuck in the crop (%s), no clean way out: please clear it by hand" />
-		<text name="AD_foldWait" text="%s %s: waiting for %s to fold (%d %%)%s, not leaving" />
-		<text name="gui_ad_dirtRoadSpeed" text="Max speed on tertiary roads" />
-		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on tertiary road points. The route search uses it: a tertiary road is taken only when it saves time" />
-		<text name="AD_task_park_in_field" text="Parking in the field" />
-		<text name="AD_task_hv_chopper" text="the forage harvester" />
-		<text name="AD_task_hv_combine" text="the combine" />
-		<text name="AD_task_look_for_spot" text="Looking where to park" />
-		<text name="AD_task_search_spot" text="Looking for a place along the field" />
-		<text name="AD_task_plan_to_spot" text="Planning the way to place" />
-		<text name="AD_task_go_park" text="Going to park" />
-		<text name="AD_task_back_off_spot" text="Backing off to leave room" />
-		<text name="AD_task_parked_wait" text="Parked, waiting for a call" />
-		<text name="AD_task_queued_behind" text="In line behind" />
-		<text name="AD_task_waiting_call_short" text="waiting for a call" />
-		<text name="AD_task_wait_roadside" text="Waiting beside the road" />
-		<text name="AD_task_no_spot_retry" text="No place, next try in" />
-		<text name="AD_task_loaded_wait" text="Loaded, waiting for a call" />
-		<text name="AD_task_plan_to" text="Planning the way to" />
-		<text name="AD_task_no_path_retry" text="No way found, next try in" />
-		<text name="AD_task_clear_back" text="No way found, backing up to get free" />
-		<text name="AD_task_no_way_stopped" text="Stuck: no way and no room to back up, waiting" />
-		<text name="AD_task_drive_to" text="Driving to" />
-		<text name="AD_task_plan_next" text="planning the next part" />
-		<text name="AD_task_near" text="Near" />
-		<text name="AD_task_wait_behind" text="waiting to get behind it" />
-		<text name="AD_task_reverse_by" text="Backing up" />
-		<text name="AD_task_tracks_open_angle" text="along its tracks to open the angle" />
-		<text name="AD_task_band_turn_rescue" text="U-turn in the strip (fallback)" />
-		<text name="AD_task_clear_way_for" text="Clearing the way for" />
-		<text name="AD_task_let_pass" text="Making way for" />
-		<text name="AD_task_stuck_reverse" text="Stuck, reversing" />
-		<text name="AD_task_chase" text="Following" />
-		<text name="AD_task_side_rear" text="from behind" />
-		<text name="AD_task_side_left" text="on the left" />
-		<text name="AD_task_side_right" text="on the right" />
-		<text name="AD_task_join_side_left" text="Moving to the left side of" />
-		<text name="AD_task_join_side_right" text="Moving to the right side of" />
-		<text name="AD_task_join_side_rear" text="Moving behind" />
-		<text name="AD_task_backoff" text="Backing off," />
-		<text name="AD_task_waiting_comma" text="Waiting," />
-		<text name="AD_task_is_turning" text="is turning" />
-		<text name="AD_task_reverse_tracks_clear" text="Backing up along its tracks to clear the way" />
-		<text name="AD_task_back_to_place" text="Backing up to the unloading place" />
-		<text name="AD_task_uturn" text="Turning around" />
-		<text name="AD_task_plan_field_exit" text="Planning the way out of the field" />
-		<text name="AD_task_no_exit_retry" text="No way out found, next try in" />
-		<text name="AD_task_full_parked_aside" text="Full, parked aside to let the next trailer pass" />
-		<text name="AD_task_full_follow_strip" text="Full, following the cut strip until an exit opens" />
-		<text name="AD_task_full_reverse_tracks" text="Full, backing up along its tracks to let the next one pass" />
-		<text name="AD_task_band_turn_exit" text="U-turn in the strip toward the exit" />
-		<text name="AD_task_planning_way" text="Planning the way" />
-		<text name="AD_task_wait_row_entry" text="In place at the row entry, waiting for" />
-		<text name="AD_task_follow_trail" text="Following the track of" />
-		<text name="AD_task_blocked_reverse" text="Blocked by a vehicle ahead, backing up" />
-		<text name="AD_task_end_row_turn" text="U-turn at the end of the row" />
-		<text name="AD_task_wait_overtake_1" text="Waiting for" />
-		<text name="AD_task_wait_overtake_2" text="to pass" />
-		<text name="AD_task_reverse_to" text="Reversing to" />
+        <text name="gui_ad_editorTip_10"								text="LCTRL: (Sol Ctrl Tuşu) Segment türünü değiştir (normal/çift yönlü)" />
+        <text name="gui_ad_editorTip_11"								text="LSHIFT = (Sol Ctrl Tuşu) Bölüm türü (ana, ikincil, üçüncül, kesişim/kavşak)" />
+    		<text name="gui_ad_trafficYieldEnabled" text="Karşılıklı Geçiş / Yol Verme" />
+		<text name="gui_ad_trafficYieldEnabled_tooltip" text="İki FarmPilot aracı iki yönlü bir yolda kafa kafaya birbirini tıkadığında, biri geri giderken diğeri yol kenarına park eder ve ardından ikisi de devam eder" />
+		<text name="gui_ad_trafficYieldDelay" text="Geçiş manevrası öncesi bekleme süresi" />
+		<text name="gui_ad_trafficYieldDelay_tooltip" text="Geçiş manevrası başlamadan önce her iki aracın da karşılıklı bekleme süresi(Her iki araçta hareket etmez)" />
+		<text name="gui_ad_trafficYieldMaxReverse" text="Geçiş sırasında maksimum geri gitme mesafesi" />
+		<text name="gui_ad_trafficYieldMaxReverse_tooltip" text="Yol veren aracın yer açmak için gidebileceği maksimum geri gitme mesafesi" />
+		<text name="gui_ad_obstacleDetourEnabled" text="Engel Etrafından Dolaşma" />
+		<text name="gui_ad_obstacleDetourEnabled_tooltip" text="Sabit bir engel (düşmüş nesne, alçak duvar, ağaç) aracı tıkadığında, araç geri gider ve ardından etrafından dolaşarak ileride rotasına yeniden katılmak için bir yol hesaplar" />
+		<text name="gui_ad_cornerSwingEnabled" text="Geniş Dönüşler" />
+		<text name="gui_ad_cornerSwingEnabled_tooltip" text="Ağın keskin virajlarında araç dönüş yarıçapına uygun bir yay izler ve yer müsait olduğunda giriş veya çıkışta taşma yapar" />
+		<text name="gui_ad_avoidEnabled" text="Hafif Engel Önünde Kaçınma" />
+		<text name="gui_ad_avoidEnabled_tooltip" text="Yolda, koridorun yalnızca bir tarafındaki engel (direk, balya, duran araç) diğer taraf boşsa durmadan hafif bir sapmayla etrafından dolaşılır" />
+		<text name="gui_ad_obstacleDetourDelay" text="Etrafından dolaşma öncesi gecikme" />
+		<text name="gui_ad_obstacleDetourDelay_tooltip" text="Aracın, etrafından dolaşmayı denemeden önce sabit bir engel tarafından ne kadar süre tıkalı kalması gerektiği" />
+		<text name="gui_ad_obstacleDetourReverse" text="Etrafından dolaşma öncesi geri gitme" />
+		<text name="gui_ad_obstacleDetourReverse_tooltip" text="Etrafından dolaşma hesaplanmadan önce düz çizgide maksimum geri gitme mesafesi (arkada bir engel varsa daha erken durur)" />
+		<text name="AD_obstacleDetour_start" text="bir engel tarafından tıkandı, etrafından dolaşmak için geri gidiyor" />
+		<text name="AD_obstacleDetour_found" text="engelin etrafından dolaşıyor" />
+		<text name="AD_obstacleDetour_failed" text="engelin etrafından dolaşacak hiçbir yol bulunamadı: müdahale gerekiyor" />
+		<text name="AD_trafficYield_giveWay" text="karşıdan gelen bir aracın geçmesine izin vermek için geri gidiyor" />
+		<text name="AD_ty_waitFor" text="Bekleniyor:" />
+		<text name="AD_ty_toPass" text="geçmesi" />
+		<text name="AD_ty_toPark" text="kenara çekmesi" />
+		<text name="AD_ty_toReverse" text="geri gitmesi" />
+		<text name="AD_ty_toClear" text="yolu açması" />
+		<text name="AD_ty_leaveTrack" text="raydan/rottan çıkması" />
+		<text name="AD_ty_reverseFor" text="Geri gitme nedeni:" />
+		<text name="AD_ty_parkFor" text="Kenara çekme nedeni:" />
+		<text name="AD_ty_crossing" text="Kavşak, bekleniyor:" />
+		<text name="AD_ty_queue" text="Arkasında kuyruk olundu:" />
+		<text name="AD_trafficYield_failed" text="karşıdan gelen aracın geçmesi için boş alan bulunamadı" />
+		<text name="AD_trafficYield_giveUp" text="karşıdan gelen araç geçemiyor, ne boş alan ne de kavşak bulundu: lütfen müdahale edin" />
+		<text name="gui_ad_trafficYieldMargin" text="Geçiş boşluğu / payı" />
+		<text name="gui_ad_trafficYieldMargin_tooltip" text="Geçerken her iki araç kombinasyonu arasında bırakılan boş alan (yol kenarındaki nokta, her iki kombinasyonun gerçek genişlik ve uzunluğuna uyum sağlar)" />
+		<text name="gui_ad_trafficYieldDriveSide" text="Sürüş tarafı" />
+		<text name="gui_ad_trafficYieldDriveSide_tooltip" text="Yol veren aracın ilk olarak boş bir yer arayacağı taraf: sağdan akan trafik için sağ, soldan akan trafik için sol (İngiltere, Avustralya...). Diğer taraf yalnızca son çare olarak kullanılır" />
+		<text name="gui_ad_trafficYieldDriveSide_right" text="Sağ" />
+		<text name="gui_ad_trafficYieldDriveSide_left" text="Sol" />
+		<text name="gui_ad_fieldParkWhileWaiting" text="Tarlanın içinde bekle" />
+		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Biçerdöver çağrısı bekleyen bir boşaltıcı, yolu tıkamamak için tarlaya girer ve yollardan uzakta, mahsul olmayan boş bir alana park eder" />
+		<text name="gui_ad_autonomousNoCp" text="Courseplay olmadan otonom" />
+		<text name="gui_ad_autonomousNoCp_tooltip" text="Courseplay yüklü olmadığında Otonom modun yaptığı şey: sürücü durur ve bekler ya da temel oyun işçisi tarlayı devralır (klasik mod)" />
+		<text name="gui_ad_autonomousNoCp_wait" text="Bekle" />
+		<text name="gui_ad_autonomousNoCp_ai" text="Oyun işçisi" />
+		<text name="gui_ad_dirtRoads" text="İkincil / Ara yollar" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Ağın ara yol noktaları (düzenleyicide pembe ve mor çizgiler). İzin Verilen: yalnızca zamandan kazandırdıklarında, sınırlı hızda alınır. Asla: başka rota yoksa. Otomatik: kamyonlar ve çekiciler için asla, traktörler ve diğer araçlar için izin verilir" />
+		<text name="gui_ad_dirtRoads_auto" text="Otomatik (kamyon: asla)" />
+		<text name="gui_ad_dirtRoads_never" text="Asla" />
+		<text name="gui_ad_dirtRoads_allowed" text="İzin Veriliyor" />
+		<text name="gui_ad_secondaryRoads" text="Tali yollar" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Ağın ikincil noktaları. Otomatik: orijinal AutoDrive gibi (ana yol çok daha uzun olduğunda alınır). İzin Veriliyor: zamandan kazandırdığı her an alınır. Asla: yalnızca başka rota olmadığında" />
+		<text name="gui_ad_secondaryRoads_auto" text="Otomatik (orijinal)" />
+		<text name="AD_cropStuck" text="%s %s: mahsulün içinde sıkıştı (%s), temiz bir çıkış yolu yok: lütfen elle kurtarın" />
+		<text name="AD_foldWait" text="%s %s: %s katlanması bekleniyor (%d %%)%s, ayrılmıyor" />
+		<text name="gui_ad_dirtRoadSpeed" text="Ara yollardaki maksimum hız" />
+		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Ara yol noktalarındaki maksimum hız. Rota araması bunu kullanır: bir ara yol yalnızca zamandan tasarruf sağladığında tercih edilir" />
+		<text name="AD_task_park_in_field" text="Tarlaya park ediliyor" />
+		<text name="AD_task_hv_chopper" text="silaj makinesi (chopper)" />
+		<text name="AD_task_hv_combine" text="biçerdöver" />
+		<text name="AD_task_look_for_spot" text="Park yeri aranıyor" />
+		<text name="AD_task_search_spot" text="Tarla boyunca uygun bir park yeri aranıyor" />
+		<text name="AD_task_plan_to_spot" text="Park yerine giden rota planlanıyor" />
+		<text name="AD_task_go_park" text="Park etmeye gidiliyor" />
+		<text name="AD_task_back_off_spot" text="Yer açmak için geri çekiliyor" />
+		<text name="AD_task_parked_wait" text="Park edildi, çağrı bekleniyor" />
+		<text name="AD_task_queued_behind" text="Arkasında sıraya girildi" />
+		<text name="AD_task_waiting_call_short" text="çağrı bekleniyor" />
+		<text name="AD_task_wait_roadside" text="Yol kenarında bekleniyor" />
+		<text name="AD_task_no_spot_retry" text="Yer bulunamadı, sonraki deneme:" />
+		<text name="AD_task_loaded_wait" text="Yüklendi, çağrı bekleniyor" />
+		<text name="AD_task_plan_to" text="Rotası planlanıyor:" />
+		<text name="AD_task_no_path_retry" text="Yol bulunamadı, sonraki deneme:" />
+		<text name="AD_task_clear_back" text="Yol bulunamadı, boşa çıkmak için geri gidiliyor" />
+		<text name="AD_task_no_way_stopped" text="Sıkıştı: yol ve geri gidecek alan yok, bekleniyor" />
+		<text name="AD_task_drive_to" text="Şuraya sürülüyor:" />
+		<text name="AD_task_plan_next" text="sonraki kısım planlanıyor" />
+		<text name="AD_task_near" text="Yakınında" />
+		<text name="AD_task_wait_behind" text="arkasına geçmek için bekleniyor" />
+		<text name="AD_task_reverse_by" text="Geri gidiliyor" />
+		<text name="AD_task_tracks_open_angle" text="açıyı açmak için izleri takip edilerek" />
+		<text name="AD_task_band_turn_rescue" text="Şerit içinde U dönüşü (yedek yöntem)" />
+		<text name="AD_task_clear_way_for" text="Yol açılıyor:" />
+		<text name="AD_task_let_pass" text="Geçiş için yol veriliyor:" />
+		<text name="AD_task_stuck_reverse" text="Sıkıştı, geri vites alınıyor" />
+		<text name="AD_task_chase" text="Takip ediliyor:" />
+		<text name="AD_task_side_rear" text="arkadan" />
+		<text name="AD_task_side_left" text="soldan" />
+		<text name="AD_task_side_right" text="sağdan" />
+		<text name="AD_task_join_side_left" text="Şunun sol tarafına geçiliyor:" />
+		<text name="AD_task_join_side_right" text="Şunun sağ tarafına geçiliyor:" />
+		<text name="AD_task_join_side_rear" text="Arkasından geçiliyor:" />
+		<text name="AD_task_backoff" text="Geri çekiliyor," />
+		<text name="AD_task_waiting_comma" text="Bekleniyor," />
+		<text name="AD_task_is_turning" text="dönüş yapıyor" />
+		<text name="AD_task_reverse_tracks_clear" text="Yolu açmak için izleri takip ederek geri gidiliyor" />
+		<text name="AD_task_back_to_place" text="Boşaltma yerine geri gidiliyor" />
+		<text name="AD_task_uturn" text="Geri dönülüyor" />
+		<text name="AD_task_plan_field_exit" text="Tarladan çıkış yolu planlanıyor" />
+		<text name="AD_task_no_exit_retry" text="Çıkış yolu bulunamadı, sonraki deneme:" />
+		<text name="AD_task_full_parked_aside" text="Dolu, sonraki römorkun geçmesi için kenara park edildi" />
+		<text name="AD_task_full_follow_strip" text="Dolu, bir çıkış yolu açılana kadar kesilen şerit takip ediliyor" />
+		<text name="AD_task_full_reverse_tracks" text="Dolu, sonrakinin geçmesine izin vermek için izleri takip ederek geri gidiliyor" />
+		<text name="AD_task_band_turn_exit" text="Çıkışa doğru şerit içinde U dönüşü" />
+		<text name="AD_task_planning_way" text="Yol planlanıyor" />
+		<text name="AD_task_wait_row_entry" text="Sıra girişinde konumlandı, bekleniyor:" />
+		<text name="AD_task_follow_trail" text="İzi takip ediliyor:" />
+		<text name="AD_task_blocked_reverse" text="Öndeki bir araç tarafından engellendi, geri gidiliyor" />
+		<text name="AD_task_end_row_turn" text="Sıranın sonunda U dönüşü" />
+		<text name="AD_task_wait_overtake_1" text="Bekleniyor:" />
+		<text name="AD_task_wait_overtake_2" text="geçmesi" />
+		<text name="AD_task_reverse_to" text="Şuraya geri gidiliyor:" />
 		<!-- ancien AutoDrive Addon -->
-		<text name="adAddon_engineStopDelay" text="Engine Stop Delay"/>
-		<text name="adAddon_engineStopDelay_tooltip" text="Time stopped before FarmPilot turns the engine off. 10 s = FarmPilot default. Never = the engine keeps running."/>
-		<text name="adAddon_never" text="Never"/>
-		<text name="adAddon_blinkDistance" text="Turnlight Distance"/>
-		<text name="adAddon_blinkDistance_tooltip" text="Distance before a turn or crossing at which the turn light is switched on (needs Turnlight Automatic)."/>
-		<text name="adAddon_weighbridge" text="Weighbridge"/>
-		<text name="adAddon_product" text="Product"/>
-		<text name="adAddon_empty" text="empty"/>
-		<text name="adAddon_load" text="Load"/>
-		<text name="adAddon_totalWeight" text="Total weight"/>
-		<text name="adAddon_player" text="Player"/>
+		<text name="adAddon_engineStopDelay" text="Motor Durdurma Gecikmesi"/>
+		<text name="adAddon_engineStopDelay_tooltip" text="FarmPilot motoru kapatmadan önce durma süresi. 10 s = FarmPilot varsayılanı. Asla = motor çalışmaya devam eder."/>
+		<text name="adAddon_never" text="Asla"/>
+		<text name="adAddon_blinkDistance" text="Sinyal Mesafesi"/>
+		<text name="adAddon_blinkDistance_tooltip" text="Bir dönüşten veya kavşaktan önce sinyalin yakılacağı mesafe (Otomatik Sinyal gerektirir)."/>
+		<text name="adAddon_weighbridge" text="Kantar"/>
+		<text name="adAddon_product" text="Ürün"/>
+		<text name="adAddon_empty" text="boş"/>
+		<text name="adAddon_load" text="Yükle"/>
+		<text name="adAddon_totalWeight" text="Toplam ağırlık"/>
+		<text name="adAddon_player" text="Oyuncu"/>
 			<!-- FarmPilot mode Autonome -->
-		<text name="AD_MODE_AUTONOMOUS" text="Autonomous" />
-		<text name="input_ADAutonomousCourses" text="FP - Autonomous courses (choice per field)" />
-		<text name="AD_autonomous_start" text='Courseplay course "%s" started on field %s' />
-		<text name="AD_autonomous_none" text="no Courseplay course of %s m on field %s, waiting" />
-		<text name="AD_autonomous_several" text="%s courses of %s m on field %s, pick one in the Autonomous courses window (Ctrl+Alt+Numpad 5), waiting" />
-		<text name="AD_autonomous_noField" text="no field here, waiting" />
+		<text name="AD_MODE_AUTONOMOUS" text="Otonom" />
+		<text name="input_ADAutonomousCourses" text="FP - Otonom rotalar (her tarla için seçim)" />
+		<text name="AD_autonomous_start" text="&quot;%s&quot; Courseplay rotası %s tarlasında başlatıldı" />
+		<text name="AD_autonomous_none" text="%s tarlasında %s m boyutunda Courseplay rotası yok, bekleniyor" />
+		<text name="AD_autonomous_several" text="%s tarlasında %s m boyutunda birden fazla (%s) rota var, Otonom rotalar penceresinden (Ctrl+Alt+Numpad 5) birini seçin, bekleniyor" />
+		<text name="AD_autonomous_noField" text="burada tarla yok, bekleniyor" />
 		<text name="AD_autonomous_noWindrow" text="baler: no Courseplay course of field %s lies on the windrows, waiting" />
-		<text name="AD_autonomous_noWidth" text="tool width unknown, waiting" />
-		<text name="AD_autonomous_noTool" text="Autonomous mode: no work tool attached" />
-		<text name="AD_autonomous_aiNoCp" text="Courseplay not found: base game worker started on field %s" />
-		<text name="AD_autonomous_aiFailed" text="the base game worker could not start, waiting" />
-		<text name="AD_autonomous_noCp" text="Courseplay not found on this vehicle, waiting" />
-		<text name="AD_autonomous_cpFailed" text='Courseplay could not start with "%s", waiting' />
-		<text name="AD_autonomous_nextField" text="Next field: %s" />
-		<text name="AD_autonomous_nextFieldNone" text="Next field: none" />
-		<text name="AD_autonomous_nextFieldGo" text="field finished, driving to the next field « %s »" />
-		<text name="AD_task_autonomous_detach" text="Detach the implement" />
-		<text name="AD_task_autonomous_fetch" text="Attach the implement" />
-		<text name="AD_autonomous_dropGo" text="field finished, the implement goes to its place « %s »" />
-		<text name="AD_autonomous_dropDone" text="implement detached, the tractor goes to its place « %s »" />
-		<text name="AD_autonomous_dropFailed" text="the implement could not be detached, stopping here" />
-		<text name="AD_autonomous_dropSeveral" text="several implements attached: no detaching, parking as before" />
-		<text name="AD_autonomous_dropNoToolPark" text="the implement has no park position: parking as before" />
-		<text name="AD_autonomous_dropNoTractorPark" text="the tractor has no park position (other than the implement's): implement kept, parking as before" />
-		<text name="AD_autonomous_tool" text="Implement: %s" />
-		<text name="AD_autonomous_toolNone" text="Implement: the attached one" />
-		<text name="AD_autonomous_toolListNone" text="The attached one" />
+		<text name="AD_autonomous_noWidth" text="ekipman genişliği bilinmiyor, bekleniyor" />
+		<text name="AD_autonomous_noTool" text="Otonom mod: takılı çalışma ekipmanı yok" />
+		<text name="AD_autonomous_aiNoCp" text="Courseplay bulunamadı: yapayzeka işçisi %s tarlasında başlatıldı" />
+		<text name="AD_autonomous_aiFailed" text="Yapayzeka işçisi başlatılamadı, bekleniyor" />
+		<text name="AD_autonomous_noCp" text="Bu araçta Courseplay bulunamadı, bekleniyor" />
+		<text name="AD_autonomous_cpFailed" text="Courseplay &quot;%s&quot; ile başlatılamadı, bekleniyor" />
+		<text name="AD_autonomous_nextField" text="Sonraki tarla: %s" />
+		<text name="AD_autonomous_nextFieldNone" text="Sonraki tarla: yok" />
+		<text name="AD_autonomous_nextFieldGo" text="tarla tamamlandı, « %s » adlı sonraki tarlaya sürülüyor" />
+		<text name="AD_task_autonomous_detach" text="Ekipmanı çıkar" />
+		<text name="AD_task_autonomous_fetch" text="Ekipmanı bağla" />
+		<text name="AD_autonomous_dropGo" text="tarla bitti, ekipman « %s » konumuna gidiyor" />
+		<text name="AD_autonomous_dropDone" text="ekipman çıkarıldı, traktör « %s » konumuna gidiyor" />
+		<text name="AD_autonomous_dropFailed" text="ekipman çıkarılamadı, burada durduruluyor" />
+		<text name="AD_autonomous_dropSeveral" text="birden fazla ekipman takılı: çıkarma yapılmıyor, eskisi gibi park ediliyor" />
+		<text name="AD_autonomous_dropNoToolPark" text="ekipmanın park yeri yok: eskisi gibi park ediliyor" />
+		<text name="AD_autonomous_dropNoTractorPark" text="traktörün park yeri yok (ekipmanki hariç): ekipman tutuluyor, eskisi gibi park ediliyor" />
+		<text name="AD_autonomous_tool" text="Ekipman: %s" />
+		<text name="AD_autonomous_toolNone" text="Ekipman: takılı olan" />
+		<text name="AD_autonomous_toolListNone" text="Takılı olan" />
 		<text name="AD_autonomous_toolListEntry" text="%s · %d m" />
-		<text name="AD_autonomous_nextTool" text="Next implement: %s" />
-		<text name="AD_autonomous_nextToolNone" text="Next implement: the same" />
-		<text name="AD_autonomous_nextToolListNone" text="The same" />
-		<text name="AD_autonomous_swapGo" text="field finished: the implement goes to its place « %s », then « %s » is attached for the next field « %s »" />
-		<text name="AD_autonomous_swapSeveral" text="next implement « %s »: several implements attached, no implement change, stopping and waiting" />
-		<text name="AD_autonomous_swapNoToolPark" text="next implement « %s »: the attached implement has no park position, stopping and waiting" />
-		<text name="AD_autonomous_fetchGo" text="fetching the implement « %s »" />
-		<text name="AD_autonomous_fetchDone" text="implement « %s » attached, driving to the field" />
-		<text name="AD_autonomous_fetchFailed" text="the implement « %s » could not be attached, stopping" />
-		<text name="AD_autonomous_fetchNoPath" text="no path to the front of the implement « %s »: put the tractor in front of it, in line with it, and start again" />
-		<text name="AD_autonomous_fetchMissed" text="attaching the implement « %s » failed, stopped in front of it" />
-		<text name="AD_autonomous_fetchBusy" text="the implement « %s » is attached to another vehicle" />
-		<text name="AD_autonomous_fetchOther" text="another implement is attached: detach it to fetch « %s », or choose « The attached one » on the « Implement » line" />
-		<text name="AD_autonomous_fetchNoJoint" text="the implement « %s » does not fit the rear hitch of this tractor (or the rear hitch is taken)" />
+		<text name="AD_autonomous_nextTool" text="Sonraki ekipman: %s" />
+		<text name="AD_autonomous_nextToolNone" text="Sonraki ekipman: aynı" />
+		<text name="AD_autonomous_nextToolListNone" text="Aynı" />
+		<text name="AD_autonomous_swapGo" text="tarla bitti: ekipman « %s » konumuna gidiyor, ardından sonraki tarla « %s » için « %s » bağlanıyor" />
+		<text name="AD_autonomous_swapSeveral" text="sonraki ekipman « %s »: birden fazla ekipman takılı, ekipman değiştirilmiyor, durdurulup bekleniyor" />
+		<text name="AD_autonomous_swapNoToolPark" text="sonraki ekipman « %s »: takılı ekipmanın park yeri yok, durdurulup bekleniyor" />
+		<text name="AD_autonomous_fetchGo" text="« %s » ekipmanı alınıyor" />
+		<text name="AD_autonomous_fetchDone" text="« %s » ekipmanı bağlandı, tarlaya sürülüyor" />
+		<text name="AD_autonomous_fetchFailed" text="« %s » ekipmanı bağlanamadı, durduruluyor" />
+		<text name="AD_autonomous_fetchNoPath" text="« %s » ekipmanının önüne giden yol bulunamadı: traktörü önüne ve hizasına koyup tekrar başlatın" />
+		<text name="AD_autonomous_fetchMissed" text="« %s » ekipmanını bağlama başarısız oldu, önünde durduruldu" />
+		<text name="AD_autonomous_fetchBusy" text="« %s » ekipmanı başka bir araca bağlı" />
+		<text name="AD_autonomous_fetchOther" text="başka bir ekipman takılı: « %s » almak için bunu çıkarın veya « Ekipman » satırından « Takılı olan » seçeneğini seçin" />
+		<text name="AD_autonomous_fetchNoJoint" text="« %s » ekipmanı bu traktörün arka çeki demirine uymuyor (veya arka çeki demiri dolu)" />
 		<text name="AD_trailer_row" text="Trailer: %s" />
 		<text name="AD_trailer_rowNone" text="Trailer: the attached one" />
 		<text name="AD_trailer_listNone" text="The attached one" />
@@ -601,93 +614,93 @@
 		<text name="AD_swap_notOne" text="trailer swap: exactly one trailer must be attached, normal delivery" />
 		<text name="AD_swap_dropFailed" text="trailer swap: the full trailer could not be detached, stop" />
 		<text name="AD_swap_emptyGone" text="trailer swap: no empty trailer left in '%s', stop" />
-		<text name="AD_fpFn_plow" text="Plough" />
-		<text name="AD_fpFn_cultivator" text="Cultivator" />
-		<text name="AD_fpFn_discHarrow" text="Disc harrow" />
-		<text name="AD_fpFn_powerHarrow" text="Power harrow" />
-		<text name="AD_fpFn_subsoiler" text="Subsoiler" />
-		<text name="AD_fpFn_spader" text="Spader" />
-		<text name="AD_fpFn_roller" text="Roller" />
-		<text name="AD_fpFn_weeder" text="Weeder" />
-		<text name="AD_fpFn_mulcher" text="Mulcher" />
-		<text name="AD_fpFn_stonePicker" text="Stone picker" />
-		<text name="AD_fpFn_seeder" text="Seeder" />
-		<text name="AD_fpFn_planter" text="Planter" />
-		<text name="AD_fpFn_fertilizerSpreader" text="Fertilizer spreader" />
-		<text name="AD_fpFn_sprayer" text="Sprayer" />
-		<text name="AD_fpFn_slurryTank" text="Slurry tanker" />
-		<text name="AD_fpFn_manureSpreader" text="Manure spreader" />
-		<text name="AD_fpFn_mower" text="Mower" />
-		<text name="AD_fpFn_tedder" text="Tedder" />
-		<text name="AD_fpFn_windrower" text="Windrower" />
-		<text name="AD_fpFn_baler" text="Baler" />
-		<text name="AD_fpFn_balerSquare" text="Square baler" />
-		<text name="AD_fpFn_balerRound" text="Round baler" />
+		<text name="AD_fpFn_plow" text="Pulluk" />
+		<text name="AD_fpFn_cultivator" text="Kültivatör" />
+		<text name="AD_fpFn_discHarrow" text="Diskli Tırmık" />
+		<text name="AD_fpFn_powerHarrow" text="Rototiller (Power Harrow)" />
+		<text name="AD_fpFn_subsoiler" text="Dip Kazan (Subsoiler)" />
+		<text name="AD_fpFn_spader" text="Toprak Frezesi (Spader)" />
+		<text name="AD_fpFn_roller" text="Silindir" />
+		<text name="AD_fpFn_weeder" text="Tırmık / Ot Temizleme" />
+		<text name="AD_fpFn_mulcher" text="Malç Makinesi" />
+		<text name="AD_fpFn_stonePicker" text="Taş Toplama Makinesi" />
+		<text name="AD_fpFn_seeder" text="Ekim Makinesi (Seeder)" />
+		<text name="AD_fpFn_planter" text="Sıralı (Hassas) Ekim Makinesi (Planter)" />
+		<text name="AD_fpFn_fertilizerSpreader" text="Gübre Serpme Makinesi" />
+		<text name="AD_fpFn_sprayer" text="İlaçlama Makinesi" />
+		<text name="AD_fpFn_slurryTank" text="Bulamaç Tankı" />
+		<text name="AD_fpFn_manureSpreader" text="Gübre Dağıtıcı" />
+		<text name="AD_fpFn_mower" text="Çayır Biçer (Mower)" />
+		<text name="AD_fpFn_tedder" text="Ot Yayma Makinesi (Tedder)" />
+		<text name="AD_fpFn_windrower" text="Ot Toplama/Aktarma (Windrower)" />
+		<text name="AD_fpFn_baler" text="Balya Makinesi" />
+		<text name="AD_fpFn_balerSquare" text="Kare Balya Makinesi" />
+		<text name="AD_fpFn_balerRound" text="Yuvarlak Balya Makinesi" />
 		<text name="AD_fpFn_baleLoader" text="Bale loader" />
-		<text name="gui_ad_autonomous_title" text="Autonomous courses" />
-		<text name="gui_ad_autonomous_field" text="Field %s" />
-		<text name="gui_ad_autonomous_fields" text="Fields %s" />
-		<text name="gui_ad_autonomous_autoOne" text="Automatic: %s" />
-		<text name="gui_ad_autonomous_autoSeveral" text="Automatic (%s courses: stop)" />
-		<text name="gui_ad_autonomous_tool" text="Tool: %s, width %s m" />
-		<text name="gui_ad_autonomous_noCourse" text="No saved Courseplay course of %s m." />
-		<text name="gui_ad_autonomous_noVehicle" text="Enter the vehicle with its tool attached." />
-		<text name="gui_ad_autonomous_noCp" text="Courseplay not found on this vehicle." />
-		<text name="gui_ad_autonomous_noWidth" text="Tool width unknown: attach the tool." />
-		<text name="gui_ad_autonomous_change" text="Change" />
-		<text name="gui_ad_autonomous_auto" text="Automatic" />
-		<text name="gui_ad_seeder_title" text="Seeder settings" />
-		<text name="gui_ad_seeder_pickFruit" text="Crops that can be sown this season: choose (Choose or double click), Back to return." />
-		<text name="gui_ad_seeder_noFruitInSeason" text="No crop of this seeder can be sown this season." />
-		<text name="gui_ad_seeder_outOfSeason" text="%s (out of season)" />
-		<text name="gui_ad_seeder_head" text="Seeder: %s · Field: %s" />
-		<text name="gui_ad_seeder_noSeeder" text="No seeder on this line." />
-		<text name="gui_ad_seeder_pickRefill" text="Choose the refill point (Change or double click), Back to return." />
-		<text name="gui_ad_refill_filtered" text="Only places where you can get: %s" />
-		<text name="gui_ad_refill_noneFound" text="No place found with: %s. All places are shown" />
-		<text name="gui_ad_seeder_current" text="current" />
-		<text name="gui_ad_seeder_fixed" text="%s (fixed)" />
-		<text name="gui_ad_seeder_fruit" text="Crop to sow" />
-		<text name="gui_ad_seeder_load" text="Load: %s" />
-		<text name="gui_ad_seeder_yes" text="Yes" />
-		<text name="gui_ad_seeder_no" text="No" />
-		<text name="gui_ad_seeder_refill" text="Refill point" />
-		<text name="gui_ad_seeder_refillNone" text="to choose" />
-		<text name="gui_ad_seeder_statusOk" text="Settings validated: start allowed." />
-		<text name="gui_ad_seeder_statusTodo" text="Not validated yet: start refused until you click Validate." />
-		<text name="gui_ad_seeder_choose" text="Choose" />
-		<text name="gui_ad_seeder_validate" text="Validate" />
-		<text name="gui_ad_seeder_needFill" text="Choose at least one product to load." />
-		<text name="gui_ad_seeder_needRefill" text="Choose the refill point." />
-		<text name="gui_ad_seeder_tooltip" text="Seeder settings" />
-		<text name="gui_ad_seeder_tooltipNext" text="Seeder settings (next field)" />
-		<text name="AD_autonomous_seederTodo" text="seeder « %s » settings to validate for « %s » (orange gear), start refused" />
-		<text name="AD_autonomous_seederFill" text="seeder not full: refilling at « %s » before the field" />
-		<text name="AD_autonomous_seederEmpty" text="seeder empty: refilling at « %s », then back to the field" />
-		<text name="AD_autonomous_seederBack" text="refilled, back to the field « %s »" />
-		<text name="AD_autonomous_seederOther" text="Courseplay stopped (empty tank) but the chosen products are full: stopping" />
-		<text name="gui_ad_sprayer_title" text="Spreader settings" />
-		<text name="gui_ad_sprayer_head" text="Machine: %s · Field: %s" />
-		<text name="gui_ad_sprayer_noSprayer" text="No spreader or sprayer on this line." />
-		<text name="gui_ad_sprayer_pickProduct" text="Products the tank accepts: pick one (Choose or double click), Back to return." />
-		<text name="gui_ad_sprayer_product" text="Product to load" />
-		<text name="gui_ad_sprayer_quantity" text="Quantity to take" />
-		<text name="gui_ad_sprayer_quantityFull" text="Full" />
-		<text name="gui_ad_sprayer_quantityField" text="Just enough for the field" />
-		<text name="gui_ad_sprayer_estimate" text="~%d L: %.0f L/ha over %.1f ha" />
-		<text name="gui_ad_sprayer_noEstimate" text="no estimate possible, it will be full" />
-		<text name="gui_ad_sprayer_moreThanTank" text="more than one tank, it will be full" />
-		<text name="gui_ad_sprayer_needProduct" text="Choose the product to load." />
-		<text name="gui_ad_sprayer_tooltip" text="Spreader settings" />
-		<text name="gui_ad_sprayer_tooltipNext" text="Spreader settings (next field)" />
-		<text name="AD_autonomous_sprayerTodo" text="settings of « %s » to validate for « %s » (orange gear), start refused" />
-		<text name="AD_autonomous_sprayerFill" text="tank not filled enough: filling at « %s » before the field" />
-		<text name="AD_autonomous_sprayerEmpty" text="tank empty: filling at « %s », then back to the field" />
-		<text name="AD_autonomous_dumpGo" text="field done: unloading the rest of the tank into big bags at « %s »" />
-		<text name="AD_autonomous_dumpFailed" text="rest of the tank not unloaded at « %s » (no space or refused): kept in the tank" />
+		<text name="gui_ad_autonomous_title" text="Otonom Rotalar" />
+		<text name="gui_ad_autonomous_field" text="Tarla %s" />
+		<text name="gui_ad_autonomous_fields" text="Tarlalar %s" />
+		<text name="gui_ad_autonomous_autoOne" text="Otomatik: %s" />
+		<text name="gui_ad_autonomous_autoSeveral" text="Otomatik (%s rota: durdur)" />
+		<text name="gui_ad_autonomous_tool" text="Ekipman: %s, genişlik %s m" />
+		<text name="gui_ad_autonomous_noCourse" text="%s m boyutunda kayıtlı Courseplay rotası yok." />
+		<text name="gui_ad_autonomous_noVehicle" text="Ekipmanı takılı olan araca binin." />
+		<text name="gui_ad_autonomous_noCp" text="Bu araçta Courseplay bulunamadı." />
+		<text name="gui_ad_autonomous_noWidth" text="Ekipman genişliği bilinmiyor: ekipmanı takın." />
+		<text name="gui_ad_autonomous_change" text="Değiştir" />
+		<text name="gui_ad_autonomous_auto" text="Otomatik" />
+		<text name="gui_ad_seeder_title" text="Ekim Makinesi Ayarları" />
+		<text name="gui_ad_seeder_pickFruit" text="Bu mevsimde ekilebilecek ürünler: seçim yapın (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın." />
+		<text name="gui_ad_seeder_noFruitInSeason" text="Bu ekim makinesinin bu mevsimde ekebileceği bir ürün yok." />
+		<text name="gui_ad_seeder_outOfSeason" text="%s (mevsimi değil)" />
+		<text name="gui_ad_seeder_head" text="Ekim Makinesi: %s · Tarla: %s" />
+		<text name="gui_ad_seeder_noSeeder" text="Bu hatta ekim makinesi yok." />
+		<text name="gui_ad_seeder_pickRefill" text="Dolum noktasını seçin (Değiştir veya çift tıkla), Geri dönmek için Geri'yi kullanın." />
+		<text name="gui_ad_refill_filtered" text="Şunu alabileceğiniz yerler: %s" />
+		<text name="gui_ad_refill_noneFound" text="Şunu içeren yer bulunamadı: %s. Tüm yerler gösteriliyor" />
+		<text name="gui_ad_seeder_current" text="mevcut" />
+		<text name="gui_ad_seeder_fixed" text="%s (sabit)" />
+		<text name="gui_ad_seeder_fruit" text="Ekilecek Ürün" />
+		<text name="gui_ad_seeder_load" text="Yük: %s" />
+		<text name="gui_ad_seeder_yes" text="Evet" />
+		<text name="gui_ad_seeder_no" text="Hayır" />
+		<text name="gui_ad_seeder_refill" text="Dolum Noktası" />
+		<text name="gui_ad_seeder_refillNone" text="seçiniz:" />
+		<text name="gui_ad_seeder_statusOk" text="Ayarlar onaylandı: başlatmaya izin verildi." />
+		<text name="gui_ad_seeder_statusTodo" text="Henüz onaylanmadı: Onayla'ya tıklayana kadar başlatma reddedildi." />
+		<text name="gui_ad_seeder_choose" text="Seç" />
+		<text name="gui_ad_seeder_validate" text="Onayla" />
+		<text name="gui_ad_seeder_needFill" text="Yüklemek için en az bir ürün seçin." />
+		<text name="gui_ad_seeder_needRefill" text="Dolum noktasını seçin." />
+		<text name="gui_ad_seeder_tooltip" text="Ekim makinesi ayarları" />
+		<text name="gui_ad_seeder_tooltipNext" text="Ekim makinesi ayarları (sonraki tarla)" />
+		<text name="AD_autonomous_seederTodo" text="« %s » için « %s » ekim makinesi ayarlarının onaylanması gerekiyor (turuncu dişli), başlatma reddedildi" />
+		<text name="AD_autonomous_seederFill" text="ekim makinesi tam dolu değil: tarladan önce « %s » konumunda dolduruluyor" />
+		<text name="AD_autonomous_seederEmpty" text="ekim makinesi boş: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
+		<text name="AD_autonomous_seederBack" text="dolduruldu, « %s » tarlasına geri dönülüyor" />
+		<text name="AD_autonomous_seederOther" text="Courseplay durdu (depo boş) ancak seçilen ürünler dolu: durduruluyor" />
+		<text name="gui_ad_sprayer_title" text="Gübreleme/İlaçlama Makinesi Ayarları" />
+		<text name="gui_ad_sprayer_head" text="Makine: %s · Tarla: %s" />
+		<text name="gui_ad_sprayer_noSprayer" text="Bu hatta gübre serpme veya ilaçlama makinesi yok." />
+		<text name="gui_ad_sprayer_pickProduct" text="Tankın kabul ettiği ürünler: birini seçin (Seçin veya çift tıkla), Geri dönmek için Geri tuşunu kullanın." />
+		<text name="gui_ad_sprayer_product" text="Yüklenecek Ürün" />
+		<text name="gui_ad_sprayer_quantity" text="Alınacak Miktar" />
+		<text name="gui_ad_sprayer_quantityFull" text="Dolu" />
+		<text name="gui_ad_sprayer_quantityField" text="Tarlaya tam yetecek kadar" />
+		<text name="gui_ad_sprayer_estimate" text="~%d L: %.1f ha üzerinde %.0f L/ha" />
+		<text name="gui_ad_sprayer_noEstimate" text="tahmin yapılamıyor, tamamen doldurulacak" />
+		<text name="gui_ad_sprayer_moreThanTank" text="birden fazla tank, tamamen doldurulacak" />
+		<text name="gui_ad_sprayer_needProduct" text="Yüklenecek ürünü seçin." />
+		<text name="gui_ad_sprayer_tooltip" text="Gübreleme/İlaçlama makinesi ayarları" />
+		<text name="gui_ad_sprayer_tooltipNext" text="Gübreleme/İlaçlama makinesi ayarları (sonraki tarla)" />
+		<text name="AD_autonomous_sprayerTodo" text="« %s » için « %s » ayarlarının onaylanması gerekiyor (turuncu dişli), başlatma reddedildi" />
+		<text name="AD_autonomous_sprayerFill" text="tank yeterince dolu değil: tarladan önce « %s » konumunda dolduruluyor" />
+		<text name="AD_autonomous_sprayerEmpty" text="tank boş: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
+		<text name="AD_autonomous_dumpGo" text="tarla bitti: tankta kalan kısım « %s » konumunda büyük çuvallara (big bag) boşaltılıyor" />
+		<text name="AD_autonomous_dumpFailed" text="tankta kalan kısım « %s » konumuna boşaltılamadı (yer yok veya reddedildi): tankta tutuluyor" />
 		<text name="AD_autonomous_dumpParkGo" text="parking: first unloading the rest of the tank into big bags at « %s »" />
 		<text name="AD_autonomous_dumpKept" text="%s left in the tank: cannot be unloaded into big bags or no place found (see log)" />
-		<text name="AD_task_autonomous_dump" text="Unloads the rest into big bags" />
+		<text name="AD_task_autonomous_dump" text="Kalan kısmı büyük çuvallara boşaltır" />
 		<text name="gui_ad_baleLoader_title" text="Bale loader settings" />
 		<text name="gui_ad_baleLoader_head" text="Loader: %s · Field: %s · Takes %s" />
 		<text name="gui_ad_baleLoader_round" text="round bales" />
@@ -716,59 +729,59 @@
 		<text name="AD_autonomous_balesNoLoader" text="bale loader detached, waiting" />
 		<text name="AD_task_autonomous_bales" text="Collecting bales" />
 		<text name="AD_task_autonomous_baleUnload" text="Dropping off bales" />
-		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
-		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
+		<text name="AD_autonomous_sprayerOtherProduct" text="tankta hâlâ %s (%.0f L) var ve seçilen ürün %s: tankı boşaltın, başlatma reddedildi" />
+		<text name="AD_autonomous_cpRestartFailed" text="Courseplay son ara noktada yeniden başlatılamadı, bekleniyor" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<text name="fp_help_category" text="FarmPilot" />
-		<text name="fp_help_start_title" text="Getting started" />
-		<text name="fp_help_start_1_title" text="The HUD" />
-		<text name="fp_help_start_1_text" text="Alt + Numpad 0 shows or hides the FarmPilot HUD. Middle mouse button: shows the cursor to click in the HUD. The 1st list is the destination; the lists below (unload, fill type) appear depending on the mode." />
-		<text name="fp_help_start_2_title" text="Main buttons" />
-		<text name="fp_help_start_2_text" text="Start/Stop starts or stops the driver. Mode button: left click = next mode, right click = previous mode. Continue: restarts a waiting driver. Park: sends the vehicle to its park position (right click: sets that position)." />
-		<text name="fp_help_start_3_title" text="Shortcuts" />
-		<text name="fp_help_start_3_text" text="Ctrl + Alt + Right / Left arrow: next / previous destination. Ctrl + Alt + Numpad 0: settings. Ctrl + Alt + M: message history. Shift + C / Shift + V: copy / paste settings from one vehicle to another. All keys can be changed in Options &gt; Controls." />
-		<text name="fp_help_driveto_title" text="Drive mode" />
-		<text name="fp_help_driveto_1_title" text="How it works" />
-		<text name="fp_help_driveto_1_text" text="Pick a destination, then Start. The vehicle follows the road network to the destination, then stops." />
-		<text name="fp_help_driveto_2_title" text="With Courseplay" />
-		<text name="fp_help_driveto_2_text" text="If the HUD button « Start AI/CP at destination » is on (right click: Courseplay, AIVE or game helper), that helper takes over on arrival, with the course already loaded in the vehicle. To let FarmPilot pick the Courseplay course itself, use the Autonomous mode." />
-		<text name="fp_help_autonomous_title" text="Autonomous mode" />
-		<text name="fp_help_autonomous_1_title" text="How it works" />
-		<text name="fp_help_autonomous_1_text" text="Like Drive: pick the field (destination) and start. On arrival, FarmPilot takes the saved Courseplay course that has exactly the width of the attached tool, loads it and starts Courseplay at the first waypoint of the course. A work tool must be attached (tillage, seeder, sprayer, spreader, mower, baler...): with only a tipper, a flatbed or a combine, the mode does not start." />
-		<text name="fp_help_autonomous_2_title" text="Course choice" />
-		<text name="fp_help_autonomous_2_text" text="Only courses saved in Courseplay (Courses menu, all folders) are used, on the arrival field or its field group (AutoSwitch merged fields when AutoSwitch is installed). The width is compared to 10 cm, like the Courseplay settings." />
-		<text name="fp_help_autonomous_3_title" text="Memory" />
-		<text name="fp_help_autonomous_3_text" text="The course used is remembered for this field and this tool, in the savegame. The next year, with the same tool and width, it is used again directly, even if several courses would fit." />
-		<text name="fp_help_autonomous_4_title" text="Stop and wait" />
-		<text name="fp_help_autonomous_4_text" text="If no course has the right width, or several fit without a remembered choice, the driver stops and waits; a message gives the reason. Pick the course in the Autonomous courses window, then start again. Without Courseplay, depending on the setting « Autonomous without Courseplay », the driver waits or the base game worker takes the field (classic mode)." />
-		<text name="fp_help_autonomous_5_title" text="Autonomous courses window" />
-		<text name="fp_help_autonomous_5_text" text="HUD button (in Autonomous mode, in place of the Courseplay button) or Ctrl + Alt + Numpad 5, in the vehicle with the tool attached. One line per field or field group. Change: goes to the next course, then back to Automatic. Automatic: clears the choice. Double click = Change." />
-		<text name="fp_help_autonomous_6_title" text="Next field" />
-		<text name="fp_help_autonomous_6_text" text="In Autonomous mode, the 3rd HUD line is the next field (empty by default). Pick a field in the list, or right-click it on the map; right-click the line to clear it. When the current field is finished, the next field moves to the 1st line, the « Next field » line is cleared and the driver goes to work it. If it is empty, the driver goes to park as before." />
-		<text name="fp_help_autonomous_7_title" text="Implement parked at its place, implement to fetch" />
-		<text name="fp_help_autonomous_7_text" text="End of the work without a next field: if the implement has its park position and the tractor its own, the driver drops the implement at its place, disconnects hoses and PTO (manual attach mod), detaches it, then parks the tractor. Park positions are set as usual (Ctrl + click on P in editor mode: implement selected for the implement's place, no implement selected for the tractor's). Weights are ignored; with several implements attached, it parks as before. The 2nd HUD line (« Implement ») is the implement to fetch before the field, shown by its function and width (farm implements, detached, that fit the tractor's rear hitch). At start, the driver follows your routes to the implement's place (or to the network point in front of it), reverses, attaches it, connects hoses and PTO, lifts it and drives to the field. « The attached one » (or right-click the line): nothing to fetch." />
-		<text name="fp_help_autonomous_8_title" text="Next implement" />
-		<text name="fp_help_autonomous_8_text" text="In Autonomous mode, the 4th HUD line is the implement for the next field (« The same » by default; right-click the line to go back to it). It is only used with a next field. When the current field is finished, the driver drops the attached implement at its park position (as at the end of the work), fetches the next implement (by your roads, reversing, attaching, hoses and PTO), then drives to the next field. The next implement then moves to the « Implement » line and the « Next implement » line goes back to « The same ». If the next implement is used by another vehicle or does not fit this tractor, the attached implement is dropped at its place anyway, then the driver stops there and a message gives the reason: restart when the next implement is free. If the attached implement has no park position or several implements are attached, nothing changes: the driver stops at the end of the field with a message." />
-		<text name="fp_help_deliverto_title" text="Deliver mode" />
-		<text name="fp_help_deliverto_1_title" text="How it works" />
-		<text name="fp_help_deliverto_1_text" text="Pick the unload destination, then Start. The vehicle drives there, unloads its trailer, parks if a park position is set, otherwise stops." />
-		<text name="fp_help_pickupdeliver_title" text="Pick up and deliver mode" />
-		<text name="fp_help_pickupdeliver_1_title" text="How it works" />
-		<text name="fp_help_pickupdeliver_1_text" text="1st list: loading point; 2nd list: unloading point; 3rd list: fill type to load. The vehicle loads, delivers, then starts again." />
-		<text name="fp_help_pickupdeliver_2_title" text="Loops" />
-		<text name="fp_help_pickupdeliver_2_text" text="HUD loop counter: 0 = endless, otherwise number of rounds before stopping. The buttons left of the lists pick the best loading or selling point automatically." />
-		<text name="fp_help_load_title" text="Load mode" />
-		<text name="fp_help_load_1_title" text="How it works" />
-		<text name="fp_help_load_1_text" text="The vehicle loads at the point of the 2nd list (fill type of the 3rd list), then drives to the point of the 1st list and stops. Handy to fill a seeder or sprayer before going to the field." />
-		<text name="fp_help_unloader_title" text="Combine unloader mode" />
-		<text name="fp_help_unloader_1_title" text="How it works" />
-		<text name="fp_help_unloader_1_text" text="The vehicle waits near the field (1st list), comes under the pipe when the combine or forage harvester calls, follows the machine while unloading, then delivers to the point of the 2nd list and comes back." />
-		<text name="fp_help_unloader_2_title" text="Settings" />
-		<text name="fp_help_unloader_2_text" text="Ctrl + Alt + Numpad 0 &gt; Combine unloading: fill level before leaving, side, distances and several trailers per machine." />
-		<text name="fp_help_editor_title" text="Routes and destinations" />
-		<text name="fp_help_editor_1_title" text="Editor" />
-		<text name="fp_help_editor_1_text" text="HUD editor button: record a route while driving, connect points, create, rename or delete a destination." />
-		<text name="fp_help_editor_2_title" text="Tools" />
-		<text name="fp_help_editor_2_text" text="Ctrl + Alt + Numpad 1: routes manager (export or import the road network). Ctrl + Shift + F: create field points." />
+		<text name="fp_help_start_title" text="Başlarken" />
+		<text name="fp_help_start_1_title" text="Arayüz (HUD)" />
+		<text name="fp_help_start_1_text" text="Alt + Numpad 0, FarmPilot arayüzünü açar veya gizler. Fare orta tuşu: arayüz içinde tıklama yapmak için imleci gösterir. İlk liste hedefi gösterir; aşağıdaki listeler (boşaltma, dolum türü) moda bağlı olarak görünür." />
+		<text name="fp_help_start_2_title" text="Ana Düğmeler" />
+		<text name="fp_help_start_2_text" text="Başlat/Durdur sürücüyü başlatır veya durdurur. Mod düğmesi: sol tık = sonraki mod, sağ tık = önceki mod. Devam et: bekleyen bir sürücüyü yeniden başlatır. Park: aracı park pozisyonuna gönderir (sağ tık: bu pozisyonu ayarlar)." />
+		<text name="fp_help_start_3_title" text="Kısayollar" />
+		<text name="fp_help_start_3_text" text="Ctrl + Alt + Sağ / Sol ok: sonraki / önceki hedef. Ctrl + Alt + Numpad 0: ayarlar. Ctrl + Alt + M: mesaj geçmişi. Shift + C / Shift + V: ayarları bir araçtan diğerine kopyala / yapıştır. Tüm tuşlar Seçenekler &gt; Kontroller menüsünden değiştirilebilir." />
+		<text name="fp_help_driveto_title" text="Sürüş Modu" />
+		<text name="fp_help_driveto_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_driveto_1_text" text="Bir hedef seçin, ardından Başlat'a basın. Araç yol ağı üzerinden hedefe gider ve ardından durur." />
+		<text name="fp_help_driveto_2_title" text="Courseplay ile" />
+		<text name="fp_help_driveto_2_text" text="Arayüzdeki « Hedefte AI/CP Başlat » düğmesi açıksa (sağ tık: Courseplay, AIVE veya oyun işçisi), rota araca önceden yüklenmiş olarak varışta o yardımcı devreye girer. FarmPilot'ın Courseplay rotasını kendisinin seçmesini istiyorsanız, Otonom modu kullanın." />
+		<text name="fp_help_autonomous_title" text="Otonom Mod" />
+		<text name="fp_help_autonomous_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_autonomous_1_text" text="Sürüş modu gibidir: tarlayı (hedefi) seçin ve başlatın. Varışta FarmPilot, takılı ekipmanın genişliğiyle tam olarak eşleşen kayıtlı Courseplay rotasını alır, yükler ve rotanın ilk ara noktasından (waypoint) Courseplay'i başlatır. Bir çalışma ekipmanı takılı olmalıdır (toprak işleme, ekim makinesi, ilaçlama makinesi, gübre serpme makinesi, çayır biçer, balya makinesi...): yalnızca römork, düz yataklı dorse veya biçerdöverle bu mod başlamaz." />
+		<text name="fp_help_autonomous_2_title" text="Rota Seçimi" />
+		<text name="fp_help_autonomous_2_text" text="Yalnızca Courseplay'de (Rotalar menüsü, tüm klasörler) varış tarlasında veya tarla grubunda (AutoSwitch kuruluysa birleştirilmiş tarlaları otomatik değiştirir) kaydedilmiş rotalar kullanılır. Genişlik, Courseplay ayarlarında olduğu gibi 10 cm toleransla karşılaştırılır." />
+		<text name="fp_help_autonomous_3_title" text="Bellek" />
+		<text name="fp_help_autonomous_3_text" text="Kullanılan rota, kayıt dosyasında bu tarla ve bu ekipman için hatırlanır. Ertesi yıl, aynı ekipman ve genişlikle, birden fazla uygun rota olsa bile doğrudan tekrar kullanılır." />
+		<text name="fp_help_autonomous_4_title" text="Dur ve Bekle" />
+		<text name="fp_help_autonomous_4_text" text="Doğru genişlikte rota yoksa veya hatırlanan bir seçim olmadan birden fazla uygun rota varsa, sürücü durur ve bekler; bir mesaj nedenini açıklar. Otonom rotalar penceresinden rotayı seçin, ardından yeniden başlatın. Courseplay olmadan, « Courseplay olmadan otonom » ayarına bağlı olarak sürücü bekler veya ana oyun işçisi tarlayı devralır (klasik mod)." />
+		<text name="fp_help_autonomous_5_title" text="Otonom Rotalar Penceresi" />
+		<text name="fp_help_autonomous_5_text" text="Arayüz düğmesi (Otonom modda, Courseplay düğmesinin yerinde) veya ekipman takılı halde araç içindeyken Ctrl + Alt + Numpad 5. Her tarla veya tarla grubu için bir satır. Değiştir: sonraki rotaya geçer, ardından Otomatik'e döner. Otomatik: seçimi temizler. Çift tık = Değiştir." />
+		<text name="fp_help_autonomous_6_title" text="Sonraki Tarla" />
+		<text name="fp_help_autonomous_6_text" text="Otonom modda, 3. arayüz satırı sonraki tarladır (varsayılan olarak boştur). Listeden bir tarla seçin veya harita üzerinde sağ tıklayın; temizlemek için satıra sağ tıklayın. Mevcut tarla bittiğinde, sonraki tarla 1. satıra taşınır, « Sonraki tarla » satırı temizlenir ve sürücü burayı işlemeye gider. Boşsa, sürücü daha önce olduğu gibi park etmeye gider." />
+		<text name="fp_help_autonomous_7_title" text="Yeri Olarak Park Edilen Ekipman, Alınacak Ekipman" />
+		<text name="fp_help_autonomous_7_text" text="Sonraki tarla olmaksızın çalışmanın sonu: ekipmanın kendi park pozisyonu ve traktörün de kendine ait pozisyonu varsa, sürücü ekipmanı yerine bırakır, hortumları ve Kuyruk Milini (PTO) çıkarır (manuel bağlantı modu), ekipmanı söker ve ardından traktörü park eder. Park pozisyonları her zamankinki gibi ayarlanır (düzenleyici modunda P harfine Ctrl + tıklama: ekipmanın yeri için ekipman seçili, traktörünki için hiçbir ekipman seçili değil). Ağırlıklar yok sayılır; birden fazla ekipman takılıysa eskisi gibi park eder. 2. arayüz satırı (« Ekipman »), tarladan önce alınacak olan ve traktörün arka çeki demirine uyan (sökülmüş, tarım ekipmanları) fonksiyonu ve genişliğiyle gösterilen ekipmandır. Başlangıçta sürücü, ekipmanın yerine (veya önündeki ağ noktasına) kadar rotalarınızı takip eder, geri vites yapar, takar, hortumları ve PTO'yu bağlar, kaldırır ve tarlaya sürer. « Takılı olan » (veya satıra sağ tık): alınacak bir şey yok." />
+		<text name="fp_help_autonomous_8_title" text="Sonraki Ekipman" />
+		<text name="fp_help_autonomous_8_text" text="Otonom modda, 4. arayüz satırı sonraki tarla için gereken ekipmandır (varsayılan olarak « Aynı »; geri dönmek için satıra sağ tıklayın). Yalnızca sonraki tarla ile birlikte kullanılır. Mevcut tarla bittiğinde, sürücü takılı ekipmanı park pozisyonuna bırakır (çalışmanın sonunda olduğu gibi), sonraki ekipmanı alır (yollarınız üzerinden, geri giderek, takarak, hortumları ve PTO'yu bağlayarak) ve ardından sonraki tarlaya sürer. Sonraki ekipman daha sonra « Ekipman » satırına taşınır ve « Sonraki ekipman » satırı « Aynı » değerine geri döner. Sonraki ekipman başka bir araç tarafından kullanılıyorsa veya bu traktöre uymuyorsa, takılı ekipman her halükarda yerine bırakılır, ardından sürücü orada durur ve bir mesaj nedenini gösterir: sonraki ekipman boştata olduğunda yeniden başlatın. Takılı ekipmanın park pozisyonu yoksa veya birden fazla ekipman takılıysa hiçbir şey değişmez: sürücü tarlanın sonunda bir mesajla durur." />
+		<text name="fp_help_deliverto_title" text="Teslim Etme Modu" />
+		<text name="fp_help_deliverto_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_deliverto_1_text" text="Boşaltma hedefini seçin, ardından Başlat'a basın. Araç oraya gider, römorkunu boşaltır, bir park pozisyonu ayarlanmışsa park eder, aksi takdirde durur." />
+		<text name="fp_help_pickupdeliver_title" text="Al ve Teslim Et Modu" />
+		<text name="fp_help_pickupdeliver_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_pickupdeliver_1_text" text="1. liste: yükleme noktası; 2. liste: boşaltma noktası; 3. liste: yüklenecek ürün türü. Araç yükleme yapar, teslim eder ve ardından tekrar başlar." />
+		<text name="fp_help_pickupdeliver_2_title" text="Döngüler (Loops)" />
+		<text name="fp_help_pickupdeliver_2_text" text="Arayüz döngü sayacı: 0 = sonsuz, aksi takdirde durmadan önceki tur sayısı. Listelerin solundaki düğmeler en iyi yükleme veya satış noktasını otomatik olarak seçer." />
+		<text name="fp_help_load_title" text="Yükleme Modu" />
+		<text name="fp_help_load_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_load_1_text" text="Araç, 2. listenin noktasında (3. listenin ürün türüyle) yükleme yapar, ardından 1. listenin noktasına sürer ve durur. Tarlaya gitmeden önce ekim veya ilaçlama makinesini doldurmak için kullanışlıdır." />
+		<text name="fp_help_unloader_title" text="Biçerdöver Boşaltıcı Modu" />
+		<text name="fp_help_unloader_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_unloader_1_text" text="Araç tarla yakınında bekler (1. liste), biçerdöver veya silaj makinesi (chopper) çağrı yaptığında borunun altına girer, boşaltma sırasında makineyi takip eder, ardından 2. listenin noktasına teslimat yapar ve geri döner." />
+		<text name="fp_help_unloader_2_title" text="Ayarlar" />
+		<text name="fp_help_unloader_2_text" text="Ctrl + Alt + Numpad 0 &gt; Biçerdöver boşaltma: ayrılmadan önceki doluluk seviyesi, taraf, mesafeler ve makine başına birden fazla römork." />
+		<text name="fp_help_editor_title" text="Rotalar ve Hedefler" />
+		<text name="fp_help_editor_1_title" text="Düzenleyici" />
+		<text name="fp_help_editor_1_text" text="Arayüz düzenleyici düğmesi: sürüş sırasında rota kaydetme, noktaları bağlama, hedef oluşturma, yeniden adlandırma veya silme." />
+		<text name="fp_help_editor_2_title" text="Araçlar" />
+		<text name="fp_help_editor_2_text" text="Ctrl + Alt + Numpad 1: rota yöneticisi (yol ağını dışa veya içe aktar). Ctrl + Shift + F: tarla noktaları oluşturma." />
 	</texts>
 </l10n>

@@ -1,6 +1,9 @@
 FarmPilot:
 bibifr (Fabien) - FarmPilot, based on AutoDrive 3.0.1.4
 
+Translations (FarmPilot):
+Turkish: huseyinsayar
+
 Original mod: AutoDrive (https://github.com/Stephan-S/FS25_AutoDrive), MIT licence, Copyright (c) 2024 Stephan Schlosser
 
 Main developers:

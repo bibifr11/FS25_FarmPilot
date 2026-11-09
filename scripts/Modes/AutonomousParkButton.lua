@@ -11,9 +11,58 @@
 -- Sinon (pas d'outil avec sa place, plusieurs, tracteur sans place) : bouton d'origine, le tracteur se gare tel
 -- quel.
 -- Épandeur / pulvé avec du produit : vidange en big bags d'abord (AutonomousSprayerDump.lua), puis ce bouton.
+--
+-- (09/11) La dépose passe en mode Autonome (seul mode qui sait poser l'outil). Le mode d'avant (Chargement /
+-- Livraison…) est noté au passage (rememberMode) et rendu à l'arrêt de FarmPilot (afterStop, crochet dans
+-- Specialization.lua), avec ses cibles automatiques. Même chose pour la vidange en big bags (AutonomousSprayerDump.lua)
+-- et la remorque posée en fin de chantier (TrailerHitch.lua).
 -- ============================================================================================================
 
 ADParkButton = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Mode d'avant la dépose
+-- ------------------------------------------------------------------------------------------------------------
+-- à appeler juste avant setMode(AutoDrive.MODE_AUTONOMOUS) ; le premier mode noté est gardé
+function ADParkButton.rememberMode(vehicle)
+    if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.fpModeBeforePark ~= nil then
+        return
+    end
+    local sm = vehicle.ad.stateModule
+    local mode = sm:getMode()
+    if mode == nil or mode == AutoDrive.MODE_AUTONOMOUS then
+        return
+    end
+    vehicle.ad.fpModeBeforePark = { mode = mode, pickup = sm:getAutomaticPickupTarget(), unload = sm:getAutomaticUnloadTarget() }
+end
+
+-- FarmPilot arrêté (garé, arrêt à la main, erreur) : le mode noté revient, sauf s'il a été changé entre-temps
+function ADParkButton.restoreMode(vehicle)
+    local saved = vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.fpModeBeforePark or nil
+    if saved == nil then
+        return
+    end
+    vehicle.ad.fpModeBeforePark = nil
+    local sm = vehicle.ad.stateModule
+    if sm == nil or sm:isActive() or sm:getMode() ~= AutoDrive.MODE_AUTONOMOUS then
+        return
+    end
+    sm:setMode(saved.mode)
+    if sm:getMode() ~= saved.mode then
+        return
+    end
+    if saved.pickup then
+        sm:setAutomaticPickupTarget(true)
+    end
+    if saved.unload then
+        sm:setAutomaticUnloadTarget(true)
+    end
+    ADAutonomousManager.log("%s : mode d'avant la dépose rendu (%s)", tostring(sm:getName()), tostring(saved.mode))
+end
+
+function ADParkButton.afterStop(vehicle)
+    ADParkButton.restoreMode(vehicle)
+end
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outil à poser ? (mêmes conditions que la fin de champ)
@@ -68,6 +117,7 @@ function ADInputManager:input_parkVehicle(vehicle, farmId, ...)
         if vehicle.ad.stateModule:isActive() then
             self:input_start_stop(vehicle, farmId)
         end
+        ADParkButton.rememberMode(vehicle)
         vehicle.ad.stateModule:setMode(AutoDrive.MODE_AUTONOMOUS)
         ADAutonomousManager.log("%s : bouton parking : l'outil « %s » d'abord à sa place, puis le tracteur à la sienne", name, ADAutonomousManager.toolLabel(tool))
         local ok, started = pcall(AutonomousMode.parkWithToolDrop, vehicle, tool)
@@ -75,6 +125,7 @@ function ADInputManager:input_parkVehicle(vehicle, farmId, ...)
             return
         end
         ADAutonomousManager.log("%s : bouton parking : dépose de l'outil pas lancée (%s), parking comme avant", name, ok and "refusée" or tostring(started))
+        ADParkButton.restoreMode(vehicle)
     elseif vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil then
         ADAutonomousManager.log("%s : bouton parking : parking comme avant (%s)", tostring(vehicle.ad.stateModule:getName()), tostring(why))
     end

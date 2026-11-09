@@ -422,10 +422,12 @@ function ADTrailerHitch.afterStop(vehicle)
             return
         end
         message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_trailer_dropGo", ADTrailerHitch.label(trailer))
+        if ADParkButton ~= nil then ADParkButton.rememberMode(vehicle) end -- mode d'avant rendu à l'arrêt, voir AutonomousParkButton.lua
         vehicle.ad.stateModule:setMode(AutoDrive.MODE_AUTONOMOUS)
         local ok, started = pcall(AutonomousMode.parkWithToolDrop, vehicle, trailer)
         if not ok or not started then
             ADTrailerHitch.log("%s : dépose de la remorque pas lancée (%s)", nameOf(vehicle), ok and "refusée" or tostring(started))
+            if ADParkButton ~= nil then ADParkButton.restoreMode(vehicle) end
         end
     end
     local mission = g_currentMission

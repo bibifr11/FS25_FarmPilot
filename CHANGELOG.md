@@ -3,6 +3,15 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.32
+
+- Bouton parking : le mode d'avant (ex. Chargement / Livraison) revient tout seul une fois l'outil posé et le tracteur garé.
+- Plus de log en chaîne de Courseplay en mode Autonome : la largeur de l'outil est calculée une fois et gardée.
+- Départ : plus retenu 21 s par un attelage déjà en place ou un ordre de repli déjà terminé.
+- Parking button: the previous mode (e.g. Load / Deliver) comes back on its own once the tool is parked and the tractor is parked.
+- No more Courseplay log spam in Autonomous mode: the tool width is computed once and kept.
+- Start: no longer held 21 s by an already settled hitch or an already finished fold order.
+
 ## 1.0.1.31
 
 - Traduction turque, merci à huseyinsayar. Textes manquants complétés.

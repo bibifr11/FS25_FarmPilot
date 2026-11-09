@@ -1372,6 +1372,7 @@ function AutoDrive:stopAutoDrive()
             if ADSprayerDump ~= nil then ADSprayerDump.afterStop(self) end -- épandeur : après la vidange, champ suivant / parking, voir AutonomousSprayerDump.lua
             if ADBaleCollect ~= nil then ADBaleCollect.afterStop(self) end -- remorque à balles : champ ramassé, champ suivant / parking, voir AutonomousBales.lua
             if ADTrailerHitch ~= nil then ADTrailerHitch.afterStop(self) end -- remorque choisie : à sa place, puis le tracteur, voir TrailerHitch.lua
+            if ADParkButton ~= nil then ADParkButton.afterStop(self) end -- dépose au parking finie : mode d'avant rendu, voir AutonomousParkButton.lua
         end
     else
         Logging.devError("AutoDrive:stopAutoDrive() must be called only on the server.")

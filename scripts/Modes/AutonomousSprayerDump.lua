@@ -327,9 +327,11 @@ function ADSprayerDump.onParkButton(input, vehicle, farmId)
     if vehicle.ad.stateModule:isActive() then
         input:input_start_stop(vehicle, farmId)
     end
+    if ADParkButton ~= nil then ADParkButton.rememberMode(vehicle) end -- mode d'avant rendu à l'arrêt, voir AutonomousParkButton.lua
     vehicle.ad.stateModule:setMode(AutoDrive.MODE_AUTONOMOUS)
     if not ADSprayerDump.start(vehicle, d, "park") then
         log("%s : bouton parking, vidange pas lancée : parking comme avant", name)
+        if ADParkButton ~= nil then ADParkButton.restoreMode(vehicle) end
         return false
     end
     log("%s : bouton parking, %.0f L de %s dans la cuve : va les vider en big bags à « %s » (%s), puis au parking", name, d.level, tostring(title),

@@ -37,6 +37,7 @@ ADFoldGuard.WARN_EVERY = 60000    -- ms entre deux messages au joueur (le premie
 ADFoldGuard.SAMPLE = 250          -- ms entre deux lectures du temps d'animation de repli
 ADFoldGuard.MOVE_EPS = 0.0001     -- variation du temps d'animation de repli entre deux lectures comptée comme un mouvement
 ADFoldGuard.END_EPS = 0.01        -- tolérance aux bouts (replié, déplié, position intermédiaire)
+ADFoldGuard.JOINT_STILL = 500     -- ms sans variation de position d'un attelage marqué « en mouvement » : il ne bouge plus
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils et états
@@ -83,22 +84,42 @@ function ADFoldGuard.isFoldAnimPlaying(object, spec)
 end
 
 -- un attelage du convoi (avec un outil dessus) monte ou descend
-function ADFoldGuard.isJointMoving(objects)
+-- (09/11) le jeu laisse parfois l'indicateur « en mouvement » levé sur un attelage déjà à sa position (il ne le
+-- baisse que si la position change) : départ retenu 21 s avec une benne. Un attelage marqué en mouvement compte
+-- seulement si sa position a bougé dans la dernière demi-seconde (suivi par départ dans guard.joints).
+function ADFoldGuard.isJointMoving(objects, guard, now)
+    local moving = false
     for _, object in pairs(objects) do
         local spec = object.spec_attacherJoints
         if spec ~= nil and spec.attacherJoints ~= nil and spec.attachedImplements ~= nil then
             for _, implement in pairs(spec.attachedImplements) do
                 local joint = implement.jointDescIndex ~= nil and spec.attacherJoints[implement.jointDescIndex] or nil
                 if joint ~= nil and joint.isMoving then
-                    return true
+                    if guard == nil or now == nil then
+                        return true
+                    end
+                    guard.joints = guard.joints or {}
+                    local alpha = joint.moveAlpha or 0
+                    local rec = guard.joints[joint]
+                    if rec == nil then
+                        rec = {alpha = alpha, changedAt = now}
+                        guard.joints[joint] = rec
+                    elseif math.abs(alpha - rec.alpha) > ADFoldGuard.MOVE_EPS then
+                        rec.alpha, rec.changedAt = alpha, now
+                    end
+                    if now - rec.changedAt < ADFoldGuard.JOINT_STILL then
+                        moving = true
+                    end
                 end
             end
         end
     end
-    return false
+    return moving
 end
 
 -- ordre du jeu en attente (repli « jusqu'au bout » demandé par Courseplay, pas encore accepté par l'outil)
+-- (09/11) le jeu n'efface cet ordre que pendant le travail de l'ouvrier : une fois Courseplay arrêté, il reste
+-- même quand c'est fait. Un ordre déjà terminé (getIsFinished) ne retient plus le départ.
 function ADFoldGuard.isGameOrderPending(vehicle)
     local root = vehicle.rootVehicle or vehicle
     local controller = root.actionController
@@ -106,8 +127,16 @@ function ADFoldGuard.isGameOrderPending(vehicle)
         return false
     end
     for _, action in pairs(controller.actions) do
-        if action.forceDirectionUntilFinished ~= nil then
-            return true
+        local direction = action.forceDirectionUntilFinished
+        if direction ~= nil then
+            local finished = false
+            if action.getIsFinished ~= nil then
+                local ok, f = pcall(action.getIsFinished, action, direction)
+                finished = ok and f == true
+            end
+            if not finished then
+                return true
+            end
         end
     end
     return false
@@ -230,8 +259,15 @@ function ADFoldGuard.update(vehicle, dt, allowTaskUpdate, shouldStopVehicle)
             end
         end
     end
-    if now - guard.armedAt < ADFoldGuard.PENDING_MAX and (ADFoldGuard.isJointMoving(objects) or ADFoldGuard.isGameOrderPending(vehicle)) then
-        moving = true
+    guard.pendingWhy = nil
+    if now - guard.armedAt < ADFoldGuard.PENDING_MAX then
+        if ADFoldGuard.isJointMoving(objects, guard, now) then
+            moving = true
+            guard.pendingWhy = "attelage en mouvement"
+        elseif ADFoldGuard.isGameOrderPending(vehicle) then
+            moving = true
+            guard.pendingWhy = "ordre du jeu en attente"
+        end
     end
     if moving then
         guard.lastMove = now
@@ -255,7 +291,7 @@ function ADFoldGuard.update(vehicle, dt, allowTaskUpdate, shouldStopVehicle)
 
     if not guard.holdLogged and now - guard.armedAt >= ADFoldGuard.MIN_WAIT + ADFoldGuard.SETTLE then
         guard.holdLogged = true
-        local why = #blocking > 0 and string.format("%d outil(s) pas replie(s)", #blocking) or (moving and "outil ou attelage en mouvement" or "1 s apres le dernier mouvement")
+        local why = #blocking > 0 and string.format("%d outil(s) pas replie(s)", #blocking) or (moving and (guard.pendingWhy or "outil en mouvement") or "1 s apres le dernier mouvement")
         print(string.format("[AD-Repli] %s: depart retenu (%s ; %s)", ADFoldGuard.nameOf(vehicle), why, ADFoldGuard.describe(guard)))
     end
     if #blocking > 0 and now - guard.armedAt >= ADFoldGuard.WARN_EVERY and (guard.warnedAt == nil or now - guard.warnedAt >= ADFoldGuard.WARN_EVERY) then

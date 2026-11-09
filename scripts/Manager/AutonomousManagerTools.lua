@@ -217,7 +217,33 @@ end
 
 -- (07/11) largeur affichée après la fonction (« Déchaumeur (8 m) ») : largeur de travail d'un outil
 -- dételé : celle que Courseplay calcule sur l'outil, sinon celle de la boutique
+-- (09/11) gardée par outil : le HUD la demande à chaque image et Courseplay écrit 4 lignes de log à chaque calcul
+-- (16 000 lignes en 3 min). Recalculée seulement quand l'outil se replie ou se déplie.
+ADAutonomousManager.toolWidthCache = setmetatable({}, { __mode = "k" })
+
+local function foldKey(tool)
+    local spec = tool.spec_foldable
+    if spec == nil or spec.foldingParts == nil or #spec.foldingParts == 0 then
+        return 0
+    end
+    return math.floor((spec.foldAnimTime or 0) * 4 + 0.5)
+end
+
 function ADAutonomousManager.toolWorkWidth(tool)
+    if tool == nil then
+        return nil
+    end
+    local key = foldKey(tool)
+    local cached = ADAutonomousManager.toolWidthCache[tool]
+    if cached ~= nil and cached.key == key then
+        return cached.width or nil
+    end
+    local w = ADAutonomousManager.computeToolWorkWidth(tool)
+    ADAutonomousManager.toolWidthCache[tool] = { key = key, width = w or false }
+    return w
+end
+
+function ADAutonomousManager.computeToolWorkWidth(tool)
     local wwu = ADAutonomousManager.cpGlobal("WorkWidthUtil")
     if wwu ~= nil and wwu.getAutomaticWorkWidthAndOffset ~= nil then
         local ok, w = pcall(wwu.getAutomaticWorkWidthAndOffset, tool)

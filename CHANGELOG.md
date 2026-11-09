@@ -3,6 +3,40 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.37
+
+🇫🇷 FR
+- Plein de carburant en mode Autonome : quand Courseplay s'arrête faute de carburant, le tracteur sort du champ, fait le plein à la pompe la plus proche, revient et Courseplay repart là où il s'était arrêté (réglage Courseplay « attendre le plein » sur Non).
+- Champ fini avec un champ suivant : sous 20 % de gazole ou d'AdBlue, plein d'abord, puis le champ suivant.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Refuelling in Autonomous mode: when Courseplay stops for lack of fuel, the tractor leaves the field, refuels at the nearest pump, comes back and Courseplay resumes where it stopped (Courseplay "wait for refuel" setting on No).
+- Field finished with a next field: below 20 % diesel or AdBlue, it refuels first, then goes to the next field.
+
+## 1.0.1.36
+
+🇫🇷 FR
+- Atteler un outil rangé de travers dans sa place : le tracteur va devant le timon au lieu de suivre la route de la place.
+- Pas de chemin jusque devant l'outil : 10 m tout droit puis nouveau calcul, 2 fois au plus.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Hitching a tool parked crooked in its spot: the tractor goes in front of the drawbar instead of following the spot's route.
+- No path to the front of the tool: 10 m straight ahead then a new calculation, up to 2 times.
+
+## 1.0.1.35
+
+🇫🇷 FR
+- Remorque à balles en Autonome, bouton >> : avec des balles chargées, départ tout de suite vers la zone de dépôt (retour au champ s'il en reste) ; remorque vide, le champ est laissé et la suite est celle d'un champ fini.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Bale trailer in Autonomous mode, >> button: with bales loaded, it leaves straight away for the drop zone (back to the field if bales are left); with an empty trailer, the field is left and work continues as for a finished field.
+
 ## 1.0.1.34
 
 🇫🇷 FR

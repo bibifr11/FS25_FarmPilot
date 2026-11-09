@@ -82,7 +82,7 @@ end
 function ADStateModule:loadAutonomousState(xmlFile, key)
     local fpNextField = xmlFile:getValue(key .. "#fpNextField")
     if fpNextField ~= nil and fpNextField >= 1 then
-        self.fpNextField = ADGraphManager:getMapMarkerById(fpNextField)
+        self.fpNextField = ADGraphManager:getMarkerForLoad(fpNextField, xmlFile:getValue(key .. "#fpNextFieldName"))
     else
         self.fpNextField = nil
     end
@@ -103,8 +103,10 @@ function ADStateModule:loadAutonomousState(xmlFile, key)
 end
 
 function ADStateModule:saveAutonomousState(xmlFile, key)
-    if self.fpNextField ~= nil then
-        xmlFile:setValue(key .. "#fpNextField", self.fpNextField.markerIndex)
+    local nextFieldIndex = ADGraphManager:getSavedMarkerIndex(self.fpNextField)
+    if nextFieldIndex ~= nil then
+        xmlFile:setValue(key .. "#fpNextField", nextFieldIndex)
+        xmlFile:setValue(key .. "#fpNextFieldName", self.fpNextField.name or "")
     end
     local fpTool = self:getFpTool()
     local fpToolUniqueId = fpTool ~= nil and fpTool.getUniqueId ~= nil and fpTool:getUniqueId() or self.fpToolUniqueId

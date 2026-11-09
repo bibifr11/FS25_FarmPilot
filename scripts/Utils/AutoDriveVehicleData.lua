@@ -73,7 +73,13 @@ function AutoDriveVehicleData:onPostLoad(savegame)
             local xmlFile = savegame.xmlFile
             local adkey = savegame.key .. ".AutoDrive"
             if xmlFile:hasProperty(adkey) then
-                self.advd.parkDestination = Utils.getNoNil(xmlFile:getValue(adkey .. "#parkDestination"), -1)
+                -- numéro dans la config + nom, jamais un marqueur de debug (voir ADGraphManager:getMarkerForLoad)
+                local parkIndex = xmlFile:getValue(adkey .. "#parkDestination")
+                local parkMarker = nil
+                if parkIndex ~= nil and parkIndex >= 1 then
+                    parkMarker = ADGraphManager:getMarkerForLoad(parkIndex, xmlFile:getValue(adkey .. "#parkDestinationName"))
+                end
+                self.advd.parkDestination = parkMarker ~= nil and parkMarker.markerIndex or -1
             end            
         end
     end
@@ -168,7 +174,13 @@ function AutoDriveVehicleData:saveToXMLFile(xmlFile, key)
     if actualparkDestination ~= nil and actualparkDestination > 0 then
         AutoDrive.debugPrint(self, AutoDrive.DC_EXTERNALINTERFACEINFO, "AutoDriveVehicleData.saveToXMLFile actualparkDestination %s", tostring(actualparkDestination))
         local adKey = string.gsub(key, "[%w_]+%.AutoDriveVehicleData", "AutoDrive")
-        xmlFile:setValue(adKey .. "#parkDestination", actualparkDestination)
+        -- numéro du marqueur dans la config (sans les marqueurs de debug) + son nom
+        local parkMarker = ADGraphManager:getMapMarkerById(actualparkDestination)
+        local parkIndex = ADGraphManager:getSavedMarkerIndex(parkMarker)
+        if parkIndex ~= nil then
+            xmlFile:setValue(adKey .. "#parkDestination", parkIndex)
+            xmlFile:setValue(adKey .. "#parkDestinationName", parkMarker.name or "")
+        end
     end
 end
 

@@ -106,18 +106,17 @@ function ADStateModule:readFromXMLFile(xmlFile, key)
         self.mode = mode
     end
 
+    -- numéro dans la config + nom, jamais un marqueur de debug (voir ADGraphManager:getMarkerForLoad)
     local firstMarker = xmlFile:getValue(key .. "#firstMarker")
-    if firstMarker ~= nil then
-        self.firstMarker = ADGraphManager:getMapMarkerById(firstMarker)
-    else
-        self.firstMarker = ADGraphManager:getMapMarkerById(1)
+    self.firstMarker = ADGraphManager:getMarkerForLoad(firstMarker, xmlFile:getValue(key .. "#firstMarkerName"))
+    if self.firstMarker == nil then
+        self.firstMarker = ADGraphManager:getMarkerForLoad(1)
     end
 
     local secondMarker = xmlFile:getValue(key .. "#secondMarker")
-    if secondMarker ~= nil then
-        self.secondMarker = ADGraphManager:getMapMarkerById(secondMarker)
-    else
-        self.secondMarker = ADGraphManager:getMapMarkerById(1)
+    self.secondMarker = ADGraphManager:getMarkerForLoad(secondMarker, xmlFile:getValue(key .. "#secondMarkerName"))
+    if self.secondMarker == nil then
+        self.secondMarker = ADGraphManager:getMarkerForLoad(1)
     end
 
     self:loadAutonomousState(xmlFile, key) -- FarmPilot mode Autonome, voir StateModuleAutonomous.lua
@@ -202,11 +201,16 @@ end
 
 function ADStateModule:saveToXMLFile(xmlFile, key)
     xmlFile:setValue(key .. "#mode", self.mode)
-    if self.firstMarker ~= nil then
-        xmlFile:setValue(key .. "#firstMarker", self.firstMarker.markerIndex)
+    -- numéro du marqueur dans la config (sans les marqueurs de debug) + son nom
+    local firstIndex = ADGraphManager:getSavedMarkerIndex(self.firstMarker)
+    if firstIndex ~= nil then
+        xmlFile:setValue(key .. "#firstMarker", firstIndex)
+        xmlFile:setValue(key .. "#firstMarkerName", self.firstMarker.name or "")
     end
-    if self.secondMarker ~= nil then
-        xmlFile:setValue(key .. "#secondMarker", self.secondMarker.markerIndex)
+    local secondIndex = ADGraphManager:getSavedMarkerIndex(self.secondMarker)
+    if secondIndex ~= nil then
+        xmlFile:setValue(key .. "#secondMarker", secondIndex)
+        xmlFile:setValue(key .. "#secondMarkerName", self.secondMarker.name or "")
     end
     self:saveAutonomousState(xmlFile, key) -- FarmPilot mode Autonome, voir StateModuleAutonomous.lua
     xmlFile:setValue(key .. "#fillType", self.fillType)

@@ -1168,6 +1168,62 @@ function ADGraphManager:removeDebugMarkers()
     self:markChanges()
 end
 
+-- Sauvegarde des destinations des véhicules (premier, deuxième marqueur, champ suivant, parking).
+-- La config est sauvée sans les marqueurs de debug et renumérotée (XML.lua) : un véhicule doit
+-- donc sauver le numéro que son marqueur aura DANS LA CONFIG, pas son numéro en mémoire. Sinon,
+-- avec le debug « infos réseau » allumé, un marqueur créé après les marqueurs de debug change de
+-- numéro au chargement et le véhicule repart vers un marqueur de debug (« 1_6 ») ou un autre.
+function ADGraphManager:getSavedMarkerIndex(marker)
+    if marker == nil or marker.isADDebug == true or marker.markerIndex == nil then
+        return nil
+    end
+    local saved = 0
+    for i = 1, #self.mapMarkers do
+        local m = self.mapMarkers[i]
+        if m ~= nil and not m.isADDebug then
+            saved = saved + 1
+        end
+        if m == marker or i == marker.markerIndex then
+            if m ~= nil and not m.isADDebug then
+                return saved
+            end
+            return nil
+        end
+    end
+    return nil
+end
+
+-- Marqueur d'un véhicule au chargement : par son nom s'il a été sauvé (partie sauvée avec
+-- cette version), sinon par son numéro dans la config. Jamais un marqueur de debug.
+function ADGraphManager:getMarkerForLoad(savedIndex, savedName)
+    local byIndex = nil
+    if savedIndex ~= nil and savedIndex >= 1 then
+        local n = 0
+        for i = 1, #self.mapMarkers do
+            local m = self.mapMarkers[i]
+            if m ~= nil and not m.isADDebug then
+                n = n + 1
+                if n == savedIndex then
+                    byIndex = m
+                    break
+                end
+            end
+        end
+    end
+    if savedName ~= nil and savedName ~= "" then
+        if byIndex ~= nil and byIndex.name == savedName then
+            return byIndex
+        end
+        for i = 1, #self.mapMarkers do
+            local m = self.mapMarkers[i]
+            if m ~= nil and not m.isADDebug and m.name == savedName then
+                return m
+            end
+        end
+    end
+    return byIndex
+end
+
 -- create debug markers for waypoints issues
 function ADGraphManager:createDebugMarkers(updateMap)
     local overallnumberWP = self:getWayPointsCount()

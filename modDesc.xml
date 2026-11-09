@@ -46,7 +46,7 @@ Changelog: https://github.com/bibifr11/FS25_FarmPilot
 ]]>
 		</de>
 	</description>
-	<version>1.0.1.38</version>
+	<version>1.0.1.39</version>
 	<multiplayer supported="true" />
 	<iconFilename>icon_FarmPilot.dds</iconFilename>
 	<extraSourceFiles>

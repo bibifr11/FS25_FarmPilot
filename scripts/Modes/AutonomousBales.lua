@@ -13,7 +13,8 @@
 -- - Aucune balle au champ à l'arrivée et remorque vide : message, puis la même suite.
 -- - Erreur (bras qui ne sort pas, remorque dételée, déchargement refusé) : message, arrêt et attente.
 -- - (09/11) Bouton >> (Continuer) avec des balles chargées : dépôt tout de suite (après la balle en cours), puis
---   retour au champ s'il en reste. Remorque vide : champ laissé, la suite habituelle d'un champ fini.
+--   retour au champ s'il en reste. Remorque vide : champ laissé, la suite habituelle d'un champ fini. Pareil
+--   sur le 1er trajet vers le champ.
 --
 -- Branché par une ligne dans : AutonomousMode.lua (reset ; handleFinishedTask : étapes et arrivée au champ ;
 -- continue : bouton >>),
@@ -132,9 +133,31 @@ function ADBaleCollect.goDeposit(mode, back, msgKey)
     message(vehicle, "INFO", msgKey or (back and "AD_autonomous_balesFull" or "AD_autonomous_balesLast"), loaded, tostring(deposit.name))
 end
 
+-- 1er trajet vers le champ (départ du mode) avec une remorque à balles réglée attelée : comme le retour au champ
+local function firstTrip(mode)
+    local vehicle = mode.vehicle
+    local sm = vehicle.ad.stateModule
+    local first = sm:getFirstMarker()
+    if mode.driveToDestinationTask == nil or vehicle.ad.taskModule:getActiveTask() ~= mode.driveToDestinationTask
+        or first == nil or mode.destinationID ~= first.id or mode.refillStage ~= nil or mode.fetchStage ~= nil
+        or mode.parkStage ~= nil or mode.dumpStage ~= nil or mode.fuelStage ~= nil then
+        return false
+    end
+    local ok, ctx = pcall(ADBaleCollect.makeContext, vehicle)
+    if not ok or ctx == nil then
+        return false
+    end
+    mode.baleCtx = ctx
+    mode.baleStage = "toField"
+    return true
+end
+
 -- (09/11) bouton >> (Continuer) : dépôt tout de suite avec les balles chargées, retour au champ s'il en reste.
 -- Remorque vide : champ laissé, suite d'un champ fini (champ suivant, parking). true = bouton pris ici.
 function ADBaleCollect.onContinue(mode)
+    if mode.baleStage == nil and not firstTrip(mode) then
+        return false
+    end
     local vehicle, ctx, stage = mode.vehicle, mode.baleCtx, mode.baleStage
     if ctx == nil or ctx.tool == nil then
         return false
@@ -155,7 +178,7 @@ function ADBaleCollect.onContinue(mode)
         return true
     end
     if stage == "toField" and loaded == 0 then
-        log("%s : >> : aucune balle sur la remorque, champ %s laissé avant d'y retourner", nameOf(vehicle), tostring(ctx.fieldNum))
+        log("%s : >> : aucune balle sur la remorque, champ %s laissé avant d'y aller", nameOf(vehicle), tostring(ctx.fieldNum))
         vehicle.ad.taskModule:abortCurrentTask()
         message(vehicle, "INFO", "AD_autonomous_balesContinueEmpty", tostring(ctx.fieldNum))
         ADBaleCollect.finishField(mode)
@@ -163,7 +186,7 @@ function ADBaleCollect.onContinue(mode)
     end
     if stage == "toField" then
         -- balles restées sur la remorque au retour : demi-tour vers le dépôt
-        log("%s : >> : %d balle(s) sur la remorque, dépôt au lieu du retour au champ", nameOf(vehicle), loaded)
+        log("%s : >> : %d balle(s) sur la remorque, dépôt tout de suite au lieu d'aller au champ", nameOf(vehicle), loaded)
         vehicle.ad.taskModule:abortCurrentTask()
         mode.driveToDestinationTask = nil
         ADBaleCollect.goDeposit(mode, true, "AD_autonomous_balesContinue")

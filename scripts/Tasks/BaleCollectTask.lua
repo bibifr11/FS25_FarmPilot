@@ -8,9 +8,12 @@
 -- - Le jeu attrape une balle quand elle passe à moins de pickupRange (3 m en général) du nœud du bras, côté bras.
 --   On se met donc dans l'axe d'approche avec le décalage du bras : la ligne suivie par le tracteur passe à côté de
 --   la balle, de la distance entre l'axe de la remorque et le bras ; le bras passe sur la balle.
--- - Axe d'approche : balle ronde = du tracteur vers la balle ; balle carrée = dans la longueur de la balle (le sens le
---   plus proche). Le chemin jusqu'au début de la ligne (APPROACH_RUN m avant le bras) : chercheur de chemin de
---   FarmPilot ; déjà dans l'axe : pas de chemin, la ligne directement.
+-- - Axe d'approche (09/11) : du tracteur vers la balle, ronde ou carrée (le bras prend une balle carrée dans
+--   n'importe quel sens) ; la ligne passe par le tracteur, le bras sur la balle. Le chemin jusqu'au début de la ligne
+--   (APPROACH_RUN m avant le bras) : chercheur de chemin de FarmPilot ; déjà dans l'axe : pas de chemin, la ligne
+--   directement. Chemin refusé (virage trop serré pour la remorque...) : approche directe, tout droit sur la ligne
+--   depuis là où il est ; le bras fait le reste. Pareil si le début de la ligne est à moins de MIN_PATH m (balle
+--   proche, tracteur pas dans l'axe ; une balle juste devant le tracteur : recul d'abord). Loin de la balle (plus de FAR_DISTANCE m) : FAR_SPEED km/h.
 -- - Sur la ligne : APPROACH_SPEED km/h, point suivi LINE_LOOKAHEAD m devant sur la ligne. Le bras bouge = balle
 --   prise : arrêt jusqu'à la fin du chargement, puis la balle suivante.
 -- - Bras passé PASS_BEYOND m après la balle sans la prendre (ou délai dépassé) : raté, nouvel essai ; après
@@ -42,7 +45,10 @@ ADBaleCollectTask.MAX_TRIES = 2             -- essais par balle
 ADBaleCollectTask.BEHIND_PENALTY = 20       -- m ajoutés à la distance d'une balle derrière le tracteur (demi-tour)
 ADBaleCollectTask.PREPARE_TIMEOUT = 20000   -- ms pour sortir ou rentrer le bras
 ADBaleCollectTask.REQUEST_INTERVAL = 5000   -- ms entre deux demandes de sortie du bras
-ADBaleCollectTask.APPROACH_TIMEOUT = 60000  -- ms sur la ligne d'approche
+ADBaleCollectTask.APPROACH_TIMEOUT = 60000  -- ms sur la ligne d'approche (+ le temps de rouler jusqu'à la balle)
+ADBaleCollectTask.FAR_DISTANCE = 20         -- m : bras plus loin que ça avant la balle = FAR_SPEED
+ADBaleCollectTask.FAR_SPEED = 12            -- km/h sur la ligne, loin de la balle (approche directe)
+ADBaleCollectTask.MIN_PATH = 20             -- m : début de la ligne plus près que ça du tracteur = approche directe
 ADBaleCollectTask.DRIVE_TIMEOUT = 180000    -- ms sur le chemin jusqu'à la ligne
 ADBaleCollectTask.GRAB_TIMEOUT = 30000      -- ms pour que le bras finisse de charger
 ADBaleCollectTask.STUCK_TIME = 10000        -- ms arrêté sur la ligne d'approche = bloqué
@@ -209,7 +215,24 @@ function ADBaleCollectTask:nearest(list)
     return best
 end
 
--- sens d'approche d'une balle : ronde = du tracteur vers la balle ; carrée = sa longueur, le sens le plus proche
+-- sens d'approche d'une balle, ronde ou carrée : du tracteur vers la balle, ligne qui passe par le tracteur avec le
+-- bras (décalé de gx sur le côté) sur la balle ; balle trop près (à côté du tracteur) : du tracteur vers la balle
+function ADBaleCollectTask:approachDir(c, gx)
+    local tx, _, tz = self:tractorPose()
+    local dx, dz = normalize(c.x - tx, c.z - tz)
+    local root = rootOf(self.loader)
+    if gx == nil or root == nil or MathUtil.vector2Length(c.x - tx, c.z - tz) <= math.abs(gx) + 1 then
+        return dx, dz
+    end
+    for _ = 1, 3 do
+        local sx, sz = sideOf(root, dx, dz)
+        dx, dz = normalize(c.x - sx * gx - tx, c.z - sz * gx - tz)
+    end
+    return dx, dz
+end
+
+--[==[ Mis de côté (09/11) : balle carrée prise dans sa longueur ; le chemin pour s'y mettre demandait des virages
+-- trop serrés pour la remorque, alors que le bras la prend dans n'importe quel sens
 function ADBaleCollectTask:approachDir(c)
     local tx, _, tz = self:tractorPose()
     local dx, dz = normalize(c.x - tx, c.z - tz)
@@ -223,6 +246,7 @@ function ADBaleCollectTask:approachDir(c)
     end
     return dx, dz
 end
+]==]
 
 -- ligne d'approche de la cible : P0 (point de la ligne au droit de la balle), sens d, côté xd, départ A
 function ADBaleCollectTask:makeLine(c)
@@ -230,7 +254,7 @@ function ADBaleCollectTask:makeLine(c)
     if gx == nil then
         return nil
     end
-    local dx, dz = self:approachDir(c)
+    local dx, dz = self:approachDir(c, gx)
     local sx, sz = sideOf(rootOf(self.loader), dx, dz)
     local line = { bx = c.x, bz = c.z, dx = dx, dz = dz, sx = sx, sz = sz, gx = gx, behind = behind }
     line.p0x, line.p0z = c.x - sx * gx, c.z - sz * gx
@@ -384,6 +408,16 @@ function ADBaleCollectTask:updateFind()
         self:startApproach()
         return
     end
+    -- début de la ligne trop près pour un chemin (la ligne passe par le tracteur) : approche directe
+    local tx, _, tz = self:tractorPose()
+    if MathUtil.vector2Length(line.ax - tx, line.az - tz) < ADBaleCollectTask.MIN_PATH then
+        -- une balle juste devant le tracteur : recul d'abord (le tracteur la pousserait)
+        if self:baleInFront() and self:startBackOff("find", "balle proche juste devant le tracteur") then
+            return
+        end
+        self:startDirect("balle proche, pas dans l'axe")
+        return
+    end
     local pf = self.vehicle.ad.pathFinderModule
     pf:reset()
     pf:startPathPlanningTo({ x = line.ax, y = c.y, z = line.az }, { x = line.dx, z = line.dz })
@@ -424,6 +458,9 @@ function ADBaleCollectTask:updatePlanning(dt)
         if self.lastStartObstructed and self:startBackOff("find", "départ du chemin bloqué juste devant le tracteur") then
             return
         end
+        if self:startDirect("pas de chemin jusqu'à la ligne d'approche") then
+            return
+        end
         self:missed("pas de chemin jusqu'à la ligne d'approche")
         return
     end
@@ -456,7 +493,24 @@ end
 function ADBaleCollectTask:startApproach()
     self.stuckTimer = 0
     self.bestLateral = nil
+    local dist = self.target ~= nil and self:distanceTo(self.target) or 0
+    self.approachTimeout = ADBaleCollectTask.APPROACH_TIMEOUT + dist / (ADBaleCollectTask.FAR_SPEED / 3.6) * 1000
     self:setState("approach")
+end
+
+-- pas de chemin : tout droit vers la balle, sur la ligne qui passe par le tracteur ; le bras fait le reste
+function ADBaleCollectTask:startDirect(why)
+    if self.target == nil then
+        return false
+    end
+    local line = self:makeLine(self.target)
+    if line == nil then
+        return false
+    end
+    self.line = line
+    log("%s : %s : approche directe, tout droit vers la balle à %.0f m", self:name(), tostring(why), self:distanceTo(self.target))
+    self:startApproach()
+    return true
 end
 
 -- sur la ligne : point suivi devant le tracteur ; le bras passe sur la balle
@@ -481,7 +535,7 @@ function ADBaleCollectTask:updateApproach(dt)
         self:missed(string.format("bras passé à %.1f m de la balle", math.abs(self.bestLateral or lateral)))
         return
     end
-    if self.timer >= ADBaleCollectTask.APPROACH_TIMEOUT then
+    if self.timer >= (self.approachTimeout or ADBaleCollectTask.APPROACH_TIMEOUT) then
         self:holdVehicle(dt)
         self:missed("délai dépassé sur la ligne d'approche")
         return
@@ -501,6 +555,9 @@ function ADBaleCollectTask:updateApproach(dt)
     local cx = line.p0x + line.dx * (s + ADBaleCollectTask.LINE_LOOKAHEAD)
     local cz = line.p0z + line.dz * (s + ADBaleCollectTask.LINE_LOOKAHEAD)
     local speed = ADBaleCollectTask.APPROACH_SPEED
+    if along < -ADBaleCollectTask.FAR_DISTANCE then
+        speed = ADBaleCollectTask.FAR_SPEED
+    end
     -- sans contrôle de collision : les capteurs verraient la balle visée (et celles d'à côté)
     self.vehicle.ad.specialDrivingModule:driveToPoint(dt, { x = cx, y = ty, z = cz }, speed, false, 0.5, speed, true)
 end
@@ -535,7 +592,7 @@ function ADBaleCollectTask:startBackOff(after, why, force)
         self.backOffCount = 0
     end
     if not force and self.backOffCount >= ADBaleCollectTask.BACKOFF_MAX then
-        log("%s : %s, déjà %d recul(s) ici : essai compté comme raté", self:name(), tostring(why), self.backOffCount)
+        log("%s : %s, déjà %d recul(s) ici", self:name(), tostring(why), self.backOffCount)
         return false
     end
     self.backOffCount = self.backOffCount + 1

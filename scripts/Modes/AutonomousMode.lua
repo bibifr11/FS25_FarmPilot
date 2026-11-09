@@ -824,7 +824,7 @@ end
 
 -- bouton « Continuer » au point de ravitaillement (rien à charger, ou le joueur ne veut pas attendre) : on repart
 function AutonomousMode:continue()
-    if self.baleStage ~= nil and ADBaleCollect ~= nil and ADBaleCollect.onContinue(self) then return end -- remorque à balles : >> = dépôt tout de suite, voir AutonomousBales.lua
+    if ADBaleCollect ~= nil and ADBaleCollect.onContinue(self) then return end -- remorque à balles : >> = dépôt tout de suite (aussi sur le 1er trajet vers le champ), voir AutonomousBales.lua
     if self.refillStage == "load" and self.refillTask ~= nil and self.vehicle.ad.taskModule:getActiveTask() == self.refillTask then
         ADAutonomousManager.log("%s : plein arrêté par le joueur (Continuer)", tostring(self.vehicle.ad.stateModule:getName()))
         self.refillTask:continue()

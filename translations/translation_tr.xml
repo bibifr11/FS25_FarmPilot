@@ -44,31 +44,31 @@
 		<text name="input_ADCallDriver"								text="FP - Sürücüyü Arayın" />
 		<text name="input_ADGoToVehicle"								text="FP - Gelen araca git" />
 		<text name="input_ADNameDriver"								text="FP - Sürücü adını atayın" />
-		<text name="input_ADSetDestinationFilter"						text="FP - Destination filter" />
-		<text name="input_AD_FieldSpeed_up"							text="FP - Increase Field Speed" />
-		<text name="input_AD_FieldSpeed_down"							text="FP - Decrease Field Speed" />
+		<text name="input_ADSetDestinationFilter"						text="FP - Varış yeri filtresi" />
+		<text name="input_AD_FieldSpeed_up"							text="FP - Tarla Hızını Artır" />
+		<text name="input_AD_FieldSpeed_down"							text="FP - Tarla Hızını Azalt" />
 		<text name="input_ADIncLoopCounter"							text="FP - Döngü sayacını artırın" />
-		<text name="input_ADDecLoopCounter"							text="FP - Decrease loop counter" />
-		<text name="input_ADbunkerUnloadType"							text="FP - Unload to Trailer or BGA" />
+		<text name="input_ADDecLoopCounter"							text="FP - Döngü sayacını azalt" />
+		<text name="input_ADbunkerUnloadType"							text="FP - Römorka veya BGA'ya boşalt" />
 		<text name="input_ADParkVehicle"								text="FP - Aracı park et" />
-		<text name="input_ADSetParkDestination"						text="FP - assign 1st Destination for parking" />
-		<text name="input_ADRefuelVehicle"								text="FP - Refuel vehicle" />
-		<text name="input_ADRepairVehicle"								text="FP - Repair vehicle" />
+		<text name="input_ADSetParkDestination"						text="FP - Park için 1. Hedefi ata" />
+		<text name="input_ADRefuelVehicle"								text="FP - Aracı yakıt doldur" />
+		<text name="input_ADRepairVehicle"								text="FP - Aracı tamir et" />
 		<text name="input_ADSwapTargets"								text="FP - Hedefleri değiştir" />
-		<text name="input_ADStartHelper"								text="FP - Pass to AI/CP" />
-		<text name="input_ADToggleUsedHelper"							text="FP - Toggle AI/CP" />
-		<text name="input_AD_devAction"								text="FP - Developer Action" />
-		<text name="input_ADToggleAutomaticPickupTarget"				text="FP - Toggle automatic pickup target" />
-		<text name="input_ADToggleAutomaticUnloadTarget"				text="FP - Toggle automatic unload target" />
-		<text name="input_ADToggleLoadByFillLevel"						text="FP - Toggle loading by fill level" />
-		<text name="input_ADCopySettings"								text="FP - Copy settings" />
-		<text name="input_ADPasteSettings"								text="FP - Paste settings" />
-		<text name="input_ADCreateFieldPoints"							text="FP - Create Field Points" />
-		<text name="hud_avoidFruit"									text="AD: Meyvelerden kaçının" />
+		<text name="input_ADStartHelper"								text="FP - AI/CP'ye Devret" />
+		<text name="input_ADToggleUsedHelper"							text="FP - AI/CP'yi Değiştir/Aç-Kapat" />
+		<text name="input_AD_devAction"								text="FP - Geliştirici İşlemi" />
+		<text name="input_ADToggleAutomaticPickupTarget"				text="FP - Otomatik yükleme hedefini aç/kapat" />
+		<text name="input_ADToggleAutomaticUnloadTarget"				text="FP - Otomatik boşaltma hedefini aç/kapat" />
+		<text name="input_ADToggleLoadByFillLevel"						text="FP - Doluluk seviyesine göre yüklemeyi aç/kapat" />
+		<text name="input_ADCopySettings"								text="FP - Ayarları Kopyala" />
+		<text name="input_ADPasteSettings"								text="FP - Ayarları Yapıştır" />
+		<text name="input_ADCreateFieldPoints"							text="FP - Tarla Noktaları Oluştur" />
+		<text name="hud_avoidFruit"									text="AD: Meyvelerden/Mahsulden kaçının" />
 		<text name="hud_startHelper"									text="AD: AI/CP'ı varış noktasında başlatın" />
 		<text name="AD_parkVehicle_noPosSet"							text="Park yeri atanmadı. Lütfen halihazırda seçili olan hedefi sağ fare tuşu ile atayın." />
 		<text name="AD_parkVehicle_selected"							text="Seçilen park yeri:" />
-		<text name="AD_parkVehicle_deleted"							text="parking destination deleted!" />
+		<text name="AD_parkVehicle_deleted"							text="park hedefi silindi!" />
 		<text name="AD_Driver_of"										text="Sürücüsü" />
 		<text name="AD_has_reached"									text="ulaştı" />
 		<text name="AD_got_stuck"										text="sıkışmak" />
@@ -78,11 +78,11 @@
 		<text name="AD_No_Trailer"										text="dorse bulamadım" />
 		<text name="AD_No_Bunker"										text="Bunker silosu bulamadı" />
 		<text name="AD_No_Shovel"										text="bağlı bir kürek bulamadım" />
-		<text name="AD_No_Refuel_Station"								text="could not find refuel station" />
-		<text name="AD_No_Repair_Station"								text="could not find repair station for:" />
-		<text name="AD_Wrong_Mode_takeover_from_CP"					text="Wrong AD Mode to work together with CP" />
-		<text name="AD_Unable_to_start_AIJob"							text="Not able to start AI Helper" />
-		<text name="AD_AIJob_active"									text="AI Helper still active!" />
+		<text name="AD_No_Refuel_Station"								text="akaryakıt istasyonu bulunamadı" />
+		<text name="AD_No_Repair_Station"								text="şunun için tamir istasyonu bulunamadı:" />
+		<text name="AD_Wrong_Mode_takeover_from_CP"					text="CP ile birlikte çalışmak için yanlış AD Modu" />
+		<text name="AD_Unable_to_start_AIJob"							text="Yapay Zeka Yardımcısı başlatılamıyor" />
+		<text name="AD_AIJob_active"									text="Yapay Zeka Yardımcısı hâlâ aktif!" />
 		<text name="AD_MODE_DRIVETO"									text="Sürüş" />
 		<text name="AD_MODE_DELIVERTO"									text="Teslim etmek" />
 		<text name="AD_MODE_PICKUPANDDELIVER"							text="Toplama ve Teslim Etme" />
@@ -94,9 +94,9 @@
 		<text name="AD_lctrl_for_creation"								text="Oluşturmak için LCTRL" />
 		<text name="AD_lalt_for_deletion"								text="Silmek için LALT" />
 		<text name="AD_lshift_for_reverse"								text="RSHIFT geri sürüşü" />
-		<text name="AD_settings_copied"								text="Settings copied" />
-		<text name="AD_settings_pasted"								text="Settings pasted" />
-		<text name="AD_settings_clipboard_empty"						text="Copy settings first!" />
+		<text name="AD_settings_copied"								text="Ayarlar kopyalandı" />
+		<text name="AD_settings_pasted"								text="Ayarlar yapıştırıldı" />
+		<text name="AD_settings_clipboard_empty"						text="Önce ayarları kopyalayın!" />
 		<text name="gui_ad_Setting"									text="FarmPilot - Ayarlar" />
 		<text name="gui_ad_collisionHeigth"							text="Yerde çarpışma yüksekliği" />
 		<text name="gui_ad_collisionHeigth_tooltip"					text="Aracın önünde çarpışma algılaması için ayar. Sürüş sırasında diğer araçlar algılanmazsa, adım adım azaltın. (Varsayılan 2m)" />
@@ -139,14 +139,14 @@
 		<text name="gui_ad_parkInField_tooltip"						text="Bir biçerdöverin boşaltılmasından sonra - meyveye park edilmemişse" />
 		<text name="gui_ad_unloadFillLevel"							text="Doldurma seviyesini boşalt" />
 		<text name="gui_ad_unloadFillLevel_tooltip"					text="Biçerdöver boşaldıktan sonra doğrudan bu doldurma seviyesinde dağıtıma gidin." />
-		<text name="gui_ad_fpSiloEmptyWait" text="Loading stopped: leave after" />
-		<text name="gui_ad_fpSiloEmptyWait_tooltip" text="At the loading point, if the trailer already holds something and nothing more comes in for this time, the vehicle leaves with what it has. No: it waits until filled to the 'Unload fill level' setting (for example a truck at the field edge filled by an auger wagon). Less than 1 % left in the trailer counts as empty." />
-		<text name="gui_ad_fpSiloEmptyWait_off" text="No" />
-		<text name="gui_ad_fpSiloEmptyWait_15" text="15 s" />
-		<text name="gui_ad_fpSiloEmptyWait_30" text="30 s" />
-		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
-		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
-		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
+		<text name="gui_ad_fpSiloEmptyWait" text="Yükleme durduruldu: şu süreden sonra ayrıl" />
+		<text name="gui_ad_fpSiloEmptyWait_tooltip" text="Yükleme noktasında römorkta halihazırda bir şeyler varsa ve bu süre boyunca başka bir yük gelmezse araç mevcut yüküyle ayrılır. Hayır: 'Boşaltma doluluk seviyesi' ayarına kadar dolana kadar bekler (örneğin bir helezon vagon tarafından tarla kenarında doldurulan bir kamyon). Römorkta kalan %1'den az miktar boş kabul edilir." />
+		<text name="gui_ad_fpSiloEmptyWait_off" text="Hayır" />
+		<text name="gui_ad_fpSiloEmptyWait_15" text="15 sn" />
+		<text name="gui_ad_fpSiloEmptyWait_30" text="30 sn" />
+		<text name="gui_ad_fpSiloEmptyWait_60" text="1 dak" />
+		<text name="gui_ad_fpSiloEmptyWait_120" text="2 dak" />
+		<text name="gui_ad_fpSiloEmptyWait_300" text="5 dak" />
 		<text name="gui_ad_findDriver"									text="Sürücü Bul" />
 		<text name="gui_ad_findDriver_tooltip"							text="Sürücülere göre yakın ara (Hedefi yoksay)" />
 		<text name="gui_ad_gui_scale"									text="FarmPilot HUD için Gui ölçeği" />
@@ -336,7 +336,7 @@
         <text name="gui_ad_debugChannelRoadNetwork"					text="Yol ağı" />
         <text name="gui_ad_debugChannelBGA"							text="BGA Modu" />
         <text name="gui_ad_debugChannelTrains"							text="Trenler" />
-        <text name="gui_ad_debugChannelChaseDisplay"							text="Chase display (permanent)" />
+        <text name="gui_ad_debugChannelChaseDisplay"							text="Takip ekranı (kalıcı)" />
         <text name="gui_ad_debugChannelAll"							text="Her şey" />
         <text name="gui_ad_notificationHistoryTitle"					text="Bildirimler" />
         <text name="gui_ad_colorSettingsTitle"							text="Renk Atamaları" />
@@ -588,32 +588,32 @@
 		<text name="AD_autonomous_fetchBusy" text="« %s » ekipmanı başka bir araca bağlı" />
 		<text name="AD_autonomous_fetchOther" text="başka bir ekipman takılı: « %s » almak için bunu çıkarın veya « Ekipman » satırından « Takılı olan » seçeneğini seçin" />
 		<text name="AD_autonomous_fetchNoJoint" text="« %s » ekipmanı bu traktörün arka çeki demirine uymuyor (veya arka çeki demiri dolu)" />
-		<text name="AD_trailer_row" text="Trailer: %s" />
-		<text name="AD_trailer_rowNone" text="Trailer: the attached one" />
-		<text name="AD_trailer_listNone" text="The attached one" />
-		<text name="AD_trailer_fetchGo" text="going to fetch the trailer '%s'" />
-		<text name="AD_trailer_fetchDone" text="trailer '%s' attached, starting" />
-		<text name="AD_trailer_fetchFailed" text="the trailer '%s' could not be attached, stopping" />
-		<text name="AD_trailer_fetchNoPath" text="no path to the front of the trailer '%s': place the tractor in front of it, in line, and start again" />
-		<text name="AD_trailer_fetchMissed" text="attaching the trailer '%s' failed, stopped in front of it" />
-		<text name="AD_trailer_fetchBusy" text="the trailer '%s' is attached to another vehicle" />
-		<text name="AD_trailer_fetchOther" text="a trailer or implement is already attached: detach it to fetch '%s', or choose 'The attached one' on the 'Trailer' line" />
-		<text name="AD_trailer_fetchNoJoint" text="the trailer '%s' cannot be attached to the rear of this tractor (or the rear hitch is already in use)" />
-		<text name="AD_trailer_dropGo" text="job done: the trailer '%s' goes to its place, then the tractor to its own" />
-		<text name="gui_ad_trailerSwap_title" text="Trailer swap" />
-		<text name="gui_ad_trailerSwap_tooltip" text="Trailer swap at delivery" />
-		<text name="gui_ad_trailerSwap_info" text="At delivery, the full trailer is parked on a free place of the folder, then the tractor leaves with an empty trailer taken from another place. A place = a marker of the folder. Current setting: %s" />
-		<text name="gui_ad_trailerSwap_off" text="No (normal delivery)" />
-		<text name="gui_ad_trailerSwap_current" text="current setting" />
-		<text name="gui_ad_trailerSwap_folderValue" text="places: %d · free: %d · empty trailers: %d" />
-		<text name="gui_ad_trailerSwap_noFolder" text="No marker folder: create a folder and put one marker per place in it." />
-		<text name="AD_swap_go" text="full trailer '%s': parked on '%s', then the empty '%s'" />
-		<text name="AD_swap_done" text="empty trailer '%s' attached, back to work" />
-		<text name="AD_swap_noFree" text="trailer swap: no free place in '%s', normal delivery" />
-		<text name="AD_swap_noEmpty" text="trailer swap: no empty trailer in '%s', normal delivery" />
-		<text name="AD_swap_notOne" text="trailer swap: exactly one trailer must be attached, normal delivery" />
-		<text name="AD_swap_dropFailed" text="trailer swap: the full trailer could not be detached, stop" />
-		<text name="AD_swap_emptyGone" text="trailer swap: no empty trailer left in '%s', stop" />
+		<text name="AD_trailer_row" text="Römork: %s" />
+		<text name="AD_trailer_rowNone" text="Römork: takılı olan" />
+		<text name="AD_trailer_listNone" text="Takılı olan" />
+		<text name="AD_trailer_fetchGo" text="'%s' römorku almaya gidiliyor" />
+		<text name="AD_trailer_fetchDone" text="'%s' römorku takıldı, başlatılıyor" />
+		<text name="AD_trailer_fetchFailed" text="'%s' römorku takılamadı, durduruluyor" />
+		<text name="AD_trailer_fetchNoPath" text="'%s' römorkunun önüne giden yol yok: traktörü önüne, hizalı şekilde yerleştirin ve tekrar başlatın" />
+		<text name="AD_trailer_fetchMissed" text="'%s' römorkunu takma başarısız oldu, önünde durduruldu" />
+		<text name="AD_trailer_fetchBusy" text="'%s' römorku başka bir araçlara takılı" />
+		<text name="AD_trailer_fetchOther" text="Zaten bir römork veya ekipman takılı: '%s' römorkunu almak için bunu sökün veya 'Römork' satırından 'Takılı olan' seçeneğini seçin" />
+		<text name="AD_trailer_fetchNoJoint" text="'%s' römorku bu traktörün arkasına takılamaz (veya arka çeki demiri zaten kullanımda)" />
+		<text name="AD_trailer_dropGo" text="iş tamamlandı: '%s' römorku kendi yerine gidiyor, ardından traktör kendi yerine gidecek" />
+		<text name="gui_ad_trailerSwap_title" text="Römork Değişimi" />
+		<text name="gui_ad_trailerSwap_tooltip" text="Teslimatta römork değişimi" />
+		<text name="gui_ad_trailerSwap_info" text="Teslimat sırasında dolu römork klasörün boş bir yerine park edilir, ardından traktör başka bir yerden alınan boş bir römorkla ayrılır. Bir yer = klasörün bir işaretleyicisi. Mevcut ayar: %s" />
+		<text name="gui_ad_trailerSwap_off" text="Hayır (normal teslimat)" />
+		<text name="gui_ad_trailerSwap_current" text="mevcut ayar" />
+		<text name="gui_ad_trailerSwap_folderValue" text="yerler: %d · boş: %d · boş römorklar: %d" />
+		<text name="gui_ad_trailerSwap_noFolder" text="İşaretçi klasörü yok: bir klasör oluşturun ve içine yer başına bir işaretçi koyun." />
+		<text name="AD_swap_go" text="dolu römork '%s': '%s' üzerine park ediliyor, ardından boş '%s'" />
+		<text name="AD_swap_done" text="boş römork '%s' takıldı, işe geri dönülüyor" />
+		<text name="AD_swap_noFree" text="römork değişimi: '%s' içinde boş yer yok, normal teslimat" />
+		<text name="AD_swap_noEmpty" text="römork değişimi: '%s' içinde boş römork yok, normal teslimat" />
+		<text name="AD_swap_notOne" text="römork değişimi: tam olarak bir römork takılı olmalıdır, normal teslimat" />
+		<text name="AD_swap_dropFailed" text="römork değişimi: dolu römork sökülemedi, durduruluyor" />
+		<text name="AD_swap_emptyGone" text="römork değişimi: '%s' içinde boş römork kalmadı, durduruluyor" />
 		<text name="AD_fpFn_plow" text="Pulluk" />
 		<text name="AD_fpFn_cultivator" text="Kültivatör" />
 		<text name="AD_fpFn_discHarrow" text="Diskli Tırmık" />
@@ -698,37 +698,37 @@
 		<text name="AD_autonomous_sprayerEmpty" text="tank boş: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
 		<text name="AD_autonomous_dumpGo" text="tarla bitti: tankta kalan kısım « %s » konumunda büyük çuvallara (big bag) boşaltılıyor" />
 		<text name="AD_autonomous_dumpFailed" text="tankta kalan kısım « %s » konumuna boşaltılamadı (yer yok veya reddedildi): tankta tutuluyor" />
-		<text name="AD_autonomous_dumpParkGo" text="parking: first unloading the rest of the tank into big bags at « %s »" />
-		<text name="AD_autonomous_dumpKept" text="%s left in the tank: cannot be unloaded into big bags or no place found (see log)" />
+		<text name="AD_autonomous_dumpParkGo" text="park ediliyor: önce deponun geri kalanı '%s' konumundaki büyük çuvallara boşaltılıyor" />
+		<text name="AD_autonomous_dumpKept" text="depoda kalan %s: büyük çuvallara boşaltılamıyor veya uygun yer bulunamadı (günlüğe bakın)" />
 		<text name="AD_task_autonomous_dump" text="Kalan kısmı büyük çuvallara boşaltır" />
-		<text name="gui_ad_baleLoader_title" text="Bale loader settings" />
-		<text name="gui_ad_baleLoader_head" text="Loader: %s · Field: %s · Takes %s" />
-		<text name="gui_ad_baleLoader_round" text="round bales" />
-		<text name="gui_ad_baleLoader_square" text="square bales" />
-		<text name="gui_ad_baleLoader_both" text="round and square bales" />
-		<text name="gui_ad_baleLoader_noLoader" text="No bale loader on this row." />
-		<text name="gui_ad_baleLoader_wrap" text="Bales to collect" />
-		<text name="gui_ad_baleLoader_wrapAll" text="All" />
-		<text name="gui_ad_baleLoader_wrapWrapped" text="Wrapped only" />
-		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Unwrapped only" />
-		<text name="gui_ad_baleLoader_deposit" text="Drop-off point (sale or storage)" />
-		<text name="gui_ad_baleLoader_pickDeposit" text="Choose the drop-off point (Choose or double click), Back to return. At the top: near a selling point that takes bales." />
-		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Choose the drop-off point (Choose or double click), Back to return. No selling point for bales found: they will be left at the marker." />
-		<text name="gui_ad_baleLoader_sale" text="sale" />
-		<text name="gui_ad_baleLoader_needDeposit" text="Choose the drop-off point." />
-		<text name="gui_ad_baleLoader_tooltip" text="Bale loader settings" />
-		<text name="gui_ad_baleLoader_tooltipNext" text="Bale loader settings (next field)" />
-		<text name="AD_autonomous_baleLoaderTodo" text="settings of « %s » to validate for « %s » (orange gear), start refused" />
-		<text name="AD_autonomous_balesStart" text="collecting the bales of field %s (%d to collect)" />
-		<text name="AD_autonomous_balesNone" text="no more bales to collect on field %s" />
-		<text name="AD_autonomous_balesFull" text="loader full (%d bales): drop-off at « %s », then back to the field" />
-		<text name="AD_autonomous_balesLast" text="last bales (%d): drop-off at « %s »" />
-		<text name="AD_autonomous_balesBack" text="drop-off done, back to field « %s »" />
-		<text name="AD_autonomous_balesUnloadFailed" text="bales not dropped off at « %s » (see the log), waiting" />
-		<text name="AD_autonomous_balesNoWork" text="the bale loader arm does not come out, waiting" />
-		<text name="AD_autonomous_balesNoLoader" text="bale loader detached, waiting" />
-		<text name="AD_task_autonomous_bales" text="Collecting bales" />
-		<text name="AD_task_autonomous_baleUnload" text="Dropping off bales" />
+		<text name="gui_ad_baleLoader_title" text="Balya yükleyici ayarları" />
+		<text name="gui_ad_baleLoader_head" text="Yükleyici: %s · Tarla: %s · Alınan: %s" />
+		<text name="gui_ad_baleLoader_round" text="yuvarlak balyalar" />
+		<text name="gui_ad_baleLoader_square" text="kare balyalar" />
+		<text name="gui_ad_baleLoader_both" text="yuvarlak ve kare balyalar" />
+		<text name="gui_ad_baleLoader_noLoader" text="Bu satırda balya yükleyici yok." />
+		<text name="gui_ad_baleLoader_wrap" text="Toplanacak balyalar" />
+		<text name="gui_ad_baleLoader_wrapAll" text="Tümü" />
+		<text name="gui_ad_baleLoader_wrapWrapped" text="Yalnızca paketlenmiş" />
+		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Yalnızca paketlenmemiş" />
+		<text name="gui_ad_baleLoader_deposit" text="Bırakma noktası (satış veya depolama)" />
+		<text name="gui_ad_baleLoader_pickDeposit" text="Bırakma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Üst kısımda: balık kabul eden bir satış noktasının yakınında." />
+		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Bırakma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Balya için satış noktası bulunamadı: işaretçide bırakılacaklar." />
+		<text name="gui_ad_baleLoader_sale" text="satış" />
+		<text name="gui_ad_baleLoader_needDeposit" text="Bırakma noktasını seçin." />
+		<text name="gui_ad_baleLoader_tooltip" text="Balya yükleyici ayarları" />
+		<text name="gui_ad_baleLoader_tooltipNext" text="Balya yükleyici ayarları (sonraki tarla)" />
+		<text name="AD_autonomous_baleLoaderTodo" text="'%s' için '%s' ayarlarının doğrulanması gerekiyor (turuncu dişli), başlatma reddedildi" />
+		<text name="AD_autonomous_balesStart" text="%s tarlasının balyaları toplanıyor (toplanacak %d adet)" />
+		<text name="AD_autonomous_balesNone" text="%s tarlasında toplanacak başka balya kalmadı" />
+		<text name="AD_autonomous_balesFull" text="yükleyici dolu (%d balya): '%s' konumuna bırakılıyor, ardından tarlaya dönülüyor" />
+		<text name="AD_autonomous_balesLast" text="son balyalar (%d): '%s' konumuna bırakılıyor" />
+		<text name="AD_autonomous_balesBack" text="bırakma işlemi tamamlandı, '%s' tarlasına dönülüyor" />
+		<text name="AD_autonomous_balesUnloadFailed" text="balyalar '%s' konumuna bırakılamadı (günlüğe bakın), bekleniyor" />
+		<text name="AD_autonomous_balesNoWork" text="balya yükleyici kolu dışarı çıkmıyor, bekleniyor" />
+		<text name="AD_autonomous_balesNoLoader" text="balya yükleyici ayrılmış, bekleniyor" />
+		<text name="AD_task_autonomous_bales" text="Balyalar toplanıyor" />
+		<text name="AD_task_autonomous_baleUnload" text="Balyalar bırakılıyor" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="tankta hâlâ %s (%.0f L) var ve seçilen ürün %s: tankı boşaltın, başlatma reddedildi" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay son ara noktada yeniden başlatılamadı, bekleniyor" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->

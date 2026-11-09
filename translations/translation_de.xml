@@ -139,6 +139,14 @@
 		<text name="gui_ad_parkInField_tooltip"						text="Nach Drescher abladen im Feld parken - falls nicht in Frucht stehend." />
 		<text name="gui_ad_unloadFillLevel"							text="Abladen ab Level" />
 		<text name="gui_ad_unloadFillLevel_tooltip"					text="Nach Drescher abladen - direkt abfahren und nicht auf nächsten Drescher warten ab dieser Füllung." />
+		<text name="gui_ad_fpSiloEmptyWait" text="Beladung gestoppt: Abfahrt nach" />
+		<text name="gui_ad_fpSiloEmptyWait_tooltip" text="Wenn am Ladepunkt schon etwas geladen ist und in dieser Zeit nichts mehr dazukommt, fährt das Fahrzeug mit der aktuellen Ladung los. Nein: es wartet, bis der Wert 'Abladen ab Level' erreicht ist (zum Beispiel ein LKW am Feldrand, der von einem Überladewagen befüllt wird). Ein Rest unter 1 % gilt als leer." />
+		<text name="gui_ad_fpSiloEmptyWait_off" text="Nein" />
+		<text name="gui_ad_fpSiloEmptyWait_15" text="15 s" />
+		<text name="gui_ad_fpSiloEmptyWait_30" text="30 s" />
+		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
+		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
+		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
 		<text name="gui_ad_findDriver"									text="Abfahrer finden" />
 		<text name="gui_ad_findDriver_tooltip"							text="Suche nach nahestem Abfahrer (Zieleinstellung ignorieren)" />
 		<text name="gui_ad_gui_scale"									text="GUI-Skalierung des FarmPilot-HUDs" />
@@ -446,13 +454,13 @@
 		<text name="gui_ad_autonomousNoCp_wait" text="Warten" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Helfer des Spiels" />
 		<text name="gui_ad_dirtRoads" text="Tertiärstraßen" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Tertiärstraßen-Punkte des Netzes (rosa und violette Linien im Editor). Erlaubt: nur genutzt, wenn sie Zeit sparen, mit begrenzter Geschwindigkeit. Nie: nur wenn es keine andere Strecke gibt. Auto: nie für LKW und Sattelzüge, erlaubt für Traktoren und andere Fahrzeuge" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Tertiärstraßen-Punkte des Netzes (rosa und violette Linien im Editor). Nur um ein Ziel darauf oder an ihrem Ende zu erreichen (oder von dort wegzufahren), nie als Abkürzung. Erlaubt: mit begrenzter Geschwindigkeit. Nie: nur wenn es keine andere Strecke gibt. Auto: nie für LKW und Sattelzüge, erlaubt für Traktoren und andere Fahrzeuge" />
 		<text name="gui_ad_dirtRoads_auto" text="Auto (LKW: nie)" />
 		<text name="gui_ad_dirtRoads_never" text="Nie" />
 		<text name="gui_ad_dirtRoads_allowed" text="Erlaubt" />
 		<text name="gui_ad_secondaryRoads" text="Nebenstrecken" />
-		<text name="gui_ad_secondaryRoads_tooltip" text="Nebenstrecken-Punkte des Netzes. Auto: wie das originale AutoDrive (nur genutzt, wenn die Hauptstrecke viel länger ist). Erlaubt: genutzt, sobald sie Zeit sparen. Nie: nur wenn es keine andere Strecke gibt" />
-		<text name="gui_ad_secondaryRoads_auto" text="Auto (Original)" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Nebenstrecken-Punkte des Netzes. Auto: Abkürzungen für Traktoren, sobald sie Zeit sparen; LKW und Sattelzüge wie das originale AutoDrive (nur wenn die Hauptstrecke viel länger ist). Erlaubt: genutzt, sobald sie Zeit sparen. Nie: nur wenn es keine andere Strecke gibt" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (LKW: Original)" />
 		<text name="AD_cropStuck" text="%s %s: steckt im Bestand fest (%s), kein freier Weg hinaus: bitte von Hand befreien" />
 		<text name="AD_foldWait" text="%s %s: warte, bis %s eingeklappt ist (%d %%)%s, fahre nicht los" />
 		<text name="gui_ad_dirtRoadSpeed" text="Höchstgeschwindigkeit auf Tertiärstraßen" />
@@ -544,6 +552,7 @@
 		<text name="AD_autonomous_none" text="kein Courseplay-Kurs mit %s m auf Feld %s, wartet" />
 		<text name="AD_autonomous_several" text="%s Kurse mit %s m auf Feld %s, bitte im Fenster Autonome Kurse wählen (Strg+Alt+Num 5), wartet" />
 		<text name="AD_autonomous_noField" text="hier ist kein Feld, wartet" />
+		<text name="AD_autonomous_noWindrow" text="Ballenpresse: kein Courseplay-Kurs auf Feld %s liegt auf den Schwaden, wartet" />
 		<text name="AD_autonomous_noWidth" text="Arbeitsbreite unbekannt, wartet" />
 		<text name="AD_autonomous_noTool" text="Autonom-Modus: kein Arbeitsgerät angehängt" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay nicht gefunden: Helfer des Spiels auf Feld %s gestartet" />
@@ -579,6 +588,32 @@
 		<text name="AD_autonomous_fetchBusy" text="das Gerät « %s » hängt an einem anderen Fahrzeug" />
 		<text name="AD_autonomous_fetchOther" text="ein anderes Gerät ist angehängt: abkuppeln, um « %s » zu holen, oder « Das angehängte » in der Zeile « Gerät » wählen" />
 		<text name="AD_autonomous_fetchNoJoint" text="das Gerät « %s » passt nicht an die hintere Kupplung dieses Traktors (oder sie ist belegt)" />
+		<text name="AD_trailer_row" text="Anhänger: %s" />
+		<text name="AD_trailer_rowNone" text="Anhänger: der angehängte" />
+		<text name="AD_trailer_listNone" text="Der angehängte" />
+		<text name="AD_trailer_fetchGo" text="holt den Anhänger '%s'" />
+		<text name="AD_trailer_fetchDone" text="Anhänger '%s' angehängt, Start" />
+		<text name="AD_trailer_fetchFailed" text="der Anhänger '%s' konnte nicht angehängt werden, Stopp" />
+		<text name="AD_trailer_fetchNoPath" text="kein Weg bis vor den Anhänger '%s': Traktor davor in Linie stellen und neu starten" />
+		<text name="AD_trailer_fetchMissed" text="Anhängen von '%s' fehlgeschlagen, Stopp vor dem Anhänger" />
+		<text name="AD_trailer_fetchBusy" text="der Anhänger '%s' hängt an einem anderen Fahrzeug" />
+		<text name="AD_trailer_fetchOther" text="ein Anhänger oder Gerät ist schon angehängt: abhängen, um '%s' zu holen, oder 'Der angehängte' in der Zeile 'Anhänger' wählen" />
+		<text name="AD_trailer_fetchNoJoint" text="der Anhänger '%s' passt nicht an die Heckkupplung dieses Traktors (oder sie ist schon belegt)" />
+		<text name="AD_trailer_dropGo" text="Arbeit fertig: der Anhänger '%s' fährt an seinen Platz, dann der Traktor an seinen" />
+		<text name="gui_ad_trailerSwap_title" text="Anhängertausch" />
+		<text name="gui_ad_trailerSwap_tooltip" text="Anhängertausch bei der Ablieferung" />
+		<text name="gui_ad_trailerSwap_info" text="Bei der Ablieferung wird der volle Anhänger auf einem freien Platz des Ordners abgestellt, dann fährt der Traktor mit einem leeren Anhänger von einem anderen Platz weiter. Ein Platz = ein Marker des Ordners. Aktuelle Einstellung: %s" />
+		<text name="gui_ad_trailerSwap_off" text="Nein (normale Ablieferung)" />
+		<text name="gui_ad_trailerSwap_current" text="aktuelle Einstellung" />
+		<text name="gui_ad_trailerSwap_folderValue" text="Plätze: %d · frei: %d · leere Anhänger: %d" />
+		<text name="gui_ad_trailerSwap_noFolder" text="Kein Markerordner: erstelle einen Ordner mit einem Marker pro Platz." />
+		<text name="AD_swap_go" text="voller Anhänger '%s': abgestellt auf '%s', dann der leere '%s'" />
+		<text name="AD_swap_done" text="leerer Anhänger '%s' angehängt, weiter mit der Arbeit" />
+		<text name="AD_swap_noFree" text="Anhängertausch: kein freier Platz in '%s', normale Ablieferung" />
+		<text name="AD_swap_noEmpty" text="Anhängertausch: kein leerer Anhänger in '%s', normale Ablieferung" />
+		<text name="AD_swap_notOne" text="Anhängertausch: genau ein Anhänger muss angehängt sein, normale Ablieferung" />
+		<text name="AD_swap_dropFailed" text="Anhängertausch: der volle Anhänger konnte nicht abgehängt werden, Stopp" />
+		<text name="AD_swap_emptyGone" text="Anhängertausch: kein leerer Anhänger mehr in '%s', Stopp" />
 		<text name="AD_fpFn_plow" text="Pflug" />
 		<text name="AD_fpFn_cultivator" text="Grubber" />
 		<text name="AD_fpFn_discHarrow" text="Scheibenegge" />
@@ -601,6 +636,7 @@
 		<text name="AD_fpFn_baler" text="Ballenpresse" />
 		<text name="AD_fpFn_balerSquare" text="Quaderballenpresse" />
 		<text name="AD_fpFn_balerRound" text="Rundballenpresse" />
+		<text name="AD_fpFn_baleLoader" text="Ballensammelwagen" />
 		<text name="gui_ad_autonomous_title" text="Autonome Kurse" />
 		<text name="gui_ad_autonomous_field" text="Feld %s" />
 		<text name="gui_ad_autonomous_fields" text="Felder %s" />
@@ -662,7 +698,37 @@
 		<text name="AD_autonomous_sprayerEmpty" text="Tank leer: Befüllen bei « %s », dann zurück zum Feld" />
 		<text name="AD_autonomous_dumpGo" text="Feld fertig: Resttank wird bei « %s » in Big Bags entleert" />
 		<text name="AD_autonomous_dumpFailed" text="Resttank bei « %s » nicht entleert (kein Platz oder abgelehnt): bleibt im Tank" />
+		<text name="AD_autonomous_dumpParkGo" text="Parken: zuerst Resttank in Big Bags bei « %s » entleeren" />
+		<text name="AD_autonomous_dumpKept" text="%s bleibt im Tank: keine Entleerung in Big Bags möglich oder kein Ort gefunden (siehe Log)" />
 		<text name="AD_task_autonomous_dump" text="Entleert den Rest in Big Bags" />
+		<text name="gui_ad_baleLoader_title" text="Ballensammelwagen-Einstellungen" />
+		<text name="gui_ad_baleLoader_head" text="Wagen: %s · Feld: %s · Nimmt %s" />
+		<text name="gui_ad_baleLoader_round" text="Rundballen" />
+		<text name="gui_ad_baleLoader_square" text="Quaderballen" />
+		<text name="gui_ad_baleLoader_both" text="Rund- und Quaderballen" />
+		<text name="gui_ad_baleLoader_noLoader" text="Kein Ballensammelwagen in dieser Zeile." />
+		<text name="gui_ad_baleLoader_wrap" text="Zu sammelnde Ballen" />
+		<text name="gui_ad_baleLoader_wrapAll" text="Alle" />
+		<text name="gui_ad_baleLoader_wrapWrapped" text="Nur gewickelte" />
+		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Nur ungewickelte" />
+		<text name="gui_ad_baleLoader_deposit" text="Abladestelle (Verkauf oder Lager)" />
+		<text name="gui_ad_baleLoader_pickDeposit" text="Abladestelle wählen (Wählen oder Doppelklick), Zurück zum Verlassen. Oben: in der Nähe einer Verkaufsstelle, die Ballen annimmt." />
+		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Abladestelle wählen (Wählen oder Doppelklick), Zurück zum Verlassen. Keine Verkaufsstelle für Ballen gefunden: sie werden am Marker abgelegt." />
+		<text name="gui_ad_baleLoader_sale" text="Verkauf" />
+		<text name="gui_ad_baleLoader_needDeposit" text="Abladestelle wählen." />
+		<text name="gui_ad_baleLoader_tooltip" text="Ballensammelwagen-Einstellungen" />
+		<text name="gui_ad_baleLoader_tooltipNext" text="Ballensammelwagen-Einstellungen (nächstes Feld)" />
+		<text name="AD_autonomous_baleLoaderTodo" text="Einstellungen von « %s » für « %s » bestätigen (oranges Zahnrad), Start verweigert" />
+		<text name="AD_autonomous_balesStart" text="Ballen von Feld %s werden gesammelt (%d zu sammeln)" />
+		<text name="AD_autonomous_balesNone" text="keine Ballen mehr auf Feld %s" />
+		<text name="AD_autonomous_balesFull" text="Wagen voll (%d Ballen): Abladen bei « %s », dann zurück zum Feld" />
+		<text name="AD_autonomous_balesLast" text="letzte Ballen (%d): Abladen bei « %s »" />
+		<text name="AD_autonomous_balesBack" text="abgeladen, zurück zum Feld « %s »" />
+		<text name="AD_autonomous_balesUnloadFailed" text="Ballen bei « %s » nicht abgeladen (siehe Log), wartet" />
+		<text name="AD_autonomous_balesNoWork" text="der Greifarm des Ballensammelwagens fährt nicht aus, wartet" />
+		<text name="AD_autonomous_balesNoLoader" text="Ballensammelwagen abgekoppelt, wartet" />
+		<text name="AD_task_autonomous_bales" text="Sammelt Ballen" />
+		<text name="AD_task_autonomous_baleUnload" text="Lädt Ballen ab" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="der Tank enthält noch %s (%.0f L) und das gewählte Produkt ist %s: Tank leeren, Start verweigert" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay konnte nicht am letzten Wegpunkt neu starten, wartet" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->

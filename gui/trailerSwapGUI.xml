@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+  FarmPilot : fenêtre « Échange de bennes » (roue dentée de la ligne « Remorque ») : pas d'échange, ou le dossier
+  de marqueurs des places. Même forme que baleLoaderSettingsGUI.xml ; le code est dans scripts/Gui/TrailerSwapGUI.lua.
+-->
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer"/>
+    <Bitmap profile="dialogFullscreenBg" />
+    <GuiElement profile="fs25_dialogBg" size="900px 600px">
+        <ThreePartBitmap profile="fp_dialogBgMiddleSmall"/>
+        <ThreePartBitmap profile="fp_dialogBgTopSmall"/>
+        <ThreePartBitmap profile="fp_dialogBgBottom"/>
+
+        <BoxLayout profile="ad_common_dialogContentContainer">
+            <Text profile="ad_common_dialogTitle" text="$l10n_gui_ad_trailerSwap_title"/>
+
+            <ThreePartBitmap profile="ad_common_dialogTitleLineSeparator"/>
+
+            <BoxLayout profile="ad_common_hBox" height="90px">
+                <Text profile="ad_common_dialogText" id="infoText" text="" textAutoWidth="false" width="100%" textMaxNumLines="4"/>
+            </BoxLayout>
+
+            <BoxLayout absoluteSizeOffset="40px 230px" margin="0 0 0 10px">
+                <SmoothList id="settingsList" profile="ad_common_list" onDoubleClick="onDoubleClick">
+                    <ListItem profile="ad_common_listItem">
+                        <Text name="listItemText" profile="ad_common_listItemText"/>
+                        <Text name="listItemValue" profile="ad_common_listItemText" width="100%" textAlignment="right"/>
+                    </ListItem>
+                </SmoothList>
+
+                <ThreePartBitmap profile="ad_common_listSliderBox">
+                    <Slider profile="ad_common_listSlider" dataElementId="settingsList" />
+                </ThreePartBitmap>
+            </BoxLayout>
+
+            <BoxLayout profile="ad_common_dialogButtonBox">
+                <Button profile="buttonOK" text="$l10n_gui_ad_seeder_choose" onClick="onClickChoose" />
+                <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+                <Button profile="buttonBack" text="$l10n_button_back" onClick="onClickBack" />
+            </BoxLayout>
+        </BoxLayout>
+    </GuiElement>
+</GUI>

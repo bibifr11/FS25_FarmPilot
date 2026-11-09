@@ -5,7 +5,7 @@
 -- déchargement, conducteur au volant), on attend derrière lui. Branché par la dernière ligne de
 -- ObstacleDetourModule.lua et de AvoidModule.lua.
 --
--- Demande Fabien 08/11 (13:30 UTC) : le Volvo FH16 a voulu contourner un tracteur + remorque arrêté sur le
+-- (08/11) Le Volvo FH16 a voulu contourner un tracteur + remorque arrêté sur le
 -- pont-bascule au lieu d'attendre derrière.
 --
 -- Pourquoi : ObstacleDetourModule traite un véhicule arrêté devant comme un obstacle fixe dès qu'il reste

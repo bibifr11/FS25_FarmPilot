@@ -1,9 +1,22 @@
--- forage harvester, strict, no route found: a forward-only route through the cut strips to the point behind the
--- harvester, arriving in its direction (owner, 23/10: "on fait le tour du champ par l'interieur"). A search over
--- poses (position + 16 headings): straight steps and arcs at the turn radius only, never reversing, every meter checked
--- free of crop over the train half width with its centre on the field. When the U-turn has no room the search finds
--- the loop around through the strips by itself. Runs over several frames (BUDGET ms each).
+-- ============================================================================================================
+-- FarmPilot : BandTourModule.lua
+-- Tour du champ par les bandes coupées (ADBandTour). ENSILEUSE seulement (benne qui roule à côté d'elle).
+--
+-- Ensileuse, réglage strict, aucun trajet trouvé : un trajet en marche avant seulement, par les bandes coupées,
+-- jusqu'au point derrière l'ensileuse, en arrivant dans son sens (23/10 : faire le tour du champ par l'intérieur).
+-- Recherche sur des poses (position + 16 caps) : pas droits et arcs au rayon de braquage seulement, jamais de recul,
+-- chaque mètre contrôlé sans culture sur la demi-largeur de l'attelage, son centre sur le champ. Quand le demi-tour
+-- n'a pas la place, la recherche trouve toute seule la boucle par les bandes. Se fait sur plusieurs images (BUDGET ms
+-- chacune) ; estimation : la vraie distance par les bandes (ADBandRoute) quand elle est connue.
+--
+-- Branché par : PathFinderModuleBand.lua (startBandTour : start ; updateBandTour : step).
+-- ============================================================================================================
+
 ADBandTour = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADBandTour.HEADINGS = 16
 ADBandTour.STEP = 2 -- m of a straight step
 ADBandTour.SAMPLE = 0.5 -- m between map samples of the disc
@@ -18,6 +31,9 @@ ADBandTour.START_FREE = 3 -- m from the start not checked (the train stands ther
 ADBandTour.TURN_COST = 1.1 -- an arc costs a little more than a straight step
 ADBandTour.NO_BAND_PENALTY = 30 -- m added to the estimate where the strips do not reach
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local function clock()
     if getTimeSec ~= nil then
         return getTimeSec() * 1000
@@ -25,6 +41,9 @@ local function clock()
     return os.clock() * 1000
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Carte : culture et champ (lecture remplacée dans les tests), estimation de la distance restante
+-- ------------------------------------------------------------------------------------------------------------
 -- map readers (replaced in the tests)
 function ADBandTour.cropAt(x, z)
     return PathFinderModule.getMapCropAt(x, z) ~= 0
@@ -47,6 +66,9 @@ function ADBandTour.defaultEstimate(tour, x, z)
     return straight
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils : tas binaire de la liste ouverte
+-- ------------------------------------------------------------------------------------------------------------
 local function heapPush(heap, item)
     heap[#heap + 1] = item
     local i = #heap
@@ -85,6 +107,9 @@ local function heapPop(heap)
     return top
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Départ de la recherche
+-- ------------------------------------------------------------------------------------------------------------
 -- start pose x, z, heading (rad, direction sin/cos), target tx, tz and arrival heading th, turn radius, train half width
 function ADBandTour.start(x, z, heading, tx, tz, th, radius, halfWidth, flood)
     local tour = {sx = x, sz = z, tx = tx, tz = tz, th = th, radius = radius, flood = flood,
@@ -110,6 +135,9 @@ function ADBandTour.start(x, z, heading, tx, tz, th, radius, halfWidth, flood)
     return tour
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- L'attelage tient-il ici ? Mouvements possibles (droit, arc à gauche, arc à droite)
+-- ------------------------------------------------------------------------------------------------------------
 local function sampleBlocked(tour, si, sj)
     local key = si * 1000003 + sj
     local v = tour.samples[key]
@@ -172,6 +200,9 @@ local function angleDiff(a, b)
     return math.abs(d)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale : la recherche (sur plusieurs images)
+-- ------------------------------------------------------------------------------------------------------------
 -- runs the search for budget ms (nil: to the end). Returns true when done; tour.path holds the points if found
 function ADBandTour.step(tour, budget)
     if tour.done then

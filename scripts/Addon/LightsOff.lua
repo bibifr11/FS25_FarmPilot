@@ -1,11 +1,25 @@
--- Moteur coupé par AutoDrive : seuls les phares de base restent allumés
--- (s'ils l'étaient déjà), puis les feux sont remis comme avant au redémarrage du moteur
+-- ============================================================================================================
+-- FarmPilot : LightsOff.lua
+-- Addon : feux du véhicule quand AutoDrive coupe le moteur.
+--
+-- Règle : moteur coupé par AutoDrive : seuls les phares de base restent allumés (s'ils l'étaient déjà), puis les
+-- feux sont remis comme avant au redémarrage du moteur. AutoDrive qui s'arrête gère lui-même les feux.
+--
+-- Branché par : AutoDriveAddon.lua (install au chargement de la carte : enveloppe AutoDrive.updateAutoDriveLights,
+-- appelée à chaque image ; TurnLightsBends.lua l'enveloppe ensuite à son tour).
+-- ============================================================================================================
 
 ADAddonLightsOff = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 -- Bit 0 du masque = phares de base (touche L)
 ADAddonLightsOff.HEADLIGHTS_MASK = 1
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local function getLightsState(vehicle)
     local spec = vehicle.spec_lights
     return {
@@ -37,6 +51,9 @@ local function getParkedState(saved)
     }
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Mise en place (au chargement de la carte, par AutoDriveAddon.lua)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonLightsOff.install(autoDrive)
     local original = autoDrive.updateAutoDriveLights
     if original == nil then
@@ -79,4 +96,7 @@ function ADAddonLightsOff.install(autoDrive)
 
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 ADAddon.addModule(ADAddonLightsOff)

@@ -77,7 +77,7 @@ function FollowVehicleTask:getBreadCrumbDistanceToEnd(index)
 end
 
 function FollowVehicleTask:update(dt)
-    -- owner 25/10 15:12: the harvester or the 1st comes toward this follower: it steps aside (StepAsideTask) and comes back
+    -- 25/10 15:12: the harvester or the 1st comes toward this follower: it steps aside (StepAsideTask) and comes back
     if not self.setFinishedNext and StepAsideTask ~= nil and StepAsideTask.hook(self.vehicle, self.targetVehicle, dt) then
         return
     end

@@ -1,10 +1,25 @@
--- Y manoeuvre at the end of a row (owner 25/10 19:14, his drawing: red forward, blue reverse, green forward): forward on
--- a diagonal away from the new row (red), a long straight reverse back along that diagonal into the open field (blue),
--- then forward at full lock into the new row beside the harvester and straight on to settle the trailer (green).
--- Several diagonals, leads and reverse lengths are tried: the candidates are sorted by how close they end to the place
--- beside the harvester's new row, and the first one on field ground without crop and clear of fixed obstacles is kept.
+-- ============================================================================================================
+-- FarmPilot : YTurn.lua
+-- Manœuvre en Y en bout de rang, pour la benne à côté de l'ensileuse (dessin du 25/10 19:14 : rouge en avant, bleu
+-- en arrière, vert en avant).
+--
+-- Rouge : en avant sur une diagonale qui s'éloigne du nouveau rang ; bleu : long recul droit le long de cette
+-- diagonale, vers le champ libre ; vert : en avant, braquage à fond, dans le nouveau rang à côté de l'ensileuse, puis
+-- tout droit pour placer la remorque.
+--
+-- Règle : plusieurs diagonales, longueurs droites et longueurs de recul sont essayées ; les variantes sont triées
+-- selon la distance entre leur fin et la place à côté du nouveau rang de l'ensileuse, et la première sur sol de
+-- champ, sans culture et sans obstacle fixe est gardée (une variante vérifiée par image).
+--
+-- Branché par : HandleHarvesterTurnTask.lua (tryNextTurn, 4e demi-tour essayé). findObstacle sert aussi à
+-- SquareTurn.lua (chargé après).
+-- ============================================================================================================
+
 YTurn = ADInheritsFrom(AbstractTurn)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 YTurn.ANGLES = {0, 15, 30, 45, 60}       -- deg turned first (the diagonal), away from the new row or toward it
 YTurn.LEADS = {0, 5, 10}                 -- m straight on along the diagonal
 YTurn.BACKS = {15, 20, 25, 30, 40, 50}   -- m straight back along the diagonal
@@ -18,6 +33,9 @@ YTurn.STRAIGHTEN = 0.75                  -- share of the train length driven str
 YTurn.OBSTACLE_MARGIN = 0.3              -- m added to the train half width for the obstacle boxes
 YTurn.MIN_RADIUS = 5                     -- m
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création, interface des demi-tours (AbstractTurn)
+-- ------------------------------------------------------------------------------------------------------------
 function YTurn:new(turnParameters)
     local o = YTurn:create()
     o.generationStep = 0
@@ -50,6 +68,10 @@ function YTurn:getWayPoints()
     return self.path
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Repère de départ et mesures
+-- ------------------------------------------------------------------------------------------------------------
+--[==[ Mis de côté (09/11) : inutilisé
 local function wrapAngle(a)
     while a > math.pi do
         a = a - 2 * math.pi
@@ -59,6 +81,7 @@ local function wrapAngle(a)
     end
     return a
 end
+]==]
 
 -- frame of the start: f = forward, l = left (AutoDrive: a vehicle's local +X is its left side), angles from f toward l
 function YTurn:getFrame()
@@ -68,6 +91,12 @@ function YTurn:getFrame()
     local g = {x = p.targetDir.z.x, z = p.targetDir.z.z}
     local goal = math.atan2(g.x * l.x + g.z * l.z, g.x * f.x + g.z * f.z)
     return f, l, goal
+end
+
+function YTurn:toWorld(u, v)
+    local p = self.turnParameters
+    local f, l = self:getFrame()
+    return p.startPosition.x + u * f.x + v * l.x, p.startPosition.z + u * f.z + v * l.z
 end
 
 function YTurn:getRadius()
@@ -84,6 +113,9 @@ function YTurn:getIdealEnd()
     return {x = p.targetPosition.x, z = p.targetPosition.z}
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Variantes
+-- ------------------------------------------------------------------------------------------------------------
 -- the pose after the three legs in the start frame, without building the points: u along f, v along l, heading h (rad)
 -- s: sense of the first arc (+1 left), t: sense of the last arc, delta: angle of the last arc (rad). nil if the last arc
 -- would be too short or too long
@@ -109,12 +141,6 @@ function YTurn:endPose(angleDeg, s, lead, back, t, goal)
     u, v = u + straight * math.cos(h), v + straight * math.sin(h)
     local length = R * math.abs(a) + lead + back + R * delta + straight
     return {u = u, v = v, h = h, a = a, delta = delta, straight = straight, length = length}
-end
-
-function YTurn:toWorld(u, v)
-    local p = self.turnParameters
-    local f, l = self:getFrame()
-    return p.startPosition.x + u * f.x + v * l.x, p.startPosition.z + u * f.z + v * l.z
 end
 
 function YTurn:buildCandidates()
@@ -159,6 +185,9 @@ function YTurn:buildCandidates()
     self.ideal = ideal
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Points du trajet
+-- ------------------------------------------------------------------------------------------------------------
 local function addPoint(points, x, z, reverse)
     local y = AutoDrive:getTerrainHeightAtWorldPos(x, z) or 0
     local wp = {x = x, y = y, z = z}
@@ -231,6 +260,9 @@ function YTurn:buildPoints(c)
     return points
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Obstacles fixes sur le trajet (aussi pour SquareTurn)
+-- ------------------------------------------------------------------------------------------------------------
 -- first fixed obstacle (hedge, trees, wall, learned blocked zone) along the points; vehicles are left to the task's own
 -- collision check. Returns x, z of the segment or nil
 function YTurn.findObstacle(vehicle, points)
@@ -260,6 +292,9 @@ function YTurn.findObstacle(vehicle, points)
     return nil
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale : une variante vérifiée par image
+-- ------------------------------------------------------------------------------------------------------------
 local function reasonKey(why)
     why = tostring(why)
     for _, key in ipairs({"hors du champ", "culture", "obstacle"}) do

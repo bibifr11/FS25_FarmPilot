@@ -3,9 +3,9 @@
 -- Complément du repli des outils d'AutoDrive (AutoDrive:onUpdate dans Specialization.lua, AutoDrive.foldAllImplements
 -- et AutoDrive.getAllImplementsFolded dans AutoDriveUtilFuncs.lua, réglage « Replier les outils »).
 --
--- Demande Fabien 08/11 13:42 : « Faut regarder les fermetures des outils, des fois on part alors qu'ils ne sont pas
--- fermés ! Patientons ! »
--- Demande Fabien 08/11 13:43 (photo 19:54) : la rampe du Case IH Patriot 4450 se replie mal, reste à la verticale,
+-- (08/11) Vérifier la fermeture des outils avant de partir : le tracteur partait parfois alors qu'ils n'étaient
+-- pas fermés.
+-- (08/11) La rampe du Case IH Patriot 4450 se replie mal, reste à la verticale,
 -- très haute, et accroche la porte du hangar sur le trajet vers G_Epandeur.
 --
 -- Règle : à chaque départ (FarmPilot lancé, outil attelé, fin de chargement ou de déchargement), le tracteur reste

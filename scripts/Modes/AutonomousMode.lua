@@ -1,7 +1,64 @@
--- FarmPilot : mode « Autonome » = mode Conduite, puis à l'arrivée le parcours Courseplay
--- de la largeur exacte de l'outil (voir ADAutonomousManager) ; sinon arrêt et attente.
+-- ============================================================================================================
+-- FarmPilot : AutonomousMode.lua
+-- Mode « Autonome » = mode Conduite, puis à l'arrivée le parcours Courseplay de la largeur exacte de l'outil (voir
+-- AutonomousManager.lua) ; sinon arrêt et attente.
+--
+-- Règle :
+-- - Départ refusé tant que le semoir, l'épandeur ou la remorque à balles de la ligne Outil (ou Outil suivant) n'est
+--   pas réglé (roue dentée), ou sans outil de travail attelé ni outil choisi.
+-- - (07/11) outil choisi dans le HUD et pas encore attelé : le chauffeur va l'atteler d'abord (par le réseau, puis
+--   devant l'outil, marche arrière, attelage), puis part au champ.
+-- - (08/11) semoir ou épandeur réglé pas plein : plein à sa zone de ravitaillement d'abord, comme le mode
+--   Chargement ; vide au champ (Courseplay s'arrête) : sortie du champ, plein, retour, Courseplay repart au dernier
+--   point.
+-- - À l'arrivée : le parcours choisi (AutonomousManager.lua), ou l'ouvrier du jeu si Courseplay est absent (réglage
+--   « Autonome sans Courseplay »), sinon arrêt et attente avec un message.
+-- - (07/11) champ fini : champ suivant s'il y en a un (outil suivant changé d'abord si besoin) ; sinon l'outil est
+--   posé à sa place de parking, puis le tracteur va à la sienne.
+--
+-- Branché par : Specialization.lua (AutonomousMode:new pour le mode MODE_AUTONOMOUS), ExternalInterface.lua (champ
+-- fini : goToNextField, parkWithToolDrop ; Courseplay arrêté cuve vide : onCpEmpty), InputManager.lua (bouton
+-- « Continuer »), AutonomousParkButton.lua (parkWithToolDrop). AutonomousRefill.lua, chargé après ce fichier,
+-- enveloppe startRefill, startRefillLoad, monitorRefill, continue, handleRefillStage et onCpEmpty.
+-- SprayerManager.lua et AutonomousSprayerDump.lua sont appelés par une ligne chacun, de même que
+-- BaleLoaderManager.lua et AutonomousBales.lua (remorque à balles : notre ramassage à l'arrivée au champ).
+-- ============================================================================================================
+
 AutonomousMode = ADInheritsFrom(AbstractMode)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
+-- aller atteler l'outil (voir fetchRoutePoint, monitorFetchRoute)
+AutonomousMode.FETCH_MARKER_NEAR = 25   -- m : l'outil est à sa place si son point d'attelage est à moins de ça du point de la place
+AutonomousMode.FETCH_ROUTE_RANGE = 40   -- m : point du réseau cherché à moins de ça de l'avant de l'outil
+AutonomousMode.FETCH_ROUTE_CLEAR = 8    -- m : ce point du réseau est au moins à ça devant l'outil (pas sous l'outil)
+AutonomousMode.FETCH_NEAR_START = 3     -- m : le tracteur y est déjà
+AutonomousMode.FETCH_HANDOVER = 12      -- m entre les points d'attelage : sur la route, dans l'axe de l'outil, on passe à l'attelage
+AutonomousMode.FETCH_STUCK_TIME = 8000  -- ms arrêté sur la route près de l'outil (obstacle = l'outil) : on passe à l'attelage
+AutonomousMode.FETCH_STUCK_RANGE = 30   -- m
+-- plein du semoir (voir startRefill) ; AutonomousRefill.lua le met à math.huge (plus d'étape « exit »)
+AutonomousMode.REFILL_EXIT_DISTANCE = 30   -- m : au champ et plus loin que ça de son marqueur = sortie du champ d'abord (mode Chargement)
+
+-- messages d'échec
+AutonomousMode.SWAP_FAIL_KEYS = {
+    busy = "AD_autonomous_fetchBusy",
+    noJoint = "AD_autonomous_fetchNoJoint",
+    several = "AD_autonomous_swapSeveral",
+    noToolPark = "AD_autonomous_swapNoToolPark"
+}
+
+AutonomousMode.FETCH_FAIL_KEYS = {
+    noPath = "AD_autonomous_fetchNoPath",
+    missed = "AD_autonomous_fetchMissed",
+    timeout = "AD_autonomous_fetchMissed",
+    busy = "AD_autonomous_fetchBusy",
+    noJoint = "AD_autonomous_fetchNoJoint"
+}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Création, remise à zéro, arrêt
+-- ------------------------------------------------------------------------------------------------------------
 function AutonomousMode:new(vehicle)
     local o = AutonomousMode:create()
     o.vehicle = vehicle
@@ -17,7 +74,7 @@ function AutonomousMode:reset()
     self.parkTool = nil
     self.detachTask = nil
     self.tractorParkId = nil
-    -- (07/11, demande Fabien) changement d'outil avant le champ suivant : après le dételage, on va atteler swapTool
+    -- (07/11) changement d'outil avant le champ suivant : après le dételage, on va atteler swapTool
     self.parkThen = nil
     self.swapTool = nil
     -- avant le champ : aller atteler l'outil choisi dans le HUD (voir startFetch)
@@ -25,17 +82,24 @@ function AutonomousMode:reset()
     self.fetchTool = nil
     self.fetchTask = nil
     self.fetchStuckTimer = nil
-    -- (08/11, demande Fabien) semoir : plein à la zone de ravitaillement, comme le mode Chargement (voir startRefill)
+    -- (08/11) semoir : plein à la zone de ravitaillement, comme le mode Chargement (voir startRefill)
     self.refillStage = nil
     self.refillThen = nil
     self.refillPlan = nil
     self.refillTask = nil
     self.dumpStage = nil -- épandeur : vider le reste en big bags, voir AutonomousSprayerDump.lua
+    if ADBaleCollect ~= nil then ADBaleCollect.reset(self) end -- remorque à balles : étapes du ramassage, voir AutonomousBales.lua
     self.vehicle.ad.trailerModule:reset()
 end
 
+function AutonomousMode:stop()
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Départ (fonction principale)
+-- ------------------------------------------------------------------------------------------------------------
 function AutonomousMode:start(user)
-    -- (08/11, Fabien : « tant que les infos ne sont pas validées le bouton de démarrage est refusé ») semoir sur la ligne
+    -- (08/11) départ refusé tant que les réglages ne sont pas validés : semoir sur la ligne
     -- Outil (ou Outil suivant) : culture, produits et zone de ravitaillement à valider (roue dentée) avant le départ
     local okB, block = pcall(ADSeederManager.startBlock, self.vehicle)
     if not okB then
@@ -51,7 +115,8 @@ function AutonomousMode:start(user)
         return
     end
     if ADSprayerManager ~= nil and ADSprayerManager.refuseStart(self) then return end -- épandeur / pulvé : réglages à valider (roue dentée), voir SprayerManager.lua
-    -- (07/11, demande Fabien) outil choisi dans le HUD et pas encore attelé : on va l'atteler d'abord
+    if ADBaleLoaderManager ~= nil and ADBaleLoaderManager.refuseStart(self) then return end -- remorque à balles : réglages à valider (roue dentée), voir BaleLoaderManager.lua
+    -- (07/11) outil choisi dans le HUD et pas encore attelé : on va l'atteler d'abord
     local okF, fetchTool, fetchErr, wanted = pcall(ADAutonomousManager.toolToFetch, self.vehicle)
     if not okF then
         ADAutonomousManager.log("ERREUR outil à atteler : %s", tostring(fetchTool))
@@ -115,6 +180,9 @@ function AutonomousMode:departToField()
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Message au joueur
+-- ------------------------------------------------------------------------------------------------------------
 -- texte traduit et rempli ici (les textes contiennent des %s, que le gestionnaire de messages ne sait pas remplacer)
 function AutonomousMode.message(vehicle, messageType, duration, key, ...)
     local ok, txt = pcall(string.format, g_i18n:getText(key), ...)
@@ -125,6 +193,9 @@ function AutonomousMode.message(vehicle, messageType, duration, key, ...)
     AutoDriveMessageEvent.sendMessageOrNotification(vehicle, messageType, txt, duration)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- À chaque image, et fin de chaque tâche (arrivée au champ : choix du parcours)
+-- ------------------------------------------------------------------------------------------------------------
 function AutonomousMode:monitorTasks(dt)
     if ADAutonomousManager.prefetch ~= nil then
         pcall(ADAutonomousManager.prefetchStep)
@@ -163,12 +234,14 @@ function AutonomousMode:handleFinishedTask()
         return
     end
     if self.dumpStage ~= nil and ADSprayerDump ~= nil then ADSprayerDump.handleStage(self) return end -- épandeur : vider le reste, voir AutonomousSprayerDump.lua
+    if self.baleStage ~= nil and ADBaleCollect ~= nil then ADBaleCollect.handleStage(self) return end -- remorque à balles : ramassage, dépôt, retour, voir AutonomousBales.lua
     if self.driveToDestinationTask == nil then
         return
     end
     self.driveToDestinationTask = nil
     local vehicle = self.vehicle
     local name = vehicle.ad.stateModule:getName()
+    if vehicle.ad.isStoppingWithError == false and ADBaleCollect ~= nil and ADBaleCollect.onArrival(self) then return end -- remorque à balles : notre ramassage au lieu d'un parcours, voir AutonomousBales.lua
 
     if vehicle.ad.isStoppingWithError == false then
         local ok, e, err, width, fieldNum, tool, count = pcall(ADAutonomousManager.choose, ADAutonomousManager, vehicle)
@@ -178,7 +251,7 @@ function AutonomousMode:handleFinishedTask()
         end
         local w = width ~= nil and string.format("%.1f", width) or "?"
         local f = tostring(fieldNum or "?")
-        -- (07/11, choix de Fabien) Courseplay absent : selon le réglage « Autonome sans Courseplay », attente
+        -- (07/11) Courseplay absent : selon le réglage « Autonome sans Courseplay », attente
         -- ou ouvrier du jeu (mode « Classique »). Avec Courseplay : parcours, ou arrêt et attente comme avant.
         local useAI = e == nil and err == "noCp" and AutoDrive.getSetting("autonomousNoCp") == 2
         if useAI then
@@ -204,6 +277,9 @@ function AutonomousMode:handleFinishedTask()
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_several", tostring(count or 2), w, f)
         elseif err == "noField" then
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_noField")
+        elseif err == "noWindrow" then
+            -- presse : aucun parcours du champ ne tombe sur les andains, voir BalerManager.lua
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_noWindrow", f)
         elseif err == "noWidth" then
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_noWidth")
         elseif err == "noTool" then
@@ -218,7 +294,10 @@ function AutonomousMode:handleFinishedTask()
     vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle), ADTaskModule.DONT_PROPAGATE)
 end
 
--- (07/11, demande Fabien) fin du champ (Courseplay ou ouvrier du jeu) : s'il y a un champ suivant, il passe en
+-- ------------------------------------------------------------------------------------------------------------
+-- Champ fini : champ suivant, changement d'outil
+-- ------------------------------------------------------------------------------------------------------------
+-- (07/11) fin du champ (Courseplay ou ouvrier du jeu) : s'il y a un champ suivant, il passe en
 -- 1re destination, la ligne « Champ suivant » se vide et le chauffeur part le travailler ; sinon rien (se garer comme avant).
 function AutonomousMode.goToNextField(vehicle)
     if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.stateModule.getFpNextField == nil then
@@ -237,7 +316,7 @@ function AutonomousMode.goToNextField(vehicle)
     end
     local doneName = tostring(sm:getFirstMarkerName() or "?")
     local name = tostring(sm:getName())
-    -- (07/11, demande Fabien, 4e ligne « Outil suivant ») : outil à changer avant le champ suivant ?
+    -- (07/11, 4e ligne « Outil suivant ») : outil à changer avant le champ suivant ?
     local swap = nil
     local nextTool = sm.getFpNextTool ~= nil and sm:getFpNextTool() or nil
     if nextTool ~= nil then
@@ -280,19 +359,12 @@ function AutonomousMode.goToNextField(vehicle)
     return true
 end
 
-AutonomousMode.SWAP_FAIL_KEYS = {
-    busy = "AD_autonomous_fetchBusy",
-    noJoint = "AD_autonomous_fetchNoJoint",
-    several = "AD_autonomous_swapSeveral",
-    noToolPark = "AD_autonomous_swapNoToolPark"
-}
-
 -- (07/11) que faire pour avoir l'outil suivant : « same » (déjà attelé), « fetch » (rien d'attelé, aller le chercher),
 -- ou { tool, marker } (poser l'outil attelé à sa place, puis aller chercher l'outil suivant) ; nil, err si impossible.
--- (08/11, Fabien : « si il ne peut pas il doit quand même dételer l'outil ») : outil suivant pris par un autre engin
+-- (08/11) outil suivant impossible : l'outil attelé est quand même dételé. Outil suivant pris par un autre engin
 -- ou qui ne s'attelle pas = l'outil attelé est quand même posé à sa place (nextErr), puis le chauffeur s'arrête là
 -- avec le message (start() refuse d'aller le chercher). Outil attelé sans place de parking : il le garde et s'arrête
--- au bout du champ (carte 08/11, choix de Fabien « Garder l'outil, s'arrêter »).
+-- au bout du champ (08/11).
 function AutonomousMode.toolSwapPlan(vehicle, nextTool)
     local nextErr = nil
     local attacher = nextTool.getAttacherVehicle ~= nil and nextTool:getAttacherVehicle() or nil
@@ -352,7 +424,10 @@ function AutonomousMode.startToolSwap(vehicle, plan, nextTool, nextField, doneNa
     return true
 end
 
--- (07/11, demande Fabien) fin du travail sans champ suivant : si l'outil a sa place de parking et le tracteur la sienne,
+-- ------------------------------------------------------------------------------------------------------------
+-- Fin du travail : outil posé à sa place, puis tracteur garé
+-- ------------------------------------------------------------------------------------------------------------
+-- (07/11) fin du travail sans champ suivant : si l'outil a sa place de parking et le tracteur la sienne,
 -- le chauffeur pose l'outil à sa place (dételé comme le joueur), puis va garer le tracteur. Masses et cuves ignorées.
 -- Renvoie true si c'est lancé ; sinon false et le chauffeur se gare comme avant.
 function AutonomousMode.parkWithToolDrop(vehicle, forcedTool)
@@ -468,16 +543,12 @@ function AutonomousMode:handleParkStage()
     end
 end
 
--- (07/11 20:16, Fabien : « faut qu'il utilise des routes existantes pour aller devant l'outil ») : toujours par le
+-- ------------------------------------------------------------------------------------------------------------
+-- Aller atteler l'outil choisi dans le HUD
+-- ------------------------------------------------------------------------------------------------------------
+-- (07/11) routes existantes pour aller devant l'outil : toujours par le
 -- réseau d'abord : vers la place de parking de l'outil s'il y est (routes en marche arrière dans la place), sinon vers
 -- le point du réseau le plus proche de l'avant de l'outil ; la recherche de chemin ne sert qu'à finir
-AutonomousMode.FETCH_MARKER_NEAR = 25   -- m : l'outil est à sa place si son point d'attelage est à moins de ça du point de la place
-AutonomousMode.FETCH_ROUTE_RANGE = 40   -- m : point du réseau cherché à moins de ça de l'avant de l'outil
-AutonomousMode.FETCH_ROUTE_CLEAR = 8    -- m : ce point du réseau est au moins à ça devant l'outil (pas sous l'outil)
-AutonomousMode.FETCH_NEAR_START = 3     -- m : le tracteur y est déjà
-AutonomousMode.FETCH_HANDOVER = 12      -- m entre les points d'attelage : sur la route, dans l'axe de l'outil, on passe à l'attelage
-AutonomousMode.FETCH_STUCK_TIME = 8000  -- ms arrêté sur la route près de l'outil (obstacle = l'outil) : on passe à l'attelage
-AutonomousMode.FETCH_STUCK_RANGE = 30   -- m
 
 -- point du réseau où aller avant l'attelage, et pourquoi (« marker » ou « front ») ; nil : directement à l'attelage
 function AutonomousMode.fetchRoutePoint(vehicle, tool)
@@ -517,7 +588,7 @@ function AutonomousMode.fetchRoutePoint(vehicle, tool)
     return nil
 end
 
--- (07/11, demande Fabien) aller atteler l'outil choisi : par le réseau, puis devant l'outil, marche arrière, attelage
+-- (07/11) aller atteler l'outil choisi : par le réseau, puis devant l'outil, marche arrière, attelage
 function AutonomousMode:startFetch(tool)
     local vehicle = self.vehicle
     local name = tostring(vehicle.ad.stateModule:getName())
@@ -579,14 +650,6 @@ function AutonomousMode:startFetchAttach()
     self.vehicle.ad.taskModule:addTask(self.fetchTask)
 end
 
-AutonomousMode.FETCH_FAIL_KEYS = {
-    noPath = "AD_autonomous_fetchNoPath",
-    missed = "AD_autonomous_fetchMissed",
-    timeout = "AD_autonomous_fetchMissed",
-    busy = "AD_autonomous_fetchBusy",
-    noJoint = "AD_autonomous_fetchNoJoint"
-}
-
 -- étapes : « route » (par le réseau) -> « attach » (devant l'outil, marche arrière, attelage) -> départ au champ
 function AutonomousMode:handleFetchStage()
     local vehicle = self.vehicle
@@ -620,13 +683,13 @@ function AutonomousMode:handleFetchStage()
     end
 end
 
--------------------------------------------------------------------------------
--- (08/11, demande Fabien) semoir : plein à la zone de ravitaillement, « comme le mode Chargement » :
+-- ------------------------------------------------------------------------------------------------------------
+-- Plein à la zone de ravitaillement (semoir ; épandeur et pulvé : SprayerManager.lua)
+-- ------------------------------------------------------------------------------------------------------------
+-- (08/11) semoir : plein à la zone de ravitaillement, comme le mode Chargement :
 --   au départ (semoir pas plein) : plein, puis le champ ;
 --   semoir vide au champ (Courseplay s'arrête, événement onCpEmpty) : sortie du champ, plein, retour au champ,
 --   puis Courseplay repart au dernier point (startCpAtLastWp, comme le mode Chargement avec Courseplay)
--------------------------------------------------------------------------------
-AutonomousMode.REFILL_EXIT_DISTANCE = 30   -- m : au champ et plus loin que ça de son marqueur = sortie du champ d'abord (mode Chargement)
 
 function AutonomousMode:startRefill(plan, after)
     local vehicle = self.vehicle
@@ -760,7 +823,4 @@ function AutonomousMode.onCpEmpty(vehicle)
     mode:reset()
     mode:startRefill(plan, "back")
     return true
-end
-
-function AutonomousMode:stop()
 end

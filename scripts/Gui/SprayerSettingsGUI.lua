@@ -1,24 +1,28 @@
--------------------------------------------------------------------------------
--- FarmPilot : fenêtre « Réglages de l'épandeur » (mode Autonome, roue dentée de la ligne « Outil » ou « Outil suivant »)
---   Même fenêtre que celle du semoir (SeederSettingsGUI), pour les épandeurs et pulvés, traînés ou automoteurs :
---   produit à charger (liste de ce que la cuve accepte), quantité (« Plein » ou « Juste ce qu'il faut pour le
---   champ », avec l'estimation en litres) et zone de ravitaillement (marqueurs de la carte). « Valider » enregistre ;
---   tant que ce n'est pas validé, le départ est refusé (voir SprayerManager.lua).
+-- ============================================================================================================
+-- FarmPilot : SprayerSettingsGUI.lua
+-- Fenêtre « Réglages de l'épandeur » (mode Autonome, roue dentée de la ligne « Outil » ou « Outil suivant »).
 --
--- Demande de Fabien (08/11, 14:05) : « Choisir le produit et la quantité à prendre »
--- Demande de Fabien (08/11, 20:39) : « L'automoteur comme le pulvé, ils doivent être fonctionnels sur Autonome »
+-- (08/11) même fenêtre que celle du semoir (SeederSettingsGUI.lua), pour les épandeurs et pulvés, traînés ou
+-- automoteurs : produit à charger (liste de ce que la cuve accepte), quantité (« Plein » ou « Juste ce qu'il faut
+-- pour le champ », avec l'estimation en litres) et zone de ravitaillement (marqueurs de la carte, ceux où l'on trouve
+-- le produit : RefillSources.lua). « Valider » enregistre ; tant que ce n'est pas validé, le départ est refusé (voir
+-- SprayerManager.lua).
 --
 -- Règle : même roue dentée et même façon de faire que le semoir ; la roue ouvre cette fenêtre quand la ligne a un
---   épandeur et pas de semoir (AutoDrive.onOpenSeederSettings -> ADSprayerSettingsGui.open).
--------------------------------------------------------------------------------
+-- épandeur et pas de semoir (AutoDrive.onOpenSeederSettings -> ADSprayerSettingsGui.open).
+--
+-- Branché par une ligne chacune dans Gui.lua : ADSprayerSettingsGui.load (création, gui/sprayerSettingsGUI.xml) et
+-- ADSprayerSettingsGui.open (roue dentée).
+-- ============================================================================================================
+
 ADSprayerSettingsGui = {}
 ADSprayerSettingsGui.context = nil   -- { vehicle, isNext }
 
 local ADSprayerSettingsGui_mt = Class(ADSprayerSettingsGui, DialogElement)
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Chargement et ouverture (hooks Gui.lua)
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 function ADSprayerSettingsGui.load()
     AutoDrive.gui.ADSprayerSettingsGui = ADSprayerSettingsGui.new()
     local result = g_gui:loadGui(AutoDrive.directory .. "gui/sprayerSettingsGUI.xml", "ADSprayerSettingsGui", AutoDrive.gui.ADSprayerSettingsGui)
@@ -61,6 +65,9 @@ function ADSprayerSettingsGui:onOpen()
     self:refreshItems()
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Brouillon : les réglages affichés à l'ouverture
+-- ------------------------------------------------------------------------------------------------------------
 -- brouillon = réglages enregistrés, sinon ceux de la même machine sur un autre champ, sinon : produit dans la cuve
 -- (ou le seul possible), plein, zone à choisir
 function ADSprayerSettingsGui:loadContext()
@@ -106,6 +113,9 @@ function ADSprayerSettingsGui:loadContext()
     self.draft = draft
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Lignes de la fenêtre
+-- ------------------------------------------------------------------------------------------------------------
 function ADSprayerSettingsGui:getNumberOfItemsInSection(list, section)
     if list == self.settingsList then
         return #self.rows
@@ -122,9 +132,6 @@ function ADSprayerSettingsGui:populateCellForItemInSection(list, section, index,
     end
 end
 
--- ------------------------------------------------------------
--- Lignes de la fenêtre
--- ------------------------------------------------------------
 -- texte de la quantité « juste ce qu'il faut » : « ~1 230 L (150 L/ha, 7,4 ha) » ou « estimation impossible »
 function ADSprayerSettingsGui:fieldQuantityText()
     local d = self.draft
@@ -157,7 +164,7 @@ function ADSprayerSettingsGui:refreshItems()
     elseif self.mode == "markers" then
         info = g_i18n:getText("gui_ad_seeder_pickRefill")
         local allowed, filterInfo = nil, nil
-        if ADRefillSources ~= nil then allowed, filterInfo = ADRefillSources.filter(self) if filterInfo ~= nil then info = info .. "\n" .. filterInfo end end -- (Fabien 21:24) zones où l'on trouve le produit, voir RefillSources.lua
+        if ADRefillSources ~= nil then allowed, filterInfo = ADRefillSources.filter(self) if filterInfo ~= nil then info = info .. "\n" .. filterInfo end end -- (08/11) zones où l'on trouve le produit, voir RefillSources.lua
         local markers = {}
         for _, m in pairs(ADGraphManager:getMapMarkers()) do
             if m ~= nil and m.name ~= nil and (allowed == nil or allowed[m.name]) then
@@ -234,9 +241,9 @@ function ADSprayerSettingsGui:draftEqualsSaved()
     return a ~= nil and b ~= nil and a.fillType == b.fillType and a.refill == b.refill and (a.quantity or "full") == (b.quantity or "full")
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Boutons
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 function ADSprayerSettingsGui:selectedRow()
     if #self.rows == 0 then
         return nil

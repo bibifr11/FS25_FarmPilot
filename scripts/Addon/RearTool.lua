@@ -1,16 +1,33 @@
--- Outil arrière : au lancement de la partie, chaque tracteur sélectionne l'outil
--- attelé derrière lui (le premier de la chaîne), au lieu du dernier attelé au chargement
+-- ============================================================================================================
+-- FarmPilot : RearTool.lua
+-- Addon : outil arrière sélectionné au lancement de la partie.
+--
+-- Règle : au lancement de la partie (DELAY ms après son début), chaque tracteur sélectionne l'outil attelé derrière
+-- lui (le premier de la chaîne), au lieu du dernier attelé au chargement. Une seule fois.
+--
+-- Branché par : AutoDriveAddon.lua (install au chargement de la carte : active le module) ; addModEventListener
+-- (update).
+-- ============================================================================================================
 
 ADAddonRearTool = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADAddonRearTool.DELAY = 2000
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Mise en place (au chargement de la carte, par AutoDriveAddon.lua)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonRearTool.install(autoDrive)
     ADAddonRearTool.active = true
     ADAddonRearTool.done = false
     ADAddonRearTool.timer = 0
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outil attelé derrière le tracteur
+-- ------------------------------------------------------------------------------------------------------------
 -- Position de l'attelage dans le repère du tracteur (z < 0 = derrière)
 function ADAddonRearTool.getJointZ(vehicle, implement)
     local spec = vehicle.spec_attacherJoints
@@ -47,6 +64,9 @@ function ADAddonRearTool.selectRear(vehicle)
     vehicle:setSelectedVehicle(rear, nil, true)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Au lancement de la partie, une seule fois
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonRearTool:update(dt)
     if not ADAddonRearTool.active or ADAddonRearTool.done then
         return
@@ -74,5 +94,8 @@ function ADAddonRearTool:update(dt)
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 addModEventListener(ADAddonRearTool)
 ADAddon.addModule(ADAddonRearTool)

@@ -1,11 +1,29 @@
--- Pont-bascule : quand AutoDrive passe sur un pont-bascule du jeu (PlaceableWeighingStation),
--- l'attelage s'arrête, le poids du chargement s'affiche au milieu de l'écran, puis il repart.
--- On lit le capteur du pont (spec.triggerVehicleNodes = noeuds des véhicules dessus).
--- L'arrêt se fait comme la pause « repliage des outils » d'AutoDrive : la tâche en cours
--- n'est pas mise à jour et le module de conduite spéciale tient le véhicule arrêté.
+-- ============================================================================================================
+-- FarmPilot : Weighing.lua
+-- Addon : pesée sur les ponts-bascules du jeu (PlaceableWeighingStation).
+--
+-- Règle :
+-- - Quand AutoDrive passe sur un pont-bascule, l'attelage ralentit à l'approche (APPROACH_KMH, puis ON_BRIDGE_KMH sur
+--   le pont), s'arrête quand tout l'attelage est dessus et centré, le poids du chargement s'affiche au milieu de
+--   l'écran (WAIT_MS à l'arrêt), puis il repart.
+-- - On lit le capteur du pont (spec.triggerVehicleNodes = noeuds des véhicules dessus).
+-- - L'arrêt se fait comme la pause « repliage des outils » d'AutoDrive : la tâche en cours n'est pas mise à jour et
+--   le module de conduite spéciale tient le véhicule arrêté.
+-- - Pesée à la main : le joueur s'arrête lui-même sur le pont (tout l'attelage dessus, 3 s à l'arrêt). Fenêtre
+--   affichée et pesée enregistrée à son nom.
+-- - Chaque pesée est envoyée au registre d'AutoSwitch s'il est installé. Seule la pesée de l'attelage où le joueur
+--   est assis est affichée.
+--
+-- Branché par : AutoDriveAddon.lua (install au chargement de la carte : enveloppe ADTaskModule.update,
+-- ADDrivePathModule.getSpeedLimitBySteeringAngle et ADStateModule.setActive) ; addModEventListener (update, draw).
+-- ADAddonWeighing.stations est lu par ObstacleDetourQueue.lua (file devant le pont).
+-- ============================================================================================================
 
 ADAddonWeighing = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADAddonWeighing.WAIT_MS = 5000            -- arrêt une fois immobile
 ADAddonWeighing.SHOW_AFTER_MS = 3000      -- fenêtre gardée après le départ (puis fondu)
 ADAddonWeighing.STOPPED_KMH = 0.5
@@ -15,15 +33,26 @@ ADAddonWeighing.APPROACH_DIST = 40         -- m : pont devant le tracteur, on ra
 ADAddonWeighing.APPROACH_KMH = 12
 ADAddonWeighing.MANUAL_WAIT_MS = 3000      -- conduite à la main : pesée après 3 s à l'arrêt sur le pont
 ADAddonWeighing.MANUAL_SHOW_MS = 6000      -- fenêtre affichée 6 s
-ADAddonWeighing.ON_BRIDGE_KMH = 5          -- sur le pont : lent, pour s'arrêter pile au centre   -- recherche des ponts-bascules
+ADAddonWeighing.ON_BRIDGE_KMH = 5          -- sur le pont : lent, pour s'arrêter pile au centre
+ADAddonWeighing.SITE_MAX_DIST = 1000  -- m : point de vente pris comme nom du site
+ADAddonWeighing.FADE_MS = 400            -- ms : fondu de la fenêtre de pesée
 
 -- Réservoirs du tracteur, pas du chargement
 ADAddonWeighing.IGNORED_FILLTYPES = { "DIESEL", "DEF", "AIR", "ELECTRICCHARGE", "METHANE" }
 
+-- ------------------------------------------------------------------------------------------------------------
+-- État partagé (ponts trouvés, pesées affichées)
+-- ------------------------------------------------------------------------------------------------------------
 ADAddonWeighing.stations = {}
 ADAddonWeighing.nextScan = 0
 ADAddonWeighing.displays = {}
 
+-- (perf 07/11) résultat gardé par bâtiment : les spécialisations d'un bâtiment ne changent pas
+ADAddonWeighing.specCache = setmetatable({}, { __mode = "k" })
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local T = ADAddon.getText
 
 local function formatTons(kg)
@@ -37,8 +66,46 @@ local function formatTons(kg)
     return string.format("%.1f t", kg / 1000)
 end
 
+local function getCombination(vehicle)
+    local root = vehicle.rootVehicle or vehicle
+    if root.getChildVehicles ~= nil then
+        return root:getChildVehicles()
+    end
+    return { vehicle }
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Ponts-bascules de la carte et nom du site
+-- ------------------------------------------------------------------------------------------------------------
 -- Ponts-bascules posés sur la carte : on garde leur table des noeuds présents
-ADAddonWeighing.SITE_MAX_DIST = 1000  -- m : point de vente pris comme nom du site
+function ADAddonWeighing.scanStations()
+    local list = {}
+    local cache = ADAddonWeighing.specCache
+    local system = g_currentMission ~= nil and g_currentMission.placeableSystem or nil
+    if system ~= nil and system.placeables ~= nil then
+        for _, placeable in ipairs(system.placeables) do
+            local spec = cache[placeable]
+            if spec == nil then
+                spec = placeable.spec_weighingStation
+                if spec == nil then
+                    for key, value in pairs(placeable) do
+                        if type(value) == "table" and type(key) == "string" and key:sub(1, 5) == "spec_" and value.triggerVehicleNodes ~= nil then
+                            spec = value
+                            break
+                        end
+                    end
+                end
+                cache[placeable] = spec or false
+            end
+            if spec == false then spec = nil end
+            if spec ~= nil and spec.triggerVehicleNodes ~= nil then
+                spec.adAddonPlaceable = placeable
+                table.insert(list, spec)
+            end
+        end
+    end
+    ADAddonWeighing.stations = list
+end
 
 local function placeableName(p)
     if p.getName ~= nil then
@@ -93,46 +160,6 @@ function ADAddonWeighing.findSiteName(bridge, fillTypeIndex)
     return result
 end
 
--- (perf 07/11) résultat gardé par bâtiment : les spécialisations d'un bâtiment ne changent pas
-ADAddonWeighing.specCache = setmetatable({}, { __mode = "k" })
-
-function ADAddonWeighing.scanStations()
-    local list = {}
-    local cache = ADAddonWeighing.specCache
-    local system = g_currentMission ~= nil and g_currentMission.placeableSystem or nil
-    if system ~= nil and system.placeables ~= nil then
-        for _, placeable in ipairs(system.placeables) do
-            local spec = cache[placeable]
-            if spec == nil then
-                spec = placeable.spec_weighingStation
-                if spec == nil then
-                    for key, value in pairs(placeable) do
-                        if type(value) == "table" and type(key) == "string" and key:sub(1, 5) == "spec_" and value.triggerVehicleNodes ~= nil then
-                            spec = value
-                            break
-                        end
-                    end
-                end
-                cache[placeable] = spec or false
-            end
-            if spec == false then spec = nil end
-            if spec ~= nil and spec.triggerVehicleNodes ~= nil then
-                spec.adAddonPlaceable = placeable
-                table.insert(list, spec)
-            end
-        end
-    end
-    ADAddonWeighing.stations = list
-end
-
-local function getCombination(vehicle)
-    local root = vehicle.rootVehicle or vehicle
-    if root.getChildVehicles ~= nil then
-        return root:getChildVehicles()
-    end
-    return { vehicle }
-end
-
 -- Pont sur lequel ce véhicule a au moins un composant, ou nil
 local function getStationOf(vehicle)
     if vehicle.components == nil then
@@ -148,6 +175,46 @@ local function getStationOf(vehicle)
     return nil
 end
 
+-- Centre du pont : centre de la forme du capteur
+local function getStationCenter(station)
+    if station.adAddonTriggerNode == nil then
+        local node = station.triggerNode
+        if type(node) ~= "number" then
+            for key, value in pairs(station) do
+                if type(value) == "number" and type(key) == "string" and key:lower():find("trigger") ~= nil and entityExists(value) then
+                    node = value
+                    break
+                end
+            end
+        end
+        station.adAddonTriggerNode = node or 0
+    end
+    local node = station.adAddonTriggerNode
+    if node == 0 or not entityExists(node) then
+        return nil
+    end
+    -- getShapeWorldBoundingSphere : centre en coordonnées du monde
+    -- (getShapeBoundingSphere donne un centre local au noeud : à repasser dans le monde)
+    if getShapeWorldBoundingSphere ~= nil then
+        local ok, x, _, z = pcall(getShapeWorldBoundingSphere, node)
+        if ok and x ~= nil then
+            return x, z
+        end
+    end
+    if getShapeBoundingSphere ~= nil then
+        local ok, lx, ly, lz = pcall(getShapeBoundingSphere, node)
+        if ok and lx ~= nil then
+            local x, _, z = localToWorld(node, lx, ly, lz)
+            return x, z
+        end
+    end
+    local x, _, z = getWorldTranslation(node)
+    return x, z
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Poids de l'attelage
+-- ------------------------------------------------------------------------------------------------------------
 local ignoredFillTypes = nil
 local function getIgnoredFillTypes()
     if ignoredFillTypes == nil then
@@ -195,43 +262,9 @@ local function getWeights(vehicles)
     return load, total, main
 end
 
--- Centre du pont : centre de la forme du capteur
-local function getStationCenter(station)
-    if station.adAddonTriggerNode == nil then
-        local node = station.triggerNode
-        if type(node) ~= "number" then
-            for key, value in pairs(station) do
-                if type(value) == "number" and type(key) == "string" and key:lower():find("trigger") ~= nil and entityExists(value) then
-                    node = value
-                    break
-                end
-            end
-        end
-        station.adAddonTriggerNode = node or 0
-    end
-    local node = station.adAddonTriggerNode
-    if node == 0 or not entityExists(node) then
-        return nil
-    end
-    -- getShapeWorldBoundingSphere : centre en coordonnées du monde
-    -- (getShapeBoundingSphere donne un centre local au noeud : à repasser dans le monde)
-    if getShapeWorldBoundingSphere ~= nil then
-        local ok, x, _, z = pcall(getShapeWorldBoundingSphere, node)
-        if ok and x ~= nil then
-            return x, z
-        end
-    end
-    if getShapeBoundingSphere ~= nil then
-        local ok, lx, ly, lz = pcall(getShapeBoundingSphere, node)
-        if ok and lx ~= nil then
-            local x, _, z = localToWorld(node, lx, ly, lz)
-            return x, z
-        end
-    end
-    local x, _, z = getWorldTranslation(node)
-    return x, z
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Centrage sur le pont
+-- ------------------------------------------------------------------------------------------------------------
 -- Roues d'un véhicule (noeuds), comme AutoDrive (PathCalculation)
 local function getWheelNodes(v)
     local nodes = {}
@@ -293,6 +326,9 @@ local function isCentered(vehicle, vehicles, station)
     return centered
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Pesée par AutoDrive : passage, arrêt, enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 -- Suivi du passage : arrêt quand tout l'attelage est sur le pont et centré dessus
 local function updatePass(vehicle)
     local vehicles = getCombination(vehicle)
@@ -358,7 +394,6 @@ local function finishHold(vehicle, w)
     end
 end
 
--- Arrêt tenu tant que le pesage n'est pas fini ; renvoie true si la tâche AutoDrive doit attendre
 -- Pesée envoyée au registre d'AutoSwitch s'il est installé
 local function recordWeighing(vehicle, d)
     if d == nil then
@@ -383,6 +418,7 @@ local function recordWeighing(vehicle, d)
     end
 end
 
+-- Arrêt tenu tant que le pesage n'est pas fini ; renvoie true si la tâche AutoDrive doit attendre
 local function updateHold(vehicle, w, dt)
     local sdm = vehicle.ad.specialDrivingModule
     if sdm == nil then
@@ -472,6 +508,9 @@ local function weighStep(self, dt)
     return false
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Mise en place (au chargement de la carte, par AutoDriveAddon.lua)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonWeighing.install(autoDrive)
     local taskModule = ADAddon.getAutoDriveGlobal("ADTaskModule")
     if taskModule == nil or taskModule.update == nil then
@@ -525,10 +564,10 @@ function ADAddonWeighing.install(autoDrive)
 
 end
 
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Pesée à la main : le joueur s'arrête lui-même sur le pont (tout l'attelage dessus,
 -- 3 s à l'arrêt). Fenêtre affichée et pesée enregistrée à son nom.
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 local function getPlayerName()
     local tries = {
         function() return g_currentMission.playerNickname end,
@@ -630,8 +669,9 @@ function ADAddonWeighing:update(dt)
     end
 end
 
-ADAddonWeighing.FADE_MS = 400
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Fenêtre de pesée
+-- ------------------------------------------------------------------------------------------------------------
 local function uiScale()
     if g_gameSettings ~= nil and g_gameSettings.getValue ~= nil then
         local ok, v = pcall(g_gameSettings.getValue, g_gameSettings, "uiScale")
@@ -778,5 +818,8 @@ function ADAddonWeighing:draw()
     setTextAlignment(RenderText.ALIGN_LEFT)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 ADAddon.addModule(ADAddonWeighing)
 addModEventListener(ADAddonWeighing)

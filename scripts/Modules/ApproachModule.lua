@@ -1,20 +1,29 @@
---[[
-    ADApproachModule
-    ----------------
-    Anticipated slow-down in front of an obstacle.
-
-    The front sensors only answer "something is inside the box", and AutoDrive then brakes hard
-    (stopVehicle). This module scans the route ahead with boxes laid along the upcoming waypoints
-    (so a bend does not hit the roadside), up to the braking distance of the current speed, and
-    measures the distance to the nearest vehicle or static object. The speed limit is then lowered
-    progressively: v = sqrt(2 * DECEL * (d - STOP_DISTANCE)), so the vehicle arrives slowly where the
-    front sensors still do the final stop. A slower vehicle ahead is followed at its own speed instead
-    of the stop / restart cycle.
-    Everything runs on the server (called from ADDrivePathModule:followWaypoints).
-]]
+-- ============================================================================================================
+-- FarmPilot : ApproachModule.lua
+-- Ralentissement anticipé devant un obstacle.
+--
+-- Les capteurs avant répondent seulement « quelque chose est dans la boîte », et AutoDrive freine alors fort
+-- (stopVehicle). Ce module balaie la route devant avec des boîtes posées le long des prochains points du trajet
+-- (un virage ne touche donc pas le bord de la route), jusqu'à la distance de freinage à la vitesse du moment, et
+-- mesure la distance au véhicule ou à l'objet fixe le plus proche.
+--
+-- Règle : la vitesse maxi baisse progressivement, v = sqrt(2 * DECEL * (d - STOP_DISTANCE)) : le véhicule arrive
+-- lentement là où les capteurs avant font encore l'arrêt final. Un véhicule plus lent devant est suivi à sa propre
+-- vitesse, sans arrêts et redémarrages. Derrière un autre véhicule AutoDrive, arrêt à VEHICLE_GAP m (shouldStop).
+-- Couloir décalé (écart, S8 28/10) : véhicules cherchés sur toute la hauteur (roues, plateaux bas).
+-- Tout tourne sur le serveur, appelé à chaque image depuis ADDrivePathModule:followWaypoints.
+--
+-- Branché par : Specialization.lua (new) ; DrivePathModuleObstacles.lua (reset, getSpeedLimit, shouldStop) ; lu par
+-- AvoidModule.lua (getHit, getEstimatedDistance, isCorridorClear), ObstacleDetourModule.lua (getHit,
+-- getEstimatedDistance, shouldStop), IntersectionModule.lua (getHit) et TrafficYieldModule.lua (getTrainWidth,
+-- SIDE_MARGIN).
+-- ============================================================================================================
 
 ADApproachModule = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADApproachModule.DEBUG = true -- temporary diagnostic logs for the tests
 
 ADApproachModule.DECEL = 1.8             -- m/s², comfortable deceleration
@@ -26,7 +35,7 @@ ADApproachModule.MAX_RANGE = 60          -- m scanned at most
 ADApproachModule.RANGE_MARGIN = 5        -- m added to the braking distance
 ADApproachModule.BOX_MAX_LENGTH = 4      -- m, length of one scan box along the route
 ADApproachModule.BOX_HALF_HEIGHT = 0.4   -- m
--- S8 (owner 28/10 17:43, the 8510 with its low loader shifted 1.5 m beside the Patriot 4450 and wedged against it: the
+-- S8 (28/10 17:43, the 8510 with its low loader shifted 1.5 m beside the Patriot 4450 and wedged against it: the
 -- boxes only cover the collision height band, 2.0 .. 2.8 m above the ground, and missed its wheels and low parts): a
 -- shifted corridor is tested for vehicles from TALL_BOX_BOTTOM to TALL_BOX_TOP m above the ground
 ADApproachModule.TALL_BOX_BOTTOM = 0.4   -- m
@@ -43,14 +52,9 @@ ADApproachModule.STATE_FREE = 0
 ADApproachModule.STATE_SLOWING = 1
 ADApproachModule.STATE_NAMES = {[0] = "FREE", [1] = "SLOWING"}
 
-function ADApproachModule:log(text, ...)
-    if ADApproachModule.DEBUG then
-        local name = self.vehicle.ad ~= nil and self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getName() or "?"
-        print(string.format("[AD-Obst] %s (%s) [%s]: " .. text, tostring(name), tostring(self.vehicle.id),
-            ADApproachModule.STATE_NAMES[self.state] or tostring(self.state), ...))
-    end
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Création et état (lus par AvoidModule, ObstacleDetourModule, IntersectionModule)
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule:new(vehicle)
     local o = {}
     setmetatable(o, self)
@@ -73,9 +77,17 @@ function ADApproachModule:reset()
     self.boxes = {}
 end
 
+function ADApproachModule.isEnabled()
+    return (AutoDrive.getSetting("enableTrafficDetection") or 0) >= 1
+end
+
 -- last obstacle seen on the route (table: distance, name, object, isVehicle, isTraffic, node, x, z, nx, nz, side, time), nil when free
 function ADApproachModule:getHit()
     return self.hit
+end
+
+function ADApproachModule:getDistance()
+    return self.distance
 end
 
 -- true when the vehicle must stop now: another AutoDrive vehicle closer than VEHICLE_GAP on the route
@@ -96,51 +108,20 @@ function ADApproachModule:shouldStop()
     return distance ~= nil and distance < ADApproachModule.VEHICLE_GAP
 end
 
--- true when the corridor shifted by <offset> is free of vehicles and static objects over <range> metres
-function ADApproachModule:isCorridorClear(offset, range)
-    local boxes = self:buildBoxes(range, offset)
-    local task = self.vehicle.ad.taskModule ~= nil and self.vehicle.ad.taskModule:getActiveTask() or nil
-    self.excluded = (task ~= nil and task.getExcludedVehiclesForCollisionCheck ~= nil) and task:getExcludedVehiclesForCollisionCheck() or {}
-    local clear, reason = true, nil
-    for _, b in ipairs(boxes) do
-        self.scanHit = false
-        if offset ~= nil and offset ~= 0 then
-            -- S8: vehicles over the whole height (wheels, decks, ramps), static objects in the usual band
-            local tallY, tallHalf = ADApproachModule.getTallBox(b)
-            overlapBox(b.x, tallY, b.z, 0, b.ry, 0, b.halfWidth, tallHalf, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskVehicles, true, true, true, true)
-            if not self.scanHit then
-                overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskObjects, true, true, true, true)
-            end
-        else
-            overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskVehicles + ADCollSensorSplit.maskObjects, true, true, true, true)
-        end
-        if self.scanHit then
-            clear, reason = false, string.format("'%s' at %.0f m", tostring(self.scanHitName), b.distance)
-            break
-        end
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
+function ADApproachModule:log(text, ...)
+    if ADApproachModule.DEBUG then
+        local name = self.vehicle.ad ~= nil and self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getName() or "?"
+        print(string.format("[AD-Obst] %s (%s) [%s]: " .. text, tostring(name), tostring(self.vehicle.id),
+            ADApproachModule.STATE_NAMES[self.state] or tostring(self.state), ...))
     end
-    self.excluded = nil
-    return clear, reason
 end
 
--- S8: centre height and half height of the tall vehicle box over a scan box
-function ADApproachModule.getTallBox(b)
-    local ground = b.groundY or (b.y - ADApproachModule.BOX_HALF_HEIGHT - 1)
-    local half = (ADApproachModule.TALL_BOX_TOP - ADApproachModule.TALL_BOX_BOTTOM) * 0.5
-    return ground + ADApproachModule.TALL_BOX_BOTTOM + half, half
-end
-
-function ADApproachModule.isEnabled()
-    return (AutoDrive.getSetting("enableTrafficDetection") or 0) >= 1
-end
-
-function ADApproachModule:getDistance()
-    return self.distance
-end
-
-------------------------------------------------------------------------------------------------
--- geometry of the train
-------------------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- Géométrie de l'attelage
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule:getTrainWidth()
     local width = self.vehicle.size ~= nil and self.vehicle.size.width or 3
     local implements = AutoDrive.getAllImplements(self.vehicle, false)
@@ -172,9 +153,9 @@ function ADApproachModule:getRange()
     return math.clamp(range, ADApproachModule.MIN_RANGE, ADApproachModule.MAX_RANGE)
 end
 
-------------------------------------------------------------------------------------------------
--- boxes along the route, from the nose of the vehicle to <range> metres further
-------------------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- Boîtes le long de la route, du nez du véhicule à <range> m plus loin
+-- ------------------------------------------------------------------------------------------------------------
 -- offset: lateral shift of the corridor (m, along the left normal of each stretch), used while avoiding
 function ADApproachModule:buildBoxes(range, offset)
     offset = offset or 0
@@ -267,9 +248,16 @@ function ADApproachModule:buildBoxes(range, offset)
     return boxes
 end
 
-------------------------------------------------------------------------------------------------
--- overlap test
-------------------------------------------------------------------------------------------------
+-- S8: centre height and half height of the tall vehicle box over a scan box
+function ADApproachModule.getTallBox(b)
+    local ground = b.groundY or (b.y - ADApproachModule.BOX_HALF_HEIGHT - 1)
+    local half = (ADApproachModule.TALL_BOX_TOP - ADApproachModule.TALL_BOX_BOTTOM) * 0.5
+    return ground + ADApproachModule.TALL_BOX_BOTTOM + half, half
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Test de chevauchement
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule:isIgnored(object, node)
     if object == nil then
         -- unknown shape (traffic sign...) ignored the same way the sensors do
@@ -344,6 +332,9 @@ function ADApproachModule:findSide(b, halfWidth, mask)
     return 0
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Balayage de la route, couloir décalé libre ?
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule:scan()
     local range = self:getRange()
     local offset = 0
@@ -392,9 +383,36 @@ function ADApproachModule:scan()
     self.scanRange = range
 end
 
-------------------------------------------------------------------------------------------------
--- speed law
-------------------------------------------------------------------------------------------------
+-- true when the corridor shifted by <offset> is free of vehicles and static objects over <range> metres
+function ADApproachModule:isCorridorClear(offset, range)
+    local boxes = self:buildBoxes(range, offset)
+    local task = self.vehicle.ad.taskModule ~= nil and self.vehicle.ad.taskModule:getActiveTask() or nil
+    self.excluded = (task ~= nil and task.getExcludedVehiclesForCollisionCheck ~= nil) and task:getExcludedVehiclesForCollisionCheck() or {}
+    local clear, reason = true, nil
+    for _, b in ipairs(boxes) do
+        self.scanHit = false
+        if offset ~= nil and offset ~= 0 then
+            -- S8: vehicles over the whole height (wheels, decks, ramps), static objects in the usual band
+            local tallY, tallHalf = ADApproachModule.getTallBox(b)
+            overlapBox(b.x, tallY, b.z, 0, b.ry, 0, b.halfWidth, tallHalf, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskVehicles, true, true, true, true)
+            if not self.scanHit then
+                overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskObjects, true, true, true, true)
+            end
+        else
+            overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskVehicles + ADCollSensorSplit.maskObjects, true, true, true, true)
+        end
+        if self.scanHit then
+            clear, reason = false, string.format("'%s' at %.0f m", tostring(self.scanHitName), b.distance)
+            break
+        end
+    end
+    self.excluded = nil
+    return clear, reason
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Loi de vitesse
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule.speedForDistance(distance)
     local free = distance - ADApproachModule.STOP_DISTANCE
     if free <= 0 then
@@ -417,10 +435,10 @@ function ADApproachModule:getEstimatedDistance()
     return self.distance
 end
 
-------------------------------------------------------------------------------------------------
--- entry point, called every frame from ADDrivePathModule:followWaypoints (server)
--- returns the speed limit (km/h) allowed by the obstacles ahead, math.huge when the route is free
-------------------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale, appelée à chaque image par ADDrivePathModule:followWaypoints (serveur)
+-- renvoie la vitesse maxi (km/h) permise par les obstacles devant, math.huge quand la route est libre
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule:getSpeedLimit(dt)
     if not self.vehicle.isServer or not ADApproachModule.isEnabled() then
         return math.huge
@@ -458,6 +476,9 @@ function ADApproachModule:getSpeedLimit(dt)
     return limit
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Dessin de débogage (canal capteurs)
+-- ------------------------------------------------------------------------------------------------------------
 function ADApproachModule:drawDebug()
     if not AutoDrive.getDebugChannelIsSet(AutoDrive.DC_SENSORINFO) then
         return

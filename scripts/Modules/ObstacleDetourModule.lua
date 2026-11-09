@@ -1,27 +1,37 @@
---[[
-    ADObstacleDetourModule
-    ----------------------
-    Gets a vehicle out of a static obstacle (fallen object, wall, tree...) that blocks its route forever.
-
-    Situation: the front collision sensor sees an obstacle that is not a vehicle. AutoDrive stops and
-    waits for the way to clear, without any time limit. A static obstacle never moves, so the vehicle
-    waits forever. This happens on the road network (object on the road) and on pathfinder routes
-    (e.g. leaving a field: the pathfinder starts 7 m ahead of the vehicle without checking that spot,
-    so a vehicle standing close to a wall gets a route through the wall).
-
-    Resolution:
-      1. The vehicle is blocked by a static obstacle for <obstacleDetourDelay> seconds.
-      2. It reverses straight back up to <obstacleDetourReverse> metres. The rear sensors (tractor and
-         last trailer / implement) are watched: it stops earlier if something is behind it.
-      3. The pathfinder computes a route around the obstacle to a road network point further along
-         the current route, which is spliced into the route.
-      4. If no route is found, the vehicle stays stopped (no forced manoeuvre) and does not try again
-         at the same place.
-    Everything runs on the server (called from ADDrivePathModule:followWaypoints).
-]]
+-- ============================================================================================================
+-- FarmPilot : ObstacleDetourModule.lua
+-- Contournement : sortir un véhicule d'un obstacle fixe (objet tombé, mur, arbre...) qui bloque sa route pour
+-- toujours.
+--
+-- Situation : le capteur avant voit un obstacle qui n'est pas un véhicule. AutoDrive s'arrête et attend que la voie
+-- se libère, sans limite de temps. Un obstacle fixe ne bouge jamais : le véhicule attend pour toujours. Cela arrive
+-- sur le réseau (objet sur la route) et sur les trajets calculés (par exemple en sortant d'un champ : le calcul part
+-- 7 m devant le véhicule sans vérifier cet endroit, un véhicule arrêté près d'un mur reçoit une route à travers le
+-- mur).
+--
+-- Règle :
+--   1. Le véhicule est bloqué par un obstacle fixe pendant <obstacleDetourDelay> secondes.
+--   2. Il recule tout droit, jusqu'à <obstacleDetourReverse> mètres. Les capteurs arrière (tracteur et dernière
+--      remorque / outil) sont surveillés : il s'arrête plus tôt si quelque chose est derrière.
+--   3. Le calcul de trajet cherche une route autour de l'obstacle jusqu'à un point du réseau plus loin sur la
+--      route en cours ; elle est insérée dans la route.
+--   4. Pas de route trouvée : le véhicule reste arrêté (aucune manœuvre forcée) et ne réessaie pas au même
+--      endroit.
+-- Le 1er essai vient vite (QUICK_DELAY) et sans recul ; le suivant après le délai réglé, avec recul. Un véhicule
+-- devant : on attend d'abord, il peut repartir (contourné après VEHICLE_STILL_TIME à l'arrêt, DRIVERLESS_STILL_TIME
+-- s'il est garé moteur coupé). Un portail devant s'ouvre tout seul : pas de contournement.
+-- Tout tourne sur le serveur, appelé à chaque image depuis ADDrivePathModule:followWaypoints.
+--
+-- Branché par : Specialization.lua (new) ; DrivePathModuleObstacles.lua (reset, handle) ; DrivePathModuleStuck.lua
+-- (isControlling, startFromStuck). ObstacleDetourQueue.lua (chargé avant) enveloppe isBlockedByStaticObstacle et
+-- startFromStuck : dernière ligne de ce fichier.
+-- ============================================================================================================
 
 ADObstacleDetourModule = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADObstacleDetourModule.DEBUG = true -- temporary diagnostic logs for the tests
 
 ADObstacleDetourModule.STATE_IDLE = 0
@@ -45,14 +55,9 @@ ADObstacleDetourModule.BLOCKED_ZONE_RADIUS = 2        -- m around the obstacle (
 ADObstacleDetourModule.TRAFFIC_CAR_DISTANCE = 8       -- m: a traffic car this close on the route counts as a vehicle in front (it drives off), not as a wall
 ADObstacleDetourModule.GATE_PATTERNS = {"gate", "portail", "hoftor", "gatter", "barrier", "schranke", "barriere"} -- object names: a gate opens, no route around it
 
-function ADObstacleDetourModule:log(text, ...)
-    if ADObstacleDetourModule.DEBUG then
-        local name = self.vehicle.ad ~= nil and self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getName() or "?"
-        print(string.format("[AD-Detour] %s (%s) [%s]: " .. text, tostring(name), tostring(self.vehicle.id),
-            ADObstacleDetourModule.STATE_NAMES[self.state] or tostring(self.state), ...))
-    end
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Création et état (lus par DrivePathModuleObstacles, DrivePathModuleStuck)
+-- ------------------------------------------------------------------------------------------------------------
 function ADObstacleDetourModule:new(vehicle)
     local o = {}
     setmetatable(o, self)
@@ -97,6 +102,17 @@ function ADObstacleDetourModule:setState(newState)
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
+function ADObstacleDetourModule:log(text, ...)
+    if ADObstacleDetourModule.DEBUG then
+        local name = self.vehicle.ad ~= nil and self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getName() or "?"
+        print(string.format("[AD-Detour] %s (%s) [%s]: " .. text, tostring(name), tostring(self.vehicle.id),
+            ADObstacleDetourModule.STATE_NAMES[self.state] or tostring(self.state), ...))
+    end
+end
+
 function ADObstacleDetourModule:getPosition()
     local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
     return x, y, z
@@ -113,10 +129,10 @@ function ADObstacleDetourModule:holdVehicle(dt)
     self.vehicle.ad.specialDrivingModule:update(dt)
 end
 
-------------------------------------------------------------------------------------------------
--- entry point, called every frame from ADDrivePathModule:followWaypoints (server)
--- returns true when this module controls the vehicle for this frame
-------------------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale, appelée à chaque image par ADDrivePathModule:followWaypoints (serveur)
+-- renvoie true quand ce module conduit le véhicule pour cette image
+-- ------------------------------------------------------------------------------------------------------------
 function ADObstacleDetourModule:handle(dt, obstacleDetected)
     if not self.vehicle.isServer then
         return false
@@ -134,7 +150,7 @@ function ADObstacleDetourModule:handle(dt, obstacleDetected)
     if self.vehicle.ad.avoidModule ~= nil and self.vehicle.ad.avoidModule:isActive() then
         blockedByStaticObstacle = false
     end
-    -- owner 30/10 16:34 ("il veut contourner mais c'est juste une attente classique"): the car in front queues behind
+    -- 30/10 16:34 (a detour started where it was only a normal wait): the car in front queues behind
     -- another vehicle, as ADAvoidModule decided: a normal wait, no clock, no reverse, no detour
     local avoid = self.vehicle.ad.avoidModule
     if blockedByStaticObstacle and avoid ~= nil and avoid.isQueuing ~= nil and avoid:isQueuing() then
@@ -178,6 +194,9 @@ function ADObstacleDetourModule:handle(dt, obstacleDetected)
     return false
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Bloqué par quoi ? (obstacle fixe, véhicule, portail)
+-- ------------------------------------------------------------------------------------------------------------
 -- front short sensor blocked, but not by AD traffic, a reverse section or a head-on manoeuvre
 function ADObstacleDetourModule:isBlockedByStaticObstacle()
     local ad = self.vehicle.ad
@@ -261,30 +280,6 @@ function ADObstacleDetourModule:isGateInFront()
     return false
 end
 
--- called by the "stuck" safety of ADDrivePathModule: reverse, then plan a route around from here
-function ADObstacleDetourModule:startFromStuck()
-    local ad = self.vehicle.ad
-    if not self.vehicle.isServer or not ADObstacleDetourModule.isEnabled() or self.state ~= ADObstacleDetourModule.STATE_IDLE then
-        return false
-    end
-    if ad.drivePathModule:getIsReversing() or (ad.trafficYieldModule ~= nil and ad.trafficYieldModule:isBusy()) then
-        return false
-    end
-    if ADIntersectionModule ~= nil and ADIntersectionModule.isWaiting ~= nil and ADIntersectionModule.isWaiting(self.vehicle) then
-        return false
-    end
-    if self:isGateInFront() then
-        return false
-    end
-    if not self:mayTryHere() or self:findTarget() == nil then
-        return false
-    end
-    self.forceReverse = true
-    self:start()
-    self.forceReverse = nil
-    return true
-end
-
 -- the vehicle seen by the route scan right in front, nil when unknown
 function ADObstacleDetourModule:getVehicleInFront()
     local approach = self.vehicle.ad.approachModule
@@ -318,6 +313,9 @@ function ADObstacleDetourModule:isDriverlessVehicleInFront()
     return true
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Essais au même endroit, point du réseau à rejoindre
+-- ------------------------------------------------------------------------------------------------------------
 function ADObstacleDetourModule:attemptsAtThisPlace()
     local x, _, z = self:getPosition()
     if self.lastAttemptPos ~= nil and MathUtil.vector2Length(x - self.lastAttemptPos.x, z - self.lastAttemptPos.z) < ADObstacleDetourModule.SAME_PLACE_DISTANCE then
@@ -359,6 +357,9 @@ function ADObstacleDetourModule:findTarget()
     return nil
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Départ du contournement (blocage, ou sécurité « coincé » de DrivePathModuleStuck)
+-- ------------------------------------------------------------------------------------------------------------
 function ADObstacleDetourModule:start()
     local x, y, z = self:getPosition()
     if self.lastAttemptPos == nil or MathUtil.vector2Length(x - self.lastAttemptPos.x, z - self.lastAttemptPos.z) >= ADObstacleDetourModule.SAME_PLACE_DISTANCE then
@@ -399,6 +400,33 @@ function ADObstacleDetourModule:start()
     end
 end
 
+-- called by the "stuck" safety of ADDrivePathModule: reverse, then plan a route around from here
+function ADObstacleDetourModule:startFromStuck()
+    local ad = self.vehicle.ad
+    if not self.vehicle.isServer or not ADObstacleDetourModule.isEnabled() or self.state ~= ADObstacleDetourModule.STATE_IDLE then
+        return false
+    end
+    if ad.drivePathModule:getIsReversing() or (ad.trafficYieldModule ~= nil and ad.trafficYieldModule:isBusy()) then
+        return false
+    end
+    if ADIntersectionModule ~= nil and ADIntersectionModule.isWaiting ~= nil and ADIntersectionModule.isWaiting(self.vehicle) then
+        return false
+    end
+    if self:isGateInFront() then
+        return false
+    end
+    if not self:mayTryHere() or self:findTarget() == nil then
+        return false
+    end
+    self.forceReverse = true
+    self:start()
+    self.forceReverse = nil
+    return true
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Recul
+-- ------------------------------------------------------------------------------------------------------------
 function ADObstacleDetourModule:updateReversing(dt)
     local x, _, z = self:getPosition()
     self.reversedDistance = MathUtil.vector2Length(x - self.startPos.x, z - self.startPos.z)
@@ -427,6 +455,9 @@ function ADObstacleDetourModule:updateReversing(dt)
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Calcul de la route autour de l'obstacle
+-- ------------------------------------------------------------------------------------------------------------
 function ADObstacleDetourModule:startPlanning()
     local targetIndex = self:findTarget()
     if targetIndex == nil then
@@ -512,4 +543,8 @@ function ADObstacleDetourModule:fail(reason)
     AutoDriveMessageEvent.sendMessageOrNotification(self.vehicle, ADMessagesManager.messageTypes.ERROR, "$l10n_AD_Driver_of; %s $l10n_AD_obstacleDetour_failed;", 5000, self.vehicle.ad.stateModule:getName())
     self:setState(ADObstacleDetourModule.STATE_IDLE)
 end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Véhicule arrêté devant en file (pont-bascule) : ObstacleDetourQueue.lua (chargé avant ce fichier)
+-- ------------------------------------------------------------------------------------------------------------
 if ADObstacleDetourQueue ~= nil then ADObstacleDetourQueue.install(ADObstacleDetourModule) end -- 08/11 vehicule arrete devant en file (pont-bascule) : ObstacleDetourQueue.lua

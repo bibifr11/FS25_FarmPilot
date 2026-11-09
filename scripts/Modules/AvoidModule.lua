@@ -1,25 +1,37 @@
---[[
-    ADAvoidModule
-    -------------
-    Light obstacle on one side of the route (pole, bale, sign, parked car...): the vehicle shifts its followed
-    line a little to the other side and passes without stopping, then comes back.
-
-    Uses the route scan of ADApproachModule: the obstacle ahead, its distance and the side of the corridor it is
-    on. The offset candidates (1 .. 2.5 m away from the obstacle) are tested on a shifted corridor over
-    CLEAR_RANGE metres, vehicles included (nothing may come the other way). The first clear one is applied as
-    ADDrivePathModule.lateralOffset, ramped in and out with the distance driven, held until the whole train
-    has passed the obstacle. Speed is capped meanwhile. Only on the road network, never on a field, never while a
-    head-on plan (TrafficYield) or the obstacle detour is running. A vehicle counts as an obstacle only once it
-    stood still for VEHICLE_STILL_TIME.
-
-    AI traffic car stopped in front, across the corridor (nose to nose: it waits for us and we wait for it):
-    lane change. The vehicle backs up just enough room (STATE_BACKING, like the obstacle detour), then shifts a
-    whole lane (LANE_OFFSETS, right side first) and passes; the car drives on once its lane is free.
-    Everything runs on the server (called from ADDrivePathModule:followWaypoints).
-]]
+-- ============================================================================================================
+-- FarmPilot : AvoidModule.lua
+-- Écart : obstacle léger sur un côté de la route (poteau, balle, panneau, voiture garée...) : le véhicule décale un
+-- peu sa ligne suivie de l'autre côté et passe sans s'arrêter, puis revient.
+--
+-- Règle :
+-- - Le balayage de route d'ADApproachModule donne l'obstacle devant, sa distance et le côté du couloir où il est.
+--   Les décalages candidats (1 à 2,5 m à l'écart de l'obstacle) sont testés sur un couloir décalé sur CLEAR_RANGE m,
+--   véhicules compris (rien ne doit venir en face). Le premier libre devient ADDrivePathModule.lateralOffset, amené
+--   et retiré progressivement avec la distance roulée, tenu jusqu'à ce que tout l'attelage ait passé l'obstacle.
+--   Vitesse limitée pendant ce temps.
+-- - Seulement sur le réseau de routes : jamais dans un champ, jamais pendant un plan de face à face (TrafficYield)
+--   ni pendant un contournement d'obstacle. Un véhicule ne compte comme obstacle qu'après VEHICLE_STILL_TIME à
+--   l'arrêt.
+-- - Voiture du trafic arrêtée devant, en travers du couloir (nez à nez : elle nous attend et on l'attend) :
+--   changement de voie. Le véhicule recule juste ce qu'il faut (STATE_BACKING, comme le contournement), se décale
+--   d'une voie entière (LANE_OFFSETS, côté droit d'abord) et passe ; la voiture repart une fois sa voie libre.
+-- - Voiture ou véhicule arrêté dans MON sens (S5, 28/10) : une file, j'attends derrière, sans écart (une voiture
+--   seule, sans rien devant elle, est doublée après QUEUE_TIMEOUT).
+-- - Attelage qui pousse sans avancer contre un obstacle que les capteurs ne voient pas (08/11) : recul, puis
+--   passage à côté (startFromPush).
+-- Tout tourne sur le serveur, appelé à chaque image depuis ADDrivePathModule:followWaypoints.
+--
+-- Branché par : Specialization.lua (new) ; DrivePathModuleObstacles.lua (reset, update, handle, lateralOffset) ;
+-- DrivePathModuleStuck.lua (isControlling, startFromPush) ; lu par ApproachModule.lua (getOffset, getScanRange,
+-- isActive) et ObstacleDetourModule.lua (isActive, isQueuing). ObstacleDetourQueue.lua (chargé avant) enveloppe
+-- isWaitingMyWay : dernière ligne de ce fichier.
+-- ============================================================================================================
 
 ADAvoidModule = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADAvoidModule.DEBUG = true -- temporary diagnostic logs for the tests
 
 ADAvoidModule.STATE_IDLE = 0
@@ -60,14 +72,9 @@ ADAvoidModule.SHIFT_LAG = 2                   -- m: the train reaches the shifte
 ADAvoidModule.PUSH_OFFSETS = {1.5, 2.0, 2.5, 3.0} -- m, tried when the train pushes against something it does not see
 ADAvoidModule.PUSH_BACK_MARGIN = 2            -- m backed up on top of what the shift needs
 
-function ADAvoidModule:log(text, ...)
-    if ADAvoidModule.DEBUG then
-        local name = self.vehicle.ad ~= nil and self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getName() or "?"
-        print(string.format("[AD-Ecart] %s (%s) [%s]: " .. text, tostring(name), tostring(self.vehicle.id),
-            ADAvoidModule.STATE_NAMES[self.state] or tostring(self.state), ...))
-    end
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Création et état (lus par DrivePathModuleObstacles, ApproachModule, ObstacleDetourModule)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAvoidModule:new(vehicle)
     local o = {}
     setmetatable(o, self)
@@ -141,6 +148,24 @@ function ADAvoidModule:getScanRange()
     return 0
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
+function ADAvoidModule:log(text, ...)
+    if ADAvoidModule.DEBUG then
+        local name = self.vehicle.ad ~= nil and self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getName() or "?"
+        print(string.format("[AD-Ecart] %s (%s) [%s]: " .. text, tostring(name), tostring(self.vehicle.id),
+            ADAvoidModule.STATE_NAMES[self.state] or tostring(self.state), ...))
+    end
+end
+
+function ADAvoidModule:logLimited(hit, text)
+    if g_time - self.lastLogTime > ADAvoidModule.LOG_INTERVAL then
+        self.lastLogTime = g_time
+        self:log("'%s' %.1f m ahead: %s", tostring(hit.name), hit.distance or -1, text)
+    end
+end
+
 function ADAvoidModule:getTrainLength()
     local length = self.vehicle.size ~= nil and self.vehicle.size.length or 6
     local units = AutoDrive.getAllUnits(self.vehicle)
@@ -154,15 +179,15 @@ function ADAvoidModule:getTrainLength()
     return length
 end
 
-------------------------------------------------------------------------------------------------
--- may the obstacle be avoided ?
-------------------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- L'obstacle peut-il être contourné ?
+-- ------------------------------------------------------------------------------------------------------------
 function ADAvoidModule:isOnField()
     local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
     return AutoDrive.checkIsOnField(x, y, z) == true
 end
 
--- owner 31/10 08:24 PC (942 stopped on a row of cones while it was the one passing in a head-on plan with the
+-- 31/10 08:24 PC (942 stopped on a row of cones while it was the one passing in a head-on plan with the
 -- MF 7S.210): the vehicle that drives through a plan may still go round a fixed object; never the one that waits
 function ADAvoidModule:isPasserInPlan()
     local tym = self.vehicle.ad.trafficYieldModule
@@ -210,6 +235,9 @@ function ADAvoidModule:isBusyElsewhere(hit)
     return false
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Véhicule ou voiture arrêté devant
+-- ------------------------------------------------------------------------------------------------------------
 -- a vehicle is an obstacle once it stood still long enough and is not waiting for me in a head-on plan
 function ADAvoidModule:isVehicleStill(hit, dt)
     local object = hit.object
@@ -222,7 +250,7 @@ function ADAvoidModule:isVehicleStill(hit, dt)
     if root.ad ~= nil and root.ad.trafficYieldModule ~= nil and root.ad.trafficYieldModule.partner == self.vehicle then
         still = false
     end
-    -- S5 (owner 28/10 17:42): an AutoDrive vehicle that waits its turn my way (single track, crossing) is the head of
+    -- S5 (28/10 17:42): an AutoDrive vehicle that waits its turn my way (single track, crossing) is the head of
     -- the queue: I stay behind it, never around it
     if still and self:isWaitingMyWay(root) then
         self:logLimited(hit, "attend son tour dans mon sens, je reste derriere")
@@ -261,6 +289,9 @@ function ADAvoidModule:isTrafficStill(hit)
     return (g_time - self.stillSince) >= ADAvoidModule.TRAFFIC_STILL_TIME
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- File : véhicule ou voiture arrêté dans mon sens (S5)
+-- ------------------------------------------------------------------------------------------------------------
 -- S5: my driving direction (world, normalised), nil when unknown
 function ADAvoidModule:getMyDirection()
     local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
@@ -350,7 +381,7 @@ function ADAvoidModule:findStoppedBeyond(hit, mx, mz)
     return nil
 end
 
--- S5 (owner 28/10 17:42, the MT635 changed lanes around a car that queued behind the Magnum waiting before the farm
+-- S5 (28/10 17:42, the MT635 changed lanes around a car that queued behind the Magnum waiting before the farm
 -- track, then got stuck 2 m behind its cultivator): a traffic car stopped in MY direction queues, I wait behind it;
 -- only a car nose to nose (it waits for me) is passed. Returns queuing, reason, and whether a vehicle in front of it
 -- was seen (then the wait has no timeout)
@@ -387,6 +418,9 @@ function ADAvoidModule:isQueuingCar(hit)
     return false, nil, false
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Décision : écart à côté de l'obstacle ou changement de voie
+-- ------------------------------------------------------------------------------------------------------------
 function ADAvoidModule:tryStart(dt)
     local approach = self.vehicle.ad.approachModule
     if approach == nil then
@@ -420,7 +454,7 @@ function ADAvoidModule:tryStart(dt)
             local standing = self.stillSince ~= nil and (g_time - self.stillSince) or 0
             if behindVehicle or standing < ADAvoidModule.QUEUE_TIMEOUT then
                 self:logLimited(hit, string.format("voiture arretee dans mon sens (file, %s), j'attends derriere", why))
-                -- owner 30/10 16:34 (942 behind a car queuing behind the Puma: the detour reversed 9 m to go round it):
+                -- 30/10 16:34 (942 behind a car queuing behind the Puma: the detour reversed 9 m to go round it):
                 -- a queue is a normal wait, the obstacle detour leaves it alone
                 self.queueUntil = g_time + ADAvoidModule.QUEUE_HOLD
                 return
@@ -524,24 +558,9 @@ function ADAvoidModule:tryLaneChange(hit, distance, speed)
         hit.isTraffic and "traffic car stopped" or "obstacle", tostring(hit.name), distance, self.backNeeded, self.target)
 end
 
--- kind: "lane" (lane change beside a stopped car: the lane is chosen again after backing up), "side" (shift beside an
--- object seen too late: the same shift if still free, another one otherwise), "push" (pushing against something unseen)
-function ADAvoidModule:startBacking(kind, backNeeded, hitDistance, hitName)
-    self.backKind = kind
-    self.backNeeded = backNeeded
-    self.hitDistance = hitDistance
-    self.hitName = hitName
-    self.travelled = 0
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    self.startPos = {x = x, z = z}
-    local tx, ty, tz = AutoDrive.localToWorld(self.vehicle, 0, 0, -100)
-    self.reverseTarget = {x = tx, y = ty, z = tz}
-    self.backTimer:timer(false)
-    self.rearBlockedTimer:timer(false)
-    self.vehicle.ad.specialDrivingModule:reset()
-    self.state = ADAvoidModule.STATE_BACKING
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Attelage qui pousse contre un obstacle que les capteurs ne voient pas (08/11)
+-- ------------------------------------------------------------------------------------------------------------
 -- a side offset whose corridor is free, at least 0.5 m away from the line followed now: further on the side the
 -- train was already moving to first, then the other side
 function ADAvoidModule:findPushOffset(range)
@@ -566,7 +585,7 @@ function ADAvoidModule:findPushOffset(range)
     return nil
 end
 
--- (08/11, Fabien : « il a essayé de partir ») the train pushes against something the sensors do not see (pole beside
+-- (08/11) the train pushes against something the sensors do not see (pole beside
 -- the line, 7R 350 at Champ 56): back up, then pass beside it (called by ADDrivePathModule:handlePushing)
 function ADAvoidModule:startFromPush()
     if not self.vehicle.isServer or not ADAvoidModule.isEnabled() or self.state == ADAvoidModule.STATE_BACKING then
@@ -590,17 +609,28 @@ function ADAvoidModule:startFromPush()
     return true
 end
 
-function ADAvoidModule:logLimited(hit, text)
-    if g_time - self.lastLogTime > ADAvoidModule.LOG_INTERVAL then
-        self.lastLogTime = g_time
-        self:log("'%s' %.1f m ahead: %s", tostring(hit.name), hit.distance or -1, text)
-    end
+-- ------------------------------------------------------------------------------------------------------------
+-- Recul avant l'écart : le module prend la main (appelé par followWaypoints,
+-- renvoie true tant que ce module conduit)
+-- ------------------------------------------------------------------------------------------------------------
+-- kind: "lane" (lane change beside a stopped car: the lane is chosen again after backing up), "side" (shift beside an
+-- object seen too late: the same shift if still free, another one otherwise), "push" (pushing against something unseen)
+function ADAvoidModule:startBacking(kind, backNeeded, hitDistance, hitName)
+    self.backKind = kind
+    self.backNeeded = backNeeded
+    self.hitDistance = hitDistance
+    self.hitName = hitName
+    self.travelled = 0
+    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
+    self.startPos = {x = x, z = z}
+    local tx, ty, tz = AutoDrive.localToWorld(self.vehicle, 0, 0, -100)
+    self.reverseTarget = {x = tx, y = ty, z = tz}
+    self.backTimer:timer(false)
+    self.rearBlockedTimer:timer(false)
+    self.vehicle.ad.specialDrivingModule:reset()
+    self.state = ADAvoidModule.STATE_BACKING
 end
 
-------------------------------------------------------------------------------------------------
--- backing up before a lane change: takes control of the vehicle (called from followWaypoints,
--- returns true while this module drives)
-------------------------------------------------------------------------------------------------
 function ADAvoidModule:handle(dt)
     if self.state ~= ADAvoidModule.STATE_BACKING then
         return false
@@ -655,10 +685,10 @@ function ADAvoidModule:handle(dt)
     return true
 end
 
-------------------------------------------------------------------------------------------------
--- entry point, called every frame from ADDrivePathModule:followWaypoints (server)
--- returns the speed limit (km/h) while a manoeuvre runs, math.huge otherwise
-------------------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale, appelée à chaque image par ADDrivePathModule:followWaypoints (serveur)
+-- renvoie la vitesse maxi (km/h) pendant une manœuvre, math.huge sinon
+-- ------------------------------------------------------------------------------------------------------------
 function ADAvoidModule:update(dt)
     if not self.vehicle.isServer or not ADAvoidModule.isEnabled() then
         if self.offset ~= 0 or self.state ~= ADAvoidModule.STATE_IDLE then
@@ -728,4 +758,8 @@ function ADAvoidModule:update(dt)
     end
     return ADAvoidModule.SPEED
 end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Véhicule arrêté devant en file (pont-bascule) : ObstacleDetourQueue.lua (chargé avant ce fichier)
+-- ------------------------------------------------------------------------------------------------------------
 if ADObstacleDetourQueue ~= nil then ADObstacleDetourQueue.installAvoid(ADAvoidModule) end -- 08/11 vehicule arrete devant en file (pont-bascule) : ObstacleDetourQueue.lua

@@ -1,21 +1,36 @@
--- Square manoeuvre at the end of a row (owner 27/10 18:53 and 18:55, his two drawings).
--- Drawing 1 (tractor beside the harvester): forward through a quarter turn toward the harvester's side, straight on
--- until the trailer is aligned (purple), straight reverse to free the nose (yellow), forward through a quarter turn to
--- end in the axis of the new row behind the harvester (green).
--- Drawing 2 (tractor right behind the harvester, "variante inversee", 19:17 and 19:26: "0 a 1 recule sur quelques
--- metres, 1 a 2 en une seule phase comme pour l'ampoule (apres demi-tour de l'ensileuse), 2 a 3 en marche AR, 3 a 4 en
--- marche AV"): a straight reverse first when the tractor stands close to the harvester, then the same legs.
--- The harvester has already made its U-turn (his drawing 19:16, black arrows): the place is beside its new row, on its
--- pipe side, as generateReverseToCombineSection measures it.
--- Built like the other AutoDrive turns: fixed legs (arcs at full lock and straights), several lengths tried, candidates
--- sorted by how close they end to the place behind the harvester's new row, the first one on field ground without crop
--- and clear of fixed obstacles is kept. Each leg of the drawing keeps its sense: the arcs are driven forward and the
--- reverse legs are straight, after a straight run long enough to align the trailer.
+-- ============================================================================================================
+-- FarmPilot : SquareTurn.lua
+-- Demi-tour en équerre en bout de rang, pour la benne derrière l'ensileuse (deux dessins, 27/10 18:53 et 18:55).
+--
+-- Dessin 1 (tracteur à côté de l'ensileuse) : en avant, quart de tour vers le côté de l'ensileuse, tout droit jusqu'à
+-- ce que la remorque soit alignée (violet) ; recul droit pour dégager le nez (jaune) ; en avant, quart de tour pour
+-- finir dans l'axe du nouveau rang derrière l'ensileuse (vert).
+-- Dessin 2 (tracteur juste derrière l'ensileuse, variante inversée, 19:17 et 19:26 : de 0 à 1 recul de quelques
+-- mètres ; de 1 à 2 en une seule phase, comme pour l'ampoule après le demi-tour de l'ensileuse ; de 2 à 3 en marche
+-- arrière ; de 3 à 4 en marche avant) : d'abord un recul droit quand le tracteur est près de l'ensileuse, puis les
+-- mêmes étapes.
+-- L'ensileuse a déjà fait son demi-tour (dessin de 19:16, flèches noires) : la place est à côté de son nouveau rang,
+-- du côté de sa goulotte, telle que generateReverseToCombineSection la mesure.
+--
+-- Règle : construit comme les autres virages d'AutoDrive : étapes fixes (arcs braquage à fond et lignes droites),
+-- plusieurs longueurs essayées, variantes triées selon la distance entre leur fin et la place derrière le nouveau
+-- rang de l'ensileuse ; la première sur sol de champ, sans culture et sans obstacle fixe est gardée (une variante
+-- vérifiée par image). Chaque étape du dessin garde son sens : les arcs se font en marche avant et les reculs sont
+-- droits, après une ligne droite assez longue pour aligner la remorque. Jamais à travers l'ensileuse ni sa barre de
+-- coupe.
+--
+-- Branché par : HandleHarvesterTurnTask.lua (tryNextTurn, 3e demi-tour essayé, avant YTurn). Utilise
+-- YTurn.findObstacle (YTurn.lua, chargé avant).
+-- ============================================================================================================
+
 SquareTurn = ADInheritsFrom(AbstractTurn)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 SquareTurn.BACKS_FIRST = {0, 8, 14, 20}     -- m straight reverse first (0 = drawing 1, more = drawing 2)
 SquareTurn.CLEAR_DISTANCE = 5               -- m: closer than this to the harvester, the reverse first comes first (drawing 2)
-SquareTurn.SIDE_STEPS = {0}                 -- m side step (not in the owner's drawings, kept at 0)
+SquareTurn.SIDE_STEPS = {0}                 -- m side step (not in the drawings, kept at 0)
 SquareTurn.FORWARDS = {0, 4, 8, 12, 16, 20, 24, 28} -- m straight forward before the purple arc (passing the harvester first)
 SquareTurn.ANGLES = {90, 110}               -- deg of the first forward arc (purple); 90 preferred (reverse along the headland)
 SquareTurn.LEAD_EXTRAS = {0, 6, 12, 18}     -- m straight on after the purple arc, added to the train length
@@ -36,6 +51,9 @@ SquareTurn.MIN_RADIUS = 5                   -- m
 SquareTurn.MIN_LEAD = 8                     -- m straight on at least before a reverse
 SquareTurn.COMBINE_MARGIN = 0.8             -- m kept around the harvester and its header
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création, interface des demi-tours (AbstractTurn)
+-- ------------------------------------------------------------------------------------------------------------
 function SquareTurn:new(turnParameters)
     local o = SquareTurn:create()
     o.turnGenerated = false
@@ -67,6 +85,9 @@ function SquareTurn:getWayPoints()
     return self.path
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Repère de départ et mesures
+-- ------------------------------------------------------------------------------------------------------------
 -- frame of the start: f = forward, l = left (AutoDrive: a vehicle's local +X is its left side), angles from f toward l
 function SquareTurn:getFrame()
     local p = self.turnParameters
@@ -75,6 +96,12 @@ function SquareTurn:getFrame()
     local g = {x = p.targetDir.z.x, z = p.targetDir.z.z}
     local goal = math.atan2(g.x * l.x + g.z * l.z, g.x * f.x + g.z * f.z)
     return f, l, goal
+end
+
+function SquareTurn:toWorld(u, v)
+    local p = self.turnParameters
+    local f, l = self:getFrame()
+    return p.startPosition.x + u * f.x + v * l.x, p.startPosition.z + u * f.z + v * l.z
 end
 
 function SquareTurn:getRadius()
@@ -99,6 +126,9 @@ function SquareTurn:getIdealEnd()
     return {x = p.targetPosition.x, z = p.targetPosition.z}
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- L'ensileuse et sa barre de coupe : boîtes à ne pas traverser
+-- ------------------------------------------------------------------------------------------------------------
 -- the harvester body and its header as two boxes in the start frame: centre (u, v), heading angle (rad from f toward
 -- l), half length and half width widened by the train half width. nil when it cannot be read
 function SquareTurn:getCombineBoxes()
@@ -113,7 +143,7 @@ function SquareTurn:getCombineBoxes()
         local f, l = self:getFrame()
         local p = self.turnParameters
         if self.task.endRow and p.targetPosition ~= nil and p.targetDir ~= nil and p.targetDir.z ~= nil then
-            -- end of row (owner's drawing 27/10 19:16, log 18:37:24 "une seule variante"): the harvester is still
+            -- end of row (drawing 27/10 19:16, log 18:37:24: a single candidate left): the harvester is still
             -- turning when the manoeuvre is planned; it is counted where it will stand, at the entry of its new row
             cx, cz = p.targetPosition.x, p.targetPosition.z
             dx, dz = p.targetDir.z.x, p.targetDir.z.z
@@ -180,12 +210,9 @@ local function boxDistance(boxes, u, v)
     return best
 end
 
-function SquareTurn:toWorld(u, v)
-    local p = self.turnParameters
-    local f, l = self:getFrame()
-    return p.startPosition.x + u * f.x + v * l.x, p.startPosition.z + u * f.z + v * l.z
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Les étapes du dessin
+-- ------------------------------------------------------------------------------------------------------------
 -- the legs of a candidate in the start frame. A leg: {arc = true, sense = +-1 (+1 left), angle = rad, reverse = bool}
 -- or {len = m, reverse = bool}. The green arc angle is computed from the goal heading, nil when out of range
 function SquareTurn:buildLegs(c, goal)
@@ -253,6 +280,9 @@ local function walk(legs, R, visit)
     return u, v, h, length
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Variantes et points du trajet
+-- ------------------------------------------------------------------------------------------------------------
 function SquareTurn:buildCandidates()
     local p = self.turnParameters
     local f, l, goal = self:getFrame()
@@ -386,6 +416,9 @@ function SquareTurn:buildPoints(c)
     return points
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale : une variante vérifiée par image
+-- ------------------------------------------------------------------------------------------------------------
 local function reasonKey(why)
     why = tostring(why)
     for _, key in ipairs({"hors du champ", "culture", "obstacle"}) do

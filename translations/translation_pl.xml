@@ -139,6 +139,14 @@
 		<text name="gui_ad_parkInField_tooltip"						text="Po rozładowaniu kombajnu - jeśli nie zaparkowany w zbożu" />
 		<text name="gui_ad_unloadFillLevel"							text="Poziom napełnienia do rozładunku" />
 		<text name="gui_ad_unloadFillLevel_tooltip"					text="Po rozładowaniu kombajnu, poziom napełnienia, przy którym przyczepa dostarczana jest do miejsc rozładowania." />
+		<text name="gui_ad_fpSiloEmptyWait" text="Loading stopped: leave after" />
+		<text name="gui_ad_fpSiloEmptyWait_tooltip" text="At the loading point, if the trailer already holds something and nothing more comes in for this time, the vehicle leaves with what it has. No: it waits until filled to the 'Unload fill level' setting (for example a truck at the field edge filled by an auger wagon). Less than 1 % left in the trailer counts as empty." />
+		<text name="gui_ad_fpSiloEmptyWait_off" text="No" />
+		<text name="gui_ad_fpSiloEmptyWait_15" text="15 s" />
+		<text name="gui_ad_fpSiloEmptyWait_30" text="30 s" />
+		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
+		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
+		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
 		<text name="gui_ad_findDriver"									text="Znajdź kierowcę" />
 		<text name="gui_ad_findDriver_tooltip"							text="Szukaj najbliższych kierowców (Ignoruj cel)" />
 		<text name="gui_ad_gui_scale"									text="Skalowanie interfejsu FarmPilot" />
@@ -446,13 +454,13 @@
 		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
 		<text name="gui_ad_dirtRoads" text="Tertiary roads" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Tertiary road points of the network (pink and purple lines in the editor). Allowed: taken only when they save time, at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Tertiary road points of the network (pink and purple lines in the editor). Only to reach a destination on them or at their end (or to leave from there), never as a shortcut. Allowed: at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
 		<text name="gui_ad_dirtRoads_auto" text="Auto (truck: never)" />
 		<text name="gui_ad_dirtRoads_never" text="Never" />
 		<text name="gui_ad_dirtRoads_allowed" text="Allowed" />
 		<text name="gui_ad_secondaryRoads" text="Secondary roads" />
-		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Auto: like original AutoDrive (taken only when the main road is much longer). Allowed: taken whenever they save time. Never: only when there is no other route" />
-		<text name="gui_ad_secondaryRoads_auto" text="Auto (original)" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Auto: shortcuts taken whenever they save time for tractors; trucks and semis like original AutoDrive (only when the main road is much longer). Allowed: taken whenever they save time. Never: only when there is no other route" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (truck: original)" />
 		<text name="AD_cropStuck" text="%s %s: stuck in the crop (%s), no clean way out: please clear it by hand" />
 		<text name="AD_foldWait" text="%s %s: waiting for %s to fold (%d %%)%s, not leaving" />
 		<text name="gui_ad_dirtRoadSpeed" text="Max speed on tertiary roads" />
@@ -531,6 +539,7 @@
 		<text name="AD_autonomous_none" text="no Courseplay course of %s m on field %s, waiting" />
 		<text name="AD_autonomous_several" text="%s courses of %s m on field %s, pick one in the Autonomous courses window (Ctrl+Alt+Numpad 5), waiting" />
 		<text name="AD_autonomous_noField" text="no field here, waiting" />
+		<text name="AD_autonomous_noWindrow" text="baler: no Courseplay course of field %s lies on the windrows, waiting" />
 		<text name="AD_autonomous_noWidth" text="tool width unknown, waiting" />
 		<text name="AD_autonomous_noTool" text="Autonomous mode: no work tool attached" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay not found: base game worker started on field %s" />
@@ -566,6 +575,32 @@
 		<text name="AD_autonomous_fetchBusy" text="the implement « %s » is attached to another vehicle" />
 		<text name="AD_autonomous_fetchOther" text="another implement is attached: detach it to fetch « %s », or choose « The attached one » on the « Implement » line" />
 		<text name="AD_autonomous_fetchNoJoint" text="the implement « %s » does not fit the rear hitch of this tractor (or the rear hitch is taken)" />
+		<text name="AD_trailer_row" text="Trailer: %s" />
+		<text name="AD_trailer_rowNone" text="Trailer: the attached one" />
+		<text name="AD_trailer_listNone" text="The attached one" />
+		<text name="AD_trailer_fetchGo" text="going to fetch the trailer '%s'" />
+		<text name="AD_trailer_fetchDone" text="trailer '%s' attached, starting" />
+		<text name="AD_trailer_fetchFailed" text="the trailer '%s' could not be attached, stopping" />
+		<text name="AD_trailer_fetchNoPath" text="no path to the front of the trailer '%s': place the tractor in front of it, in line, and start again" />
+		<text name="AD_trailer_fetchMissed" text="attaching the trailer '%s' failed, stopped in front of it" />
+		<text name="AD_trailer_fetchBusy" text="the trailer '%s' is attached to another vehicle" />
+		<text name="AD_trailer_fetchOther" text="a trailer or implement is already attached: detach it to fetch '%s', or choose 'The attached one' on the 'Trailer' line" />
+		<text name="AD_trailer_fetchNoJoint" text="the trailer '%s' cannot be attached to the rear of this tractor (or the rear hitch is already in use)" />
+		<text name="AD_trailer_dropGo" text="job done: the trailer '%s' goes to its place, then the tractor to its own" />
+		<text name="gui_ad_trailerSwap_title" text="Trailer swap" />
+		<text name="gui_ad_trailerSwap_tooltip" text="Trailer swap at delivery" />
+		<text name="gui_ad_trailerSwap_info" text="At delivery, the full trailer is parked on a free place of the folder, then the tractor leaves with an empty trailer taken from another place. A place = a marker of the folder. Current setting: %s" />
+		<text name="gui_ad_trailerSwap_off" text="No (normal delivery)" />
+		<text name="gui_ad_trailerSwap_current" text="current setting" />
+		<text name="gui_ad_trailerSwap_folderValue" text="places: %d · free: %d · empty trailers: %d" />
+		<text name="gui_ad_trailerSwap_noFolder" text="No marker folder: create a folder and put one marker per place in it." />
+		<text name="AD_swap_go" text="full trailer '%s': parked on '%s', then the empty '%s'" />
+		<text name="AD_swap_done" text="empty trailer '%s' attached, back to work" />
+		<text name="AD_swap_noFree" text="trailer swap: no free place in '%s', normal delivery" />
+		<text name="AD_swap_noEmpty" text="trailer swap: no empty trailer in '%s', normal delivery" />
+		<text name="AD_swap_notOne" text="trailer swap: exactly one trailer must be attached, normal delivery" />
+		<text name="AD_swap_dropFailed" text="trailer swap: the full trailer could not be detached, stop" />
+		<text name="AD_swap_emptyGone" text="trailer swap: no empty trailer left in '%s', stop" />
 		<text name="AD_fpFn_plow" text="Plough" />
 		<text name="AD_fpFn_cultivator" text="Cultivator" />
 		<text name="AD_fpFn_discHarrow" text="Disc harrow" />
@@ -588,6 +623,7 @@
 		<text name="AD_fpFn_baler" text="Baler" />
 		<text name="AD_fpFn_balerSquare" text="Square baler" />
 		<text name="AD_fpFn_balerRound" text="Round baler" />
+		<text name="AD_fpFn_baleLoader" text="Bale loader" />
 		<text name="gui_ad_autonomous_title" text="Autonomous courses" />
 		<text name="gui_ad_autonomous_field" text="Field %s" />
 		<text name="gui_ad_autonomous_fields" text="Fields %s" />
@@ -649,7 +685,37 @@
 		<text name="AD_autonomous_sprayerEmpty" text="tank empty: filling at « %s », then back to the field" />
 		<text name="AD_autonomous_dumpGo" text="field done: unloading the rest of the tank into big bags at « %s »" />
 		<text name="AD_autonomous_dumpFailed" text="rest of the tank not unloaded at « %s » (no space or refused): kept in the tank" />
+		<text name="AD_autonomous_dumpParkGo" text="parking: first unloading the rest of the tank into big bags at « %s »" />
+		<text name="AD_autonomous_dumpKept" text="%s left in the tank: cannot be unloaded into big bags or no place found (see log)" />
 		<text name="AD_task_autonomous_dump" text="Unloads the rest into big bags" />
+		<text name="gui_ad_baleLoader_title" text="Bale loader settings" />
+		<text name="gui_ad_baleLoader_head" text="Loader: %s · Field: %s · Takes %s" />
+		<text name="gui_ad_baleLoader_round" text="round bales" />
+		<text name="gui_ad_baleLoader_square" text="square bales" />
+		<text name="gui_ad_baleLoader_both" text="round and square bales" />
+		<text name="gui_ad_baleLoader_noLoader" text="No bale loader on this row." />
+		<text name="gui_ad_baleLoader_wrap" text="Bales to collect" />
+		<text name="gui_ad_baleLoader_wrapAll" text="All" />
+		<text name="gui_ad_baleLoader_wrapWrapped" text="Wrapped only" />
+		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Unwrapped only" />
+		<text name="gui_ad_baleLoader_deposit" text="Drop-off point (sale or storage)" />
+		<text name="gui_ad_baleLoader_pickDeposit" text="Choose the drop-off point (Choose or double click), Back to return. At the top: near a selling point that takes bales." />
+		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Choose the drop-off point (Choose or double click), Back to return. No selling point for bales found: they will be left at the marker." />
+		<text name="gui_ad_baleLoader_sale" text="sale" />
+		<text name="gui_ad_baleLoader_needDeposit" text="Choose the drop-off point." />
+		<text name="gui_ad_baleLoader_tooltip" text="Bale loader settings" />
+		<text name="gui_ad_baleLoader_tooltipNext" text="Bale loader settings (next field)" />
+		<text name="AD_autonomous_baleLoaderTodo" text="settings of « %s » to validate for « %s » (orange gear), start refused" />
+		<text name="AD_autonomous_balesStart" text="collecting the bales of field %s (%d to collect)" />
+		<text name="AD_autonomous_balesNone" text="no more bales to collect on field %s" />
+		<text name="AD_autonomous_balesFull" text="loader full (%d bales): drop-off at « %s », then back to the field" />
+		<text name="AD_autonomous_balesLast" text="last bales (%d): drop-off at « %s »" />
+		<text name="AD_autonomous_balesBack" text="drop-off done, back to field « %s »" />
+		<text name="AD_autonomous_balesUnloadFailed" text="bales not dropped off at « %s » (see the log), waiting" />
+		<text name="AD_autonomous_balesNoWork" text="the bale loader arm does not come out, waiting" />
+		<text name="AD_autonomous_balesNoLoader" text="bale loader detached, waiting" />
+		<text name="AD_task_autonomous_bales" text="Collecting bales" />
+		<text name="AD_task_autonomous_baleUnload" text="Dropping off bales" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->

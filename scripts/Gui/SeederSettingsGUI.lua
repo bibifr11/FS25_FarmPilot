@@ -1,13 +1,28 @@
--- FarmPilot : fenêtre « Réglages du semoir » (mode Autonome, roue dentée de la ligne « Outil » ou « Outil suivant »)
--- Pour le semoir et le champ de la ligne : culture à semer, produits à charger (choix multiple, comme le mode
--- Chargement) et zone de ravitaillement. « Valider » enregistre ; tant que ce n'est pas validé, le départ est refusé.
--- « Changer » (ou double clic) sur une ligne : culture suivante, produit chargé oui/non, ou liste des marqueurs.
+-- ============================================================================================================
+-- FarmPilot : SeederSettingsGUI.lua
+-- Fenêtre « Réglages du semoir » (mode Autonome, roue dentée de la ligne « Outil » ou « Outil suivant »).
+--
+-- Règle :
+-- - Pour le semoir et le champ de la ligne : culture à semer, produits à charger (choix multiple, comme le mode
+--   Chargement) et zone de ravitaillement.
+-- - « Changer » (ou double clic) sur une ligne : liste des cultures, produit chargé oui/non, ou liste des marqueurs.
+-- - (08/11) liste des cultures : semables en cette saison seulement ; liste des marqueurs : ceux où l'on trouve le
+--   produit (RefillSources.lua).
+-- - « Valider » enregistre (SeederManager.lua) ; tant que ce n'est pas validé, le départ est refusé.
+--
+-- Branché par : Gui.lua (création, gui/seederSettingsGUI.xml, AutoDrive.onOpenSeederSettings qui donne
+-- ADSeederSettingsGui.context), ouvert par la roue dentée du HUD (HudButton.lua).
+-- ============================================================================================================
+
 ADSeederSettingsGui = {}
 ADSeederSettingsGui.debug = false
 ADSeederSettingsGui.context = nil   -- { vehicle, isNext } donné par AutoDrive.onOpenSeederSettings
 
 local ADSeederSettingsGui_mt = Class(ADSeederSettingsGui, DialogElement)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création et ouverture
+-- ------------------------------------------------------------------------------------------------------------
 function ADSeederSettingsGui.new(target)
     local self = DialogElement.new(target, ADSeederSettingsGui_mt)
     self:include(ADGuiDebugMixin)
@@ -25,6 +40,9 @@ function ADSeederSettingsGui:onOpen()
     self:refreshItems()
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Brouillon : les réglages affichés à l'ouverture
+-- ------------------------------------------------------------------------------------------------------------
 -- semoir et champ de la ligne cliquée ; brouillon = réglages enregistrés, sinon ceux du même semoir sur un autre
 -- champ, sinon : culture actuelle du semoir, tous les produits, zone à choisir
 function ADSeederSettingsGui:loadContext()
@@ -92,6 +110,9 @@ function ADSeederSettingsGui:loadContext()
     self.draft = draft
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Lignes de la fenêtre
+-- ------------------------------------------------------------------------------------------------------------
 function ADSeederSettingsGui:getNumberOfItemsInSection(list, section)
     if list == self.settingsList then
         return #self.rows
@@ -132,7 +153,7 @@ function ADSeederSettingsGui:refreshItems()
     if self.ctx == nil or self.draft == nil then
         info = g_i18n:getText("gui_ad_seeder_noSeeder")
     elseif self.mode == "fruits" then
-        -- (08/11, Fabien) liste déroulante : cultures semables en cette saison seulement
+        -- (08/11) liste déroulante : cultures semables en cette saison seulement
         info = g_i18n:getText("gui_ad_seeder_pickFruit")
         for _, f in ipairs(self.fruits or {}) do
             if f.inSeason then
@@ -145,7 +166,7 @@ function ADSeederSettingsGui:refreshItems()
     elseif self.mode == "markers" then
         info = g_i18n:getText("gui_ad_seeder_pickRefill")
         local allowed, filterInfo = nil, nil
-        if ADRefillSources ~= nil then allowed, filterInfo = ADRefillSources.filter(self) if filterInfo ~= nil then info = info .. "\n" .. filterInfo end end -- (Fabien 21:24) zones où l'on trouve le produit, voir RefillSources.lua
+        if ADRefillSources ~= nil then allowed, filterInfo = ADRefillSources.filter(self) if filterInfo ~= nil then info = info .. "\n" .. filterInfo end end -- (08/11) zones où l'on trouve le produit, voir RefillSources.lua
         local markers = {}
         for _, m in pairs(ADGraphManager:getMapMarkers()) do
             if m ~= nil and m.name ~= nil and (allowed == nil or allowed[m.name]) then
@@ -236,6 +257,9 @@ function ADSeederSettingsGui:draftEqualsSaved()
     return true
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Boutons
+-- ------------------------------------------------------------------------------------------------------------
 function ADSeederSettingsGui:selectedRow()
     if #self.rows == 0 then
         return nil

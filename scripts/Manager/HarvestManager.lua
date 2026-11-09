@@ -49,23 +49,12 @@ end
 function ADHarvestManager:registerAsUnloader(vehicle)
     ADHarvestManager.debugMsg(vehicle, "ADHarvestManager:registerAsUnloader")
     --remove from active and idle list
-    -- owner 25/10 16:38 (the 942 "parti tres loin"): an unloader that waits for a call again while keeping its harvester
-    -- (U-turn given up, new route: setToWaitForCall(true)) is not leaving it, its follower stays its follower. The
-    -- promotion here sent the 942 to the harvester and back behind the 6205 TTV every 2 s (15:38:23-15:38:27)
-    local mode = vehicle.ad ~= nil and vehicle.ad.modes ~= nil and vehicle.ad.modes[AutoDrive.MODE_UNLOAD] or nil
-    local keepFollower = mode ~= nil and mode.combine ~= nil and mode:getFollowingUnloader() ~= nil
-    if keepFollower then
-        print(string.format("[AD-Suivi] %s: de nouveau en attente d'appel mais je garde mon ensileuse, %s reste ma suiveuse (pas de promotion)", tostring(vehicle:getName()), tostring(mode:getFollowingUnloader():getName())))
-    end
+    local keepFollower = self:keepFollowerOnWaitAgain(vehicle) -- benne qui garde sa machine : sa suiveuse reste la sienne, voir HarvestManagerQueue.lua
     self:unregisterAsUnloader(vehicle, keepFollower)
     if not table.contains(self.idleUnloaders, vehicle) then
         ADHarvestManager.debugMsg(vehicle, "ADHarvestManager:registerAsUnloader - inserted")
         table.insert(self.idleUnloaders, vehicle)
-        -- queue by order of arrival: the first unloader waiting for this harvester is called first.
-        -- A failed call keeps the place in the queue, it is only cleared when the unloader leaves to unload
-        if vehicle.ad ~= nil and vehicle.ad.unloaderQueueTime == nil then
-            vehicle.ad.unloaderQueueTime = g_time
-        end
+        self:onUnloaderQueued(vehicle) -- file d'attente : ordre d'arrivée, voir HarvestManagerQueue.lua
     end
 end
 
@@ -131,41 +120,7 @@ function ADHarvestManager:update(dt)
         end
         local unloader = self:getAssignedUnloader(harvester)
         local driverStopped = not ((vehicle.getIsAIActive ~= nil and vehicle:getIsAIActive()) or (AutoDrive:getIsEntered(vehicle:getRootVehicle()) and AutoDrive.isPipeOut(vehicle)))
-        if driverStopped and harvester.ad ~= nil and harvester.ad.isChopper and not (vehicle.ad.onRouteToRefuel or vehicle.ad.onRouteToRepair) then
-            -- forage harvester: its driver (Courseplay) stops for a moment now and then. The unloaders keep their place,
-            -- the queue and the attached unloader, and wait; only a long stop releases them as before
-            harvester.ad.driverStoppedSince = harvester.ad.driverStoppedSince or g_time
-            -- owner 26/10 17:58: Courseplay off for CHOPPER_JOB_DONE_TIME = job done, the unloaders leave to unload and park.
-            -- 27/10 06:49 (log: "chantier termine, 0 benne(s)" for a JAGUAR that AutoDrive had just parked, Courseplay never
-            -- started in this session): only a harvester Courseplay has been seen working on can finish its job; before
-            -- that, the unloaders keep waiting as before
-            if not harvester.ad.jobDone and harvester.ad.cpSeenActive and g_time - harvester.ad.driverStoppedSince >= ADHarvestManager.CHOPPER_JOB_DONE_TIME
-                and not AutoDrive:getIsCPActive(vehicle) and not AutoDrive:getIsEntered(vehicle:getRootVehicle()) then
-                self:onChopperJobDone(harvester, vehicle)
-            end
-            if g_time - harvester.ad.driverStoppedSince < ADHarvestManager.CHOPPER_DRIVER_STOP_TIME and not harvester.ad.jobDone then
-                if not harvester.ad.driverStopLogged then
-                    harvester.ad.driverStopLogged = true
-                    print(string.format("[AD-File] %s: conducteur arrete, les bennes gardent leur place et attendent (%d min max)", tostring(harvester:getName()), ADHarvestManager.CHOPPER_DRIVER_STOP_TIME / 60000))
-                end
-                driverStopped = false
-            end
-        elseif harvester.ad ~= nil then
-            harvester.ad.driverStoppedSince = nil
-            harvester.ad.driverStopLogged = false
-            if AutoDrive:getIsCPActive(vehicle) and not harvester.ad.cpSeenActive then
-                harvester.ad.cpSeenActive = true
-                print(string.format("[AD-Chantier] %s: Courseplay au travail, fin de chantier surveillee", tostring(harvester:getName())))
-            end
-            if harvester.ad.jobDone and AutoDrive:getIsCPActive(vehicle) then
-                print(string.format("[AD-Chantier] %s: Courseplay repart, nouveau chantier", tostring(harvester:getName())))
-                harvester.ad.jobDone = nil
-            end
-        end
-        -- job done and AutoDrive (or the player) drives the harvester away: no unloader is called for it
-        if harvester.ad ~= nil and harvester.ad.jobDone and not AutoDrive:getIsCPActive(vehicle) then
-            driverStopped = true
-        end
+        driverStopped = self:checkChopperDriver(harvester, vehicle, driverStopped) -- ensileuse : arrêts courts du conducteur, fin de chantier, voir HarvestManagerChopperJob.lua
         if driverStopped
             or (vehicle.ad.onRouteToRefuel or vehicle.ad.onRouteToRepair) -- harvester is going to refuel or park
             or (unloader ~= nil and unloader.ad.stateModule:getFirstMarker() ~= vehicle.ad.stateModule:getFirstMarker()) -- harvester - unloader targets do not match
@@ -207,10 +162,7 @@ function ADHarvestManager:update(dt)
                             if fillLevel >= (maxCapacity * AutoDrive.getSetting("preCallLevel", harvester)) then
                                 local closestUnloader = self:getClosestIdleUnloader(harvester)
                                 if closestUnloader ~= nil then
-                                    if harvester.ad ~= nil and (harvester.ad.secondCallLogged == nil or g_time - harvester.ad.secondCallLogged > 10000) then
-                                        harvester.ad.secondCallLogged = g_time
-                                        print(string.format("[AD-Suivi] %s: 1re benne %s remplie a %.0f %% (seuil d'appel %.0f %%), 2e benne appelee : %s", tostring(harvester.getName ~= nil and harvester:getName() or "?"), tostring(unloader:getName()), fillLevel / math.max(1, maxCapacity) * 100, AutoDrive.getSetting("preCallLevel", harvester) * 100, tostring(closestUnloader:getName())))
-                                    end
+                                    self:logSecondCall(harvester, unloader, fillLevel, maxCapacity, closestUnloader) -- [AD-Suivi], voir HarvestManagerQueue.lua
                                     closestUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:driveToUnloader(unloader)
                                 end
                             end
@@ -358,13 +310,7 @@ end
 function ADHarvestManager:assignUnloaderToHarvester(harvester)
     local closestUnloader = self:getClosestIdleUnloader(harvester)
     if closestUnloader ~= nil then
-        if harvester.ad ~= nil and harvester.ad.isChopper then
-            -- forage harvester: this unloader stays its own until it is full (chopper only)
-            if harvester.ad.stickyUnloader ~= closestUnloader then
-                print(string.format("[AD-File] %s: benne attitree : %s", tostring(harvester.getName ~= nil and harvester:getName() or "?"), tostring(closestUnloader:getName())))
-            end
-            harvester.ad.stickyUnloader = closestUnloader
-        end
+        self:setStickyUnloader(harvester, closestUnloader) -- ensileuse : benne attitrée, voir HarvestManagerQueue.lua
         ADHarvestManager.debugMsg(closestUnloader, "ADHarvestManager:assignUnloaderToHarvester ")
         closestUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:assignToHarvester(harvester)
         table.insert(self.activeUnloaders, closestUnloader)
@@ -390,111 +336,11 @@ function ADHarvestManager:getAssignedUnloader(harvester)
     return nil
 end
 
--- forage harvester only: the unloader it worked with last, until that one is full and leaves to unload
-ADHarvestManager.CHOPPER_DRIVER_STOP_TIME = 300000 -- ms, forage harvester driver stopped longer: unloaders released
--- owner 26/10 17:58 ("quand l'ensileuse a termine, signal de renvoi au tracteur pour vider ; ceux qui sont vides et
--- reviennent, renvoie-les au garage"): Courseplay off the forage harvester this long = its job is done. Every unloader
--- of this harvester (attached, follower, waiting in the field or on its way) leaves to unload whatever it carries,
--- then drives to its AutoDrive park destination; an empty one goes to park at once
-ADHarvestManager.CHOPPER_JOB_DONE_TIME = 20000 -- ms
-
--- the unloaders of a harvester: attached, followers and the ones waiting for its call (same field target)
-function ADHarvestManager:getUnloadersOf(harvester)
-    local list = {}
-    local target = harvester.ad ~= nil and harvester.ad.stateModule ~= nil and harvester.ad.stateModule:getFirstMarker() or nil
-    local function add(v)
-        if v ~= nil and v.ad ~= nil and v.ad.stateModule ~= nil and v.ad.stateModule:isActive() and v.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD and not table.contains(list, v) then
-            table.insert(list, v)
-        end
-    end
-    for _, v in pairs(self.activeUnloaders) do
-        local mode = v.ad ~= nil and v.ad.modes ~= nil and v.ad.modes[AutoDrive.MODE_UNLOAD] or nil
-        if mode ~= nil and (mode.combine == harvester or (target ~= nil and v.ad.stateModule:getFirstMarker() == target)) then
-            add(v)
-        end
-    end
-    for _, v in pairs(self.idleUnloaders) do
-        if target ~= nil and v.ad ~= nil and v.ad.stateModule ~= nil and v.ad.stateModule:getFirstMarker() == target then
-            add(v)
-        end
-    end
-    -- followers and unloaders on their way to a follower
-    if g_currentMission ~= nil and g_currentMission.vehicleSystem ~= nil then
-        for _, v in pairs(g_currentMission.vehicleSystem.vehicles) do
-            local mode = v.ad ~= nil and v.ad.modes ~= nil and v.ad.modes[AutoDrive.MODE_UNLOAD] or nil
-            if mode ~= nil and v.ad.stateModule ~= nil and v.ad.stateModule:isActive() and v.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD
-                and (mode.combine == harvester or (target ~= nil and v.ad.stateModule:getFirstMarker() == target)) then
-                add(v)
-            end
-        end
-    end
-    return list
-end
-
--- the forage harvester's job is done: its unloaders leave to unload, then to park
-function ADHarvestManager:onChopperJobDone(harvester, vehicle)
-    harvester.ad.jobDone = true
-    local list = self:getUnloadersOf(harvester)
-    print(string.format("[AD-Chantier] %s: chantier termine (Courseplay arrete depuis %d s), %d benne(s) : elles partent vider ce qu'elles ont, puis au parking", tostring(harvester:getName()), ADHarvestManager.CHOPPER_JOB_DONE_TIME / 1000, #list))
-    for _, v in ipairs(list) do
-        local mode = v.ad.modes[AutoDrive.MODE_UNLOAD]
-        if mode.onHarvesterJobDone ~= nil then
-            mode:onHarvesterJobDone(harvester)
-        end
-    end
-end
-
-function ADHarvestManager.releaseStickyUnloader(vehicle, reason)
-    for _, list in ipairs({ADHarvestManager.harvesters or {}, ADHarvestManager.idleHarvesters or {}}) do
-        for _, harvester in pairs(list) do
-            if harvester ~= nil and harvester.ad ~= nil and harvester.ad.stickyUnloader == vehicle then
-                harvester.ad.stickyUnloader = nil
-                print(string.format("[AD-File] %s: %s %s, benne suivante de la file", tostring(harvester.getName ~= nil and harvester:getName() or "?"), tostring(vehicle.getName ~= nil and vehicle:getName() or "?"), reason or "part vider"))
-            end
-        end
-    end
-end
-
-ADHarvestManager.QUEUE_SAME_TIME = 10000 -- ms: unloaders registered this close together are called by their place in the line
-ADHarvestManager.QUEUE_LINE_ANGLE = 30 -- deg at most between the headings of two unloaders in the same line
-ADHarvestManager.QUEUE_LINE_SIDE = 6 -- m at most aside from the other one's axis
-ADHarvestManager.QUEUE_LINE_AHEAD = 2 -- m ahead at least
-
--- unloader a stands in front of unloader b in the same line: same heading, on b's axis, ahead of b
-function ADHarvestManager.isAheadInLine(a, b)
-    if a == nil or b == nil or a.components == nil or b.components == nil then
-        return false
-    end
-    local ax, _, az = getWorldTranslation(a.components[1].node)
-    local bx, _, bz = getWorldTranslation(b.components[1].node)
-    local ahx, _, ahz = localDirectionToWorld(a.components[1].node, 0, 0, 1)
-    local bhx, _, bhz = localDirectionToWorld(b.components[1].node, 0, 0, 1)
-    local la, lb = math.sqrt(ahx * ahx + ahz * ahz), math.sqrt(bhx * bhx + bhz * bhz)
-    if la < 0.01 or lb < 0.01 then
-        return false
-    end
-    ahx, ahz, bhx, bhz = ahx / la, ahz / la, bhx / lb, bhz / lb
-    if ahx * bhx + ahz * bhz < math.cos(math.rad(ADHarvestManager.QUEUE_LINE_ANGLE)) then
-        return false
-    end
-    local dx, dz = ax - bx, az - bz
-    local along = dx * bhx + dz * bhz
-    local aside = math.abs(dx * bhz - dz * bhx)
-    return along >= ADHarvestManager.QUEUE_LINE_AHEAD and aside <= ADHarvestManager.QUEUE_LINE_SIDE
-end
-
 -- combine harvester: the closest idle unloader (former behaviour).
 -- Forage harvester: its own unloader while not full, else the first in the queue (order of arrival, then distance):
 -- in a narrow cut strip the trailers cannot pass each other, the one that came first must be called first
 function ADHarvestManager:getClosestIdleUnloader(harvester)
-    local chopper = harvester ~= nil and harvester.ad ~= nil and harvester.ad.isChopper == true
-    local sticky = chopper and harvester.ad.stickyUnloader or nil
-    if sticky ~= nil and table.contains(self.idleUnloaders, sticky) then
-        local handedOver = sticky.ad.skipHarvester == harvester and sticky.ad.skipHarvesterUntil ~= nil and g_time < sticky.ad.skipHarvesterUntil
-        if not handedOver then
-            return sticky
-        end
-    end
+    local sticky = self:getStickyIdleUnloader(harvester) if sticky ~= nil then return sticky end -- ensileuse : sa benne attitrée d'abord, voir HarvestManagerQueue.lua
     local closestUnloader = nil
     local closestDistance = math.huge
     local closestTime = math.huge
@@ -517,38 +363,8 @@ function ADHarvestManager:getClosestIdleUnloader(harvester)
             end
         end
     end
-    -- owner 24/10 ("top va s'y"): unloaders registered within QUEUE_SAME_TIME of each other (game load: the 7R was
-    -- called, the 728 stood in front of it in the line) go by their place in the line, the one in front first
-    if chopper and closestUnloader ~= nil and matching > 1 then
-        local first, firstTime = closestUnloader, closestTime
-        local moved = 0
-        local changed = true
-        while changed and moved < matching do
-            changed = false
-            for _, unloader in pairs(self.idleUnloaders) do
-                local queueTime = unloader.ad.unloaderQueueTime or math.huge
-                local handedOver = unloader.ad.skipHarvester == harvester and unloader.ad.skipHarvesterUntil ~= nil and g_time < unloader.ad.skipHarvesterUntil
-                if unloader ~= closestUnloader and not handedOver and unloader.ad.stateModule:getFirstMarker() == harvester.ad.stateModule:getFirstMarker()
-                    and math.abs(queueTime - closestTime) <= ADHarvestManager.QUEUE_SAME_TIME and ADHarvestManager.isAheadInLine(unloader, closestUnloader) then
-                    closestUnloader = unloader
-                    closestDistance = AutoDrive.getDistanceBetween(unloader, harvester)
-                    closestTime = queueTime
-                    moved = moved + 1
-                    changed = true
-                    break
-                end
-            end
-        end
-        if closestUnloader ~= first and closestUnloader ~= self.lastQueueLinePrinted then
-            print(string.format("[AD-File] %s: %s devant %s dans la ligne (inscrites a %.0f s d'ecart), %s appelee d'abord", tostring(harvester.getName ~= nil and harvester:getName() or "?"),
-                tostring(closestUnloader:getName()), tostring(first:getName()), math.abs(closestTime - firstTime) / 1000, tostring(closestUnloader:getName())))
-        end
-        self.lastQueueLinePrinted = closestUnloader ~= first and closestUnloader or nil
-    end
-    if closestUnloader ~= nil and matching > 1 and closestUnloader ~= self.lastQueuePrinted then
-        self.lastQueuePrinted = closestUnloader
-        print(string.format("[AD-File] %s: %d unloaders waiting, first in queue called: %s (waiting %.0f s, %.0f m)", tostring(harvester.getName ~= nil and harvester:getName() or "?"), matching, tostring(closestUnloader:getName()), (g_time - closestTime) / 1000, closestDistance))
-    end
+    closestUnloader, closestDistance, closestTime = self:applyQueueLineOrder(harvester, closestUnloader, closestDistance, closestTime, matching) -- ensileuse : celle de devant dans la ligne, voir HarvestManagerQueue.lua
+    self:logQueueCall(harvester, closestUnloader, closestDistance, closestTime, matching) -- [AD-File], voir HarvestManagerQueue.lua
     return closestUnloader
 end
 

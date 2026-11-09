@@ -2,13 +2,13 @@
 -- FarmPilot : DirtRoadManager.lua
 -- 3e type de point du réseau : « chemin de terre », en plus des routes primaires et secondaires d'AutoDrive.
 --
--- Demande Fabien 08/11 13:21 : « Ajouter un chemin préférentiel pour certains véhicules dans le menu véhicule de FP
--- (exemple : en semi, jamais en chemin). »
--- 13:26 : « Idem pour les tracteurs (dans le menu, les autoriser à prendre les chemins alternatifs en terre). Voir
--- créer un nouveau type de route pour un 3e type de voie (les points). »
--- 20:34 : « Comme les vitesses y sont limitées, le calcul de temps de trajet importe aussi. Prendre un chemin, c'est
--- possible si cela fait gagner du temps total, sinon l'intérêt n'est pas utile. »
--- 20:37 : couleur rose pour le sens unique, violet pour le double sens.
+-- (08/11) Chemin préférentiel par véhicule, réglé dans le menu véhicule de FP (exemple : un semi ne prend jamais
+-- de chemin).
+-- Idem pour les tracteurs (dans le menu, les autoriser à prendre les chemins de terre) : un nouveau type de route,
+-- 3e type de voie (les points).
+-- Comme les vitesses y sont limitées, le temps de trajet compte : un chemin n'est pris que s'il fait gagner du
+-- temps au total.
+-- Couleurs : rose pour le sens unique, violet pour le double sens.
 --
 -- Règles :
 -- - Éditeur : Maj gauche + clic sur un point (ou sur une section) fait tourner son type :
@@ -21,12 +21,17 @@
 -- - Jamais : un chemin de terre coûte 100 fois plus ; il n'est pris que s'il n'y a pas d'autre route (ou si la seule
 --   autre route est trop étroite pour l'attelage). Le log le dit.
 -- - Un segment est « chemin de terre » quand l'un de ses deux points l'est (comme les routes secondaires).
--- - 21:05 Fabien : « on l'appellera route tertiaire, comme ça on s'y retrouve en principale, secondaire et
---   tertiaire. On peut rajouter la même option en secondaire (Auto, Jamais ou Autorisé) » : nom affiché « route
---   tertiaire » (le code garde « dirt ») ; réglage véhicule « Routes secondaires » :
---   Auto = comme AutoDrive d'origine (secondaire 20 fois plus chère, prise quand la principale est bien plus
---   longue) ; Autorisées = au temps de trajet, comme une principale ; Jamais = 100 fois plus chère, seulement s'il
---   n'y a pas d'autre route.
+-- - Nom affiché « route tertiaire » (principale, secondaire, tertiaire ; le code garde « dirt »). Même option
+--   pour les secondaires (Auto, Jamais ou Autorisé) :
+--   réglage véhicule « Routes secondaires » :
+--   Auto = tracteurs : raccourci au temps de trajet (les raccourcis sont permis sur les secondaires, ce n'était
+--   pas le cas avant) ; camions et semis : comme AutoDrive d'origine (secondaire 20 fois
+--   plus chère) ; Autorisées = au temps de trajet, comme une principale ; Jamais = 100 fois plus chère, seulement
+--   s'il n'y a pas d'autre route.
+-- - Une route tertiaire ne sert qu'à accéder à une destination, jamais autrement :
+--   elle n'est permise que si elle touche le départ ou l'arrivée (la destination est
+--   dessus ou au bout, ou le véhicule en repart). Jamais comme raccourci entre deux autres routes : ce passage coûte
+--   ACCESS_WEIGHT, donc seulement s'il n'existe vraiment aucune autre route (le log le dit).
 -- ============================================================================================================
 
 ADDirtRoads = {}
@@ -40,13 +45,14 @@ ADDirtRoads.DEFAULT_ROUTE_SPEED = 40        -- km/h : vitesse sur route quand le
 ADDirtRoads.TRUCK_SPEED = 75                -- km/h : au-delà, un véhicule hors catégorie tracteur compte comme camion
 ADDirtRoads.LOOK_AHEAD = 30                 -- m : ralentir avant d'entrer sur un chemin de terre
 
+ADDirtRoads.ACCESS_WEIGHT = 1000000       -- tertiaire qui ne mène ni au départ ni à la destination : jamais (sauf seule route)
 ADDirtRoads.SECONDARY_FACTOR_AUTO = 20      -- coût d'une route secondaire dans AutoDrive d'origine (PathCalculation.lua)
 
 ADDirtRoads.MODE_AUTO = 1
 ADDirtRoads.MODE_NEVER = 2
 ADDirtRoads.MODE_ALLOWED = 3
 
--- couleurs de l'éditeur (Fabien 08/11 20:37 : rose sens unique, violet double sens)
+-- couleurs de l'éditeur (08/11) : rose sens unique, violet double sens
 AutoDrive.colors.ad_color_dirtSingleConnection = { 1, 0.41, 0.71, 1 }
 AutoDrive.colors.ad_color_dirtDualConnection = { 0.6, 0.2, 1, 1 }
 AutoDrive.colors.ad_color_dirtNode = { 1, 0.41, 0.71, 0.3 }
@@ -65,7 +71,7 @@ AutoDrive.settings.dirtRoads = {
     isCopyPaste = true
 }
 
--- réglage véhicule : routes secondaires (Fabien 08/11 21:05)
+-- réglage véhicule : routes secondaires (08/11)
 AutoDrive.settings.secondaryRoads = {
     values = { ADDirtRoads.MODE_AUTO, ADDirtRoads.MODE_NEVER, ADDirtRoads.MODE_ALLOWED },
     texts = { "gui_ad_secondaryRoads_auto", "gui_ad_dirtRoads_never", "gui_ad_dirtRoads_allowed" },
@@ -214,7 +220,44 @@ end
 -- Le calcul d'AutoDrive compte chaque segment au temps de trajet, vitesse bornée à 30 km/h (virages plus lents).
 -- Sur un chemin de terre, le véhicule roule au plus à la vitesse du chemin au lieu de sa vitesse de route : à la
 -- même échelle, la borne devient 30 x vitesse du chemin / vitesse de route. Un véhicule « Jamais » paie en plus x100.
-function ADDirtRoads.wrapDriveTime(baseFunc, vehicle)
+-- routes tertiaires d'accès : la tertiaire où se trouve le départ (véhicule dessus), et celle où se
+-- trouve la destination ou qui y mène (destination dessus ou juste au bout) ; { [id] = true }
+function ADDirtRoads.accessPoints(startID, targetID)
+    local access = {}
+    local network = ADGraphManager:getWayPoints()
+    if network == nil then
+        return access
+    end
+    local queue = {}
+    local function push(id)
+        local p = id ~= nil and network[id] or nil
+        if p ~= nil and not access[id] and ADDirtRoads.isDirt(p) then
+            access[id] = true
+            queue[#queue + 1] = p
+        end
+    end
+    -- départ : seulement s'il est lui-même sur la tertiaire (un départ à côté d'une tertiaire n'en fait pas un raccourci)
+    push(startID)
+    -- destination : dessus, ou au bout (point voisin)
+    local target = targetID ~= nil and network[targetID] or nil
+    if target ~= nil then
+        push(targetID)
+        for _, n in pairs(target.out or {}) do push(n) end
+        for _, n in pairs(target.incoming or {}) do push(n) end
+    end
+    local i = 1
+    while queue[i] ~= nil do
+        local p = queue[i]
+        i = i + 1
+        for _, n in pairs(p.out or {}) do push(n) end
+        for _, n in pairs(p.incoming or {}) do push(n) end
+    end
+    return access
+end
+
+function ADDirtRoads.wrapDriveTime(baseFunc, vehicle, startID, targetID)
+    local access = ADDirtRoads.accessPoints(startID, targetID)
+    local accessWeight = ADDirtRoads.ACCESS_WEIGHT
     local allowed = ADDirtRoads.isAllowed(vehicle)
     local routeSpeed = ADDirtRoads.routeSpeed(vehicle)
     local dirtSpeed = math.min(routeSpeed, ADDirtRoads.getMaxSpeed())
@@ -223,13 +266,14 @@ function ADDirtRoads.wrapDriveTime(baseFunc, vehicle)
     local isDirt = ADDirtRoads.isDirt
     return function(a, b, c)
         if isDirt(a) or isDirt(b) then
-            return ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) * factor
+            local through = (isDirt(a) and not access[a.id]) or (isDirt(b) and not access[b.id])
+            return ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) * factor + (through and accessWeight or 0)
         end
         return baseFunc(a, b, c)
     end
 end
 
--- routes secondaires : coût par véhicule (réglage « Routes secondaires », Fabien 08/11 21:05)
+-- routes secondaires : coût par véhicule (réglage « Routes secondaires », 08/11)
 function ADDirtRoads.secondaryFactor(vehicle)
     local mode = ADDirtRoads.MODE_AUTO
     if vehicle ~= nil and AutoDrive.getSetting ~= nil then
@@ -240,7 +284,13 @@ function ADDirtRoads.secondaryFactor(vehicle)
     elseif mode == ADDirtRoads.MODE_ALLOWED then
         return 1
     end
-    return ADDirtRoads.SECONDARY_FACTOR_AUTO
+    -- Auto : raccourcis permis sur les secondaires :
+    -- tracteurs = raccourci pris dès qu'il fait gagner du temps ; camions et semis = comme AutoDrive d'origine (x20)
+    -- (calcul sans véhicule : comme AutoDrive d'origine)
+    if vehicle == nil or ADDirtRoads.isTruck(vehicle) then
+        return ADDirtRoads.SECONDARY_FACTOR_AUTO
+    end
+    return 1
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -302,8 +352,19 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     vehicle.fpDirtRouteLog = key
     local name = (vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil) and vehicle.ad.stateModule:getName() or tostring(vehicle.getName ~= nil and vehicle:getName() or "?")
     local allowed, why = ADDirtRoads.isAllowed(vehicle)
-    if allowed then
-        log("%s : route par route tertiaire (%d points, %d km/h maxi dessus, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)
+    -- tertiaire prise ailleurs qu'à l'accès au départ / à la destination : seulement faute d'autre route
+    local firstWp = wayPoints[1]
+    local okA, access = pcall(ADDirtRoads.accessPoints, firstWp ~= nil and firstWp.id or nil, lastWp ~= nil and lastWp.id or nil)
+    local through = 0
+    for _, wp in ipairs(wayPoints) do
+        if ADDirtRoads.isDirt(wp) and okA and not access[wp.id] then
+            through = through + 1
+        end
+    end
+    if through > 0 then
+        log("%s : route tertiaire prise en raccourci (%d points), seulement parce qu'il n'y a pas d'autre route", tostring(name), through)
+    elseif allowed then
+        log("%s : route tertiaire pour accéder à la destination (%d points, %d km/h maxi dessus, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)
     else
         log("%s : routes tertiaires interdites (%s) mais pas d'autre route possible : je passe par la tertiaire (%d points)", tostring(name), why, count)
     end

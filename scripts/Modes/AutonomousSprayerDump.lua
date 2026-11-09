@@ -2,9 +2,9 @@
 -- FarmPilot : AutonomousSprayerDump.lua
 -- Mode Autonome, épandeurs et pulvés : « vider le trop » en fin de champ.
 --
--- Demande Fabien 08/11 14:05 : « Retourner vider le trop à la fin du champ (si pas de suivant ou si pas de
--- changement de produit) ».
--- Choix de Fabien 08/11 21:22 (carte) : « Garder, sinon big bags/IBC ».
+-- (08/11) Retourner vider le trop à la fin du champ (si pas de suivant ou si pas de changement de
+-- produit).
+-- Choix retenu : garder le reste, sinon le vider en big bags / IBC.
 --
 -- Règle :
 -- - Champ fini (Courseplay ou ouvrier du jeu), avec un épandeur / pulvé réglé (SprayerManager.lua) qui a encore du
@@ -16,8 +16,18 @@
 --   - la machine ne sait pas vider en big bags (pas de section <unloading> dans son xml, ou produit sans palette :
 --     lisier, fumier, digestat), ou pas de zone de plein : le reste est gardé, le log dit pourquoi.
 -- - Ensuite, la suite habituelle : champ suivant, sinon outil posé et tracteur garé (AutoDrive:onCpFinished).
+--
+-- Bouton « Envoyer au parking » (08/11 : sur un épandeur, le parking ne vidait pas ; s'il a du produit, il
+-- doit vider) : tout mode, automoteur ou outil attelé.
+-- - Produit dans la cuve (plus de MIN_LITERS) : pas de champ suivant à garder, on vide toujours. Zone : celle du
+--   champ en cours (mode Autonome), sinon la dernière réglée pour cette machine et ce produit, sinon la dernière
+--   réglée pour cette machine, sinon le marqueur le plus proche d'une zone qui a ce produit (RefillSources.lua).
+-- - Vidange (mêmes étapes qu'en fin de champ), puis le bouton parking comme avant (outil posé à sa place si elle
+--   existe, puis tracteur garé), même si la vidange n'a pas pu se faire.
+-- - La machine ne sait pas vider en big bags, ou aucune zone : message, parking comme avant.
+--
 -- Branché par une ligne dans : ExternalInterface.lua (2 fins de champ), AutonomousMode.lua (reset,
--- handleFinishedTask), Specialization.lua (stopAutoDrive).
+-- handleFinishedTask), Specialization.lua (stopAutoDrive), AutonomousParkButton.lua (bouton parking).
 -- ============================================================================================================
 
 ADSprayerDump = {}
@@ -124,6 +134,32 @@ function ADSprayerDump.decide(vehicle)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
+-- Départ vers la zone (fin de champ et bouton parking) ; after = nil (suite de fin de champ) ou "park"
+-- ------------------------------------------------------------------------------------------------------------
+function ADSprayerDump.start(vehicle, d, after)
+    local sm = vehicle.ad.stateModule
+    vehicle.ad.onRouteToRefuel = false
+    vehicle.ad.onRouteToRepair = false
+    vehicle.ad.onRouteToPark = false
+    vehicle.ad.restartCP = false
+    vehicle.ad.fpDumpThen = after
+    sm:setStartHelper(false)
+    vehicle:startAutoDrive()
+    if not sm:isActive() then
+        vehicle.ad.fpDumpThen = nil
+        return false
+    end
+    local mode = vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS]
+    mode:reset()
+    mode.dumpStage = "drive"
+    mode.dumpTool = d.tool
+    mode.dumpMarker = d.marker
+    mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, d.marker.id)
+    vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
+    return true
+end
+
+-- ------------------------------------------------------------------------------------------------------------
 -- Hook ExternalInterface (fin de champ) : true si le chauffeur part vider (la suite viendra après)
 -- ------------------------------------------------------------------------------------------------------------
 function ADSprayerDump.onFieldFinished(vehicle)
@@ -153,25 +189,152 @@ function ADSprayerDump.onFieldFinished(vehicle)
         log("%s : « %s » fini, %.0f L de %s dans la cuve : %s", name, tostring(d.field), d.level, tostring(title), tostring(d.why))
         return false
     end
-    vehicle.ad.onRouteToRefuel = false
-    vehicle.ad.onRouteToRepair = false
-    vehicle.ad.onRouteToPark = false
-    vehicle.ad.restartCP = false
-    sm:setStartHelper(false)
-    vehicle:startAutoDrive()
-    if not sm:isActive() then
+    if not ADSprayerDump.start(vehicle, d, nil) then
         return false
     end
-    local mode = vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS]
-    mode:reset()
-    mode.dumpStage = "drive"
-    mode.dumpTool = d.tool
-    mode.dumpMarker = d.marker
-    mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, d.marker.id)
-    vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     log("%s : « %s » fini, %.0f L de %s dans la cuve (%s) : va les vider en big bags à « %s »", name, tostring(d.field), d.level, tostring(title),
         tostring(d.why), tostring(d.marker.name))
     AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dumpGo", tostring(d.marker.name))
+    return true
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Bouton parking : où vider ?
+-- ------------------------------------------------------------------------------------------------------------
+-- marqueur, d'où vient le choix (pour le log) ; nil si aucun
+function ADSprayerDump.parkMarker(vehicle, tool, ft)
+    local function valid(name)
+        return name ~= nil and ADGraphManager:getMapMarkerByName(name) or nil
+    end
+    local product = g_fillTypeManager:getFillTypeNameByIndex(ft)
+    -- 1) zone de plein du champ en cours (mode Autonome)
+    local ctx = vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS and ADSprayerManager.context(vehicle, false) or nil
+    if ctx ~= nil and ctx.tool == tool then
+        local s = ADSprayerManager:get(ctx.field, ctx.toolKey)
+        local m = s ~= nil and valid(s.refill) or nil
+        if m ~= nil then
+            return m, string.format("zone de plein du champ « %s »", tostring(ctx.field))
+        end
+    end
+    -- 2) dernier réglage de cette machine avec ce produit, 3) dernier réglage de cette machine
+    local toolKey = ADSeederManager.toolKey(tool)
+    ADSprayerManager:loadFromXml()
+    local same, any = nil, nil
+    for _, s in pairs(ADSprayerManager.settings or {}) do
+        if s.tool == toolKey and valid(s.refill) ~= nil then
+            if s.fillType == product and (same == nil or (s.stamp or 0) > (same.stamp or 0)) then
+                same = s
+            end
+            if any == nil or (s.stamp or 0) > (any.stamp or 0) then
+                any = s
+            end
+        end
+    end
+    if same ~= nil then
+        return valid(same.refill), string.format("zone de plein réglée pour ce produit (champ « %s »)", tostring(same.field))
+    end
+    if any ~= nil then
+        return valid(any.refill), string.format("dernière zone de plein réglée pour cette machine (champ « %s »)", tostring(any.field))
+    end
+    -- 4) marqueur le plus proche d'une zone qui a ce produit
+    if ADRefillSources ~= nil then
+        local farmId = vehicle.getOwnerFarmId ~= nil and vehicle:getOwnerFarmId() or nil
+        local allowed = ADRefillSources.markersNear(ADRefillSources.find({ ft }, farmId))
+        local node = vehicle.rootNode or (vehicle.components ~= nil and vehicle.components[1] ~= nil and vehicle.components[1].node) or nil
+        local x, z = 0, 0
+        if node ~= nil then
+            local px, _, pz = getWorldTranslation(node)
+            x, z = px, pz
+        end
+        local best, bestD = nil, math.huge
+        for name, _ in pairs(allowed) do
+            local m = valid(name)
+            local wp = m ~= nil and ADGraphManager:getWayPointById(m.id) or nil
+            if wp ~= nil then
+                local dist = (wp.x - x) ^ 2 + (wp.z - z) ^ 2
+                if dist < bestD then
+                    best, bestD = m, dist
+                end
+            end
+        end
+        if best ~= nil then
+            return best, "marqueur le plus proche d'une zone qui a ce produit"
+        end
+    end
+    return nil
+end
+
+-- nil (rien à vider), ou { action = "keep" | "dump", why, tool, marker, level, fillType }
+function ADSprayerDump.decideForPark(vehicle)
+    if ADSprayerManager == nil or vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.modes == nil
+        or vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS] == nil then
+        return nil
+    end
+    local tool = nil
+    if vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
+        local ctx = ADSprayerManager.context(vehicle, false)
+        if ctx ~= nil and ADSprayerManager.isAttached(ctx.tool, vehicle) then
+            tool = ctx.tool
+        end
+    end
+    tool = tool or ADSprayerManager.attachedSprayer(vehicle)
+    if tool == nil then
+        return nil
+    end
+    local level, ft = ADSprayerManager.content(tool)
+    if ft == nil or level < ADSprayerDump.MIN_LITERS then
+        return nil
+    end
+    local d = { tool = tool, level = level, fillType = ft }
+    local ok, why = ADSprayerDump.canUnload(tool, ADSprayerManager.fillUnit(tool))
+    if not ok then
+        d.action, d.why = "keep", tostring(why)
+        return d
+    end
+    local marker, from = ADSprayerDump.parkMarker(vehicle, tool, ft)
+    if marker == nil then
+        d.action, d.why = "keep", "aucune zone de plein réglée ni trouvée pour ce produit"
+        return d
+    end
+    d.action, d.marker, d.why = "dump", marker, from
+    return d
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Hook ADInputManager:input_parkVehicle (AutonomousParkButton.lua) : true si le chauffeur part vider d'abord
+-- ------------------------------------------------------------------------------------------------------------
+function ADSprayerDump.onParkButton(input, vehicle, farmId)
+    if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.fpSkipParkDump then
+        return false
+    end
+    local okD, d = pcall(ADSprayerDump.decideForPark, vehicle)
+    if not okD then
+        log("ERREUR bouton parking, vider le reste : %s", tostring(d))
+        return false
+    end
+    if d == nil then
+        return false
+    end
+    local name = nameOf(vehicle)
+    local title = ADSprayerManager.productTitle(g_fillTypeManager:getFillTypeNameByIndex(d.fillType))
+    if d.action ~= "dump" then
+        log("%s : bouton parking, %.0f L de %s dans la cuve, pas vidé (%s) : parking comme avant", name, d.level, tostring(title), tostring(d.why))
+        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 12000, "AD_autonomous_dumpKept", tostring(title), tostring(d.why))
+        return false
+    end
+    -- comme le bouton d'origine : Courseplay arrêté, FarmPilot arrêté s'il roulait
+    AutoDrive:StopCP(vehicle)
+    if vehicle.ad.stateModule:isActive() then
+        input:input_start_stop(vehicle, farmId)
+    end
+    vehicle.ad.stateModule:setMode(AutoDrive.MODE_AUTONOMOUS)
+    if not ADSprayerDump.start(vehicle, d, "park") then
+        log("%s : bouton parking, vidange pas lancée : parking comme avant", name)
+        return false
+    end
+    log("%s : bouton parking, %.0f L de %s dans la cuve : va les vider en big bags à « %s » (%s), puis au parking", name, d.level, tostring(title),
+        tostring(d.marker.name), tostring(d.why))
+    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dumpParkGo", tostring(d.marker.name))
     return true
 end
 
@@ -220,6 +383,18 @@ function ADSprayerDump.continueAfterDump(vehicle)
     if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.stateModule:isActive() then
         return
     end
+    if vehicle.ad.fpDumpThen == "park" then
+        -- bouton parking : le bouton comme avant (outil posé à sa place s'il y en a une, puis tracteur garé)
+        vehicle.ad.fpDumpThen = nil
+        vehicle.ad.fpSkipParkDump = true
+        local farmId = vehicle.getOwnerFarmId ~= nil and vehicle:getOwnerFarmId() or nil
+        local okP, errP = pcall(ADInputManager.input_parkVehicle, ADInputManager, vehicle, farmId)
+        vehicle.ad.fpSkipParkDump = nil
+        if not okP then
+            log("ERREUR parking après la vidange : %s", tostring(errP))
+        end
+        return
+    end
     vehicle.ad.fpDumpDone = true
     local ok, err = pcall(AutoDrive.onCpFinished, vehicle)
     if not ok then
@@ -234,6 +409,7 @@ function ADSprayerDump.afterStop(vehicle)
     end
     vehicle.ad.fpDumpContinue = nil
     if vehicle.ad.isStoppingWithError then
+        vehicle.ad.fpDumpThen = nil
         return
     end
     -- à l'image suivante : FarmPilot doit être complètement arrêté avant de repartir

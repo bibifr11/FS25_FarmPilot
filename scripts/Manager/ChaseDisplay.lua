@@ -1,9 +1,22 @@
--- owner 25/10 15:15 ("oui je veux un mode permanent, via le menu debug"): debug channel "Poursuite (affichage)", kept in
--- the AutoDrive settings. Drawn every frame without the editor mode, for every AutoDrive unloader (unload mode) that
--- drives: its route (blue), the chase line and place (green when clear, red when blocked), the crumbs of the 1st
--- unloader it follows (yellow dots) and the place aimed at (magenta), the step-aside place (orange), the target of a
--- route being planned (white), and a text above the tractor with its task
+-- ============================================================================================================
+-- FarmPilot : ChaseDisplay.lua
+-- Canal de debug « Poursuite (affichage) » : la poursuite des déchargeurs dessinée en permanence.
+--
+-- (25/10) affichage permanent, réglé par le menu debug ; le canal est gardé dans les réglages d'AutoDrive.
+--
+-- Règle : dessiné à chaque image, sans le mode éditeur, pour chaque déchargeur AutoDrive (mode Déchargement) qui
+-- roule : son trajet (bleu), la ligne de poursuite et la place (vert si libre, rouge si bloquée), les miettes du
+-- 1er déchargeur qu'il suit (points jaunes) et la place visée (magenta), la place à l'écart (orange), la cible d'un
+-- trajet en calcul (blanc), et un texte au-dessus du tracteur avec sa tâche.
+--
+-- Branché par : AutoDrive:draw (AutoDrive.lua), quand le canal AutoDrive.DC_CHASEDISPLAY est coché.
+-- ============================================================================================================
+
 ADChaseDisplay = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADChaseDisplay.TEXT_SIZE = 0.012
 ADChaseDisplay.ROUTE_MAX_POINTS = 150
 ADChaseDisplay.COLORS = {
@@ -16,6 +29,9 @@ ADChaseDisplay.COLORS = {
     planning = {1, 1, 1},
 }
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils de dessin
+-- ------------------------------------------------------------------------------------------------------------
 local function terrainY(x, z)
     return getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 0, z)
 end
@@ -45,6 +61,9 @@ local function sideName(side)
     return "?"
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Canal coché ? Dessin de tous les déchargeurs qui roulent
+-- ------------------------------------------------------------------------------------------------------------
 function ADChaseDisplay.isEnabled()
     return AutoDrive.DC_CHASEDISPLAY ~= nil and AutoDrive.getDebugChannelIsSet(AutoDrive.DC_CHASEDISPLAY)
 end
@@ -66,6 +85,9 @@ function ADChaseDisplay.draw()
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Dessin d'un déchargeur
+-- ------------------------------------------------------------------------------------------------------------
 function ADChaseDisplay.drawVehicle(vehicle)
     local vx, vy, vz = getWorldTranslation(vehicle.components[1].node)
     local C = ADChaseDisplay.COLORS

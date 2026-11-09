@@ -1,10 +1,34 @@
--- Fonctions de l'ancien « AutoDrive Addon », intégrées à FarmPilot (même environnement Lua)
+-- ============================================================================================================
+-- FarmPilot : AutoDriveAddon.lua
+-- Fonctions de l'ancien « AutoDrive Addon », intégrées à FarmPilot (même environnement Lua) : socle commun des
+-- fichiers de scripts/Addon.
+--
+-- Règle : chaque addon s'inscrit par ADAddon.addModule à la fin de son fichier ; au chargement de la carte
+-- (loadMap), leurs install sont appelés dans l'ordre d'inscription, donc dans l'ordre de register.lua : LightsOff,
+-- TurnLights, TurnLightsBends, EngineStop, Weighing, SiloEmpty, RearTool. Deux enveloppent la même fonction
+-- d'AutoDrive (updateAutoDriveLights : LightsOff puis TurnLightsBends) : cet ordre compte.
+-- Les réglages des addons sont ajoutés à AutoDrive.settings (sauvegarde et multijoueur par AutoDrive) au chargement
+-- de leur fichier, et leur ligne est copiée de « Clignotant automatique » dans la page de réglages d'AutoDrive.
+-- L'ancien mod FS25_AutoDriveAddon encore activé : il fait déjà tout, rien n'est installé en double.
+--
+-- Branché par : register.lua (chargé avant les autres fichiers de scripts/Addon) ; addModEventListener (loadMap).
+-- ============================================================================================================
 
 ADAddon = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- État
+-- ------------------------------------------------------------------------------------------------------------
 ADAddon.modName = g_currentModName
 ADAddon.modules = {}
 ADAddon.settingRows = {}
 
+-- L'ancien mod FS25_AutoDriveAddon encore activé : il fait déjà tout, on ne double pas
+ADAddon.disabled = g_modIsLoaded ~= nil and g_modIsLoaded["FS25_AutoDriveAddon"] == true
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 -- Classes de FarmPilot : même environnement, lues au moment de l'appel
 local function farmPilotGlobals()
     return {
@@ -26,16 +50,6 @@ function ADAddon.getAutoDriveGlobal(name)
     return _G[name]
 end
 
--- L'ancien mod FS25_AutoDriveAddon encore activé : il fait déjà tout, on ne double pas
-ADAddon.disabled = g_modIsLoaded ~= nil and g_modIsLoaded["FS25_AutoDriveAddon"] == true
-
-function ADAddon.addModule(module)
-    if ADAddon.disabled then
-        return
-    end
-    table.insert(ADAddon.modules, module)
-end
-
 -- Seuls les problèmes vont dans le log
 function ADAddon.warning(text)
     print("FarmPilot: " .. tostring(text))
@@ -52,12 +66,21 @@ function ADAddon.getText(key)
     return key
 end
 
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
+-- Modules (un par fichier de scripts/Addon)
+-- ------------------------------------------------------------------------------------------------------------
+function ADAddon.addModule(module)
+    if ADAddon.disabled then
+        return
+    end
+    table.insert(ADAddon.modules, module)
+end
+
+-- ------------------------------------------------------------------------------------------------------------
 -- Réglages de l'addon dans les réglages d'AutoDrive
 -- Le réglage est ajouté à AutoDrive.settings (sauvegarde et multijoueur par AutoDrive)
 -- et sa ligne est copiée de « Clignotant automatique » dans la page d'AutoDrive.
--------------------------------------------------------------------------------
-
+-- ------------------------------------------------------------------------------------------------------------
 -- Doit être appelé au chargement du fichier, avant qu'AutoDrive lise sa configuration
 function ADAddon.addSetting(name, setting, afterName, labelKey, tooltipKey)
     if ADAddon.disabled then
@@ -175,6 +198,9 @@ local function installSettingRows()
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Mise en place, au chargement de la carte
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddon:loadMap(name)
     if ADAddon.disabled then
         print("FarmPilot: FS25_AutoDriveAddon is active, its functions are now part of FarmPilot (disable FS25_AutoDriveAddon)")
@@ -194,4 +220,7 @@ function ADAddon:loadMap(name)
     installSettingRows()
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 addModEventListener(ADAddon)

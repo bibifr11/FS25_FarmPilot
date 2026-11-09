@@ -2,14 +2,15 @@
 -- FarmPilot : AutonomousParkButton.lua
 -- Complément du bouton « Envoyer au parking » (ADInputManager:input_parkVehicle, AutoDrive d'origine).
 --
--- Demande Fabien 08/11 13:47 : « Lorsqu'on appuie sur l'envoi au parking, il faut, comme en fin de champ, qu'il
--- aille poser son outil s'il y en a un, puis qu'il aille se stationner à sa place. »
+-- (08/11) Envoi au parking : comme en fin de champ, le tracteur va d'abord poser son outil s'il y en a un,
+-- puis va se stationner à sa place.
 --
 -- Règle : un outil de travail attelé directement au tracteur, qui a sa place de parking, et le tracteur qui a la
 -- sienne (différente) : le bouton arrête Courseplay et FarmPilot comme avant, puis lance la même suite qu'en fin de
 -- champ (AutonomousMode.parkWithToolDrop) : l'outil va à sa place et y est dételé, puis le tracteur va à la sienne.
 -- Sinon (pas d'outil avec sa place, plusieurs, tracteur sans place) : bouton d'origine, le tracteur se gare tel
 -- quel.
+-- Épandeur / pulvé avec du produit : vidange en big bags d'abord (AutonomousSprayerDump.lua), puis ce bouton.
 -- ============================================================================================================
 
 ADParkButton = {}
@@ -22,7 +23,7 @@ function ADParkButton.toolToDrop(vehicle)
         or vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS] == nil then
         return nil, "pas de mode Autonome"
     end
-    -- (Fabien 08/11 20:57 « sur tous les modes ») : tout outil ou remorque attelé directement au tracteur qui a
+    -- (08/11, sur tous les modes) : tout outil ou remorque attelé directement au tracteur qui a
     -- sa propre place de parking (outil de travail, benne, plateau… ; les masses n'ont pas de place)
     local attached = {}
     if vehicle.getAttachedImplements ~= nil then
@@ -58,6 +59,7 @@ end
 ADParkButton.originalInput = ADInputManager.input_parkVehicle
 
 function ADInputManager:input_parkVehicle(vehicle, farmId, ...)
+    if ADSprayerDump ~= nil and ADSprayerDump.onParkButton(self, vehicle, farmId) then return end -- épandeur / pulvé : vider le reste d'abord, voir AutonomousSprayerDump.lua
     local tool, why = ADParkButton.toolToDrop(vehicle)
     if tool ~= nil then
         local name = tostring(vehicle.ad.stateModule:getName())

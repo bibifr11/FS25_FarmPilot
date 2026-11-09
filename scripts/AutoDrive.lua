@@ -41,7 +41,7 @@ AutoDrive.DC_RENDERINFO = 256
 AutoDrive.DC_ROADNETWORKINFO = 512
 AutoDrive.DC_BGA_MODE = 1024
 AutoDrive.DC_TRAINS = 2048
-AutoDrive.DC_CHASEDISPLAY = 4096 -- owner 25/10: permanent chase display (ADChaseDisplay), kept in the settings like the others
+AutoDrive.DC_CHASEDISPLAY = 4096 -- 25/10: permanent chase display (ADChaseDisplay), kept in the settings like the others
 AutoDrive.DC_ALL = 65535
 
 AutoDrive.currentDebugChannelMask = AutoDrive.DC_NONE
@@ -599,6 +599,7 @@ function AutoDrive:saveSavegame()
 		ADAutonomousManager:saveToXml()
 		ADSeederManager:saveToXml()
 		if ADSprayerManager ~= nil then ADSprayerManager:saveToXml() end -- réglages des épandeurs, voir SprayerManager.lua
+		if ADBaleLoaderManager ~= nil then ADBaleLoaderManager:saveToXml() end -- réglages des remorques à balles, voir BaleLoaderManager.lua
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil end")
 	end
 	--    Logging.info("[AD] AutoDrive:saveSavegame end")

@@ -2,8 +2,8 @@
 -- FarmPilot : FollowCombinePipeHold.lua
 -- Complément de FollowCombineTask (tâche AutoDrive d'origine) : rester sous la goulotte de la moissonneuse.
 --
--- Demande Fabien 08/11 20:03 : « en bout de ligne, moissonneuse goulotte sortie, le tracteur part ou fait marche AR.
--- En moissonneuse ça ne doit pas arriver. »
+-- (08/11) En bout de ligne, moissonneuse goulotte sortie, le tracteur partait ou faisait marche AR.
+-- En moissonneuse ça ne doit pas arriver.
 --
 -- Règle : tant que la moissonneuse (pas l'ensileuse) vide dans une remorque de ce tracteur et que la remorque n'est
 -- pas pleine, le tracteur ne recule pas pour « reprendre de la place » et ne part pas. Il reste arrêté quand elle
@@ -56,7 +56,7 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Maintien sous la goulotte
 -- ------------------------------------------------------------------------------------------------------------
--- owner 08/11 20:03: pipe out over this trailer and the trailer not full, the tractor stays under the pipe until the
+-- 08/11 20:03: pipe out over this trailer and the trailer not full, the tractor stays under the pipe until the
 -- trailer is full or the combine stops emptying (pipe in, combine empty, pipe away from the trailer): it stands while the
 -- combine stands, rolls on with it, backs up only when the combine itself backs up, at its speed
 function FollowCombineTask:holdUnderCombinePipe(dt)

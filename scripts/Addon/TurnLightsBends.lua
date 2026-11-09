@@ -4,8 +4,8 @@
 -- distance il s'allume, et qui a le droit de l'éteindre. Branché par une ligne en tête de
 -- ADAddonTurnLights.update (TurnLights.lua), qui passe la main à ADAddonTurnLightsBends.update.
 --
--- Demande Fabien 08/11 (18:35 UTC, MF 7S.210 + plateau à balles) : « quand il fait un écart il met son
--- clignotant aussi » ; 18:40 : « il ne met pas le clignotant à la bonne distance ».
+-- (08/11, MF 7S.210 + plateau à balles) : il mettait son clignotant aussi pour un écart, et pas à la
+-- bonne distance avant un virage.
 --
 -- Ce que dit le log (MF 7S.210, 19:31 → 19:56, heure du PC) :
 --  - les 4 écarts autour de 'Objet de décoration 35' (19:35:28, 19:38:52, 19:50:45, 19:54:06) ne demandent

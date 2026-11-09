@@ -1,12 +1,25 @@
--- FarmPilot : fenêtre « Parcours Autonome »
--- Pour l'outil attelé au véhicule où l'on est : un champ par ligne, avec le parcours Courseplay
--- (de la même largeur) que le mode Autonome lancera sur ce champ. « Automatique » = FarmPilot
--- prend le seul parcours possible, ou s'arrête s'il y en a plusieurs.
+-- ============================================================================================================
+-- FarmPilot : AutonomousCoursesGUI.lua
+-- Fenêtre « Parcours Autonome » (mode Autonome).
+--
+-- Règle : pour l'outil attelé au véhicule où l'on est, un champ par ligne (ou un groupe de champs AutoSwitch, ou un
+-- parcours sur plusieurs champs), avec le parcours Courseplay (de la même largeur) que le mode Autonome lancera sur
+-- ce champ. « Automatique » = FarmPilot prend le seul parcours possible, ou s'arrête s'il y en a plusieurs.
+-- « Changer » (ou double clic) : Automatique -> 1er parcours -> 2e ... -> Automatique. Le choix va dans la mémoire
+-- champ + outil (AutonomousManager.lua).
+--
+-- Branché par : Gui.lua (création, gui/autonomousCoursesGUI.xml, AutoDrive.onOpenAutonomousCourses), InputManager.lua
+-- (input_autonomousCourses, bouton du HUD).
+-- ============================================================================================================
+
 ADAutonomousCoursesGui = {}
 ADAutonomousCoursesGui.debug = false
 
 local ADAutonomousCoursesGui_mt = Class(ADAutonomousCoursesGui, DialogElement)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création et ouverture
+-- ------------------------------------------------------------------------------------------------------------
 function ADAutonomousCoursesGui.new(target)
     local self = DialogElement.new(target, ADAutonomousCoursesGui_mt)
     self:include(ADGuiDebugMixin)
@@ -20,6 +33,9 @@ function ADAutonomousCoursesGui:onOpen()
     self:refreshItems()
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Liste des champs
+-- ------------------------------------------------------------------------------------------------------------
 function ADAutonomousCoursesGui:getNumberOfItemsInSection(list, section)
     if list == self.courseList then
         return #self.rows
@@ -103,6 +119,9 @@ function ADAutonomousCoursesGui:refreshItems()
     self.courseList:reloadData()
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Boutons
+-- ------------------------------------------------------------------------------------------------------------
 function ADAutonomousCoursesGui:selectedRow()
     if #self.rows == 0 then
         return nil

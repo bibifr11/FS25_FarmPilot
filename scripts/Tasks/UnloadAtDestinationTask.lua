@@ -21,6 +21,7 @@ function UnloadAtDestinationTask:new(vehicle, destinationID)
 end
 
 function UnloadAtDestinationTask:setUp()
+    if ADTrailerSwap ~= nil and ADTrailerSwap.onUnloadTask(self) then return end -- échange de bennes à la place du déchargement, voir TrailerSwap.lua
     if self.vehicle.spec_locomotive and self.vehicle.ad and self.vehicle.ad.trainModule then
         self.state = UnloadAtDestinationTask.STATE_DRIVING
         self.vehicle.ad.trainModule:setPathTo(self.destinationID)

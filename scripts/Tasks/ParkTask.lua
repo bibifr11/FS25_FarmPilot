@@ -13,6 +13,7 @@ function ParkTask:new(vehicle, destinationID)
 end
 
 function ParkTask:setUp()
+    if ADTrailerHitch ~= nil and ADTrailerHitch.onParkTask(self) then return end -- remorque choisie : à sa place d'abord, voir TrailerHitch.lua
     self.vehicle.ad.onRouteToPark = false
     local targetParkParkDestination = nil
 

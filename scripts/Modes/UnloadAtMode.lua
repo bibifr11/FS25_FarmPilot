@@ -19,6 +19,7 @@ function UnloadAtMode:reset()
 end
 
 function UnloadAtMode:start(user)
+    if ADTrailerHitch ~= nil and ADTrailerHitch.beforeStart(self, user) then return end -- remorque choisie à aller atteler d'abord, voir TrailerHitch.lua
     if not self.vehicle.ad.stateModule:isActive() then
         self.vehicle:startAutoDrive()
     end
@@ -35,9 +36,11 @@ function UnloadAtMode:start(user)
 end
 
 function UnloadAtMode:monitorTasks(dt)
+    if ADTrailerHitch ~= nil then ADTrailerHitch.monitor(self, dt) end -- route vers la remorque choisie, voir TrailerHitch.lua
 end
 
 function UnloadAtMode:handleFinishedTask()
+    if ADTrailerHitch ~= nil and ADTrailerHitch.handleFinishedTask(self) then return end -- attelage de la remorque choisie, voir TrailerHitch.lua
     self.vehicle.ad.trailerModule:reset()
     self.activeTask = self:getNextTask()
     if self.activeTask ~= nil then

@@ -3,8 +3,8 @@
 -- Complément de IntersectionModule.lua (route « Intersection », points rouges) : attente à la ligne, recul
 -- après un raté, patience. Branché par la dernière ligne d'IntersectionModule.lua.
 --
--- Demande Fabien 08/11 (15:27 UTC, Fendt 942 au croisement de la ferme) : « attend depuis 55-60 s, il se
--- contente d'un trou de 9 s (au lieu de 12 s) » sans voiture en vue, « il détecte le vent ? ».
+-- (08/11, Fendt 942 au croisement de la ferme) : attente de 55-60 s alors qu'un trou de 9 s (au lieu de
+-- 12 s) lui suffit, sans voiture en vue.
 --
 -- Le log (16:25:41 → 16:27:06, heure du PC) : aucun trafic compté (« plus de danger depuis 70 s »). Le 942
 -- s'est arrêté 1 m après s'être engagé, avant les points rouges : compté comme « raté », il a reculé de 3 m et

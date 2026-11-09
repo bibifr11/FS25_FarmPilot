@@ -2,7 +2,7 @@
 -- FarmPilot : AutonomousRefill.lua
 -- Complément du plein du semoir en mode Autonome (AutonomousMode.startRefill ... handleRefillStage).
 --
--- Demande Fabien 08/11 : le plein du semoir doit marcher « comme le mode Chargement » ; dans le log du 08/11
+-- (08/11) Le plein du semoir doit marcher comme le mode Chargement ; dans le log du 08/11
 -- (16:34, 16:39, 17:09) « plein fait » arrive sans rien charger (cuves 2719 et 2505 / 3500 l avant et après), et la
 -- sortie du champ vers le plein doit être celle déjà faite pour les fins de champ (pas dans les arbres).
 --

@@ -2,8 +2,8 @@
 <!--
   FarmPilot : fenêtre « Réglages de l'épandeur » (épandeurs et pulvés, traînés ou automoteurs) : produit, quantité,
   zone de ravitaillement. Même forme que seederSettingsGUI.xml ; le code est dans scripts/Gui/SprayerSettingsGUI.lua.
-  Demande de Fabien (08/11, 14:05) : « Choisir le produit et la quantité à prendre »
-  Demande de Fabien (08/11, 20:39) : « L'automoteur comme le pulvé, ils doivent être fonctionnels sur Autonome »
+  (08/11) Choix du produit et de la quantité à prendre.
+  (08/11) L'automoteur comme le pulvé traîné fonctionnent en mode Autonome.
   Règle : même roue dentée et même fenêtre que le semoir, pas de système à part.
 -->
 <GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">

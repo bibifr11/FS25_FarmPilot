@@ -132,13 +132,15 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		numButtonRows = 0
 	end
 
-	-- FarmPilot mode Autonome (07/11, choix de Fabien) : 4e ligne « Outil suivant » (08/11 : ordre Champ / Outil / Champ suivant / Outil suivant),
+	-- FarmPilot mode Autonome (07/11) : 4e ligne « Outil suivant » (08/11 : ordre Champ / Outil / Champ suivant / Outil suivant),
 	-- le HUD grandit d'une ligne dans ce mode seulement (refait au changement de mode, voir drawHud)
 	-- (décidé par drawHud avec le véhicule affiché ; sinon le véhicule suivi)
-	self.fpNextToolRow = self.fpForceNextToolRow
-	if self.fpNextToolRow == nil then
-		self.fpNextToolRow = AutoDriveHud.wantsFpNextToolRow(vehicle)
+	-- (09/11) modes avec benne : la même ligne de plus devient « Remorque » (fpRowKind « trailer », voir TrailerHitch.lua)
+	self.fpRowKind = self.fpForceRowKind
+	if self.fpRowKind == nil then
+		self.fpRowKind = AutoDriveHud.fpRowKind(vehicle) or false
 	end
+	self.fpNextToolRow = self.fpRowKind ~= false
 	local pullDownRows = self.fpNextToolRow and 4 or 3
 
 	self.borderX, self.borderY = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
@@ -193,13 +195,16 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	table.insert(self.hudElements, ADHudButton:new(posX, posY, closeWidth, closeHeight, "input_toggleHudExtension", nil, nil, nil, nil, nil, nil, nil, "", 1, true))
 
 	
-	-- (08/11, Fabien : « chaque champ avec son outil », sinon « ils sont en décalé ») mode Autonome, de haut en bas :
+	-- (08/11, chaque champ avec son outil, sinon ils sont décalés) mode Autonome, de haut en bas :
 	-- Champ / Outil / Champ suivant / Outil suivant. Rang (order) = place depuis le haut, pour les listes ouvertes
 	local rowUnload, rowFill, rowNextTool = self.row3, self.row2, self.rowFpNextTool
 	local orderUnload, orderFill = nil, nil
-	if self.fpNextToolRow then
+	if self.fpRowKind == "next" then
 		rowFill, rowUnload, rowNextTool = self.row3, self.rowFpNextTool, self.row2
 		orderFill, orderUnload = 2, 3
+	elseif self.fpRowKind == "trailer" then
+		-- modes avec benne : 1re destination / 2e destination / produit / Remorque (dernière ligne, rang 4)
+		rowFill, rowNextTool = self.rowFpNextTool, self.row2
 	end
 
 	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, self.row4, self.iconWidth, self.iconHeight, "input_toggleAutomaticPickupTarget", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleAutomaticPickupTarget", 1, true))
@@ -220,7 +225,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	table.insert(self.hudElements, fpFallback)
 	
 	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, rowFill, self.iconWidth, self.iconHeight, "input_toggleLoadByFillLevel", nil, nil, nil, nil, nil, nil, nil, "input_ADToggleLoadByFillLevel", 1, true))
-	-- (08/11, demande Fabien) mode Autonome : roue dentée « Réglages du semoir » à gauche de la ligne « Outil » quand c'est
+	-- (08/11) mode Autonome : roue dentée « Réglages du semoir » à gauche de la ligne « Outil » quand c'est
 	-- un semoir (même case que le bouton ci-dessus, caché dans ce mode) ; orange = à régler (départ refusé), verte = validé
 	table.insert(self.hudElements, ADHudButton:new(self.posX + self.gapWidth, rowFill, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_seeder_tooltip", 1, false))
 
@@ -235,7 +240,17 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	fillList.order = orderFill
 	table.insert(self.hudElements, fillList)
 	table.insert(self.hudElements, HudHarvesterInfo:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowFill, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight))
-	if self.fpNextToolRow then
+	if self.fpRowKind == "trailer" then
+		-- remorque à aller atteler au départ (liste des remorques dételées), voir TrailerHitch.lua
+		local trailerList = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowNextTool, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+		trailerList.fpTrailer = true
+		trailerList.order = 4
+		table.insert(self.hudElements, trailerList)
+		-- roue dentée « Échange de bennes » (dossier des places), voir TrailerSwap.lua
+		local swapGear = ADHudButton:new(self.posX + self.gapWidth, rowNextTool, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_trailerSwap_tooltip", 1, false)
+		swapGear.fpTrailer = true
+		table.insert(self.hudElements, swapGear)
+	elseif self.fpNextToolRow then
 		-- liste d'outils comme la ligne « Outil » (même type), pour le champ suivant ; dernière ligne, rang 4
 		local nextTool = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowNextTool, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
 		nextTool.fpNext = true
@@ -275,9 +290,9 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		if AutoDrive.getSetting("addSettingsToHUD") then
 			self:AddSettingsButton("enableTrafficDetection", "gui_ad_enableTrafficDetection", 1, true)
 			self:AddSettingsButton("rotateTargets", "gui_ad_rotateTargets", 1, true)
-			self:AddSettingsButton("exitField", "gui_ad_exitField", 1, true)
 			self:AddSettingsButton("restrictToField", "gui_ad_restrictToField", 1, true)
 			self:AddSettingsButton("avoidFruit", "gui_ad_avoidFruit", 1, true)
+			self.buttonCounter = self.buttonCounter + 1 -- case vide : icône « Sortie du champ » retirée (09/11), le compteur garde la place du compteur de vitesse
 		else
 			self:AddEditModeButtons()
 			if vehicle then
@@ -305,9 +320,9 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 			end
 
 			self:AddSettingsButton("rotateTargets", "gui_ad_rotateTargets", 1, true)
-			self:AddSettingsButton("exitField", "gui_ad_exitField", 1, true)
 			self:AddSettingsButton("restrictToField", "gui_ad_restrictToField", 1, true)
 			self:AddSettingsButton("avoidFruit", "gui_ad_avoidFruit", 1, true)
+			self.buttonCounter = self.buttonCounter + 1 -- case vide : icône « Sortie du champ » retirée (09/11), le compteur garde la place du compteur de vitesse
 		else
 			if vehicle then
 				local usedHelper = vehicle.ad.stateModule:getUsedHelper()
@@ -404,6 +419,17 @@ function AutoDriveHud.wantsFpNextToolRow(vehicle)
 		and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS
 end
 
+-- (09/11) quelle ligne de plus : « next » (Outil suivant, Autonome), « trailer » (Remorque, modes avec benne) ou nil
+function AutoDriveHud.fpRowKind(vehicle)
+	if AutoDriveHud.wantsFpNextToolRow(vehicle) then
+		return "next"
+	end
+	if ADTrailerHitch ~= nil and ADTrailerHitch.isTrailerMode(vehicle) then
+		return "trailer"
+	end
+	return nil
+end
+
 function AutoDriveHud:drawHud(vehicle)
 	local controlledVehicle = AutoDrive.getControlledVehicle()
 	if (vehicle ~= nil and vehicle == controlledVehicle) or AutoDrive.aiFrameOpen then
@@ -418,9 +444,9 @@ function AutoDriveHud:drawHud(vehicle)
 
 		if self.lastUIScale ~= uiScale then
 			self:createHudAt(self.posX, self.posY)
-		elseif self.hudElements ~= nil and AutoDrive.pullDownListExpanded == 0 and (self.fpNextToolRow == true) ~= AutoDriveHud.wantsFpNextToolRow(vehicle) then
-			-- passage en mode Autonome ou retour : une ligne de plus ou de moins
-			self.fpForceNextToolRow = AutoDriveHud.wantsFpNextToolRow(vehicle)
+		elseif self.hudElements ~= nil and AutoDrive.pullDownListExpanded == 0 and (self.fpRowKind or false) ~= (AutoDriveHud.fpRowKind(vehicle) or false) then
+			-- passage en mode Autonome, dans un mode avec benne, ou retour : une ligne de plus ou de moins
+			self.fpForceRowKind = AutoDriveHud.fpRowKind(vehicle) or false
 			self:createHudAt(self.posX, self.posY)
 		end
 		self.lastUIScale = uiScale

@@ -509,6 +509,7 @@ AutoDrive.settings.notifications = {
     isUserSpecific = true
 }
 
+--[==[ Mis de côté (09/11) : « Sortie du champ » inutilisé, la sortie de champ est gérée par ExitFieldTaskExitPoints.lua
 AutoDrive.settings.exitField = {
     values = {0, 1, 2},
     texts = {"gui_ad_default", "gui_ad_after_start", "gui_ad_closest"},
@@ -520,6 +521,7 @@ AutoDrive.settings.exitField = {
     isVehicleSpecific = true,
     isCopyPaste = true
 }
+]==]
 
 AutoDrive.settings.showHelp = {
     values = {false, true},

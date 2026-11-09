@@ -1,22 +1,45 @@
--- Clignotant avant les virages et les croisements
--- AutoDrive allume le clignotant seulement quand l'angle du trajet juste devant dépasse son réglage
--- « Clignotant automatique » : la distance regardée dépend de la vitesse, donc il clignote trop tard.
--- Ici le trajet est regardé sur une distance fixe (réglage « Distance clignotant », 50 m par défaut),
--- le clignotant s'allume du côté du virage et s'éteint une fois le virage passé et le tracteur de nouveau droit.
--- Le réglage est ajouté à ceux d'AutoDrive (sauvegarde et multijoueur par AutoDrive) et affiché
--- dans sa page de réglages, juste sous « Clignotant automatique ».
+-- ============================================================================================================
+-- FarmPilot : TurnLights.lua
+-- Addon : clignotant avant les virages et les croisements.
+--
+-- AutoDrive allume le clignotant seulement quand l'angle du trajet juste devant dépasse son réglage « Clignotant
+-- automatique » : la distance regardée dépend de la vitesse, donc il clignote trop tard.
+--
+-- Règle : ici le trajet est regardé sur une distance fixe (réglage « Distance clignotant », 50 m par défaut), le
+-- clignotant s'allume du côté du virage et s'éteint une fois le virage passé et le tracteur de nouveau droit (07/11).
+-- Le réglage est ajouté à ceux d'AutoDrive (sauvegarde et multijoueur par AutoDrive) et affiché dans sa page de
+-- réglages, juste sous « Clignotant automatique ». Le clignotant d'AutoDrive est coupé pendant son appel, puis
+-- remplacé par celui-ci. Journal [AD-Clignotant] (27/10).
+--
+-- Compléments, chargés après ce fichier : TurnLightsBends.lua (quel virage mérite le clignotant et à quelle
+-- distance : prend la main par la 1re ligne de ADAddonTurnLights.update) ; TurnLightsOtherMods.lua (les autres mods
+-- qui éteignent le clignotant restent sans effet pendant que FarmPilot conduit).
+--
+-- Branché par : AutoDriveAddon.lua (install au chargement de la carte : enveloppe ADDrivePathModule.reset et
+-- checkActiveAttributesSet) ; réglage blinkDistance ajouté au chargement de ce fichier (ADAddon.addSetting).
+-- ============================================================================================================
 
 ADAddonTurnLights = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADAddonTurnLights.DISTANCES = { 20, 30, 40, 50, 60, 70, 80, 100 }
 ADAddonTurnLights.DEFAULT_INDEX = 4     -- 50 m
 ADAddonTurnLights.KEEP_ANGLE = 15       -- degrés de virage encore devant qui gardent le clignotant
--- (07/11, demande Fabien) après le virage, le clignotant reste allumé le temps de remettre droit :
+-- (07/11) après le virage, le clignotant reste allumé le temps de remettre droit :
 -- éteint quand le tracteur est de nouveau dans l'axe de la route (STRAIGHT_ANGLE) après AFTER_MIN m, au plus AFTER_MAX m
 ADAddonTurnLights.AFTER_MIN = 8         -- m roulés depuis la fin du virage devant (environ 5 m après la sortie du virage)
 ADAddonTurnLights.AFTER_MAX = 30        -- m au plus
 ADAddonTurnLights.STRAIGHT_ANGLE = 6    -- degrés entre le tracteur et la route : « droit »
 
+-- TEST 27/10 (aucun clignotant aux croisements) : journal [AD-Clignotant]
+ADAddonTurnLights.LOG = true
+ADAddonTurnLights.RESET_LOG_INTERVAL = 5000 -- ms entre deux lignes « éteint par un autre script »
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglage « Distance clignotant », ajouté à ceux d'AutoDrive au chargement de ce fichier
+-- ------------------------------------------------------------------------------------------------------------
 local texts = {}
 for i, v in ipairs(ADAddonTurnLights.DISTANCES) do
     texts[i] = v .. " m"
@@ -29,50 +52,9 @@ ADAddon.addSetting("blinkDistance", {
     tooltip = "gui_ad_blinkDistance_tooltip"
 }, "blinkValue", "adAddon_blinkDistance", "adAddon_blinkDistance_tooltip")
 
--- Renvoie 1 (gauche), -1 (droite) ou 0 si le trajet tourne d'au moins minAngle dans les maxDistance m devant.
--- Un clignotant déjà allumé reste allumé tant qu'il reste au moins KEEP_ANGLE de ce virage devant.
-function ADAddonTurnLights.getUpcomingTurnDirection(module, maxDistance, minAngle)
-    local autoDrive = ADAddonTurnLights.autoDrive
-    local index = module:getCurrentWayPointIndex()
-    local wayPoints = module.wayPoints
-    if wayPoints == nil or index == nil or wayPoints[index] == nil then
-        return 0
-    end
-    local x, _, z = getWorldTranslation(module.vehicle.components[1].node)
-    local prev = wayPoints[index - 1] or { x = x, z = z }
-    local current = module.adAddonBlinkDir or 0
-    local keepAngle = math.min(ADAddonTurnLights.KEEP_ANGLE, minAngle)
-    local distance = MathUtil.vector2Length(wayPoints[index].x - x, wayPoints[index].z - z)
-    local cumulated = 0
-    local keep = false
-    local i = index
-    while distance <= maxDistance and wayPoints[i + 1] ~= nil do
-        local wpCurrent = wayPoints[i]
-        local wpAhead = wayPoints[i + 1]
-        local wpRef = (i == index) and prev or wayPoints[i - 1]
-        local angle = autoDrive.angleBetween({ x = wpAhead.x - wpCurrent.x, z = wpAhead.z - wpCurrent.z }, { x = wpCurrent.x - wpRef.x, z = wpCurrent.z - wpRef.z })
-        cumulated = cumulated + math.max(-90, math.min(90, angle))
-        if cumulated >= minAngle then
-            return 1
-        elseif cumulated <= -minAngle then
-            return -1
-        end
-        if current ~= 0 and cumulated * current >= keepAngle then
-            keep = true
-        end
-        distance = distance + MathUtil.vector2Length(wpAhead.x - wpCurrent.x, wpAhead.z - wpCurrent.z)
-        i = i + 1
-    end
-    if keep then
-        return current
-    end
-    return 0
-end
-
--- TEST 27/10 (Fabien : « aucun n'a de clignotant aux croisements ») : journal [AD-Clignotant]
-ADAddonTurnLights.LOG = true
-ADAddonTurnLights.RESET_LOG_INTERVAL = 5000 -- ms entre deux lignes « éteint par un autre script »
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local function vehicleName(vehicle)
     local ad = vehicle.ad
     if ad ~= nil and ad.stateModule ~= nil and ad.stateModule.getName ~= nil then
@@ -115,6 +97,52 @@ function ADAddonTurnLights.headingError(module)
     return angle
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Virage devant
+-- ------------------------------------------------------------------------------------------------------------
+-- Renvoie 1 (gauche), -1 (droite) ou 0 si le trajet tourne d'au moins minAngle dans les maxDistance m devant.
+-- Un clignotant déjà allumé reste allumé tant qu'il reste au moins KEEP_ANGLE de ce virage devant.
+function ADAddonTurnLights.getUpcomingTurnDirection(module, maxDistance, minAngle)
+    local autoDrive = ADAddonTurnLights.autoDrive
+    local index = module:getCurrentWayPointIndex()
+    local wayPoints = module.wayPoints
+    if wayPoints == nil or index == nil or wayPoints[index] == nil then
+        return 0
+    end
+    local x, _, z = getWorldTranslation(module.vehicle.components[1].node)
+    local prev = wayPoints[index - 1] or { x = x, z = z }
+    local current = module.adAddonBlinkDir or 0
+    local keepAngle = math.min(ADAddonTurnLights.KEEP_ANGLE, minAngle)
+    local distance = MathUtil.vector2Length(wayPoints[index].x - x, wayPoints[index].z - z)
+    local cumulated = 0
+    local keep = false
+    local i = index
+    while distance <= maxDistance and wayPoints[i + 1] ~= nil do
+        local wpCurrent = wayPoints[i]
+        local wpAhead = wayPoints[i + 1]
+        local wpRef = (i == index) and prev or wayPoints[i - 1]
+        local angle = autoDrive.angleBetween({ x = wpAhead.x - wpCurrent.x, z = wpAhead.z - wpCurrent.z }, { x = wpCurrent.x - wpRef.x, z = wpCurrent.z - wpRef.z })
+        cumulated = cumulated + math.max(-90, math.min(90, angle))
+        if cumulated >= minAngle then
+            return 1
+        elseif cumulated <= -minAngle then
+            return -1
+        end
+        if current ~= 0 and cumulated * current >= keepAngle then
+            keep = true
+        end
+        distance = distance + MathUtil.vector2Length(wpAhead.x - wpCurrent.x, wpAhead.z - wpCurrent.z)
+        i = i + 1
+    end
+    if keep then
+        return current
+    end
+    return 0
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale (virages, écarts, distance, marche arrière : TurnLightsBends.lua)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonTurnLights.update(module, minAngle, dt)
     if ADAddonTurnLightsBends ~= nil then return ADAddonTurnLightsBends.update(module, minAngle, dt) end -- 08/11 virages, ecarts, distance, marche arriere : TurnLightsBends.lua
     local vehicle = module.vehicle
@@ -170,6 +198,9 @@ function ADAddonTurnLights.update(module, minAngle, dt)
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Mise en place (au chargement de la carte, par AutoDriveAddon.lua)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonTurnLights.install(autoDrive)
     ADAddonTurnLights.autoDrive = autoDrive
 
@@ -219,4 +250,7 @@ function ADAddonTurnLights.install(autoDrive)
     print("[AD-Clignotant] module installe (TEST 27/10)")
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 ADAddon.addModule(ADAddonTurnLights)

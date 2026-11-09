@@ -1,15 +1,29 @@
--------------------------------------------------------------------------------
--- FarmPilot - mode Autonome : semoir (08/11, demande de Fabien)
---   Semoir sur la ligne « Outil » (ou « Outil suivant ») : une roue dentée apparaît à gauche de la ligne. Elle
---   ouvre la fenêtre « Réglages du semoir » : culture à semer, produits à charger (semence, engrais : choix
---   multiple comme le mode Chargement) et zone de ravitaillement (un marqueur de la carte).
---   Choix retenu par champ (nom du marqueur de la ligne « Champ ») et par semoir (modèle).
---   Tant que ce n'est pas validé, le départ est refusé (roue dentée orange, verte une fois validé).
---   Le plein se fait comme dans le mode Chargement (LoadAtDestinationTask) : au départ si le semoir n'est pas
---   plein, et quand Courseplay s'arrête semoir vide (il sort du champ, fait le plein, revient, et Courseplay
---   repart au dernier point).
--------------------------------------------------------------------------------
+-- ============================================================================================================
+-- FarmPilot : SeederManager.lua
+-- Mode Autonome : le semoir (08/11).
+--
+-- Règle :
+-- - Semoir sur la ligne « Outil » (ou « Outil suivant ») : une roue dentée apparaît à gauche de la ligne. Elle ouvre
+--   la fenêtre « Réglages du semoir » (SeederSettingsGUI.lua) : culture à semer (de saison seulement), produits à
+--   charger (semence, engrais : choix multiple comme le mode Chargement) et zone de ravitaillement (un marqueur de la
+--   carte). Choix retenu par champ (nom du marqueur de la ligne « Champ ») et par semoir (modèle).
+-- - Tant que ce n'est pas validé, le départ est refusé (roue dentée orange, verte une fois validé).
+-- - Le plein se fait comme dans le mode Chargement (LoadAtDestinationTask) : au départ si le semoir n'est pas plein,
+--   et quand Courseplay s'arrête semoir vide (il sort du champ, fait le plein, revient, et Courseplay repart au
+--   dernier point).
+--
+-- Branché par : AutonomousMode.lua (start : startBlock et prepare ; plein : setLoadFillTypes, productsFull,
+-- fillText ; onCpEmpty : prepare), HudButton.lua (status : roue dentée), AutoDrive.lua (saveToXml),
+-- SeederSettingsGUI.lua. AutonomousRefill.lua, chargé après ce fichier, remplace productsFull (et lit fillUnits,
+-- context) ; SprayerManager.lua et AutonomousSprayerDump.lua reprennent toolKey, attachedTo, rowField, key et
+-- EXCLUDED_FILLTYPES.
+-- ============================================================================================================
+
 ADSeederManager = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADSeederManager.FILE_NAME = "FarmPilot_Semoirs.xml"
 ADSeederManager.settings = {}   -- [nom du champ .. "|" .. clé du semoir] = { field, tool, toolName, fruit, fillTypes = {noms}, refill, stamp }
 ADSeederManager.loaded = false
@@ -22,6 +36,9 @@ local function log(fmt, ...)
 end
 ADSeederManager.log = log
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Quel semoir, quel champ (lignes « Outil » et « Champ » du HUD)
+-- ------------------------------------------------------------------------------------------------------------
 function ADSeederManager.isSeeder(tool)
     return tool ~= nil and tool.spec_sowingMachine ~= nil and not tool.isDeleted and not tool.isDeleting
 end
@@ -96,9 +113,9 @@ function ADSeederManager.context(vehicle, isNext)
     return { tool = tool, toolKey = ADSeederManager.toolKey(tool), field = marker.name, marker = marker }
 end
 
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Ce que le semoir sait faire
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- cultures que le semoir sait semer : { {index, name, title} }, et si le joueur peut en changer
 function ADSeederManager.fruitChoices(tool)
     local out = {}
@@ -113,7 +130,7 @@ function ADSeederManager.fruitChoices(tool)
             out[#out + 1] = { index = fruitIndex, name = ft.name, title = (fill ~= nil and fill.title) or ft.name }
         end
     end
-    -- (08/11, Fabien : « les cultures de saison possibles uniquement ») : semable maintenant, d'après le calendrier du jeu
+    -- (08/11) cultures de saison seulement : semable maintenant, d'après le calendrier du jeu
     -- (celui que le semoir lui-même vérifie : FruitTypeDesc:getIsPlantableInPeriod)
     local outside = false
     if tool.getCanPlantOutsideSeason ~= nil then
@@ -218,9 +235,9 @@ function ADSeederManager.loadChoices(tool)
     return out
 end
 
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Mémoire champ + semoir
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 function ADSeederManager.key(field, toolKey)
     return tostring(field) .. "|" .. tostring(toolKey)
 end
@@ -298,9 +315,9 @@ function ADSeederManager.startBlock(vehicle)
     return nil
 end
 
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Plein
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 function ADSeederManager.fillTypeIndices(s)
     local out = {}
     for _, name in ipairs(s.fillTypes or {}) do
@@ -422,9 +439,9 @@ function ADSeederManager.prepare(vehicle)
     }
 end
 
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Sauvegarde (FarmPilot_Semoirs.xml dans la sauvegarde)
--------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 local function savegameFile()
     if g_currentMission == nil or g_currentMission.missionInfo == nil then
         return nil

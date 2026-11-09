@@ -139,6 +139,14 @@
 		<text name="gui_ad_parkInField_tooltip"						text="Après avoir déchargé une moissonneuse - Le chauffeur attend le chargement suivant au champ, à moins qu’il ne se trouve sur la partie non exploitée du champ ou complètement chargé." />
 		<text name="gui_ad_unloadFillLevel"							text="Décharger le contenu" />
 		<text name="gui_ad_unloadFillLevel_tooltip"					text="Après avoir déchargé une moissonneuse - Partir tout de suite et ne pas attendre le prochain remplissage." />
+		<text name="gui_ad_fpSiloEmptyWait" text="Chargement arrêté : partir après" />
+		<text name="gui_ad_fpSiloEmptyWait_tooltip" text="Au point de chargement, si la benne contient déjà quelque chose et que plus rien n'entre pendant ce temps, le véhicule part avec ce qu'il a. Non : il attend d'être rempli au niveau « Décharger le contenu » (par exemple un camion en bord de champ rempli par un transbordeur). Un reste de moins de 1 % compte comme une benne vide." />
+		<text name="gui_ad_fpSiloEmptyWait_off" text="Non" />
+		<text name="gui_ad_fpSiloEmptyWait_15" text="15 s" />
+		<text name="gui_ad_fpSiloEmptyWait_30" text="30 s" />
+		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
+		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
+		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
 		<text name="gui_ad_findDriver"									text="Trouver un chauffeur" />
 		<text name="gui_ad_findDriver_tooltip"							text="Recherche du chauffeur le plus proche (Ignore la destination)." />
 		<text name="gui_ad_gui_scale"									text="Taille de l'ATH FarmPilot" />
@@ -459,13 +467,13 @@
 		<text name="gui_ad_autonomousNoCp_wait" text="Attendre" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Ouvrier du jeu" />
 		<text name="gui_ad_dirtRoads" text="Routes tertiaires" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Points « route tertiaire » du réseau (lignes roses et violettes de l'éditeur). Autorisées : prises seulement si elles font gagner du temps, à vitesse limitée. Jamais : seulement s'il n'y a pas d'autre route. Auto : Jamais pour les camions et les semis, Autorisées pour les tracteurs et les autres véhicules" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Points « route tertiaire » du réseau (lignes roses et violettes de l'éditeur). Seulement pour accéder à une destination qui est dessus ou au bout (ou pour en repartir), jamais en raccourci. Autorisées : à vitesse limitée. Jamais : seulement s'il n'y a pas d'autre route. Auto : Jamais pour les camions et les semis, Autorisées pour les tracteurs et les autres véhicules" />
 		<text name="gui_ad_dirtRoads_auto" text="Auto (camion : jamais)" />
 		<text name="gui_ad_dirtRoads_never" text="Jamais" />
 		<text name="gui_ad_dirtRoads_allowed" text="Autorisées" />
 		<text name="gui_ad_secondaryRoads" text="Routes secondaires" />
-		<text name="gui_ad_secondaryRoads_tooltip" text="Points « secondaire » du réseau. Auto : comme AutoDrive d'origine (prises seulement si la principale est bien plus longue). Autorisées : prises dès qu'elles font gagner du temps. Jamais : seulement s'il n'y a pas d'autre route" />
-		<text name="gui_ad_secondaryRoads_auto" text="Auto (d'origine)" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Points « secondaire » du réseau. Auto : raccourcis pris dès qu'ils font gagner du temps pour les tracteurs ; camions et semis comme AutoDrive d'origine (seulement si la principale est bien plus longue). Autorisées : prises dès qu'elles font gagner du temps. Jamais : seulement s'il n'y a pas d'autre route" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (camion : d'origine)" />
 		<text name="AD_cropStuck" text="%s %s : bloqué dans la culture (%s), aucun trajet propre pour en sortir : à dégager à la main" />
 		<text name="AD_foldWait" text="%s %s : j'attends que %s soit replié (%d %%)%s, je ne pars pas" />
 		<text name="gui_ad_dirtRoadSpeed" text="Vitesse maxi sur route tertiaire" />
@@ -544,6 +552,7 @@
 		<text name="AD_autonomous_none" text="aucun parcours Courseplay de %s m sur le champ %s, en attente" />
 		<text name="AD_autonomous_several" text="%s parcours de %s m sur le champ %s, choisissez-en un dans la fenêtre Parcours Autonome (Ctrl+Alt+5 du pavé numérique), en attente" />
 		<text name="AD_autonomous_noField" text="aucun champ ici, en attente" />
+		<text name="AD_autonomous_noWindrow" text="presse : aucun parcours Courseplay du champ %s ne tombe sur les andains, en attente" />
 		<text name="AD_autonomous_noWidth" text="largeur de l'outil inconnue, en attente" />
 		<text name="AD_autonomous_noTool" text="mode Autonome : aucun outil de travail attelé" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay introuvable : ouvrier du jeu lancé sur le champ %s" />
@@ -579,6 +588,32 @@
 		<text name="AD_autonomous_fetchBusy" text="l'outil « %s » est attelé à un autre engin" />
 		<text name="AD_autonomous_fetchOther" text="un autre outil est attelé : dételez-le pour aller chercher « %s », ou choisissez « Celui attelé » sur la ligne « Outil »" />
 		<text name="AD_autonomous_fetchNoJoint" text="l'outil « %s » ne s'attelle pas à l'arrière de ce tracteur (ou l'attelage arrière est déjà pris)" />
+		<text name="AD_trailer_row" text="Remorque : %s" />
+		<text name="AD_trailer_rowNone" text="Remorque : celle attelée" />
+		<text name="AD_trailer_listNone" text="Celle attelée" />
+		<text name="AD_trailer_fetchGo" text="va chercher la remorque « %s »" />
+		<text name="AD_trailer_fetchDone" text="remorque « %s » attelée, départ" />
+		<text name="AD_trailer_fetchFailed" text="la remorque « %s » n'a pas pu être attelée, arrêt" />
+		<text name="AD_trailer_fetchNoPath" text="pas de chemin jusqu'à l'avant de la remorque « %s » : placez le tracteur devant elle, dans son axe, et relancez" />
+		<text name="AD_trailer_fetchMissed" text="attelage de la remorque « %s » raté, arrêt devant la remorque" />
+		<text name="AD_trailer_fetchBusy" text="la remorque « %s » est attelée à un autre engin" />
+		<text name="AD_trailer_fetchOther" text="une remorque ou un outil est déjà attelé : dételez-le pour aller chercher « %s », ou choisissez « Celle attelée » sur la ligne « Remorque »" />
+		<text name="AD_trailer_fetchNoJoint" text="la remorque « %s » ne s'attelle pas à l'arrière de ce tracteur (ou l'attelage arrière est déjà pris)" />
+		<text name="AD_trailer_dropGo" text="travail fini : la remorque « %s » va à sa place, puis le tracteur à la sienne" />
+		<text name="gui_ad_trailerSwap_title" text="Échange de bennes" />
+		<text name="gui_ad_trailerSwap_tooltip" text="Échange de bennes à la livraison" />
+		<text name="gui_ad_trailerSwap_info" text="À la livraison, la benne pleine est posée sur une place libre du dossier, puis le tracteur repart avec une benne vide prise sur une autre place. Une place = un marqueur du dossier. Réglage actuel : %s" />
+		<text name="gui_ad_trailerSwap_off" text="Non (livraison normale)" />
+		<text name="gui_ad_trailerSwap_current" text="réglage actuel" />
+		<text name="gui_ad_trailerSwap_folderValue" text="places : %d · libres : %d · bennes vides : %d" />
+		<text name="gui_ad_trailerSwap_noFolder" text="Aucun dossier de marqueurs : crée un dossier et mets-y un marqueur par place." />
+		<text name="AD_swap_go" text="benne pleine « %s » : posée sur « %s », puis la vide « %s »" />
+		<text name="AD_swap_done" text="benne vide « %s » attelée, le travail reprend" />
+		<text name="AD_swap_noFree" text="échange de bennes : pas de place libre dans « %s », livraison normale" />
+		<text name="AD_swap_noEmpty" text="échange de bennes : pas de benne vide dans « %s », livraison normale" />
+		<text name="AD_swap_notOne" text="échange de bennes : il faut une seule benne attelée, livraison normale" />
+		<text name="AD_swap_dropFailed" text="échange de bennes : la benne pleine n'a pas pu être dételée, arrêt" />
+		<text name="AD_swap_emptyGone" text="échange de bennes : plus de benne vide dans « %s », arrêt" />
 		<text name="AD_fpFn_plow" text="Charrue" />
 		<text name="AD_fpFn_cultivator" text="Cultivateur" />
 		<text name="AD_fpFn_discHarrow" text="Déchaumeur" />
@@ -601,6 +636,7 @@
 		<text name="AD_fpFn_baler" text="Presse" />
 		<text name="AD_fpFn_balerSquare" text="Presse carrée" />
 		<text name="AD_fpFn_balerRound" text="Presse ronde" />
+		<text name="AD_fpFn_baleLoader" text="Remorque à balles" />
 		<text name="gui_ad_autonomous_title" text="Parcours Autonome" />
 		<text name="gui_ad_autonomous_field" text="Champ %s" />
 		<text name="gui_ad_autonomous_fields" text="Champs %s" />
@@ -662,7 +698,37 @@
 		<text name="AD_autonomous_sprayerEmpty" text="cuve vide : plein à « %s », puis retour au champ" />
 		<text name="AD_autonomous_dumpGo" text="champ fini : vide le reste de la cuve en big bags à « %s »" />
 		<text name="AD_autonomous_dumpFailed" text="reste de la cuve pas vidé à « %s » (pas de place ou refusé) : gardé dans la cuve" />
+		<text name="AD_autonomous_dumpParkGo" text="parking : vide d'abord le reste de la cuve en big bags à « %s »" />
+		<text name="AD_autonomous_dumpKept" text="reste de %s gardé dans la cuve : pas de vidange en big bags possible ou aucune zone (voir le log)" />
 		<text name="AD_task_autonomous_dump" text="Vide le reste en big bags" />
+		<text name="gui_ad_baleLoader_title" text="Réglages de la remorque à balles" />
+		<text name="gui_ad_baleLoader_head" text="Remorque : %s · Champ : %s · Prend les %s" />
+		<text name="gui_ad_baleLoader_round" text="balles rondes" />
+		<text name="gui_ad_baleLoader_square" text="balles carrées" />
+		<text name="gui_ad_baleLoader_both" text="balles rondes et carrées" />
+		<text name="gui_ad_baleLoader_noLoader" text="Pas de remorque à balles sur cette ligne." />
+		<text name="gui_ad_baleLoader_wrap" text="Balles à ramasser" />
+		<text name="gui_ad_baleLoader_wrapAll" text="Toutes" />
+		<text name="gui_ad_baleLoader_wrapWrapped" text="Enrubannées seulement" />
+		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Non enrubannées seulement" />
+		<text name="gui_ad_baleLoader_deposit" text="Zone de dépôt (vente ou stockage)" />
+		<text name="gui_ad_baleLoader_pickDeposit" text="Choisissez la zone de dépôt (Choisir ou double clic), Retour pour revenir. En haut : près d'un point de vente qui prend les balles." />
+		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Choisissez la zone de dépôt (Choisir ou double clic), Retour pour revenir. Aucun point de vente des balles trouvé : elles seront posées au marqueur." />
+		<text name="gui_ad_baleLoader_sale" text="vente" />
+		<text name="gui_ad_baleLoader_needDeposit" text="Choisissez la zone de dépôt." />
+		<text name="gui_ad_baleLoader_tooltip" text="Réglages de la remorque à balles" />
+		<text name="gui_ad_baleLoader_tooltipNext" text="Réglages de la remorque à balles (champ suivant)" />
+		<text name="AD_autonomous_baleLoaderTodo" text="réglages de « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
+		<text name="AD_autonomous_balesStart" text="ramassage des balles du champ %s (%d à ramasser)" />
+		<text name="AD_autonomous_balesNone" text="plus de balle à ramasser au champ %s" />
+		<text name="AD_autonomous_balesFull" text="remorque pleine (%d balles) : dépôt à « %s », puis retour au champ" />
+		<text name="AD_autonomous_balesLast" text="dernières balles (%d) : dépôt à « %s »" />
+		<text name="AD_autonomous_balesBack" text="dépôt fait, retour au champ « %s »" />
+		<text name="AD_autonomous_balesUnloadFailed" text="dépôt des balles à « %s » pas fait (voir le log), en attente" />
+		<text name="AD_autonomous_balesNoWork" text="le bras de la remorque à balles ne sort pas, en attente" />
+		<text name="AD_autonomous_balesNoLoader" text="remorque à balles dételée, en attente" />
+		<text name="AD_task_autonomous_bales" text="Ramasse les balles" />
+		<text name="AD_task_autonomous_baleUnload" text="Dépose les balles" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="la cuve contient encore %s (%.0f L) et le produit choisi est %s : videz la cuve, départ refusé" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay n'a pas pu repartir au dernier point, en attente" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->

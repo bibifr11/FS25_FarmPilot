@@ -1,8 +1,19 @@
--- FarmPilot mode Autonome : dételer l'outil à sa place de parking, comme le joueur
--- (arrêt, outil coupé, abaissé si le jeu le demande, puis dételage du jeu avec ses béquilles).
+-- ============================================================================================================
+-- FarmPilot : DetachToolTask.lua
+-- Mode Autonome : tâche « dételer l'outil à sa place de parking », comme le joueur.
+--
+-- Règle : arrêt, outil coupé, abaissé si l'outil le permet, puis dételage du jeu avec ses béquilles. (07/11) Mod
+-- d'attelage manuel : prise de force et flexibles débranchés d'abord (sinon le mod refuse le dételage).
 -- Le résultat (self.result = "ok" ou la raison de l'échec) est lu par AutonomousMode:handleFinishedTask.
+--
+-- Branché par : AutonomousMode.lua (handleParkStage, étape « detach » : ADDetachToolTask:new).
+-- ============================================================================================================
+
 ADDetachToolTask = ADInheritsFrom(AbstractTask)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADDetachToolTask.STATE_STOP = 1
 ADDetachToolTask.STATE_LOWER = 2
 ADDetachToolTask.STATE_DETACH = 3
@@ -11,6 +22,9 @@ ADDetachToolTask.LOWER_TIME = 2500      -- ms laissées pour abaisser l'outil av
 ADDetachToolTask.LOWER_TIMEOUT = 8000   -- ms : l'outil n'accepte toujours pas d'être dételé
 ADDetachToolTask.DETACH_TIMEOUT = 20000 -- ms : béquilles / dételage pas terminés
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création
+-- ------------------------------------------------------------------------------------------------------------
 function ADDetachToolTask:new(vehicle, tool)
     local o = ADDetachToolTask:create()
     o.vehicle = vehicle
@@ -29,6 +43,9 @@ function ADDetachToolTask:isAttached()
     return self.tool ~= nil and self.tool.getAttacherVehicle ~= nil and self.tool:getAttacherVehicle() ~= nil
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- À chaque image : arrêt, outil coupé et abaissé, dételage (fonction principale)
+-- ------------------------------------------------------------------------------------------------------------
 function ADDetachToolTask:update(dt)
     self.vehicle.ad.specialDrivingModule:stopVehicle()
     self.vehicle.ad.specialDrivingModule:update(dt)
@@ -46,7 +63,7 @@ function ADDetachToolTask:update(dt)
                 self.tool:setIsTurnedOn(false)
             end
             local attacher = self.tool:getAttacherVehicle()
-            -- (07/11 20:17, Fabien) mod d'attelage manuel : prise de force et flexibles débranchés d'abord
+            -- (07/11) mod d'attelage manuel : prise de force et flexibles débranchés d'abord
             -- (sinon le mod refuse le dételage)
             local okM, done = pcall(ADAutonomousManager.setManualConnections, attacher, self.tool, false)
             if not okM then
@@ -83,6 +100,9 @@ function ADDetachToolTask:update(dt)
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fin de la tâche, texte du HUD
+-- ------------------------------------------------------------------------------------------------------------
 function ADDetachToolTask:finish(result)
     if self.result ~= nil then
         return

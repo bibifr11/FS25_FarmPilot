@@ -77,6 +77,8 @@ function AutoDrive:loadGUI()
         AutoDrive.debugMsg(nil, "AutoDrive:loadGUI failed count %d", count)
     end
 	if ADSprayerSettingsGui ~= nil then ADSprayerSettingsGui.load() end -- fenêtre « Réglages de l'épandeur », voir SprayerSettingsGUI.lua
+	if ADBaleLoaderSettingsGui ~= nil then ADBaleLoaderSettingsGui.load() end -- fenêtre « Réglages de la remorque à balles », voir BaleLoaderSettingsGUI.lua
+	if ADTrailerSwapGui ~= nil then ADTrailerSwapGui.load() end -- fenêtre « Échange de bennes », voir TrailerSwapGUI.lua
 
 	AutoDrive.gui.ADGlobalSettingsPage = ADSettingsPage.new()
 	AutoDrive.gui.ADUserSettingsPage = ADSettingsPage.new()
@@ -176,6 +178,7 @@ end
 
 -- (08/11) roue dentée du semoir (ligne « Outil » ou « Outil suivant » du mode Autonome)
 function AutoDrive.onOpenSeederSettings(vehicle, isNext)
+	if ADBaleLoaderSettingsGui ~= nil and ADBaleLoaderSettingsGui.open(vehicle, isNext) then return end -- remorque à balles sur la ligne : sa fenêtre, voir BaleLoaderSettingsGUI.lua
 	if ADSprayerSettingsGui ~= nil and ADSprayerSettingsGui.open(vehicle, isNext) then return end -- épandeur / pulvé sur la ligne : sa fenêtre, voir SprayerSettingsGUI.lua
 	if AutoDrive.gui.ADSeederSettingsGui ~= nil and not AutoDrive.gui.ADSeederSettingsGui.isOpen then
 		ADSeederSettingsGui.context = { vehicle = vehicle, isNext = isNext == true }

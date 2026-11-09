@@ -1,9 +1,25 @@
--- FarmPilot mode Autonome : aller atteler l'outil choisi dans le HUD, comme le joueur.
--- Le tracteur se place devant l'outil, dans son axe (recherche de chemin de FarmPilot), recule avec la marche arrière
--- de FarmPilot jusqu'à ce que le jeu puisse atteler, attelle, relève l'outil et le replie (repli de FarmPilot).
--- Le résultat (self.result = "ok" ou la raison de l'échec) est lu par AutonomousMode:handleFinishedTask.
+-- ============================================================================================================
+-- FarmPilot : FetchToolTask.lua
+-- Mode Autonome : tâche « aller atteler l'outil choisi dans le HUD », comme le joueur.
+--
+-- Règle :
+-- - Le tracteur se place devant l'outil, dans son axe (recherche de chemin de FarmPilot), recule avec la marche
+--   arrière de FarmPilot jusqu'à ce que le jeu puisse atteler, attelle, relève l'outil et le replie (repli de
+--   FarmPilot).
+-- - Déjà devant l'outil, dans son axe, le nez à l'opposé : marche arrière tout de suite.
+-- - Attelage raté : il avance dans l'axe de l'outil et recommence, au plus RETRIES fois.
+-- - (07/11) mod d'attelage manuel : flexibles et prise de force branchés après l'attelage, comme le joueur.
+-- - Le résultat (self.result = "ok" ou la raison de l'échec) est lu par AutonomousMode:handleFinishedTask.
+--
+-- Branché par : AutonomousMode.lua (startFetchAttach : ADFetchToolTask:new ; fetchRoutePoint et monitorFetchRoute :
+-- isReady, readyFor, FRONT_MARGIN).
+-- ============================================================================================================
+
 ADFetchToolTask = ADInheritsFrom(AbstractTask)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADFetchToolTask.STATE_PLAN = 1
 ADFetchToolTask.STATE_PLANNING = 2
 ADFetchToolTask.STATE_DRIVING = 3
@@ -28,6 +44,9 @@ ADFetchToolTask.RETRIES = 2               -- attelage raté : on avance dans l'a
 ADFetchToolTask.FORWARD_ROOM = 10         -- m d'avance (en plus de la longueur du tracteur) pour reprendre l'axe
 ADFetchToolTask.FORWARD_TIMEOUT = 30000   -- ms
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création
+-- ------------------------------------------------------------------------------------------------------------
 function ADFetchToolTask:new(vehicle, tool)
     local o = ADFetchToolTask:create()
     o.vehicle = vehicle
@@ -44,6 +63,9 @@ function ADFetchToolTask:setUp()
     self.vehicle.ad.specialDrivingModule:stopVehicle()
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Points d'attelage, place devant l'outil
+-- ------------------------------------------------------------------------------------------------------------
 -- attelage arrière du tracteur et point d'attelage de l'outil (positions monde) ; nil si l'outil ne va plus
 function ADFetchToolTask:getJoints()
     local _, joint, _, input = ADAutonomousManager.matchJoints(self.vehicle, self.tool, true)
@@ -96,6 +118,9 @@ function ADFetchToolTask.readyFor(vehicle, tool)
     return ADFetchToolTask.isReady(vehicle, hitch), MathUtil.vector2Length(ax - hitch.x, az - hitch.z)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- À chaque image (fonction principale)
+-- ------------------------------------------------------------------------------------------------------------
 function ADFetchToolTask:holdVehicle(dt)
     self.vehicle.ad.specialDrivingModule:stopVehicle()
     self.vehicle.ad.specialDrivingModule:update(dt)
@@ -185,6 +210,9 @@ function ADFetchToolTask:setState(state)
     self.timer = 0
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Marche arrière vers l'outil, nouvel essai
+-- ------------------------------------------------------------------------------------------------------------
 -- marche arrière de FarmPilot (ADSpecialDrivingModule:reverseToPoint) vers un point dans l'axe de l'outil ;
 -- sans le contrôle de collision arrière, qui verrait l'outil lui-même
 function ADFetchToolTask:updateReverse(dt)
@@ -270,6 +298,9 @@ function ADFetchToolTask:reverseTo(dt, hitch, maxSpeed)
     sdm:reverseToPoint(dt, maxSpeed)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Attelage, branchements, outil prêt pour la route
+-- ------------------------------------------------------------------------------------------------------------
 -- attelage du jeu (comme la touche du joueur) quand l'outil est à portée
 function ADFetchToolTask:tryAttach()
     local maxDistanceSq = AttacherJoints.MAX_ATTACH_DISTANCE_SQ or 1
@@ -305,7 +336,7 @@ function ADFetchToolTask:onAttached()
     end
 end
 
--- (07/11 20:17, Fabien) mod d'attelage manuel : flexibles et prise de force branchés comme le joueur
+-- (07/11) mod d'attelage manuel : flexibles et prise de force branchés comme le joueur
 function ADFetchToolTask:connectManual()
     local ok, done = pcall(ADAutonomousManager.setManualConnections, self.vehicle, self.tool, true)
     if not ok then
@@ -332,6 +363,9 @@ function ADFetchToolTask:prepareForRoad()
     AutoDrive.getAllVehicleDimensions(self.vehicle, true)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fin de la tâche, collisions, texte du HUD
+-- ------------------------------------------------------------------------------------------------------------
 function ADFetchToolTask:finish(result)
     if self.result ~= nil then
         return

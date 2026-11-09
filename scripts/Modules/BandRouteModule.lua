@@ -1,10 +1,29 @@
--- route inside the cut strips of a field (forage harvester work, strict checks).
--- A flood from the target over the field map (0.5 m samples): a point counts only when the whole disc of the
--- train half width around it is cut and its centre on the field, so a 2 m wheel lane through the crop is no way.
--- Every point reached gets its real driving distance to the target (around the crop). The search uses it as
--- estimate instead of the straight line, the partial routes and guided departures measure their gain with it.
--- The flood runs over several frames (BUDGET ms each), the floods are kept TTL ms and shared by all vehicles.
+-- ============================================================================================================
+-- FarmPilot : BandRouteModule.lua
+-- Trajet dans les bandes coupées d'un champ (ADBandRoute) : vraies distances de conduite jusqu'à la cible. Conçu pour
+-- le travail à l'ensileuse (contrôles stricts) ; sert aussi à la 2e benne qui rejoint la 1re (toutes machines).
+--
+-- Un remplissage (flood) depuis la cible sur la carte du champ (échantillons de 0,5 m) : un point ne compte que si
+-- tout le disque de la demi-largeur de l'attelage autour de lui est coupé et son centre sur le champ, donc une trace
+-- de roues de 2 m dans la culture n'est pas un passage. Chaque point atteint reçoit sa vraie distance de conduite
+-- jusqu'à la cible (en contournant la culture). La recherche de trajet s'en sert comme estimation au lieu de la ligne
+-- droite ; les trajets partiels et les départs guidés mesurent leur gain avec.
+-- Le remplissage se fait sur plusieurs images (BUDGET ms chacune) ; les remplissages sont gardés TTL ms et partagés
+-- par tous les véhicules.
+-- 25/10 16:30 (le 7R ne trouvait aucun chemin) : le trajet lui-même est retracé depuis une position jusqu'à la cible
+-- (tracePath).
+--
+-- Branché par : PathFinderModuleBand.lua (requestBandFlood, updateBandSearch : request, step ; estimations et
+-- getBandPath : getDistance, tracePath), PathFinderModuleCorners.lua (isWidePointInBand) et PathFinderModuleGuided.lua
+-- (getGuidedRoom) : getDistance ; DriveToVehicleTaskFollow.lua (noRoute, updateFollowFirst : request, step) ;
+-- BandTourModule.lua (estimation : getDistance).
+-- ============================================================================================================
+
 ADBandRoute = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages et état (remplissages en cours, partagés par tous les véhicules)
+-- ------------------------------------------------------------------------------------------------------------
 ADBandRoute.STEP = 1 -- m between flood points
 ADBandRoute.SAMPLE = 0.5 -- m between map samples of the disc
 ADBandRoute.BUDGET = 4 -- ms per frame
@@ -15,6 +34,9 @@ ADBandRoute.TARGET_SNAP = 20 -- m: a target off the field or near the crop start
 ADBandRoute.LOOKUP_RADIUS = 3 -- m around a position to find a reached point
 ADBandRoute.floods = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local function clock()
     if getTimeSec ~= nil then
         return getTimeSec() * 1000
@@ -26,6 +48,9 @@ local function keyOf(ix, iz)
     return (ix + 50000) * 100000 + (iz + 50000)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Carte : culture et champ (lecture remplacée dans les tests), point libre pour tout l'attelage
+-- ------------------------------------------------------------------------------------------------------------
 -- map readers (replaced in the tests)
 function ADBandRoute.cropAt(x, z)
     return PathFinderModule.getMapCropAt(x, z) ~= 0
@@ -83,6 +108,9 @@ function ADBandRoute.isFreeNode(flood, ix, iz)
     return v
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale : remplissage depuis la cible (sur plusieurs images)
+-- ------------------------------------------------------------------------------------------------------------
 -- flood toward (x, z) for a train of halfWidth: an existing one is shared
 function ADBandRoute.request(x, z, halfWidth)
     local radius = math.floor(halfWidth * 2 + 0.5) / 2
@@ -209,6 +237,9 @@ function ADBandRoute.step(flood, budget)
     return true
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Résultats : distance réelle jusqu'à la cible, trajet retracé
+-- ------------------------------------------------------------------------------------------------------------
 -- real driving distance (m) from a position to the target, nil when no reached point is close
 function ADBandRoute.getDistance(flood, x, z, radius)
     if flood == nil or not flood.done or flood.failed then
@@ -232,7 +263,7 @@ function ADBandRoute.getDistance(flood, x, z, radius)
     return best
 end
 
--- owner 25/10 16:30 ("le 7R ne trouve aucun chemin"): the way itself, from a position back to the target (the seed),
+-- 25/10 16:30 (the 7R found no path): the way itself, from a position back to the target (the seed),
 -- following the distances downhill. Returns points {x, z} STEP m apart (the first near the position, the last at the
 -- target), nil when the position is not reached by the flood
 function ADBandRoute.tracePath(flood, x, z, radius)

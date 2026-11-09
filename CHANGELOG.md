@@ -3,6 +3,34 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.30
+
+### Mode Autonome
+- Presse à balles : suit au champ le tracé de la machine passée avant pour Courseplay.
+- Remorque à balles : ramasse les balles (toutes, enrubannées ou non), va les déposer à la zone choisie, revient s'il en reste.
+- Remorque choisie : une benne de la ferme peut être attelée au départ et reposée à sa place à la fin.
+- Échange de bennes à la livraison : places réglées par un dossier de marqueurs.
+- Épandeurs et pulvés : « Envoyer au parking » vide d'abord le reste en big bags / IBC.
+
+### Conduite et réglages
+- Routes tertiaires : prises seulement pour accéder à la destination, jamais en raccourci. Routes secondaires en « Auto » : les tracteurs peuvent les prendre en raccourci.
+- « Silo vide » réglable par véhicule (Non, 15 s, 30 s, 1 min, 2 min, 5 min) : un camion peut attendre en bord de champ d'être rempli.
+- Icône « sortie du champ » retirée du HUD (gérée automatiquement).
+- Code rangé et commenté, corrections diverses.
+
+### Autonomous mode
+- Baler: follows the track of the previous machine in the field for Courseplay.
+- Bale trailer: collects bales (all, wrapped or unwrapped), drops them at the chosen zone, comes back if some are left.
+- Chosen trailer: a farm trailer can be hitched at the start and parked back at its spot at the end.
+- Trailer swap at delivery: spots set by a marker folder.
+- Spreaders and sprayers: "Send to parking" first empties the leftover into big bags / IBCs.
+
+### Driving and settings
+- Tertiary roads: only used to reach the destination, never as a shortcut. Secondary roads on "Auto": tractors may use them as a shortcut.
+- "Empty silo" timer per vehicle (No, 15 s, 30 s, 1 min, 2 min, 5 min): a truck can wait at the field edge to be filled.
+- "Field exit" icon removed from the HUD (handled automatically).
+- Code tidied and commented, various fixes.
+
 ## 1.0.1.20
 
 - Fenêtres du semoir et de l'épandeur : la liste des zones de plein ne montre que les marqueurs proches d'un endroit qui a le produit choisi (station, silo, magasin, big bag, IBC, palette). Si aucun ne correspond, toute la liste est affichée.

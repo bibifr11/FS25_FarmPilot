@@ -1,20 +1,43 @@
--- Délai avant qu'AutoDrive coupe le moteur d'un véhicule arrêté
+-- ============================================================================================================
+-- FarmPilot : EngineStop.lua
+-- Addon : délai avant qu'AutoDrive coupe le moteur d'un véhicule arrêté.
+--
 -- AutoDrive coupe le moteur après 10 s à l'arrêt (valeur fixe dans son code).
--- Ici ce délai est remplacé par le réglage « Coupure moteur » (page Environnement des réglages
--- d'AutoDrive, sous « Distance clignotant »), ou la coupure est bloquée (« Jamais »).
+-- Règle : ici ce délai est remplacé par le réglage « Coupure moteur » (page Environnement des réglages d'AutoDrive,
+-- sous « Distance clignotant »), ou la coupure est bloquée (« Jamais »). Seul l'appel avec 10 s est changé, pas les
+-- autres délais d'AutoDrive (blocage 15 s). L'ancien réglage (Paramètres, jusqu'à la 1.0.0.20) est repris une fois.
+--
+-- Branché par : AutoDriveAddon.lua (install au chargement de la carte : enveloppe ADSpecialDrivingModule.reset et
+-- shouldStopMotor) ; réglage engineStopDelay ajouté au chargement de ce fichier (ADAddon.addSetting).
+-- ============================================================================================================
 
 ADAddonEngineStop = {}
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADAddonEngineStop.AD_DELAY_MS = 10000   -- délai codé dans AutoDrive
 ADAddonEngineStop.DELAYS = { 0, 10, 30, 60, 120, 300 }   -- secondes, 0 = jamais couper
 ADAddonEngineStop.DEFAULT_INDEX = 2     -- 10 s = AutoDrive de base
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local function delayText(s)
     if s <= 0 then return ADAddon.getText("adAddon_never") end
     if s < 60 then return s .. " s" end
     return (s / 60) .. " min"
 end
 
+function ADAddonEngineStop.getDelayMs()
+    local autoDrive = ADAddonEngineStop.autoDrive
+    local s = autoDrive ~= nil and autoDrive.getSetting("engineStopDelay") or 10
+    return (s or 10) * 1000
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglage « Coupure moteur », ajouté à ceux d'AutoDrive au chargement de ce fichier
+-- ------------------------------------------------------------------------------------------------------------
 local texts = {}
 for i, v in ipairs(ADAddonEngineStop.DELAYS) do
     texts[i] = delayText(v)
@@ -27,12 +50,9 @@ ADAddon.addSetting("engineStopDelay", {
     tooltip = "adAddon_engineStopDelay_tooltip"
 }, "blinkDistance", "adAddon_engineStopDelay", "adAddon_engineStopDelay_tooltip")
 
-function ADAddonEngineStop.getDelayMs()
-    local autoDrive = ADAddonEngineStop.autoDrive
-    local s = autoDrive ~= nil and autoDrive.getSetting("engineStopDelay") or 10
-    return (s or 10) * 1000
-end
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Ancien réglage (Paramètres, jusqu'à la 1.0.0.20)
+-- ------------------------------------------------------------------------------------------------------------
 -- Jusqu'à la 1.0.0.20 le délai était réglé dans Paramètres et gardé dans modSettings :
 -- on le reprend une fois dans le réglage AutoDrive
 local function migrateOldSetting(autoDrive)
@@ -61,6 +81,9 @@ local function migrateOldSetting(autoDrive)
     delete(xml)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Minuterie de coupure d'AutoDrive
+-- ------------------------------------------------------------------------------------------------------------
 local function patchTimer(module)
     local timer = module.stoppedTimer
     if timer == nil or timer.adAddonPatched then
@@ -80,6 +103,9 @@ local function patchTimer(module)
     timer.adAddonPatched = true
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Mise en place (au chargement de la carte, par AutoDriveAddon.lua)
+-- ------------------------------------------------------------------------------------------------------------
 function ADAddonEngineStop.install(autoDrive)
     ADAddonEngineStop.autoDrive = autoDrive
     local setting = autoDrive.settings ~= nil and autoDrive.settings.engineStopDelay
@@ -114,4 +140,7 @@ function ADAddonEngineStop.install(autoDrive)
     end
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Enregistrement
+-- ------------------------------------------------------------------------------------------------------------
 ADAddon.addModule(ADAddonEngineStop)

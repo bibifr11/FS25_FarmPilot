@@ -15,66 +15,20 @@ CatchCombinePipeTask.MIN_COMBINE_DISTANCE = 25
 CatchCombinePipeTask.MAX_REVERSE_TIME = 5000
 CatchCombinePipeTask.MAX_STUCK_TIME = 60000
 CatchCombinePipeTask.MAX_COUNT_NEW_PATHFINDING = 20
--- waiting for a route while the harvester comes towards the unloader: get out of its way
-CatchCombinePipeTask.STATE_CLEAR_WAY = {}
-CatchCombinePipeTask.STATE_WAIT_PASS_BY = {}
-CatchCombinePipeTask.STATE_OPEN_REVERSE = {} -- forage harvester: backing off along its own track to open the angle
-CatchCombinePipeTask.STATE_BAND_TURN = {} -- forage harvester: U-turn in the strip, the train faces the wrong way
-CatchCombinePipeTask.STATE_CLEAR_BACK = {} -- no route: straight back along the trailer axis to get free (owner 30/10)
-CatchCombinePipeTask.STATE_NO_WAY_WAIT = {} -- no route and no reverse possible: stopped, waits for the harvester to move
-CatchCombinePipeTask.BAND_TURN_RANGE = 100 -- m from the harvester
-CatchCombinePipeTask.BAND_TURN_ANGLE = 90 -- deg: harvester heading this far from ours is behind
-CatchCombinePipeTask.BAND_TURN_YAW_RATE = 6 -- deg/s: harvester turning faster than this is in its headland turn
-CatchCombinePipeTask.BAND_TURN_AFTER_TURN = 25000 -- ms after the harvester's turn: no U-turn, it comes back to the train
-CatchCombinePipeTask.BAND_TURN_BEHIND_RANGE = 40 -- m: harvester only placed behind (heading not reversed) counts this close
-CatchCombinePipeTask.OPEN_REVERSE_DISTANCE = 15 -- m (owner 24/10: 10 was too short)
-CatchCombinePipeTask.OPEN_REVERSE_FAILS = 2 -- failed plans from the same place before backing off
-CatchCombinePipeTask.OPEN_REVERSE_RADIUS = 15 -- m around a place already backed off from: no new back-off there
-CatchCombinePipeTask.OPEN_REVERSE_PAUSE = 120000 -- ms before a back-off is allowed again at the same place
--- owner 25/10 22:38 ("en cas de grosse difficulte sur la fourriere on peut couper cet angle"): no route twice near the
--- standing harvester: the chase takes over and may cut a tip of crop on its straight line for CROP_TIP_TIME
-CatchCombinePipeTask.CROP_TIP_DISTANCE = 40  -- m from the standing harvester
-CatchCombinePipeTask.CROP_TIP_ANGLE = 100    -- deg off its heading at most (not the wrong way round)
-CatchCombinePipeTask.CROP_TIP_TIME = 60000   -- ms
--- forage harvester: no route, nothing moved since the last try (same start, harvester still): wait longer each time
-CatchCombinePipeTask.RETRY_DELAY_MIN = 1000 -- ms
-CatchCombinePipeTask.RETRY_DELAY_MAX = 10000 -- ms
-CatchCombinePipeTask.RETRY_SAME_VEHICLE = 1 -- m moved by the unloader counted as the same start
-CatchCombinePipeTask.RETRY_SAME_COMBINE = 2 -- m moved by the harvester counted as the same target
-CatchCombinePipeTask.CLEAR_WAY_DISTANCE = 40      -- m in front of the harvester watched
-CatchCombinePipeTask.CLEAR_WAY_MARGIN = 2         -- m added on each side of the cutting width
-CatchCombinePipeTask.CLEAR_WAY_MIN_SPEED = 0.0005 -- harvester speed (lastSpeedReal) counted as driving forward
-CatchCombinePipeTask.CLEAR_WAY_MAX_REVERSE = 20   -- m
-CatchCombinePipeTask.CLEAR_WAY_REVERSE_SPEED = 6  -- km/h
-CatchCombinePipeTask.CLEAR_WAY_TIMEOUT = 25000    -- ms
-CatchCombinePipeTask.CLEAR_WAY_STUCK_TIME = 3000  -- ms without moving while reversing
-CatchCombinePipeTask.CLEAR_WAY_REAR_CHECK = 3     -- m behind the last unit that must be field ground without crop
-CatchCombinePipeTask.PASS_BY_TIMEOUT = 30000      -- ms
-CatchCombinePipeTask.PASS_BY_BEHIND = 5           -- m: the unloader is behind the harvester, it has passed
-CatchCombinePipeTask.END_ROW_UTURN_AGE = 20000    -- ms after the end-of-row wait: own U-turn tried first
-CatchCombinePipeTask.END_ROW_UTURN_ANGLE = 120     -- deg against the harvester heading
--- forage harvester (owner 23/10): unloader already beside it (pipe side, same heading, out of its lane, not past
--- its nose): the chase takes over directly, no route, no manoeuvre
-CatchCombinePipeTask.BESIDE_ANGLE = 30            -- deg between the unloader and the harvester headings
-CatchCombinePipeTask.BESIDE_MAX_LATERAL = 15      -- m from the harvester centre line at most
-CatchCombinePipeTask.BESIDE_MAX_BACK = 10         -- m behind the harvester rear at most
--- owner 30/10 ("il faudrait juste qu'il recule", "un tracteur qui ne trouve pas de chemin loop non stop, il faut lui
--- apprendre a se degager pour trouver une route"): MF 7S.210 nose 2 m from the hedge, the band turn failed ("S bloque")
--- and was banned 120 s, a new plan every 2-10 s for minutes. No route twice from the same place: straight back along
--- the trailer axis by CLEAR_BACK_STEP legs, a new plan after each leg (stops as soon as a route forward is found),
--- CLEAR_BACK_MAX in all. Never with an articulated trailer. Reversing impossible or used up: stop and log, no loop
-CatchCombinePipeTask.CLEAR_BACK_FAILS = 2         -- failed plans from the same place before backing off
-CatchCombinePipeTask.CLEAR_BACK_SAME_PLACE = 1    -- m: closer than this the failures count as the same place
-CatchCombinePipeTask.CLEAR_BACK_STEP = 5          -- m per leg, a new plan after each one
-CatchCombinePipeTask.CLEAR_BACK_MAX = 20          -- m in all
-CatchCombinePipeTask.CLEAR_BACK_LIFT = 5          -- m backed off: the band turn ban of that place is lifted
-CatchCombinePipeTask.CLEAR_BACK_SPEED = 5         -- km/h
-CatchCombinePipeTask.CLEAR_BACK_REAR_CHECK = 3    -- m behind the last unit (its own heading): field, no crop
-CatchCombinePipeTask.CLEAR_BACK_STUCK_TIME = 3000 -- ms without moving (obstacle sensor holds it): stop
-CatchCombinePipeTask.CLEAR_BACK_LEG_TIMEOUT = 20000 -- ms per leg
-CatchCombinePipeTask.CLEAR_BACK_MEMORY = 120000   -- ms the failures and the back-off of a place are remembered
-CatchCombinePipeTask.NO_WAY_WAIT = 60000          -- ms stopped before planning again when nothing moves
-CatchCombinePipeTask.NO_WAY_COMBINE_MOVE = 5      -- m moved by the harvester: plan again at once
+
+-- ------------------------------------------------------------------------------------------------------------
+-- FarmPilot : ce fichier reste celui d'AutoDrive, avec des lignes d'accroche (commentées « voir … »).
+-- Les ajouts sont rangés par sujet dans des fichiers chargés juste après celui-ci (register.lua) :
+--   commun (moissonneuse et ensileuse) :
+--     CatchCombinePipeTaskClear.lua         laisser passer la machine, aucun trajet : solutions de repli, reculer
+--     CatchCombinePipeTaskHandover.lua      la poursuite prend la main (départ direct : commun ; le reste : ensileuse)
+--   ensileuse (la benne roule à côté d'elle en continu) :
+--     CatchCombinePipeTaskChopperRoute.lua  trajet en morceaux, attente entre deux calculs, sa trace, reculs
+--     CatchCombinePipeTaskChopperUTurn.lua  demi-tours : bande, bout de rang, à l'envers, trajet court inutile
+-- Lignes d'origine modifiées sur place : départ direct (setUp), attente variable entre deux calculs
+-- (STATE_DELAY_PATHPLANNING, addDelayTimer(6000) retiré), arrivée (angle maxAngle, derrière l'ensileuse) ; textes
+-- d'état réécrits (getI18nInfo) ; startNewPathFinding garde ses lignes FarmPilot commentées.
+-- ------------------------------------------------------------------------------------------------------------
 
 function CatchCombinePipeTask:new(vehicle, combine)
     local o = CatchCombinePipeTask:create()
@@ -89,7 +43,7 @@ function CatchCombinePipeTask:new(vehicle, combine)
     o.waitForCheckTimer.elapsedTime = 4000
     o.taskType = "CatchCombinePipeTask"
     o.newPathFindingCounter = 0
-    o.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN
+    o.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN -- ensileuse : attente entre deux calculs, voir CatchCombinePipeTaskChopperRoute.lua
     o.trailers = nil
     CatchCombinePipeTask.setStateNames(o)
     return o
@@ -102,14 +56,7 @@ function CatchCombinePipeTask:setUp()
 
     if angleToCombineHeading < 35 and angleToCombine < 90 and AutoDrive.getDistanceBetween(self.vehicle, self.combine) < 60
         and not self.combine.ad.isFixedPipeChopper then
-        -- close and aligned: chase straight away, but only if the straight line is free, otherwise plan a route
-        local chasePos, chaseSide = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getPipeChasePosition()
-        local clear, reason = FollowCombineTask.isChaseLineClear(self.vehicle, self.combine, chasePos, chaseSide)
-        if clear then
-            self:finished()
-        else
-            print(string.format("[AD-Poursuite] %s: moissonneuse proche mais ligne droite bloquee (%s), recherche de chemin", FollowCombineTask.getLogName(self.vehicle), tostring(reason)))
-        end
+        if self:isStraightLineFree() then self:finished() end -- seulement si la ligne droite est libre, voir CatchCombinePipeTaskHandover.lua
     end
     self.trailers, _ = AutoDrive.getAllUnits(self.vehicle)
     AutoDrive.setTrailerCoverOpen(self.vehicle, self.trailers, true)
@@ -125,25 +72,11 @@ function CatchCombinePipeTask:update(dt)
         self.lastState = self.state
         self:resetAllTimers()
     end
-    self:sampleCombineHeading()
+    self:sampleCombineHeading() -- ensileuse : cap de la machine, voir CatchCombinePipeTaskChopperUTurn.lua
 
-    if self.state == CatchCombinePipeTask.STATE_BAND_TURN then
-        local result = ADBandTurn.update(self.vehicle, dt)
-        if result == "joined" then
-            self.state = CatchCombinePipeTask.STATE_FINISHED
-        elseif result ~= "running" then
-            if result == "done" then
-                -- turned: plan at once, the earlier failures were for the other heading
-                self.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN
-                self.lastFailure = nil
-            end
-            self.waitForCheckTimer.elapsedTime = 4000
-            self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-        end
-        return
-    end
+    if self:updateBandTurnState(dt) then return end -- ensileuse : demi-tour dans la bande, voir CatchCombinePipeTaskChopperUTurn.lua
 
-    -- owner 25/10: called while a full unloader drives out by the entrance where this one waited: it lets it out first
+    -- 25/10: called while a full unloader drives out by the entrance where this one waited: it lets it out first
     if (self.state == CatchCombinePipeTask.STATE_DELAY_PATHPLANNING or self.state == CatchCombinePipeTask.STATE_DRIVING)
         and ADFieldPark.holdForExit(self.vehicle, dt, "a l'entree") then
         return
@@ -153,11 +86,7 @@ function CatchCombinePipeTask:update(dt)
         self.state == CatchCombinePipeTask.STATE_DRIVING
     )
 
-    -- owner 24/10: stuck against a vehicle (waiting trailers) on the way to the harvester: back off in its own
-    -- tracks, then plan again from there (the planned route did not see them or they moved meanwhile)
-    if self:updateVehicleBlocked(dt, checkForStuck) then
-        return
-    end
+    if self:updateVehicleBlocked(dt, checkForStuck) then return end -- ensileuse : arrêté contre un véhicule, voir CatchCombinePipeTaskChopperRoute.lua
 
     self.stuckTimer:timer(checkForStuck, self.MAX_STUCK_TIME, dt)
     if self.stuckTimer:done()
@@ -172,171 +101,39 @@ function CatchCombinePipeTask:update(dt)
         return
     end
 
-    if (self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.state == CatchCombinePipeTask.STATE_DELAY_PATHPLANNING)
-        and self:isInCombinePath() then
-        self:startClearWay()
-        return
-    end
+    if self:checkClearWay() then return end -- dans la voie de la machine : se dégager, voir CatchCombinePipeTaskClear.lua
 
-    if (self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.state == CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-        or self.state == CatchCombinePipeTask.STATE_DRIVING) and self:isBesideInPlace() then
-        if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-            self.vehicle.ad.pathFinderModule:reset()
-            self.preplanning = false
-        end
-        print(string.format("[AD-Fin] %s: deja a cote de l'ensileuse (%.0f m, angle %.0f deg, bon cote), la poursuite prend la main directement", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getAngleToCombineHeading()))
-        self:noteHandover()
-        self:finished()
-        return
-    end
+    if self:checkBesideInPlace() then return end -- ensileuse : déjà à côté d'elle, voir CatchCombinePipeTaskHandover.lua
 
-    -- end of row, unloader against the harvester heading (owner 23/10, drawing): its own U-turn first, to the
-    -- harvester side (forward, back then forward, 3 points), the planned route only if none fits
-    if self.vehicle.ad.endRowUTurn ~= nil and (self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.state == CatchCombinePipeTask.STATE_DELAY_PATHPLANNING) then
-        local since = (g_time or 0) - self.vehicle.ad.endRowUTurn
-        self.vehicle.ad.endRowUTurn = nil
-        if since < CatchCombinePipeTask.END_ROW_UTURN_AGE and self:tryEndRowUTurn() then
-            return
-        end
-    end
+    if self:checkEndRowUTurn() then return end -- ensileuse : demi-tour de bout de rang, voir CatchCombinePipeTaskChopperUTurn.lua
 
-    if self.state == CatchCombinePipeTask.STATE_CLEAR_WAY then
-        self:updateClearWay(dt)
-        return
-    elseif self.state == CatchCombinePipeTask.STATE_WAIT_PASS_BY then
-        self:updateWaitPassBy(dt)
-        return
-    end
+    if self:updateClearWayStates(dt) then return end -- se dégager, laisser passer, voir CatchCombinePipeTaskClear.lua
 
-    -- forage harvester: the chase was blocked several times at the same place (no straight line forward) and the
-    -- harvester heading is behind: U-turn in the strip as a fallback (owner)
-    if self.closeRangePlanning and not self.bandTurnChecked then
-        self.bandTurnChecked = true
-        if self:tryBandTurn("poursuite bloquee") then
-            return
-        end
-    end
+    if self:checkCloseRangeBandTurn() then return end -- ensileuse : poursuite bloquée, demi-tour dans la bande, voir CatchCombinePipeTaskChopperUTurn.lua
 
-    -- forage harvester close by: no planned route to its pipe (a route that must arrive in its heading loops
-    -- around at that range), the chase takes over: strict straight line, wait for it to pass, change side.
-    -- Only when the chase gave up several times at the same place, a planned route is allowed again
-    -- owner 25/10 14:10 (MF 7S.210: 29 m behind the standing harvester, aligned, routes to a point 10 m ahead looping
-    -- for 4 min): a standing harvester waits for this unloader, the chase takes over from further away
-    local closeRange = CatchCombinePipeTask.CLOSE_RANGE
-    if self.state ~= CatchCombinePipeTask.STATE_DRIVING and self:isCombineStanding() then
-        local _, _, inCone = self:isInRearCone()
-        if inCone then
-            closeRange = CatchCombinePipeTask.CLOSE_RANGE_STANDING
-        end
-    end
-    if not self.closeRangePlanning and AutoDrive.isChopperUnloading(self.vehicle)
-        and (self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.state == CatchCombinePipeTask.STATE_DELAY_PATHPLANNING or self.state == CatchCombinePipeTask.STATE_DRIVING)
-        and AutoDrive.getDistanceBetween(self.vehicle, self.combine) < closeRange then
-        -- owner 25/10 08:03 ("il faudrait que le 7R aille faire son demi-tour avant de reprendre la poursuite"): only in
-        -- the harvester's direction. The 7R passed the standing harvester the wrong way round (177 deg) at 10 m, the
-        -- chase took over and looped 4 min (chase, reverse, new route, chase...). The wrong way round: a route being
-        -- driven goes on (it ends behind the harvester); without a route its own U-turn first, then a new route
-        local angle = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getAngleToCombineHeading()
-        if angle < CatchCombinePipeTask.CLOSE_RANGE_ANGLE then
-            print(string.format("[AD-Fin] %s: ensileuse a %.0f m (< %d m%s), pas de trajet calcule, la poursuite prend la main", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), closeRange, closeRange ~= CatchCombinePipeTask.CLOSE_RANGE and ", arretee et moi derriere elle" or ""))
-            if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-                self.vehicle.ad.pathFinderModule:reset()
-                self.preplanning = false
-            end
-            self.closeWrongWayLogged = false
-            self:noteHandover()
-            self.state = CatchCombinePipeTask.STATE_FINISHED
-        elseif self.state ~= CatchCombinePipeTask.STATE_DRIVING then
-            if angle >= CatchCombinePipeTask.REVERSED_ANGLE and self:tryReversedUTurn(angle, true) then
-                return
-            end
-            if not self.closeWrongWayLogged then
-                self.closeWrongWayLogged = true
-                print(string.format("[AD-Fin] %s: a l'envers a %.0f m de l'ensileuse (%.0f deg), pas de poursuite avant mon demi-tour, nouveau trajet", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), angle))
-            end
-        elseif not self.closeWrongWayLogged then
-            self.closeWrongWayLogged = true
-            print(string.format("[AD-Fin] %s: ensileuse a %.0f m mais a %.0f deg de mon cap, la poursuite ne prend pas la main, je finis mon trajet", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), angle))
-        end
-    end
+    if self:checkCloseRange() then return end -- ensileuse proche : la poursuite prend la main, voir CatchCombinePipeTaskHandover.lua
+    -- états ajoutés, retirés de la machine à états ci-dessous :
+    if self:updateNoRouteStates(dt) then return end -- reculer tout droit, arrêt sans issue, voir CatchCombinePipeTaskClear.lua
+    if self:updateOpenReverseState(dt) then return end -- ensileuse : recul pour ouvrir l'angle, voir CatchCombinePipeTaskChopperRoute.lua
 
     if self.state == CatchCombinePipeTask.STATE_PATHPLANNING then
         if self.vehicle.ad.pathFinderModule:hasFinished() then
             CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - STATE_PATHPLANNING finished")
             self.newPathFindingCounter = 0
             self.wayPoints = self.vehicle.ad.pathFinderModule:getPath()
-            if (self.wayPoints == nil or #self.wayPoints < 1) and self.vehicle.ad.pathFinderModule:tryGuidedDeparture() then
-                -- forage harvester: no route to it from here, a guided departure frees the train first (desenclavement),
-                -- the next plan starts from where it stops
-                self.wayPoints = self.vehicle.ad.pathFinderModule:getPath()
-                print(string.format("[AD-Fin] %s: aucun chemin vers l'ensileuse, desenclavement par depart guide", tostring(self.vehicle:getName())))
-            end
+            self:checkGuidedDeparture() -- ensileuse : aucun chemin, départ guidé, voir CatchCombinePipeTaskChopperRoute.lua
             if self.wayPoints == nil or #self.wayPoints < 1 then
                 --restart
-                self.infoNoPath = true -- status text only
                 self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:notifyAboutFailedPathfinder()
-                self:updateRetryDelay()
-                local noRoute = self:countNoRoute()
-                -- owner 25/10 11:53: behind a standing harvester (it waits for this unloader) no planned route loops for ever
-                if self:tryStandingHandover("aucun trajet") then
-                    return
-                end
-                -- owner 24/10 "plusieurs solutions": behind the harvester on its own trail, drive that trail
-                if self:tryCombineTrail() then
-                    return
-                end
-                -- owner 30/10: backing off to get free, still no route after a leg: next leg at once
-                if self:continueClearBack() then
-                    return
-                end
-                -- fallback: no forward route and the harvester heading is behind, U-turn in the strip
-                if self:tryBandTurn("aucun chemin en marche avant") then
-                    return
-                end
-                -- owner 30/10: no route twice from here, straight back to get free
-                if self:tryClearBack(noRoute) then
-                    return
-                end
-                if self:tryOpenReverse() then
-                    return
-                end
-                -- owner 30/10: no route, reversing impossible or used up: stop and say it, no new plan every 2 s
-                if self:tryNoWayWait(noRoute) then
-                    return
-                end
+                if self:tryNoRouteFallbacks() then return end -- aucun trajet : solutions de repli, voir CatchCombinePipeTaskClear.lua
                 --AutoDriveMessageEvent.sendMessageOrNotification(self.vehicle, ADMessagesManager.messageTypes.WARN, "$l10n_AD_Driver_of; %s $l10n_AD_cannot_find_path; %s", 5000, self.vehicle.ad.stateModule:getName(), self.combine.ad.stateModule:getName())
                 CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - STATE_PATHPLANNING restarting path finder - with delay")
                 self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
                 return
             else
-                -- owner 25/10 16:35 (6205 TTV: the same 12 m one-cell route every 1.3 s, ending at 101 deg from the standing
-                -- harvester): a short route that cannot turn the train toward the harvester heading is useless, the
-                -- wrong-way ladder runs instead (band turn toward its heading, back off, more room in the next route)
-                if self:isUselessShortRoute(self.wayPoints) then
-                    local pfm = self.vehicle.ad.pathFinderModule
-                    local wasPartial = pfm.partialPath == true
-                    pfm:reset()
-                    self.preplanning = false
-                    if self:tryWrongWayTurn(self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getAngleToCombineHeading()) then
-                        return
-                    end
-                    self:updateRetryDelay()
-                    -- owner 26/10 17:20 (942 Vario: the same 19 m stub refused 8 times, the face-to-face rule had cut a 77 m
-                    -- route down to it): the second identical failure of a cut route lifts that rule for the next plan
-                    if wasPartial and self.lastFailure ~= nil and self.retryDelay > CatchCombinePipeTask.RETRY_DELAY_MIN and not pfm.partialFacingLifted then
-                        pfm.partialFacingLifted = true
-                        print(string.format("[AD-Fin] %s: trajet coupe refuse deux fois de suite, regle face a la moissonneuse levee pour le prochain calcul", tostring(self.vehicle:getName())))
-                    end
-                    self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-                    return
-                end
-                self.lastFailure = nil
-                self.infoNoPath = false
-                self.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN
-                self:noteRouteFound()
+                if self:refuseUselessRoute() then return end -- ensileuse : trajet court inutile refusé, voir CatchCombinePipeTaskChopperUTurn.lua
+                self:onRouteFound() -- trajet trouvé : compteurs remis à zéro, voir CatchCombinePipeTaskClear.lua
                 self.vehicle.ad.drivePathModule:setWayPoints(self.wayPoints)
-                self.routeIsPartial = self.vehicle.ad.pathFinderModule.partialPath == true
-                self.preplanning = false
                 self.state = CatchCombinePipeTask.STATE_DRIVING
                 return
             end
@@ -346,28 +143,16 @@ function CatchCombinePipeTask:update(dt)
             self.vehicle.ad.specialDrivingModule:update(dt)
             return
         end
-    elseif self.state == CatchCombinePipeTask.STATE_CLEAR_BACK then
-        self:updateClearBack(dt)
-        return
-    elseif self.state == CatchCombinePipeTask.STATE_NO_WAY_WAIT then
-        self:updateNoWayWait(dt)
-        return
-    elseif self.state == CatchCombinePipeTask.STATE_OPEN_REVERSE then
-        local result = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:updateTrackReverse(dt)
-        if result ~= "running" then
-            print(string.format("[AD-Fin] %s: recul de degagement termine (%s), nouveau calcul", tostring(self.vehicle:getName()), result))
-            self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-        end
-        return
     elseif self.state == CatchCombinePipeTask.STATE_DELAY_PATHPLANNING then
         CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - STATE_DELAY_PATHPLANNING")
-        if self.waitForCheckTimer:timer(true, self.retryDelay or CatchCombinePipeTask.RETRY_DELAY_MIN, dt) then
+        if self.waitForCheckTimer:timer(true, self.retryDelay or CatchCombinePipeTask.RETRY_DELAY_MIN, dt) then -- attente variable (ensileuse), voir CatchCombinePipeTaskChopperRoute.lua
             if self.newPathFindingCounter > self.MAX_COUNT_NEW_PATHFINDING then
                 -- prevent deadlock
                 self.state = CatchCombinePipeTask.STATE_FINISHED
                 return
             end
             if self:startNewPathFinding() then
+                -- FarmPilot : l'appel d'origine pathFinderModule:addDelayTimer(6000) a été retiré ici
                 self.state = CatchCombinePipeTask.STATE_PATHPLANNING
                 return
             end
@@ -383,107 +168,35 @@ function CatchCombinePipeTask:update(dt)
 
         if combineTravelDistance > 85 then
             CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - combine travelled - recalculate path")
-            self.preplanning = false
+            self.preplanning = false -- ensileuse : morceau suivant abandonné, voir CatchCombinePipeTaskChopperRoute.lua
             self.waitForCheckTimer.elapsedTime = 4000
             self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
             return
         else
-            if self.vehicle.ad.drivePathModule:isTargetReached() and self.preplanning then
-                -- end of a partial route, the next route is still being planned: wait for it here
-                self.preplanning = false
-                self.state = CatchCombinePipeTask.STATE_PATHPLANNING
-                return
-            elseif self.vehicle.ad.drivePathModule:isTargetReached() then
+            if self:checkPreplannedEnd() then return end -- ensileuse : fin d'un morceau, le suivant en calcul, voir CatchCombinePipeTaskChopperRoute.lua
+            if self.vehicle.ad.drivePathModule:isTargetReached() then
                 -- check if we have actually reached the target or not
                 -- accept current location if we are in a good position to start chasing: distance and angle are important here
                 CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - STATE_DRIVING TargetReached")
                 local angleToCombine = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getAngleToCombineHeading()
                 local isCorrectSide = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:isUnloaderOnCorrectSide()
-                -- forage harvester in a curve (owner, 23/10): behind it on its own track and aligned with that track,
-                -- the chase takes over even when the harvester itself points elsewhere
-                -- not when facing it (owner, 23/10: accepted at 167 deg on the previous row's track)
-                if angleToCombine >= CatchCombinePipeTask.CHOPPER_HANDOVER_ANGLE and angleToCombine < 90 and AutoDrive.isChopperUnloading(self.vehicle) and self:isBehindChopper() then
-                    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-                    local tx, tz = PathFinderModule.getTrailDirectionAt(self.combine, vx, vz)
-                    if tx ~= nil then
-                        local rx, _, rz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
-                        local trailAngle = math.abs(AutoDrive.angleBetween({x = rx, z = rz}, {x = tx, z = tz}))
-                        print(string.format("[AD-Fin] %s: derriere l'ensileuse sur sa trace (%.0f m), angle avec l'ensileuse %.0f deg, avec sa trace %.0f deg, bon cote %s", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), angleToCombine, trailAngle, tostring(isCorrectSide)))
-                        if trailAngle < CatchCombinePipeTask.CHOPPER_HANDOVER_ANGLE then
-                            angleToCombine = trailAngle
-                            isCorrectSide = true
-                        end
-                    end
-                end
-
-                -- forage harvester (owner, 23/10): behind it, the chase takes over up to CHOPPER_HANDOVER_ANGLE (curves)
-                local maxAngle = AutoDrive.isChopperUnloading(self.vehicle) and CatchCombinePipeTask.CHOPPER_HANDOVER_ANGLE or 35
-                -- in the cone behind a forage harvester the planned side does not matter (owner 25/10 11:53)
-                isCorrectSide = self:acceptOtherSideBehind(angleToCombine, isCorrectSide, maxAngle)
+                -- ensileuse : sur sa trace en courbe, angle admis plus grand, côté libre derrière elle : voir CatchCombinePipeTaskHandover.lua
+                local maxAngle
+                angleToCombine, isCorrectSide, maxAngle = self:checkChopperArrival(angleToCombine, isCorrectSide)
                 if angleToCombine < maxAngle and AutoDrive.getDistanceBetween(self.vehicle, self.combine) < 80 and isCorrectSide and self:isBehindChopper() then
                     CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - STATE_DRIVING -> STATE_FINISHED")
-                    self:noteHandover()
+                    self:noteHandover() -- ensileuse : passages de main au même endroit, voir CatchCombinePipeTaskHandover.lua
                     self.state = CatchCombinePipeTask.STATE_FINISHED
                     return
                 else
-                    -- anticipated end-of-row U-turn (owner 23/10): in place behind the next row before the harvester,
-                    -- wait there for it to come in instead of planning again
-                    local ant = self.vehicle.ad.anticipatedRear
-                    if ant ~= nil and AutoDrive.isChopperUnloading(self.vehicle) and (g_time or 0) - ant.t < PathFinderModule.ANTICIPATED_MAX_AGE then
-                        if not self.anticipatedWaitPrinted then
-                            self.anticipatedWaitPrinted = true
-                            print(string.format("[AD-Fin] %s: demi-tour anticipe : en place derriere l'entree du rang, j'attends l'ensileuse (angle %.0f deg, %.0f m)", tostring(self.vehicle:getName()), angleToCombine, AutoDrive.getDistanceBetween(self.vehicle, self.combine)))
-                        end
-                        self.infoAnticipatedWaitAt = g_time or 0 -- status text
-                        self.vehicle.ad.specialDrivingModule:stopVehicle()
-                        self.vehicle.ad.specialDrivingModule:update(dt)
-                        return
-                    end
-                    -- owner 24/10 (sim b): behind it but the wrong way round: U-turn now, the AutoDrive one first
-                    -- (HandleHarvesterTurnTask, end-of-row mode), then the 3/5/7-move manoeuvre
-                    if self:tryReversedUTurn(angleToCombine, true) then
-                        return
-                    end
-                    -- owner 25/10 16:35 ("trouve pas une facon d'aller a cote de l'ensileuse"): 6205 TTV at 101 deg, 22 m from
-                    -- the standing harvester, looping every 1.3 s: from the 2nd arrival at the same place, band turn toward
-                    -- the harvester heading, else back off, and more room for the turn in the next route
-                    if self:tryWrongWayTurn(angleToCombine) then
-                        return
-                    end
-                    if AutoDrive.isChopperUnloading(self.vehicle) then
-                        print(string.format("[AD-Fin] %s: arrive, pas de poursuite : %.0f m de l'ensileuse, angle %.0f deg, bon cote %s, derriere %s", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), angleToCombine, tostring(isCorrectSide), tostring(self:isBehindChopper())))
-                    end
-                    -- forage harvester: close to it but unable to hand over (wrong heading or side, face to face):
-                    -- recalculating gives the same 1-cell route forever. After HANDOVER_TRIES at the same place, the chase
-                    -- takes over anyway: it waits for the harvester to pass, backs off or changes side (original procedures)
-                    if AutoDrive.isChopperUnloading(self.vehicle) and AutoDrive.getDistanceBetween(self.vehicle, self.combine) < CatchCombinePipeTask.HANDOVER_DISTANCE then
-                        local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-                        if self.handoverPlace ~= nil and MathUtil.vector2Length(vx - self.handoverPlace.x, vz - self.handoverPlace.z) < 2 then
-                            self.handoverTries = (self.handoverTries or 0) + 1
-                        else
-                            self.handoverPlace = {x = vx, z = vz}
-                            self.handoverTries = 1
-                            self.handoverWaitPrinted = false
-                        end
-                        if self.handoverTries >= CatchCombinePipeTask.HANDOVER_TRIES and self:tryBandTurn("pres de l'ensileuse sans pouvoir s'aligner") then
-                            self.handoverPlace = nil
-                            self.handoverTries = 0
-                            return
-                        end
-                        if self.handoverTries >= CatchCombinePipeTask.HANDOVER_TRIES and not self.handoverWaitPrinted then
-                            -- owner (23/10): the chase takes over only behind the harvester, never from its side (it
-                            -- drives into the header): wait here, the route behind is planned again
-                            self.handoverWaitPrinted = true
-                            print(string.format("[AD-Fin] %s: pres de l'ensileuse (%.0f m) sans pouvoir s'aligner (angle %.0f deg, bon cote %s, derriere %s), pas de poursuite de cote, attente", tostring(self.vehicle:getName()), AutoDrive.getDistanceBetween(self.vehicle, self.combine), angleToCombine, tostring(isCorrectSide), tostring(self:isBehindChopper())))
-                        end
-                    end
+                    if self:onArrivalNotHandedOver(dt, angleToCombine, isCorrectSide) then return end -- ensileuse : attente, demi-tour, essais, voir CatchCombinePipeTaskHandover.lua
                     CatchCombinePipeTask.debugMsg(self.vehicle, "CatchCombinePipeTask:update - angle or distance to combine too high - recalculate path now")
                     self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
                     return
                 end
             else
                 self.vehicle.ad.drivePathModule:update(dt)
-                self:updatePreplanning(dt)
+                self:updatePreplanning(dt) -- ensileuse : morceau suivant du trajet, voir CatchCombinePipeTaskChopperRoute.lua
             end
         end
     elseif self.state == CatchCombinePipeTask.STATE_REVERSING then
@@ -515,153 +228,7 @@ function CatchCombinePipeTask:update(dt)
 end
 
 function CatchCombinePipeTask:abort()
-    ADBandTurn.abort(self.vehicle)
-end
-
--- tractor and towed units of the unloader
-function CatchCombinePipeTask:getTrainUnits()
-    local units = {self.vehicle}
-    local all = AutoDrive.getAllUnits(self.vehicle)
-    if all ~= nil then
-        for _, unit in ipairs(all) do
-            if unit ~= self.vehicle and unit.components ~= nil then
-                table.insert(units, unit)
-            end
-        end
-    end
-    return units
-end
-
--- the harvester drives forward and a unit of the unloader stands in its way: in front of it, within its cutting width
-function CatchCombinePipeTask:isInCombinePath()
-    local combine = self.combine
-    if combine == nil or combine.ad == nil or combine.ad.ADRootNode == nil then
-        return false
-    end
-    local movingDirection = combine.movingDirection or 1
-    if combine.ad.isReverseAttached then
-        movingDirection = -movingDirection
-    end
-    if (combine.lastSpeedReal or 0) * movingDirection < CatchCombinePipeTask.CLEAR_WAY_MIN_SPEED then
-        return false
-    end
-    local laneHalf = math.max(AutoDrive.getFrontToolWidth(combine) or 0, combine.size.width) / 2 + CatchCombinePipeTask.CLEAR_WAY_MARGIN
-    for _, unit in ipairs(self:getTrainUnits()) do
-        local x, y, z = getWorldTranslation(unit.components[1].node)
-        local diffX, _, diffZ = AutoDrive.worldToLocal(combine, x, y, z, combine.ad.ADRootNode)
-        local unitHalfWidth = unit.size ~= nil and unit.size.width / 2 or 1.5
-        if diffZ > 0 and diffZ < CatchCombinePipeTask.CLEAR_WAY_DISTANCE and math.abs(diffX) < laneHalf + unitHalfWidth then
-            return true
-        end
-    end
-    return false
-end
-
--- ground behind the last unit: field ground without standing crop, across the width of the train
-function CatchCombinePipeTask:isRearClear()
-    local units = self:getTrainUnits()
-    local last = units[#units]
-    local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
-    local x, _, z = getWorldTranslation(last.components[1].node)
-    local back = (last.size ~= nil and last.size.length / 2 or 3) + CatchCombinePipeTask.CLEAR_WAY_REAR_CHECK
-    local half = self.vehicle.ad.pathFinderModule:getTrainWidth() / 2
-    local rx, rz = x - dx * back, z - dz * back
-    for _, side in ipairs({0, -1, 1}) do
-        local px, pz = rx - dz * half * side, rz + dx * half * side
-        if not AutoDrive.checkIsOnField(px, 0, pz) or PathFinderModule.getMapCropAt(px, pz) ~= 0 then
-            return false
-        end
-    end
-    return true
-end
-
-function CatchCombinePipeTask:startClearWay()
-    if self.state == CatchCombinePipeTask.STATE_PATHPLANNING then
-        self.vehicle.ad.pathFinderModule:reset()
-    end
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    self.clearWayStart = {x = x, z = z}
-    self.clearWayTime = 0
-    self.clearWayStuckTime = 0
-    self.clearWayLast = {x = x, z = z}
-    if self:isRearClear() then
-        print(string.format("[AD-Degage] %s: la moissonneuse arrive vers moi, je recule pour degager son passage", FollowCombineTask.getLogName(self.vehicle)))
-        self.state = CatchCombinePipeTask.STATE_CLEAR_WAY
-    else
-        print(string.format("[AD-Degage] %s: la moissonneuse arrive vers moi, recul impossible (culture ou bord du champ derriere), j'attends", FollowCombineTask.getLogName(self.vehicle)))
-        self.passByTime = 0
-        self.state = CatchCombinePipeTask.STATE_WAIT_PASS_BY
-    end
-end
-
-function CatchCombinePipeTask:updateClearWay(dt)
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    local reversed = MathUtil.vector2Length(x - self.clearWayStart.x, z - self.clearWayStart.z)
-    self.clearWayTime = self.clearWayTime + dt
-    if MathUtil.vector2Length(x - self.clearWayLast.x, z - self.clearWayLast.z) > 0.3 then
-        self.clearWayLast = {x = x, z = z}
-        self.clearWayStuckTime = 0
-    else
-        self.clearWayStuckTime = self.clearWayStuckTime + dt
-    end
-    local reason = nil
-    if not self:isInCombinePath() then
-        reason = "hors du passage"
-    elseif reversed >= CatchCombinePipeTask.CLEAR_WAY_MAX_REVERSE then
-        reason = "recul maximum"
-    elseif not self:isRearClear() then
-        reason = "culture ou bord du champ derriere"
-    elseif self.clearWayTime > CatchCombinePipeTask.CLEAR_WAY_TIMEOUT or self.clearWayStuckTime > CatchCombinePipeTask.CLEAR_WAY_STUCK_TIME then
-        reason = "recul bloque"
-    end
-    if reason ~= nil then
-        print(string.format("[AD-Degage] %s: arret du recul apres %.0f m (%s), j'attends que la moissonneuse passe", FollowCombineTask.getLogName(self.vehicle), reversed, reason))
-        self.passByTime = 0
-        self.state = CatchCombinePipeTask.STATE_WAIT_PASS_BY
-        self.vehicle.ad.specialDrivingModule:stopVehicle()
-        self.vehicle.ad.specialDrivingModule:update(dt)
-        return
-    end
-    self.vehicle.ad.specialDrivingModule:driveReverse(dt, CatchCombinePipeTask.CLEAR_WAY_REVERSE_SPEED, 1, self.vehicle.ad.trailerModule:canBeHandledInReverse())
-end
-
--- forage harvester: unloader on the pipe side, same heading, outside its lane, level with it (not past its nose)
-function CatchCombinePipeTask:isBesideInPlace()
-    local combine = self.combine
-    if not AutoDrive.isChopperUnloading(self.vehicle) or combine == nil or combine.ad == nil or combine.components == nil then
-        return false
-    end
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    if mode:getAngleToCombineHeading() >= CatchCombinePipeTask.BESIDE_ANGLE or not mode:isUnloaderOnCorrectSide() then
-        return false
-    end
-    local cx, _, cz = getWorldTranslation(combine.components[1].node)
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local rx, rz = self.vehicle.ad.pathFinderModule:getWorkingDirection(combine)
-    local along = (vx - cx) * rx + (vz - cz) * rz
-    local lateral = math.abs((vx - cx) * rz - (vz - cz) * rx)
-    local halfLength = combine.size ~= nil and combine.size.length / 2 or 5
-    if along > halfLength or along < -(halfLength + CatchCombinePipeTask.BESIDE_MAX_BACK) then
-        return false
-    end
-    local laneHalf = math.max(AutoDrive.getFrontToolWidth(combine) or 0, combine.size.width) / 2
-    local unitHalfWidth = self.vehicle.size ~= nil and self.vehicle.size.width / 2 or 1.5
-    return lateral >= laneHalf + unitHalfWidth and lateral <= CatchCombinePipeTask.BESIDE_MAX_LATERAL and not self:isInCombinePath()
-end
-
-function CatchCombinePipeTask:updateWaitPassBy(dt)
-    self.vehicle.ad.specialDrivingModule:stopVehicle()
-    self.vehicle.ad.specialDrivingModule:update(dt)
-    self.passByTime = self.passByTime + dt
-    local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
-    local _, _, diffZ = AutoDrive.worldToLocal(self.combine, x, y, z, self.combine.ad.ADRootNode)
-    local passed = diffZ < -CatchCombinePipeTask.PASS_BY_BEHIND
-    if passed or (not self:isInCombinePath() and self.passByTime > 2000) or self.passByTime > CatchCombinePipeTask.PASS_BY_TIMEOUT then
-        print(string.format("[AD-Degage] %s: %s, nouvelle recherche de chemin", FollowCombineTask.getLogName(self.vehicle),
-            passed and "la moissonneuse est passee" or (self.passByTime > CatchCombinePipeTask.PASS_BY_TIMEOUT and "attente trop longue" or "plus dans son passage")))
-        self.waitForCheckTimer.elapsedTime = 4000
-        self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-    end
+    ADBandTurn.abort(self.vehicle) -- demi-tour dans la bande arrêté (BandTurnModule.lua)
 end
 
 function CatchCombinePipeTask:finished(propagate)
@@ -714,964 +281,6 @@ function CatchCombinePipeTask:startNewPathFinding()
     return false
 end
 
--- forage harvester: a partial route ends with a stop and a new plan. The next piece is planned as soon as the
--- tractor has started this one, from the end of this piece (its position and heading), and appended to it:
--- the tractor drives on without stopping. Relaunched if the harvester moved a lot; no route: stop and plan as before
-CatchCombinePipeTask.CLOSE_RANGE = 10             -- m from the forage harvester: the chase drives, no planned route (owner 24/10 21:08 "a 10 m faut remettre la poursuite", was 4)
-CatchCombinePipeTask.CLOSE_RANGE_ANGLE = 90       -- deg: only in the harvester's direction (owner 25/10 08:03: the 7R, 177 deg, looped 4 min)
-CatchCombinePipeTask.CLOSE_RANGE_STANDING = 32    -- m: harvester standing and the unloader in the cone behind it, before any route (owner 25/10 14:10, MF 7S.210 looping 4 min at 29 m)
-CatchCombinePipeTask.CLOSE_BLOCKED_TRIES = 3       -- chases given up at the same place before a planned route is allowed
-CatchCombinePipeTask.HANDOVER_DISTANCE = 15        -- m from the harvester: the chase takes over when the route cannot align
-CatchCombinePipeTask.HANDOVER_TRIES = 2
-CatchCombinePipeTask.CHOPPER_HANDOVER_ANGLE = 50  -- deg between unloader and forage harvester headings, behind it
--- forage harvester standing (full, it waits for this unloader) and the unloader in the cone behind it: the chase takes
--- over whatever side was planned, it picks the free side itself (owner 25/10 11:53: the Puma arrived 22 m behind the
--- standing JAGUAR at 35 deg, right of the planned left side, and planned the same point again for ever)
-CatchCombinePipeTask.STANDING_HANDOVER_DISTANCE = 30 -- m from the harvester
-CatchCombinePipeTask.STANDING_SPEED = 0.0003 -- lastSpeedReal (m/ms) under which the harvester stands
-
--- owner 25/10 16:22: hand-overs to the chase at the same place in a short time (the chase gives the place back at once:
--- obstacle on its line): after HANDOVER_LOOP_COUNT the place behind the harvester is forced for HANDOVER_LOOP_REAR_TIME
-CatchCombinePipeTask.HANDOVER_LOOP_COUNT = 4
-CatchCombinePipeTask.HANDOVER_LOOP_TIME = 30000
-CatchCombinePipeTask.HANDOVER_LOOP_RADIUS = 3
-CatchCombinePipeTask.HANDOVER_LOOP_REAR_TIME = 60000
-function CatchCombinePipeTask:noteHandover()
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    if mode == nil or not AutoDrive.isChopperUnloading(self.vehicle) then
-        return
-    end
-    local now = g_time or 0
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local h = mode.handoverLoop
-    if h == nil or now - h.t0 > CatchCombinePipeTask.HANDOVER_LOOP_TIME or MathUtil.vector2Length(vx - h.x, vz - h.z) > CatchCombinePipeTask.HANDOVER_LOOP_RADIUS then
-        mode.handoverLoop = {x = vx, z = vz, t0 = now, n = 1}
-        return
-    end
-    h.n = h.n + 1
-    if h.n >= CatchCombinePipeTask.HANDOVER_LOOP_COUNT and mode.isIslandRear ~= nil and not mode:isIslandRear() then
-        mode.islandRearUntil = now + CatchCombinePipeTask.HANDOVER_LOOP_REAR_TIME
-        print(string.format("[AD-Fin] %s: %d passages de main a la poursuite au meme endroit en %.0f s, la place derriere l'ensileuse est forcee %d s", tostring(self.vehicle:getName()), h.n, (now - h.t0) / 1000, CatchCombinePipeTask.HANDOVER_LOOP_REAR_TIME / 1000))
-        mode.handoverLoop = nil
-    end
-end
-
--- forage harvester: the unloader is behind it (its rear half), not beside or ahead; any other harvester: true
-function CatchCombinePipeTask:isBehindChopper()
-    if not AutoDrive.isChopperUnloading(self.vehicle) or self.combine == nil or self.combine.components == nil then
-        return true
-    end
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local rx, rz = self.vehicle.ad.pathFinderModule:getWorkingDirection(self.combine)
-    return (vx - cx) * rx + (vz - cz) * rz < 0
-end
-
--- forage harvester standing: full, it waits for this unloader
-function CatchCombinePipeTask:isCombineStanding()
-    local c = self.combine
-    if c == nil then
-        return false
-    end
-    if math.abs(c.lastSpeedReal or 0) < CatchCombinePipeTask.STANDING_SPEED then
-        return true
-    end
-    return c.ad ~= nil and c.ad.noMovementTimer ~= nil and (c.ad.noMovementTimer.elapsedTime or 0) > 1000
-end
-
--- the unloader in the cone behind the forage harvester: behind its rear, no further aside than behind.
--- Returns its lateral and longitudinal offsets (m, harvester frame) and whether it is in the cone
-function CatchCombinePipeTask:isInRearCone()
-    if self.combine == nil or self.combine.components == nil then
-        return 0, 0, false
-    end
-    local vx, vy, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local dx, _, dz = AutoDrive.worldToLocal(self.combine, vx, vy, vz, self.combine.ad ~= nil and self.combine.ad.ADRootNode or nil)
-    local rear = (self.combine.size ~= nil and self.combine.size.length or 10) / 2
-    return dx, dz, dz < -rear and math.abs(dx) <= -dz
-end
-
--- arrival behind a forage harvester on the other side than the planned one (owner 25/10 11:53: the Puma arrived 22 m
--- behind the standing JAGUAR at 35 deg, right of the planned left side, and planned the same point for ever): in the
--- cone behind it the side does not matter, the chase picks the free side itself (or drives behind it first)
-function CatchCombinePipeTask:acceptOtherSideBehind(angleToCombine, isCorrectSide, maxAngle)
-    if isCorrectSide or not AutoDrive.isChopperUnloading(self.vehicle) or angleToCombine >= maxAngle then
-        return isCorrectSide
-    end
-    local dx, dz, inCone = self:isInRearCone()
-    if not inCone then
-        return false
-    end
-    print(string.format("[AD-Fin] %s: arrive derriere l'ensileuse (%.0f m derriere, %.0f m de cote, angle %.0f deg) de l'autre cote que prevu : la poursuite prend la main et choisit le cote libre", tostring(self.vehicle:getName()), -dz, math.abs(dx), angleToCombine))
-    return true
-end
-
--- no route and the forage harvester stands (full, it waits for this unloader), the unloader in the cone behind it less
--- than CHOPPER_HANDOVER_ANGLE off its heading: the chase takes over, a planned route only loops at that range
-function CatchCombinePipeTask:tryStandingHandover(why)
-    if not AutoDrive.isChopperUnloading(self.vehicle) or not self:isCombineStanding() then
-        return false
-    end
-    local dx, dz, inCone = self:isInRearCone()
-    if not inCone then
-        return false
-    end
-    local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)
-    local angle = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getAngleToCombineHeading()
-    if distance > CatchCombinePipeTask.STANDING_HANDOVER_DISTANCE or angle >= CatchCombinePipeTask.CHOPPER_HANDOVER_ANGLE then
-        return false
-    end
-    print(string.format("[AD-Fin] %s: %s, ensileuse arretee et moi derriere elle (%.0f m derriere, %.0f m de cote, angle %.0f deg) : la poursuite prend la main et choisit le cote libre", tostring(self.vehicle:getName()), why, -dz, math.abs(dx), angle))
-    self:noteHandover()
-    if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-        self.vehicle.ad.pathFinderModule:reset()
-        self.preplanning = false
-    end
-    self.state = CatchCombinePipeTask.STATE_FINISHED
-    return true
-end
-CatchCombinePipeTask.PREPLAN_START_DISTANCE = 1    -- m driven on the piece before planning the next one
-CatchCombinePipeTask.PREPLAN_COMBINE_MOVED = 30    -- m the harvester may move before the next piece is planned again
-CatchCombinePipeTask.PREPLAN_MIN_LEFT = 5          -- m left on the piece to still relaunch
-CatchCombinePipeTask.PREPLAN_MAX_STANDING = 3      -- pieces appended at most while the tractor stays within PREPLAN_STANDING_RADIUS (owner 25/10 14:21)
-CatchCombinePipeTask.PREPLAN_STANDING_RADIUS = 10  -- m
-
-function CatchCombinePipeTask:updatePreplanning(dt)
-    if not self.routeIsPartial or not AutoDrive.isChopperUnloading(self.vehicle) then
-        return
-    end
-    local pf = self.vehicle.ad.pathFinderModule
-    local dpm = self.vehicle.ad.drivePathModule
-    local vx, vy, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local name = tostring(self.vehicle:getName())
-    local wps = dpm:getWayPoints()
-    if wps == nil or #wps < 2 then
-        self.routeIsPartial = false
-        return
-    end
-    local last, before = wps[#wps], wps[#wps - 1]
-    local leftOnPiece = MathUtil.vector2Length(last.x - vx, last.z - vz)
-    if not self.preplanning then
-        if MathUtil.vector2Length(wps[1].x - vx, wps[1].z - vz) < CatchCombinePipeTask.PREPLAN_START_DISTANCE then
-            return
-        end
-        local dx, dz = last.x - before.x, last.z - before.z
-        local l = math.sqrt(dx * dx + dz * dz)
-        if l < 0.1 then
-            self.routeIsPartial = false
-            return
-        end
-        -- forage harvester: the piece ends within CLOSE_RANGE of it, the chase drives from there (no grid route near it)
-        local hx, _, hz = getWorldTranslation(self.combine.components[1].node)
-        if AutoDrive.isChopperUnloading(self.vehicle) and MathUtil.vector2Length(last.x - hx, last.z - hz) < CatchCombinePipeTask.CLOSE_RANGE then
-            self.routeIsPartial = false
-            print(string.format("[AD-Fin] %s: fin du morceau a %.0f m de l'ensileuse, pas de morceau suivant, la poursuite prendra la main", name, MathUtil.vector2Length(last.x - hx, last.z - hz)))
-            return
-        end
-        self.nextStartPose = {x = last.x, y = last.y or vy, z = last.z, rx = dx / l, rz = dz / l}
-        if self:startNewPathFinding() then
-            self.preplanning = true
-            local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-            self.preplanCombine = {x = cx, z = cz}
-            print(string.format("[AD-Fin] %s: calcul du morceau suivant lance depuis la fin du morceau (%.0f,%.0f), %.0f m avant", name, last.x, last.z, leftOnPiece))
-        else
-            self.routeIsPartial = false
-        end
-        self.nextStartPose = nil
-        return
-    end
-    pf:update(dt)
-    if not pf:hasFinished() then
-        return
-    end
-    self.preplanning = false
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local moved = MathUtil.vector2Length(cx - self.preplanCombine.x, cz - self.preplanCombine.z)
-    if moved > CatchCombinePipeTask.PREPLAN_COMBINE_MOVED then
-        if leftOnPiece > CatchCombinePipeTask.PREPLAN_MIN_LEFT then
-            -- planned toward where the harvester was: plan again from the same end of piece
-            print(string.format("[AD-Fin] %s: l'ensileuse a bouge de %.0f m, nouveau calcul du morceau suivant", name, moved))
-            return
-        end
-        self.routeIsPartial = false
-        print(string.format("[AD-Fin] %s: l'ensileuse a bouge de %.0f m, arret au bout du morceau et nouveau calcul", name, moved))
-        return
-    end
-    local path = pf:getPath()
-    if path == nil or #path < 2 then
-        self.routeIsPartial = false
-        print(string.format("[AD-Fin] %s: pas de morceau suivant, arret au bout du morceau et nouveau calcul", name))
-        return
-    end
-    -- owner 25/10 14:21 (6205 TTV: 51 pieces appended in 90 s without moving, lane and grid in turn): no more than
-    -- PREPLAN_MAX_STANDING pieces while the tractor stays about where it is, then it drives this piece to its end
-    local anchor = self.preplanAnchor
-    if anchor == nil or MathUtil.vector2Length(vx - anchor.x, vz - anchor.z) > CatchCombinePipeTask.PREPLAN_STANDING_RADIUS then
-        self.preplanAnchor = {x = vx, z = vz, count = 0}
-        anchor = self.preplanAnchor
-    end
-    anchor.count = anchor.count + 1
-    if anchor.count > CatchCombinePipeTask.PREPLAN_MAX_STANDING then
-        self.routeIsPartial = false
-        print(string.format("[AD-Fin] %s: %d morceaux ajoutes sans avancer de %d m, boucle : arret au bout de ce morceau et nouveau calcul", name, anchor.count - 1, CatchCombinePipeTask.PREPLAN_STANDING_RADIUS))
-        return
-    end
-    -- owner 25/10 19:14 (7R, pieces up to 135 m from the harvester): a partial next piece that ends farther from the
-    -- harvester than the end of this piece leads away, it is not appended
-    if pf.partialPath then
-        local pEnd = path[#path]
-        local dStart = MathUtil.vector2Length(last.x - cx, last.z - cz)
-        local dEnd = MathUtil.vector2Length(pEnd.x - cx, pEnd.z - cz)
-        if dEnd > dStart - 1 then
-            self.routeIsPartial = false
-            print(string.format("[AD-Fin] %s: morceau suivant refuse, il m'eloigne de l'ensileuse (%.0f m -> %.0f m) : arret au bout de ce morceau et nouveau calcul", name, dStart, dEnd))
-            return
-        end
-    end
-    -- what is left of this piece, then the next piece
-    local newWps = {{x = vx, y = vy, z = vz}}
-    local index = dpm:getCurrentWayPointIndex() or 2
-    for i = math.max(index, 2), #wps do
-        newWps[#newWps + 1] = wps[i]
-    end
-    for i = 1, #path do
-        local p = path[i]
-        local tail = newWps[#newWps]
-        if MathUtil.vector2Length(p.x - tail.x, p.z - tail.z) > 0.5 then
-            newWps[#newWps + 1] = p
-        end
-    end
-    self.wayPoints = newWps
-    dpm:setWayPoints(newWps)
-    self.routeIsPartial = pf.partialPath == true
-    self.newPathFindingCounter = 0
-    print(string.format("[AD-Fin] %s: morceau suivant ajoute a la suite (%d points), sans arret%s", name, #path, self.routeIsPartial and ", encore partiel" or ""))
-end
-
--- forage harvester: a failed plan from the same start with the harvester at the same place gives the same result,
--- the next try waits twice as long (up to RETRY_DELAY_MAX); anything moved: back to RETRY_DELAY_MIN
-function CatchCombinePipeTask:updateRetryDelay()
-    if not AutoDrive.isChopperUnloading(self.vehicle) then
-        return
-    end
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local f = self.lastFailure
-    if f ~= nil and MathUtil.vector2Length(vx - f.vx, vz - f.vz) < CatchCombinePipeTask.RETRY_SAME_VEHICLE
-        and MathUtil.vector2Length(cx - f.cx, cz - f.cz) < CatchCombinePipeTask.RETRY_SAME_COMBINE then
-        self.retryDelay = math.min(CatchCombinePipeTask.RETRY_DELAY_MAX, (self.retryDelay or CatchCombinePipeTask.RETRY_DELAY_MIN) * 2)
-        print(string.format("[AD-Fin] %s: meme echec, rien n'a bouge, nouvel essai dans %.0f s", tostring(self.vehicle:getName()), self.retryDelay / 1000))
-    else
-        self.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN
-    end
-    self.lastFailure = {vx = vx, vz = vz, cx = cx, cz = cz}
-end
-
--- harvester heading once per second: remembers when it last turned (headland turn)
-function CatchCombinePipeTask:sampleCombineHeading()
-    if self.combine == nil or g_time == nil then
-        return
-    end
-    local last = self.combineHeading
-    if last ~= nil and g_time - last.t < 1000 then
-        return
-    end
-    local dx, _, dz = AutoDrive.localDirectionToWorld(self.combine, 0, 0, 1)
-    local yaw = math.deg(math.atan2(dx, dz))
-    if last ~= nil then
-        local d = math.abs(yaw - last.yaw) % 360
-        if d > 180 then
-            d = 360 - d
-        end
-        if d / ((g_time - last.t) / 1000) > CatchCombinePipeTask.BAND_TURN_YAW_RATE then
-            self.combineTurnedAt = g_time
-        end
-    end
-    self.combineHeading = {yaw = yaw, t = g_time}
-end
-
--- forage harvester, fallback only (no forward route): U-turn in the strip when its heading is behind ours
-function CatchCombinePipeTask:tryBandTurn(why)
-    if not AutoDrive.isChopperUnloading(self.vehicle) then
-        return false
-    end
-    if not ADBandTurn.canTry(self.vehicle) then
-        print(string.format("[AD-DemiTour] %s: %s, pas de demi-tour de secours ici (deja echoue a moins de %d m il y a moins de %d s)", tostring(self.vehicle:getName()), why, ADBandTurn.RETRY_DISTANCE, ADBandTurn.RETRY_TIME / 1000))
-        return false
-    end
-    local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)
-    if distance > CatchCombinePipeTask.BAND_TURN_RANGE then
-        return false
-    end
-    -- harvester turning or just turned at the headland: its heading means nothing yet, it comes back, wait
-    -- (25/10: the AutoDrive turn flag alone is also raised while it stands waiting for a trailer, its turn points decide)
-    if self:isCombineReallyTurning() or (self.combineTurnedAt ~= nil and g_time - self.combineTurnedAt < CatchCombinePipeTask.BAND_TURN_AFTER_TURN) then
-        if self.bandTurnTurnLogAt == nil or g_time - self.bandTurnTurnLogAt > 5000 then
-            self.bandTurnTurnLogAt = g_time
-            print(string.format("[AD-DemiTour] %s: %s, pas de demi-tour de secours (l'ensileuse tourne ou vient de tourner en bout de rang, attente)", tostring(self.vehicle:getName()), why))
-        end
-        return false
-    end
-    -- a partial route was found and only waits for a clean stop: not stuck, the next plan goes on
-    local pfm = self.vehicle.ad.pathFinderModule
-    if pfm.partialPath and (pfm.partialFailCount or 0) > 0 and pfm.partialFailCount < PathFinderModule.PARTIAL_FACING_LIFT_FAILURES then
-        print(string.format("[AD-DemiTour] %s: %s, pas de demi-tour de secours (trajet partiel trouve, attente %d/%d)", tostring(self.vehicle:getName()), why, pfm.partialFailCount, PathFinderModule.PARTIAL_FACING_LIFT_FAILURES))
-        return false
-    end
-    -- behind: its heading reversed against ours, or the harvester itself behind us (the route must turn around)
-    local behind, angle = ADBandTurn.isFacingHarvester(self.vehicle, self.combine, CatchCombinePipeTask.BAND_TURN_RANGE, CatchCombinePipeTask.BAND_TURN_ANGLE)
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
-    local bearing = math.abs(AutoDrive.angleBetween({x = dx, z = dz}, {x = cx - vx, z = cz - vz}))
-    if not behind and (bearing < CatchCombinePipeTask.BAND_TURN_ANGLE or distance > CatchCombinePipeTask.BAND_TURN_BEHIND_RANGE) then
-        print(string.format("[AD-DemiTour] %s: %s, pas de demi-tour de secours (ensileuse pas derriere : cap %.0f deg, position %.0f deg, %.0f m)", tostring(self.vehicle:getName()), why, angle or -1, bearing, distance))
-        return false
-    end
-    if not ADBandTurn.start(self.vehicle, string.format("secours, %s : cap ensileuse %.0f deg, ensileuse a %.0f deg, %.0f m", why, angle or -1, bearing, distance), self.combine) then
-        return false
-    end
-    self.vehicle.ad.pathFinderModule:reset()
-    self.preplanning = false
-    self.infoEndRowTurn = false -- status text
-    self.state = CatchCombinePipeTask.STATE_BAND_TURN
-    return true
-end
-
-CatchCombinePipeTask.TRAIL_BEARING = 60      -- deg: the harvester ahead of the tractor within this angle
-CatchCombinePipeTask.TRAIL_RETRY_DISTANCE = 5
-CatchCombinePipeTask.TRAIL_RETRY_TIME = 30000
-
--- forage harvester: no route, but the tractor stands on the harvester's trail with the harvester ahead (sim 24/10:
--- 17 m behind it, aligned, target 21 m behind it is behind the tractor): drive its trail up to just behind it
-function CatchCombinePipeTask:tryCombineTrail()
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    if not AutoDrive.isChopperUnloading(self.vehicle) or self.combine == nil or mode == nil or mode.getCombineTrailFrom == nil then
-        return false
-    end
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    if self.trailTried ~= nil and MathUtil.vector2Length(vx - self.trailTried.x, vz - self.trailTried.z) < CatchCombinePipeTask.TRAIL_RETRY_DISTANCE
-        and g_time - self.trailTried.time < CatchCombinePipeTask.TRAIL_RETRY_TIME then
-        return false
-    end
-    self.trailTried = {x = vx, z = vz, time = g_time}
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
-    local bearing = math.abs(AutoDrive.angleBetween({x = dx, z = dz}, {x = cx - vx, z = cz - vz}))
-    if bearing > CatchCombinePipeTask.TRAIL_BEARING then
-        return false
-    end
-    local combineRear = (self.combine.size ~= nil and self.combine.size.length or 10) / 2 - (self.combine.size ~= nil and self.combine.size.lengthOffset or 0)
-    local points, why = mode:getCombineTrailFrom(vx, vz, HandleHarvesterTurnTask.TRAIL_START_DISTANCE, combineRear + HandleHarvesterTurnTask.TRAIL_KEEP_BEHIND_CLOSE)
-    if points == nil then
-        print(string.format("[AD-Fin] %s: pas de chemin, trace de l'ensileuse inutilisable (%s)", tostring(self.vehicle:getName()), tostring(why)))
-        return false
-    end
-    local ok, groundWhy = HandleHarvesterTurnTask.checkGround({vehicle = self.vehicle}, points)
-    if not ok then
-        print(string.format("[AD-Fin] %s: pas de chemin, trace de l'ensileuse refusee (%s)", tostring(self.vehicle:getName()), tostring(groundWhy)))
-        return false
-    end
-    print(string.format("[AD-Fin] %s: pas de chemin, je suis la trace de l'ensileuse jusqu'a %.0f m derriere elle (%d points)",
-        tostring(self.vehicle:getName()), HandleHarvesterTurnTask.TRAIL_KEEP_BEHIND_CLOSE, #points))
-    self.vehicle.ad.pathFinderModule:reset()
-    self.wayPoints = points
-    self.vehicle.ad.drivePathModule:setWayPoints(points)
-    self.combinesStartLocation = {x = cx, z = cz}
-    self.routeIsPartial = false
-    self.preplanning = false
-    self.infoNoPath = false
-    self.infoOnTrail = true -- status text, until the next plan
-    self.state = CatchCombinePipeTask.STATE_DRIVING
-    return true
-end
-
-CatchCombinePipeTask.REVERSED_ANGLE = 100          -- deg against the harvester heading: the wrong way round (owner 24/10 18:01: 70 s looping at 135 deg with 150)
-CatchCombinePipeTask.REVERSED_RANGE = 80
-CatchCombinePipeTask.REVERSED_RETRY_DISTANCE = 10
-CatchCombinePipeTask.REVERSED_RETRY_TIME = 90000
-
--- Courseplay turn really being driven (its turn course). The AutoDrive flag (getIsCPTurning, "maneuvering") is also
--- raised while the harvester stands waiting for a trailer (25/10 08:03): read on its turn points when possible
-function CatchCombinePipeTask:isCombineReallyTurning()
-    if self.combine == nil then
-        return false
-    end
-    local row = CombineUnloaderMode.getCpRowTurn(self.combine)
-    if row ~= nil then
-        return row.turning == true
-    end
-    local standing = self.combine.ad ~= nil and self.combine.ad.noMovementTimer ~= nil and self.combine.ad.noMovementTimer.elapsedTime > 3000
-    return AutoDrive:getIsCPTurning(self.combine) and not standing
-end
-
--- aside (owner 25/10 08:03, the 7R beside the standing harvester at 177 deg): beside or in front of it as well, while it stands
-function CatchCombinePipeTask:tryReversedUTurn(angleToCombine, aside)
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    if not AutoDrive.isChopperUnloading(self.vehicle) or self.combine == nil or mode == nil then
-        return false
-    end
-    local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)
-    if angleToCombine < CatchCombinePipeTask.REVERSED_ANGLE or distance > CatchCombinePipeTask.REVERSED_RANGE then
-        return false
-    end
-    local behind = self:isBehindChopper()
-    local standing = self.combine.ad ~= nil and self.combine.ad.noMovementTimer ~= nil and self.combine.ad.noMovementTimer.elapsedTime > 3000
-    if not behind and not (aside and standing) then
-        return false
-    end
-    if self:isCombineReallyTurning() then
-        return false
-    end
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local last = mode.reversedTurnTried
-    if last ~= nil and MathUtil.vector2Length(vx - last.x, vz - last.z) < CatchCombinePipeTask.REVERSED_RETRY_DISTANCE
-        and (g_time or 0) - last.t < CatchCombinePipeTask.REVERSED_RETRY_TIME then
-        return false
-    end
-    mode.reversedTurnTried = {x = vx, z = vz, t = g_time or 0}
-    print(string.format("[AD-DemiTour] %s: %s l'ensileuse mais a l'envers (%.0f deg, %.0f m), demi-tour : AutoDrive d'abord, puis manoeuvre",
-        tostring(self.vehicle:getName()), behind and "derriere" or "a cote de / devant (arretee)", angleToCombine, distance))
-    self.vehicle.ad.endRowUTurn = g_time or 0
-    mode.reversedTurnRequested = true
-    self.state = CatchCombinePipeTask.STATE_FINISHED
-    return true
-end
-
--- owner 25/10 16:35 ("trouve pas une facon d'aller a cote de l'ensileuse"): 6205 TTV at 101 deg, 22 m from the standing
--- harvester: no U-turn accepts 100-150 deg and each new route is the same useless piece. From the 2nd time at the same
--- place: band turn toward the harvester heading (the 120 deg rule lifted), else back off along the own track to open the
--- angle; and every time more room for the turn in the next route (turnRoomExtra, PathFinderModule.startRearFallback)
-CatchCombinePipeTask.WRONG_WAY_RANGE = 45        -- m from the harvester
-CatchCombinePipeTask.WRONG_WAY_RADIUS = 6        -- m: arrivals closer than this count as the same place
-CatchCombinePipeTask.WRONG_WAY_ROOM_STEP = 8     -- m added to the aimed point setback per arrival at the same place
-CatchCombinePipeTask.WRONG_WAY_ROOM_MAX = 32
-CatchCombinePipeTask.WRONG_WAY_FORGET = 120000   -- ms
-CatchCombinePipeTask.SHORT_ROUTE_LENGTH = 25     -- m: a route this short ...
-CatchCombinePipeTask.SHORT_ROUTE_END_ANGLE = 60  -- deg: ... ending this far from the harvester heading cannot hand over
-function CatchCombinePipeTask:tryWrongWayTurn(angle)
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    if not AutoDrive.isChopperUnloading(self.vehicle) or self.combine == nil or self.combine.components == nil or angle == nil
-        or angle < CatchCombinePipeTask.REVERSED_ANGLE then
-        return false
-    end
-    local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)
-    if distance > CatchCombinePipeTask.WRONG_WAY_RANGE or not self:isCombineStanding() or self:isCombineReallyTurning() then
-        return false
-    end
-    local name = tostring(self.vehicle:getName())
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local now = g_time or 0
-    local w = self.vehicle.ad.wrongWay
-    if w == nil or MathUtil.vector2Length(vx - w.x, vz - w.z) > CatchCombinePipeTask.WRONG_WAY_RADIUS or now - w.t > CatchCombinePipeTask.WRONG_WAY_FORGET then
-        w = {x = vx, z = vz, t = now, n = 0}
-        self.vehicle.ad.wrongWay = w
-    end
-    w.n = w.n + 1
-    w.t = now
-    self.vehicle.ad.turnRoomExtra = math.min(CatchCombinePipeTask.WRONG_WAY_ROOM_MAX, w.n * CatchCombinePipeTask.WRONG_WAY_ROOM_STEP)
-    -- owner 25/10 19:14: no place behind her (hedge, field border): more room for the aimed point changes nothing, the
-    -- turn comes at once
-    local pfm = self.vehicle.ad.pathFinderModule
-    local noRearPlace = pfm ~= nil and pfm.rearPlaceNone == true
-    if w.n < 2 and not noRearPlace then
-        print(string.format("[AD-DemiTour] %s: a l'envers pres de l'ensileuse arretee (%.0f deg, %.0f m), 1re fois ici : prochain trajet avec %d m de plus pour tourner", name, angle, distance, self.vehicle.ad.turnRoomExtra))
-        return false
-    end
-    if noRearPlace and w.n < 2 then
-        print(string.format("[AD-DemiTour] %s: a l'envers pres de l'ensileuse arretee (%.0f deg, %.0f m) et aucune place derriere elle : demi-tour dans la bande tout de suite", name, angle, distance))
-    end
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
-    local side = (cx - vx) * dz - (cz - vz) * dx >= 0 and 1 or -1
-    local goal = nil
-    if ADBandTurn.headingOfNode ~= nil then
-        goal = ADBandTurn.headingOfNode(self.combine.ad.ADRootNode or self.combine.components[1].node)
-    end
-    if ADBandTurn.canTry(self.vehicle) and ADBandTurn.start(self.vehicle, string.format("a l'envers pres de l'ensileuse arretee (%.0f deg, %.0f m, %de fois ici)", angle, distance, w.n), self.combine, side, goal) then
-        print(string.format("[AD-DemiTour] %s: %de fois a l'envers au meme endroit (%.0f deg, %.0f m de l'ensileuse arretee), demi-tour dans la bande vers son cap (ensileuse a %s), puis trajet avec %d m de plus pour tourner", name, w.n, angle, distance, side > 0 and "gauche" or "droite", self.vehicle.ad.turnRoomExtra))
-        if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-            self.vehicle.ad.pathFinderModule:reset()
-            self.preplanning = false
-        end
-        self.infoEndRowTurn = true -- status text
-        self.state = CatchCombinePipeTask.STATE_BAND_TURN
-        return true
-    end
-    -- owner 25/10 22:34: once per place, as the open back-off (the Puma backed off here 6 times in 5 min)
-    local lastOpen = self.vehicle.ad.openReverseDone
-    local openAllowed = lastOpen == nil or (g_time or 0) - lastOpen.t >= CatchCombinePipeTask.OPEN_REVERSE_PAUSE
-        or MathUtil.vector2Length(vx - lastOpen.x, vz - lastOpen.z) >= CatchCombinePipeTask.OPEN_REVERSE_RADIUS
-    if openAllowed and mode ~= nil and mode.track ~= nil and #mode.track >= 3 and mode.getTrackIndexBehind ~= nil then
-        local index, walked = mode:getTrackIndexBehind(CatchCombinePipeTask.OPEN_REVERSE_DISTANCE)
-        if index ~= nil and walked ~= nil and walked >= CombineUnloaderMode.TRACK_STOP_DISTANCE + 2 and mode:startTrackReverse(self.combine, nil, index) then
-            self.vehicle.ad.openReverseDone = {x = vx, z = vz, t = g_time or 0}
-            print(string.format("[AD-DemiTour] %s: %de fois a l'envers au meme endroit (%.0f deg, %.0f m), pas de demi-tour de bande possible, recul de %.0f m dans mes traces pour ouvrir l'angle", name, w.n, angle, distance, walked))
-            if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-                self.vehicle.ad.pathFinderModule:reset()
-                self.preplanning = false
-            end
-            self.infoReverse = {blocked = false, distance = walked} -- status text
-            self.state = CatchCombinePipeTask.STATE_OPEN_REVERSE
-            return true
-        end
-    end
-    print(string.format("[AD-DemiTour] %s: %de fois a l'envers au meme endroit (%.0f deg, %.0f m), ni demi-tour de bande ni recul possible, prochain trajet avec %d m de plus pour tourner", name, w.n, angle, distance, self.vehicle.ad.turnRoomExtra))
-    return false
-end
-
--- a short route that ends far from the harvester heading while the train is the wrong way round: the arrival cannot
--- hand over to the chase, the same route comes again (6205 TTV, 15:38:27-15:38:37)
-function CatchCombinePipeTask:isUselessShortRoute(wayPoints)
-    if wayPoints == nil or #wayPoints < 2 or not AutoDrive.isChopperUnloading(self.vehicle) or self.combine == nil or self.combine.components == nil then
-        return false
-    end
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    local myAngle = mode:getAngleToCombineHeading()
-    local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)
-    if myAngle < CatchCombinePipeTask.CLOSE_RANGE_ANGLE or distance > CatchCombinePipeTask.WRONG_WAY_RANGE then
-        return false
-    end
-    local length = 0
-    for i = 2, #wayPoints do
-        length = length + MathUtil.vector2Length(wayPoints[i].x - wayPoints[i - 1].x, wayPoints[i].z - wayPoints[i - 1].z)
-    end
-    if length > CatchCombinePipeTask.SHORT_ROUTE_LENGTH then
-        return false
-    end
-    local a, b = wayPoints[#wayPoints - 1], wayPoints[#wayPoints]
-    local cx, _, cz = AutoDrive.localDirectionToWorld(self.combine, 0, 0, 1, self.combine.ad.ADRootNode)
-    local endAngle = math.abs(AutoDrive.angleBetween({x = b.x - a.x, z = b.z - a.z}, {x = cx, z = cz}))
-    if endAngle <= CatchCombinePipeTask.SHORT_ROUTE_END_ANGLE then
-        return false
-    end
-    print(string.format("[AD-Fin] %s: trajet de %.0f m (%d points) qui finit a %.0f deg du cap de l'ensileuse (moi a %.0f deg, %.0f m d'elle) : inutile, refuse", tostring(self.vehicle:getName()), length, #wayPoints, endAngle, myAngle, distance))
-    return true
-end
-
--- forage harvester: no route from here several times (nose against the crop, angle too sharp): back off about
--- OPEN_REVERSE_DISTANCE along its own clean track to open the angle, then plan again. Once per place
-function CatchCombinePipeTask:tryEndRowUTurn()
-    if not AutoDrive.isChopperUnloading(self.vehicle) or self.combine == nil then
-        return false
-    end
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
-    local facing, angle
-    local ant = self.vehicle.ad.anticipatedRear
-    if ant ~= nil and (g_time or 0) - ant.t < PathFinderModule.ANTICIPATED_MAX_AGE then
-        -- anticipated: the harvester has not turned yet, the new row (Courseplay course) gives the heading and side
-        angle = math.deg(math.acos(math.max(-1, math.min(1, dx * ant.dx + dz * ant.dz))))
-        facing = angle >= CatchCombinePipeTask.END_ROW_UTURN_ANGLE
-        cx, cz = ant.ex, ant.ez
-    else
-        facing, angle = ADBandTurn.isFacingHarvester(self.vehicle, self.combine, CatchCombinePipeTask.BAND_TURN_RANGE, CatchCombinePipeTask.END_ROW_UTURN_ANGLE)
-    end
-    -- owner 25/10 16:35 (6205 TTV at 101-105 deg, 19-22 m from the standing harvester, no turn accepted): near a standing
-    -- harvester the 120 deg rule is lifted from REVERSED_ANGLE on, the turn then aims the harvester heading itself
-    local goalHeading = nil
-    if not facing and angle ~= nil and angle >= CatchCombinePipeTask.REVERSED_ANGLE and self:isCombineStanding()
-        and AutoDrive.getDistanceBetween(self.vehicle, self.combine) <= CatchCombinePipeTask.WRONG_WAY_RANGE and ADBandTurn.headingOfNode ~= nil then
-        facing = true
-        if ant ~= nil and (g_time or 0) - ant.t < PathFinderModule.ANTICIPATED_MAX_AGE then
-            goalHeading = math.atan2(ant.dx, ant.dz)
-        else
-            goalHeading = ADBandTurn.headingOfNode(self.combine.ad.ADRootNode or self.combine.components[1].node)
-        end
-        print(string.format("[AD-DemiTour] %s: bout de rang, ensileuse arretee a %.0f deg de mon cap (regle des %d deg levee), demi-tour vers son cap", tostring(self.vehicle:getName()), angle, CatchCombinePipeTask.END_ROW_UTURN_ANGLE))
-    end
-    if not facing then
-        print(string.format("[AD-DemiTour] %s: bout de rang, pas de demi-tour propre (ecart de cap %.0f deg)", tostring(self.vehicle:getName()), angle or -1))
-        return false
-    end
-    -- harvester (or new row) side: +1 on the right of the tractor, -1 on the left
-    local side = (cx - vx) * dz - (cz - vz) * dx >= 0 and 1 or -1
-    if not ADBandTurn.start(self.vehicle, string.format("bout de rang, ensileuse a %s, cap ensileuse %.0f deg", side > 0 and "gauche" or "droite", angle or -1), self.combine, side, goalHeading) then
-        return false
-    end
-    if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-        self.vehicle.ad.pathFinderModule:reset()
-        self.preplanning = false
-    end
-    self.infoEndRowTurn = true -- status text
-    self.state = CatchCombinePipeTask.STATE_BAND_TURN
-    return true
-end
-
-CatchCombinePipeTask.VEHICLE_BLOCKED_TIME = 10000 -- ms standing in front of a vehicle before backing off
-CatchCombinePipeTask.VEHICLE_BLOCKED_REVERSE = 15 -- m backed off along the own tracks
-
-function CatchCombinePipeTask:updateVehicleBlocked(dt, standing)
-    local detour = self.vehicle.ad.obstacleDetourModule
-    if not standing or detour == nil or detour.isVehicleInFront == nil or not AutoDrive.isChopperUnloading(self.vehicle)
-        or self.vehicle.ad.drivePathModule:isTargetReached() then
-        self.vehicleBlockedTime = 0
-        return false
-    end
-    self.vehicleBlockedTime = (self.vehicleBlockedTime or 0) + dt
-    if self.vehicleBlockedTime < CatchCombinePipeTask.VEHICLE_BLOCKED_TIME then
-        return false
-    end
-    self.vehicleBlockedTime = 0
-    if not detour:isVehicleInFront() then
-        return false
-    end
-    local name = tostring(self.vehicle:getName())
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    local track = mode.track
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    local last = self.vehicle.ad.openReverseDone
-    if last ~= nil and (g_time or 0) - last.t < CatchCombinePipeTask.OPEN_REVERSE_PAUSE
-        and MathUtil.vector2Length(x - last.x, z - last.z) < 3 then
-        return false
-    end
-    if track == nil or #track < 3 then
-        print(string.format("[AD-Fin] %s: bloque par un vehicule devant, recul impossible (pas de traces enregistrees)", name))
-        self.vehicle.ad.openReverseDone = {x = x, z = z, t = g_time or 0}
-        return false
-    end
-    local index, walked = mode:getTrackIndexBehind(CatchCombinePipeTask.VEHICLE_BLOCKED_REVERSE)
-    if index == nil or walked < CombineUnloaderMode.TRACK_STOP_DISTANCE + 2 then
-        print(string.format("[AD-Fin] %s: bloque par un vehicule devant, recul impossible (%.0f m de traces derriere)", name, walked or 0))
-        self.vehicle.ad.openReverseDone = {x = x, z = z, t = g_time or 0}
-        return false
-    end
-    self.vehicle.ad.openReverseDone = {x = x, z = z, t = g_time or 0}
-    if mode:startTrackReverse(self.combine, nil, index) then
-        print(string.format("[AD-Fin] %s: bloque %d s par un vehicule devant, recul de %.0f m dans ses traces puis nouveau calcul", name,
-            CatchCombinePipeTask.VEHICLE_BLOCKED_TIME / 1000, math.min(walked, CatchCombinePipeTask.VEHICLE_BLOCKED_REVERSE)))
-        self.preplanning = false
-        self.vehicle.ad.pathFinderModule:reset()
-        -- status text
-        self.infoReverse = {blocked = true, distance = math.min(walked, CatchCombinePipeTask.VEHICLE_BLOCKED_REVERSE)}
-        self.state = CatchCombinePipeTask.STATE_OPEN_REVERSE
-        return true
-    end
-    return false
-end
-
--- owner 25/10 22:38 ("en cas de grosse difficulte sur la fourriere on peut couper cet angle en rouge"): no route twice
--- from the same place near the standing harvester (its place off the field at a corner, no grid there, no edge to
--- follow): the chase takes over and its straight line may cut a tip of crop for a while, instead of backing off
--- along the track again and again (6 back-offs in 5 min, the trailer in the maize, 21:32-21:37)
-function CatchCombinePipeTask:tryCropTipHandover(f)
-    if not self:isCombineStanding() or f.cropTipDone then
-        return false
-    end
-    local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)
-    local angle = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getAngleToCombineHeading()
-    if distance > CatchCombinePipeTask.CROP_TIP_DISTANCE or angle >= CatchCombinePipeTask.CROP_TIP_ANGLE then
-        return false
-    end
-    -- owner 30/10: once per place, the chase gave the train back at once and a new task started it again every 10 s
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local done = self.vehicle.ad.cropTipDoneAt
-    if done ~= nil and (g_time or 0) - done.t < CatchCombinePipeTask.CLEAR_BACK_MEMORY
-        and MathUtil.vector2Length(vx - done.x, vz - done.z) < CatchCombinePipeTask.OPEN_REVERSE_RADIUS then
-        f.cropTipDone = true
-        print(string.format("[AD-Fin] %s: poursuite qui coupe la pointe deja essayee d'ici il y a %.0f s, pas une deuxieme fois", tostring(self.vehicle:getName()), ((g_time or 0) - done.t) / 1000))
-        return false
-    end
-    self.vehicle.ad.cropTipDoneAt = {x = vx, z = vz, t = g_time or 0}
-    f.cropTipDone = true
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    mode.cropTipUntil = (g_time or 0) + CatchCombinePipeTask.CROP_TIP_TIME
-    print(string.format("[AD-Fin] %s: pas de trajet d'ici %d fois pres de l'ensileuse arretee (%.0f m, %.0f deg) : la poursuite prend la main et peut couper une pointe de culture pendant %d s", tostring(self.vehicle:getName()), f.count, distance, angle, CatchCombinePipeTask.CROP_TIP_TIME / 1000))
-    self:noteHandover()
-    if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-        self.vehicle.ad.pathFinderModule:reset()
-        self.preplanning = false
-    end
-    self.state = CatchCombinePipeTask.STATE_FINISHED
-    return true
-end
-
-function CatchCombinePipeTask:tryOpenReverse()
-    if not AutoDrive.isChopperUnloading(self.vehicle) then
-        return false
-    end
-    local mode = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]
-    local track = mode.track
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    -- once per place: remembered on the vehicle, the place of the failures moves with the back-off itself
-    local last = self.vehicle.ad.openReverseDone
-    if last ~= nil and (g_time or 0) - last.t < CatchCombinePipeTask.OPEN_REVERSE_PAUSE
-        and MathUtil.vector2Length(x - last.x, z - last.z) < CatchCombinePipeTask.OPEN_REVERSE_RADIUS then
-        return false
-    end
-    local f = self.openFails
-    if f == nil or MathUtil.vector2Length(x - f.x, z - f.z) > 2 then
-        self.openFails = {x = x, z = z, count = 1}
-        return false
-    end
-    f.count = f.count + 1
-    if f.count < CatchCombinePipeTask.OPEN_REVERSE_FAILS or f.done then
-        return false
-    end
-    if self:tryCropTipHandover(f) then
-        return true
-    end
-    if track == nil or #track < 3 then
-        if not f.noTrackLogged then
-            f.noTrackLogged = true
-            print(string.format("[AD-Fin] %s: pas de trajet d'ici %d fois, recul impossible (pas de traces enregistrees)", tostring(self.vehicle:getName()), f.count))
-        end
-        return false
-    end
-    -- track point about OPEN_REVERSE_DISTANCE behind the tractor
-    -- counted from the track point closest to the tractor (11:57: counted from the newest one, ahead after a
-    -- reverse, the 10 m back-off was 2 m and ended at once)
-    local index, walked = mode:getTrackIndexBehind(CatchCombinePipeTask.OPEN_REVERSE_DISTANCE)
-    if index == nil or walked < CombineUnloaderMode.TRACK_STOP_DISTANCE + 2 then
-        if not f.shortLogged then
-            f.shortLogged = true
-            print(string.format("[AD-Fin] %s: pas de trajet d'ici %d fois, recul impossible (%.0f m de traces derriere)", tostring(self.vehicle:getName()), f.count, walked or 0))
-        end
-        return false
-    end
-    f.done = true
-    if mode:startTrackReverse(self.combine, nil, index) then
-        self.vehicle.ad.openReverseDone = {x = x, z = z, t = g_time or 0}
-        print(string.format("[AD-Fin] %s: pas de trajet d'ici %d fois, recul de %.0f m dans ses traces pour ouvrir l'angle", tostring(self.vehicle:getName()), f.count, walked))
-        self.infoReverse = {blocked = false, distance = walked} -- status text
-        self.state = CatchCombinePipeTask.STATE_OPEN_REVERSE
-        return true
-    end
-    return false
-end
-
--- failed plans from the same place, remembered on the vehicle (the task is created again after each hand-back)
-function CatchCombinePipeTask:countNoRoute()
-    local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
-    local now = g_time or 0
-    local f = self.vehicle.ad.noRoute
-    if f == nil or MathUtil.vector2Length(vx - f.x, vz - f.z) > CatchCombinePipeTask.CLEAR_BACK_SAME_PLACE or now - f.t > CatchCombinePipeTask.CLEAR_BACK_MEMORY then
-        f = {x = vx, z = vz, count = 0}
-        self.vehicle.ad.noRoute = f
-    end
-    f.count = f.count + 1
-    f.t = now
-    return f
-end
-
-function CatchCombinePipeTask:noteRouteFound()
-    local cb = self.vehicle.ad.clearBack
-    if cb ~= nil and cb.total > 0 and not cb.reported then
-        cb.reported = true
-        print(string.format("[AD-Fin] %s: degagement : trajet trouve apres %.0f m de recul", tostring(self.vehicle:getName()), cb.total))
-    end
-    if cb ~= nil and not cb.over then
-        -- a route: the back-off of this place is finished (a later failure elsewhere starts from 2 failures again)
-        self.vehicle.ad.clearBack = nil
-    end
-    self.vehicle.ad.noRoute = nil
-end
-
--- the back-off of the last places (nil when forgotten)
-function CatchCombinePipeTask:getClearBack()
-    local cb = self.vehicle.ad.clearBack
-    if cb ~= nil and (g_time or 0) - cb.t > CatchCombinePipeTask.CLEAR_BACK_MEMORY then
-        self.vehicle.ad.clearBack = nil
-        return nil
-    end
-    return cb
-end
-
--- the train and its last unit; heading of the last unit (its own axis)
-function CatchCombinePipeTask:getClearBackRear()
-    local units = self:getTrainUnits()
-    local last = units[#units]
-    local dx, _, dz = AutoDrive.localDirectionToWorld(last, 0, 0, 1)
-    local x, y, z = getWorldTranslation(last.components[1].node)
-    return last, x, y, z, dx, dz
-end
-
--- why the train cannot back off from here, nil if it can
-function CatchCombinePipeTask:getClearBackBlock()
-    if ADTrafficYieldModule ~= nil and ADTrafficYieldModule.cannotReverse ~= nil then
-        local articulated = ADTrafficYieldModule.cannotReverse(self.vehicle)
-        if articulated then
-            return "remorque articulee : " .. tostring(ADTrafficYieldModule.describeArticulated(self.vehicle))
-        end
-    end
-    local last, x, _, z, dx, dz = self:getClearBackRear()
-    local back = (last.size ~= nil and last.size.length / 2 or 3) + CatchCombinePipeTask.CLEAR_BACK_REAR_CHECK
-    local half = self.vehicle.ad.pathFinderModule:getTrainWidth() / 2
-    local rx, rz = x - dx * back, z - dz * back
-    for _, side in ipairs({0, -1, 1}) do
-        local px, pz = rx - dz * half * side, rz + dx * half * side
-        if not AutoDrive.checkIsOnField(px, 0, pz) then
-            return string.format("bord du champ a %d m derriere la remorque", CatchCombinePipeTask.CLEAR_BACK_REAR_CHECK)
-        end
-        if PathFinderModule.getMapCropAt(px, pz) ~= 0 then
-            return string.format("culture a %d m derriere la remorque", CatchCombinePipeTask.CLEAR_BACK_REAR_CHECK)
-        end
-    end
-    local cdm = self.vehicle.ad.collisionDetectionModule
-    if cdm ~= nil and cdm.checkReverseCollision ~= nil and cdm:checkReverseCollision() then
-        return "obstacle derriere (capteur)"
-    end
-    return nil
-end
-
--- starts one leg: target far behind on the axis of the last unit
-function CatchCombinePipeTask:startClearBackLeg(cb)
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    local _, lx, ly, lz, dx, dz = self:getClearBackRear()
-    cb.t = g_time or 0
-    self.clearBackStart = {x = x, z = z}
-    self.clearBackLast = {x = x, z = z}
-    self.clearBackTime = 0
-    self.clearBackStuck = 0
-    self.clearBackLeg = 0
-    self.clearBackTarget = {x = lx - dx * 100, y = ly, z = lz - dz * 100}
-    if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-        self.vehicle.ad.pathFinderModule:reset()
-        self.preplanning = false
-    end
-    self.state = CatchCombinePipeTask.STATE_CLEAR_BACK
-end
-
--- no route twice from the same place: first leg of the back-off
-function CatchCombinePipeTask:tryClearBack(noRoute)
-    if noRoute == nil or noRoute.count < CatchCombinePipeTask.CLEAR_BACK_FAILS then
-        return false
-    end
-    local cb = self:getClearBack()
-    if cb ~= nil then
-        -- already backed off from here (used up or stopped): the other fallbacks, then the stop
-        return false
-    end
-    local name = tostring(self.vehicle:getName())
-    local why = self:getClearBackBlock()
-    if why ~= nil then
-        self.vehicle.ad.clearBack = {total = 0, t = g_time or 0, over = true, why = why}
-        print(string.format("[AD-Fin] %s: pas de trajet d'ici %d fois, recul de degagement impossible (%s)", name, noRoute.count, why))
-        return false
-    end
-    cb = {total = 0, t = g_time or 0, over = false}
-    self.vehicle.ad.clearBack = cb
-    print(string.format("[AD-Fin] %s: pas de trajet d'ici %d fois, je recule tout droit dans l'axe de la remorque pour me degager (%d m par %d m, %d m au plus, nouveau calcul apres chaque pas)",
-        name, noRoute.count, CatchCombinePipeTask.CLEAR_BACK_STEP, CatchCombinePipeTask.CLEAR_BACK_STEP, CatchCombinePipeTask.CLEAR_BACK_MAX))
-    self:startClearBackLeg(cb)
-    return true
-end
-
--- back-off going on and still no route after a leg: next leg at once
-function CatchCombinePipeTask:continueClearBack()
-    local cb = self:getClearBack()
-    if cb == nil or cb.over then
-        return false
-    end
-    local why = self:getClearBackBlock()
-    if why ~= nil then
-        cb.over, cb.why = true, why
-        print(string.format("[AD-Fin] %s: toujours pas de trajet apres %.0f m de recul, recul arrete (%s)", tostring(self.vehicle:getName()), cb.total, why))
-        return false
-    end
-    print(string.format("[AD-Fin] %s: toujours pas de trajet apres %.0f m de recul, je recule encore", tostring(self.vehicle:getName()), cb.total))
-    self:startClearBackLeg(cb)
-    return true
-end
-
-function CatchCombinePipeTask:updateClearBack(dt)
-    local cb = self:getClearBack() or {total = 0, t = g_time or 0, over = true}
-    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
-    local leg = MathUtil.vector2Length(x - self.clearBackStart.x, z - self.clearBackStart.z)
-    self.clearBackLeg = leg
-    self.clearBackTime = self.clearBackTime + dt
-    if MathUtil.vector2Length(x - self.clearBackLast.x, z - self.clearBackLast.z) > 0.3 then
-        self.clearBackLast = {x = x, z = z}
-        self.clearBackStuck = 0
-    else
-        self.clearBackStuck = self.clearBackStuck + dt
-    end
-    local total = cb.total + leg
-    local reason, over = nil, false
-    if total >= CatchCombinePipeTask.CLEAR_BACK_MAX - 0.05 then
-        reason, over = string.format("%d m recules, maximum", CatchCombinePipeTask.CLEAR_BACK_MAX), true
-    elseif leg >= CatchCombinePipeTask.CLEAR_BACK_STEP - 0.05 then
-        reason = string.format("pas de %d m fait", CatchCombinePipeTask.CLEAR_BACK_STEP)
-    else
-        local block = self:getClearBackBlock()
-        if block ~= nil then
-            reason, over = block, true
-        elseif self.clearBackStuck > CatchCombinePipeTask.CLEAR_BACK_STUCK_TIME then
-            reason, over = "ne recule plus (obstacle derriere ?)", true
-        elseif self.clearBackTime > CatchCombinePipeTask.CLEAR_BACK_LEG_TIMEOUT then
-            reason, over = "recul trop long", true
-        end
-    end
-    if reason == nil then
-        local sdm = self.vehicle.ad.specialDrivingModule
-        sdm.reverseTarget = self.clearBackTarget
-        sdm:driveReverse(dt, CatchCombinePipeTask.CLEAR_BACK_SPEED, 1, self.vehicle.ad.trailerModule:canBeHandledInReverse())
-        return
-    end
-    cb.total = total
-    cb.t = g_time or 0
-    cb.over = over
-    if over then
-        cb.why = reason
-    end
-    self.clearBackLeg = 0
-    self.vehicle.ad.specialDrivingModule:stopVehicle()
-    self.vehicle.ad.specialDrivingModule:update(dt)
-    local name = tostring(self.vehicle:getName())
-    print(string.format("[AD-Fin] %s: recul de degagement %.1f m (%.1f m en tout) : %s, nouveau calcul", name, leg, total, reason))
-    -- owner 30/10: freed by CLEAR_BACK_LIFT or more, the band turn may be tried again at once
-    if total >= CatchCombinePipeTask.CLEAR_BACK_LIFT - 0.05 and self.vehicle.ad.bandTurnFailed ~= nil then
-        self.vehicle.ad.bandTurnFailed = nil
-        print(string.format("[AD-DemiTour] %s: degage de %.0f m, interdiction du demi-tour de secours levee", name, total))
-    end
-    self.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN
-    self.lastFailure = nil
-    self.waitForCheckTimer.elapsedTime = 4000
-    self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-end
-
--- no route again from the same place and the back-off impossible or used up: stopped until the harvester moves
-function CatchCombinePipeTask:tryNoWayWait(noRoute)
-    local cb = self:getClearBack()
-    if noRoute == nil or noRoute.count < CatchCombinePipeTask.CLEAR_BACK_FAILS or cb == nil or not cb.over then
-        return false
-    end
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    self.noWayWait = {cx = cx, cz = cz, time = 0}
-    cb.t = g_time or 0
-    print(string.format("[AD-Fin] %s: BLOQUE : pas de trajet d'ici (%d fois) et recul de degagement %s (%.0f m recules : %s). Je m'arrete et j'attends que l'ensileuse bouge (%d s au plus) au lieu de recalculer en boucle",
-        tostring(self.vehicle:getName()), noRoute.count, cb.total > 0 and "fini" or "impossible", cb.total, tostring(cb.why), CatchCombinePipeTask.NO_WAY_WAIT / 1000))
-    if self.state == CatchCombinePipeTask.STATE_PATHPLANNING or self.preplanning then
-        self.vehicle.ad.pathFinderModule:reset()
-        self.preplanning = false
-    end
-    self:warnStuckInCrop(noRoute) -- benne bloquee dans la culture : message au joueur (FollowCombineCropGuard.lua)
-    self.state = CatchCombinePipeTask.STATE_NO_WAY_WAIT
-    return true
-end
-
-function CatchCombinePipeTask:updateNoWayWait(dt)
-    self.vehicle.ad.specialDrivingModule:stopVehicle()
-    self.vehicle.ad.specialDrivingModule:update(dt)
-    local w = self.noWayWait
-    w.time = w.time + dt
-    local cx, _, cz = getWorldTranslation(self.combine.components[1].node)
-    local moved = MathUtil.vector2Length(cx - w.cx, cz - w.cz)
-    if moved >= CatchCombinePipeTask.NO_WAY_COMBINE_MOVE or w.time >= CatchCombinePipeTask.NO_WAY_WAIT then
-        print(string.format("[AD-Fin] %s: fin de l'arret (%s), nouveau calcul", tostring(self.vehicle:getName()),
-            moved >= CatchCombinePipeTask.NO_WAY_COMBINE_MOVE and string.format("l'ensileuse a bouge de %.0f m", moved) or string.format("%d s passees", CatchCombinePipeTask.NO_WAY_WAIT / 1000)))
-        local cb = self:getClearBack()
-        if cb ~= nil then
-            cb.t = g_time or 0
-        end
-        self.retryDelay = CatchCombinePipeTask.RETRY_DELAY_MIN
-        self.lastFailure = nil
-        self.waitForCheckTimer.elapsedTime = 4000
-        self.state = CatchCombinePipeTask.STATE_DELAY_PATHPLANNING
-    end
-end
-
 function CatchCombinePipeTask:getExcludedVehiclesForCollisionCheck()
     local excludedVehicles = {}
     if self.state == CatchCombinePipeTask.STATE_DRIVING then
@@ -1709,6 +318,7 @@ function CatchCombinePipeTask:resetAllTimers()
     self.waitForCheckTimer:timer(false)
 end
 
+-- textes d'état : réécrits par FarmPilot (machine nommée, attentes, reculs, demi-tours)
 function CatchCombinePipeTask:getI18nInfo()
     local harvester = AbstractTask.getHarvesterI18n(self.combine)
     if self.state == CatchCombinePipeTask.STATE_PATHPLANNING then

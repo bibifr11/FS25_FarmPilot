@@ -1,10 +1,23 @@
--- owner 25/10 15:12 ("s'ecarter des que l'ensileuse et le 1er reviennent vers lui, comme ca il suit toujours et prend
--- plus vite le relais"): the 2nd unloader follows the 1st on its crumbs (DriveToVehicleTask, FollowVehicleTask). When
--- the forage harvester or the 1st comes toward it (ahead of it on its lane, head-on or from behind), it pulls aside to
--- the free side (forward diagonal), stops, lets them pass, then plans a new route behind the 1st. No room, or they are
--- already too close: it stops where it is and waits. Logs [AD-Suivi]
+-- ============================================================================================================
+-- FarmPilot : StepAsideTask.lua
+-- Tâche : la 2e benne s'écarte pour laisser passer l'ensileuse et la 1re benne, puis reprend le suivi.
+--
+-- (25/10 15:12) La 2e benne suit la 1re sur ses miettes (DriveToVehicleTask, FollowVehicleTask). Elle s'écarte dès
+-- que l'ensileuse ou la 1re revient vers elle : elle reste ainsi dans le suivi et prend le relais plus vite.
+--
+-- Règle : quand l'ensileuse ou la 1re vient vers elle (devant elle sur sa voie, de face ou par derrière), elle se
+-- range du côté libre (diagonale vers l'avant), s'arrête, les laisse passer, puis calcule un nouveau trajet derrière
+-- la 1re. Pas de place, ou ils sont déjà trop près : elle s'arrête où elle est et attend. Log [AD-Suivi].
+--
+-- Branché par : DriveToVehicleTaskFollow.lua et FollowVehicleTask.lua (hook, à chaque image du suivi) ;
+-- CombineUnloaderMode.lua (signalPromotion) ; ChaseDisplay.lua (affiche la place à l'écart).
+-- ============================================================================================================
+
 StepAsideTask = ADInheritsFrom(AbstractTask)
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 StepAsideTask.DETECT_DISTANCE = 100     -- m: a mover further away is no threat yet
 StepAsideTask.MIN_SPEED = 1.5           -- km/h: a standing mover is no threat
 StepAsideTask.LANE_MARGIN = 2           -- m beside the mover's track still counted as its lane
@@ -31,6 +44,9 @@ StepAsideTask.MAX_MOVES = 2             -- steps aside in one episode
 StepAsideTask.STATE_MOVING = 1
 StepAsideTask.STATE_WAITING = 2
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Outils
+-- ------------------------------------------------------------------------------------------------------------
 local function logName(vehicle)
     return vehicle ~= nil and vehicle.getName ~= nil and tostring(vehicle:getName()) or "?"
 end
@@ -40,6 +56,9 @@ local function cross(ax, az, bx, bz)
     return ax * bz - az * bx
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Création
+-- ------------------------------------------------------------------------------------------------------------
 function StepAsideTask:new(vehicle, targetUnloader, info)
     local o = StepAsideTask:create()
     o.vehicle = vehicle
@@ -65,8 +84,9 @@ function StepAsideTask:setUp()
     end
 end
 
--- ---------------------------------------------------------------- detection (static, used by the follow tasks)
-
+-- ------------------------------------------------------------------------------------------------------------
+-- Détection (fonctions statiques, utilisées par les tâches de suivi)
+-- ------------------------------------------------------------------------------------------------------------
 -- the vehicles that may come toward the follower: the harvester of the 1st (forage harvester) and the 1st itself
 function StepAsideTask.getMovers(targetUnloader)
     local movers = {}
@@ -187,6 +207,9 @@ function StepAsideTask.check(vehicle, targetUnloader)
     return best
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Branchement dans les tâches de suivi
+-- ------------------------------------------------------------------------------------------------------------
 -- called each frame by the follow tasks (DriveToVehicleTask, FollowVehicleTask): when a mover comes, the task is
 -- replaced by a StepAsideTask and true is returned (the caller returns at once)
 function StepAsideTask.hook(vehicle, targetUnloader, dt)
@@ -207,8 +230,9 @@ function StepAsideTask.hook(vehicle, targetUnloader, dt)
     return true
 end
 
--- ---------------------------------------------------------------- the step aside
-
+-- ------------------------------------------------------------------------------------------------------------
+-- La place à l'écart
+-- ------------------------------------------------------------------------------------------------------------
 -- smallest step S (m) on the side (sx, sz) that takes the tractor out of every lane, the point being
 -- P = V + f * F + side * S (F m ahead along the heading, S m aside). The lateral offset to a lane is linear in S:
 -- a + b * S, forbidden while |a + b S| < needed. nil: no step on this side (runs along a lane, too far, crosses a close lane)
@@ -342,6 +366,9 @@ function StepAsideTask:planAside(info)
     return false
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- S'écarter, puis attendre qu'ils passent
+-- ------------------------------------------------------------------------------------------------------------
 function StepAsideTask:startWaiting()
     self.state = StepAsideTask.STATE_WAITING
     self.waitTime = 0
@@ -451,6 +478,9 @@ function StepAsideTask:resume(why)
     self.vehicle.ad.taskModule:setCurrentTaskFinished(ADTaskModule.DONT_PROPAGATE)
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fonction principale
+-- ------------------------------------------------------------------------------------------------------------
 function StepAsideTask:update(dt)
     if self.targetUnloader == nil or self.targetUnloader.components == nil or g_currentMission.nodeToObject[self.targetUnloader.components[1].node] == nil then
         self:finished()
@@ -479,14 +509,21 @@ function StepAsideTask:signalPromotion()
     self.promoted = true
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- Fin de la tâche, textes
+-- ------------------------------------------------------------------------------------------------------------
 function StepAsideTask:abort()
-    if self.targetUnloader ~= nil and self.targetUnloader.ad ~= nil and self.targetUnloader.ad.modes ~= nil then
+    -- (09/11) garde : la benne visée peut ne plus avoir de mode déchargement
+    if self.targetUnloader ~= nil and self.targetUnloader.ad ~= nil and self.targetUnloader.ad.modes ~= nil
+        and self.targetUnloader.ad.modes[AutoDrive.MODE_UNLOAD] ~= nil then
         self.targetUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:unregisterFollowingUnloader()
     end
 end
 
 function StepAsideTask:finished(propagate)
-    if self.targetUnloader ~= nil and self.targetUnloader.ad ~= nil and self.targetUnloader.ad.modes ~= nil then
+    -- (09/11) garde : la benne visée peut ne plus avoir de mode déchargement
+    if self.targetUnloader ~= nil and self.targetUnloader.ad ~= nil and self.targetUnloader.ad.modes ~= nil
+        and self.targetUnloader.ad.modes[AutoDrive.MODE_UNLOAD] ~= nil then
         self.targetUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:unregisterFollowingUnloader()
     end
     self.vehicle.ad.taskModule:setCurrentTaskFinished(propagate)

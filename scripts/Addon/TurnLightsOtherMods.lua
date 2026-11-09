@@ -3,10 +3,10 @@
 -- Complément de TurnLights.lua : les autres mods qui éteignent le clignotant restent sans effet pendant que
 -- FarmPilot conduit.
 --
--- Demande Fabien 08/11 18:40 : « souvent c'est écrit interrompu par un autre script, trouvons le script pour le
--- désactiver quand nous sommes là ».
+-- (08/11) Souvent affiché : interrompu par un autre script. Trouver ce script pour le désactiver pendant que
+-- FarmPilot conduit.
 --
--- Script trouvé dans les mods de Fabien : FS25_autoTurnOffTurnLights (Ifko[nator]), spécialisation
+-- Script trouvé dans les mods installés : FS25_autoTurnOffTurnLights (Ifko[nator]), spécialisation
 -- « autoTurnOffTurnLights ». Son onUpdate éteint le clignotant dès que le volant revient vers le centre après
 -- avoir tourné du côté du clignotant. Avec FarmPilot au volant, le moindre coup de volant avant le virage
 -- suffit à l'éteindre (log « clignotant eteint par un autre script »), FarmPilot le rallume, d'où un clignotant

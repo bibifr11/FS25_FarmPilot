@@ -143,6 +143,8 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fpNextField", "FarmPilot Autonome: next field")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpTool", "FarmPilot Autonome: tool to attach (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpNextTool", "FarmPilot Autonome: tool for the next field (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpTrailer", "FarmPilot: trailer to attach in the modes with a trailer (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSwapFolder", "FarmPilot: folder of the places for the trailer swap")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#selectedFillTypes", "selectedFillTypes")
     schemaSavegame:register(XMLValueType.BOOL, "vehicles.vehicle(?).AutoDrive#loadByFillLevel", "loadByFillLevel")
@@ -1368,6 +1370,8 @@ function AutoDrive:stopAutoDrive()
                 end
             end
             if ADSprayerDump ~= nil then ADSprayerDump.afterStop(self) end -- épandeur : après la vidange, champ suivant / parking, voir AutonomousSprayerDump.lua
+            if ADBaleCollect ~= nil then ADBaleCollect.afterStop(self) end -- remorque à balles : champ ramassé, champ suivant / parking, voir AutonomousBales.lua
+            if ADTrailerHitch ~= nil then ADTrailerHitch.afterStop(self) end -- remorque choisie : à sa place, puis le tracteur, voir TrailerHitch.lua
         end
     else
         Logging.devError("AutoDrive:stopAutoDrive() must be called only on the server.")

@@ -1,25 +1,32 @@
--------------------------------------------------------------------------------
--- FarmPilot - mode Autonome : épandeurs et pulvérisateurs, traînés ou automoteurs
---   Engrais, chaux, fumier, lisier, digestat, phyto : même roue dentée que le semoir, à gauche de la ligne
---   « Outil » (ou « Outil suivant »). Elle ouvre la fenêtre « Réglages de l'épandeur » : produit à charger (ce
---   que la cuve accepte), quantité (« Plein » ou « Juste ce qu'il faut pour le champ ») et zone de ravitaillement
---   (un marqueur de la carte). Choix retenu par champ (marqueur de la ligne « Champ ») et par machine (modèle).
---   Tant que ce n'est pas validé, le départ est refusé (roue dentée orange, verte une fois validé).
---   Le plein passe par le même chemin que le semoir (AutonomousMode:startRefill, LoadAtDestinationTask) : au départ
---   si la cuve n'a pas ce qu'il faut, et quand Courseplay s'arrête cuve vide (sortie du champ, plein, retour,
---   Courseplay repart au dernier point). Automoteur : la machine elle-même est l'« outil ».
+-- ============================================================================================================
+-- FarmPilot : SprayerManager.lua
+-- Mode Autonome : épandeurs et pulvérisateurs, traînés ou automoteurs (engrais, chaux, fumier, lisier, digestat,
+-- phyto).
 --
--- Demande de Fabien (08/11, 14:05) : « pour les épandeurs automoteurs ou classiques : * Retourner vider le trop à
---   la fin du champ (si pas de suivant ou si pas de changement de produit) * Choisir le produit et la quantité à
---   prendre »
--- Demande de Fabien (08/11, 20:39) : « L'automoteur comme le pulvé, ils doivent être fonctionnels sur Autonome »
+-- Règle (08/11) :
+-- - Même roue dentée que le semoir, à gauche de la ligne « Outil » (ou « Outil suivant »). Elle ouvre la fenêtre
+--   « Réglages de l'épandeur » (SprayerSettingsGUI.lua) : produit à charger (ce que la cuve accepte), quantité
+--   (« Plein » ou « Juste ce qu'il faut pour le champ ») et zone de ravitaillement (un marqueur de la carte). Choix
+--   retenu par champ (marqueur de la ligne « Champ ») et par machine (modèle).
+-- - Tant que ce n'est pas validé, le départ est refusé (roue dentée orange, verte une fois validé). Une cuve qui
+--   contient un autre produit que celui choisi refuse aussi le départ, avec un message.
+-- - Pas de système à part : le plein passe par le même chemin que le semoir (AutonomousMode:startRefill /
+--   monitorRefill / handleRefillStage, LoadAtDestinationTask) : au départ si la cuve n'a pas ce qu'il faut, et quand
+--   Courseplay s'arrête cuve vide (sortie du champ, plein, retour, Courseplay repart au dernier point). Ce fichier ne
+--   fait que le réglage, le plan de plein et l'arrêt du chargement à la quantité voulue.
+-- - Automoteur : la machine elle-même est l'« outil », comme l'épandeur traîné.
+-- - Le reste de la cuve en fin de champ (vidé en big bags / IBC ou gardé) : AutonomousSprayerDump.lua.
 --
--- Règle : pas de système à part. Mêmes étapes de plein que le semoir (startRefill / monitorRefill /
---   handleRefillStage) ; ce fichier ne fait que le réglage, le plan de plein et l'arrêt du chargement à la quantité
---   voulue. « Vider le trop » : pas fait ici (question posée à Fabien) ; une cuve qui contient un autre produit
---   que celui choisi refuse le départ avec un message.
--------------------------------------------------------------------------------
+-- Branché par une ligne dans : AutonomousMode.lua (start : refuseStart et preparePlan ; monitorTasks :
+-- monitorTarget ; onCpEmpty : preparePlan), HudButton.lua (hudGear), AutoDrive.lua (saveToXml). Lu aussi par
+-- SprayerSettingsGUI.lua et AutonomousSprayerDump.lua.
+-- ============================================================================================================
+
 ADSprayerManager = {}
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Réglages
+-- ------------------------------------------------------------------------------------------------------------
 ADSprayerManager.FILE_NAME = "FarmPilot_Epandeurs.xml"
 ADSprayerManager.settings = {}   -- [nom du champ .. "|" .. clé de la machine] = { field, tool, toolName, fillType, quantity, refill, stamp }
 ADSprayerManager.loaded = false
@@ -35,9 +42,9 @@ local function log(fmt, ...)
 end
 ADSprayerManager.log = log
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Quelle machine
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- cuve de pulvérisation / d'épandage de l'outil (nil si l'outil n'en a pas, ex. injecteur seul d'une tonne)
 function ADSprayerManager.fillUnit(tool)
     if tool == nil or tool.spec_sprayer == nil then
@@ -137,9 +144,9 @@ function ADSprayerManager.context(vehicle, isNext)
     return { tool = tool, toolKey = ADSeederManager.toolKey(tool), field = marker.name, marker = marker, vehicle = vehicle }
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Produits que la cuve accepte
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- { {index, name, title} } triés par nom (mêmes exclusions que le semoir : carburants, air, inconnu)
 function ADSprayerManager.productChoices(tool)
     local out = {}
@@ -186,9 +193,9 @@ function ADSprayerManager.content(tool)
     return level, ft, cap
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Quantité : dose réelle (Sprayer.lua) x surface du champ
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Sprayer:getSprayerUsage : scale x litersPerSecond x speedLimit x largeur d'usage x dt x 0,001 (L par image, en
 -- continu tant que l'outil est en marche). À la vitesse de travail v (km/h) et largeur réelle W (m), l'outil couvre
 -- W x v / 3,6 m²/s, d'où L/ha = 36000 x scale x litersPerSecond x (speedLimit / v) x (largeur d'usage / W).
@@ -375,9 +382,9 @@ function ADSprayerManager.estimate(vehicle, tool, fillTypeIndex, marker, share)
     return { liters = liters, lha = lha, area = area, share = share }
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Mémoire champ + machine
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 function ADSprayerManager:get(field, toolKey)
     self:loadFromXml()
     return self.settings[ADSeederManager.key(field, toolKey)]
@@ -462,9 +469,9 @@ function ADSprayerManager.startBlock(vehicle)
     return nil
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Départ (hook AutonomousMode:start) : refusé tant que ce n'est pas validé
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 local function refuse(vehicle, key, ...)
     AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 12000, key, ...)
     if vehicle.ad.stateModule:isActive() then
@@ -480,7 +487,8 @@ function ADSprayerManager.checkStart(vehicle)
         log("%s : départ refusé, réglages de « %s » à valider pour « %s »", name, tostring(block.label), tostring(block.field))
         return refuse(vehicle, "AD_autonomous_sprayerTodo", tostring(block.label), tostring(block.field))
     end
-    -- cuve avec un autre produit que celui choisi : le chargement n'irait pas (et « vider le trop » n'est pas fait)
+    -- cuve avec un autre produit que celui choisi : le chargement n'irait pas (le reste n'est vidé qu'en fin de champ
+    -- ou au bouton parking, voir AutonomousSprayerDump.lua)
     local ctx = ADSprayerManager.context(vehicle, false)
     if ctx ~= nil and ADSprayerManager.isAttached(ctx.tool, vehicle) then
         local s = ADSprayerManager:get(ctx.field, ctx.toolKey)
@@ -505,9 +513,9 @@ function ADSprayerManager.refuseStart(mode)
     return refused == true
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Plan de plein (hooks AutonomousMode:start et onCpEmpty), même forme que celui du semoir
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Courseplay : cuve vide = il s'arrête et le signale (FarmPilot va remplir), au lieu d'attendre sur place
 function ADSprayerManager.applyCpSettings(vehicle)
     if vehicle.getCpSettings == nil then
@@ -594,9 +602,9 @@ function ADSprayerManager.preparePlan(vehicle, after)
     return plan
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Arrêt du chargement à la quantité voulue (hook AutonomousMode:monitorTasks)
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Le LoadTrigger du jeu charge jusqu'à cuve pleine (pas de quantité). On le coupe nous-mêmes : setIsLoading(false)
 -- (station, silo, fosse) ou setFillUnitIsFilling(false) (big bag, cuve IBC, citerne) ; puis l'étape de plein est
 -- finie tout de suite, sinon AutoDrive relancerait le chargement (cuve pas pleine).
@@ -642,9 +650,9 @@ function ADSprayerManager.monitorTarget(mode, dt)
     return true
 end
 
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 -- Sauvegarde (FarmPilot_Epandeurs.xml dans la sauvegarde)
--- ------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------
 local function savegameFile()
     if g_currentMission == nil or g_currentMission.missionInfo == nil then
         return nil

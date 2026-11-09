@@ -225,7 +225,7 @@ function ADSpecialDrivingModule:driveToPoint(dt, point, maxFollowSpeed, checkDyn
     elseif self.distanceToChasePos < 20 then
         speed = maxFollowSpeed + self.distanceToChasePos * 2
     end
-    -- owner 24/10 18:38: the speed above ignores maxSpeed for a point closer than 20 m (asked 7 km/h, drove 21 and
+    -- 24/10 18:38: the speed above ignores maxSpeed for a point closer than 20 m (asked 7 km/h, drove 21 and
     -- went ahead of the harvester): capped when asked
     if capToMaxSpeed then
         speed = math.min(speed, maxSpeed)

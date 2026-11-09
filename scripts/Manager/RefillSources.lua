@@ -3,9 +3,9 @@
 -- Fenêtres « Réglages du semoir » et « Réglages de l'épandeur » : la liste des zones de ravitaillement ne montre
 -- que les marqueurs où l'on peut prendre le produit choisi.
 --
--- Demande Fabien 08/11 21:24 : « Les points de sélection dans le menu pour remplir doivent soit être sauvegardés
--- par outil, soit cherchés avant de proposer les points où il peut prendre le matériau demandé. À toi de voir le
--- plus facile à mettre en place. »
+-- (08/11) Les points de remplissage proposés dans le menu : soit sauvegardés par outil, soit cherchés avant d'être
+-- proposés, pour ne montrer que ceux où l'outil peut prendre le produit demandé. Choix retenu : la recherche
+-- (voir la règle ci-dessous).
 --
 -- Règle :
 -- - Sources du produit : zones de chargement du jeu (stations, silos, magasins, stockages qui le fournissent et

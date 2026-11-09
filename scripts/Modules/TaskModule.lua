@@ -95,7 +95,7 @@ function ADTaskModule:update(dt)
         local taskInfo = self.activeTask:getI18nInfo()
         self.activeTask:update(dt)
         self.vehicle.ad.stateModule:getCurrentMode():monitorTasks(dt)
-        -- owner 28/10 18:28: while it waits (two-way track, red points, queue) or manoeuvres for another vehicle, the HUD says
+        -- 28/10 18:28: while it waits (two-way track, red points, queue) or manoeuvres for another vehicle, the HUD says
         -- what for and for whom instead of the text of the task
         if ADTrafficYieldModule ~= nil and ADTrafficYieldModule.getWaitInfo ~= nil then
             local ok, waitInfo = pcall(ADTrafficYieldModule.getWaitInfo, self.vehicle)

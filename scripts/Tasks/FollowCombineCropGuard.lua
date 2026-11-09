@@ -3,7 +3,7 @@
 -- Complément de FollowCombineTask et CatchCombinePipeTask (benne qui suit une moissonneuse) : ne pas entrer dans la
 -- culture debout, et prévenir le joueur quand la benne y est quand même bloquée.
 --
--- Demande Fabien 08/11 19:52 (photo) : le 7R 350 (benne qui suit la LEXION 6900) est arrêté au milieu du blé debout,
+-- (08/11) Le 7R 350 (benne qui suit la LEXION 6900) est arrêté au milieu du blé debout,
 -- message du jeu « Veuillez mettre le moteur en marche d'abord. », barre Courseplay visible.
 --
 -- Règle :

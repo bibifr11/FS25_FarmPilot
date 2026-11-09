@@ -204,6 +204,8 @@ function ADHudButton:getNewState(vehicle)
         local okS, status = pcall(ADSeederManager.status, vehicle, self.fpNext == true)
         status = okS and status or "none"
         if ADSprayerManager ~= nil then status, self.toolTip = ADSprayerManager.hudGear(vehicle, self.fpNext == true, status) end -- épandeur / pulvé : même roue dentée, voir SprayerManager.lua
+        if ADBaleLoaderManager ~= nil then status, self.toolTip = ADBaleLoaderManager.hudGear(vehicle, self.fpNext == true, status, self.toolTip) end -- remorque à balles : même roue dentée, voir BaleLoaderManager.lua
+        if self.fpTrailer and ADTrailerSwap ~= nil then status, self.toolTip = ADTrailerSwap.hudGear(vehicle) end -- ligne « Remorque » : échange de bennes, voir TrailerSwap.lua
         self.isVisible = status ~= "none"
         newState = status == "ok" and 2 or 1
     end
@@ -295,6 +297,7 @@ function ADHudButton:act(vehicle, posX, posY, isDown, isUp, button)
 
         if self.primaryAction == "input_fpSeederSettings" then
             -- (08/11) fenêtre « Réglages du semoir » pour la ligne de cette roue dentée
+            if self.fpTrailer and ADTrailerSwap ~= nil then return ADTrailerSwap.onGear(vehicle, button, isDown, isUp) end -- ligne « Remorque » : fenêtre « Échange de bennes », voir TrailerSwap.lua
             if button == 1 and isUp then
                 AutoDrive.onOpenSeederSettings(vehicle, self.fpNext == true)
                 return true

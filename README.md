@@ -8,7 +8,9 @@
 
 **FarmPilot est un mod autonome : il fait tourner la ferme tout seul.** Vous dites quel champ travailler, avec quel outil et quel champ ensuite, et FarmPilot enchaîne : il va chercher l'outil, l'attelle, roule jusqu'au champ, travaille, refait le plein, revient, range l'outil à sa place et passe au champ suivant. Vous gérez la ferme, il fait le travail.
 
-FarmPilot est basé sur **AutoDrive 3.0.1.4** de Stephan Schlosser et de l'équipe AutoDrive (licence MIT, voir [LICENSE](LICENSE) et [credits.txt](credits.txt)). Merci à toute l'équipe AutoDrive.
+FarmPilot est basé sur **AutoDrive 3.0.1.4** de Stephan Schlosser et de l'équipe AutoDrive (licence MIT, avis d'origine dans [LICENSE-AutoDrive-MIT.txt](LICENSE-AutoDrive-MIT.txt)). Merci à toute l'équipe AutoDrive.
+
+FarmPilot est publié sous licence **GNU GPL v3** (voir [LICENSE](LICENSE)). Fichiers modifiés et ajoutés par rapport à AutoDrive : [CHANGES.md](CHANGES.md). Licences et crédits : [NOTICE.md](NOTICE.md), [credits.txt](credits.txt).
 
 ### Mode Autonome : la ferme qui travaille seule
 - **Du hangar au champ, sans vous** : il va chercher l'outil choisi (marche arrière, attelage, flexibles et prise de force), roule jusqu'au champ et lance le parcours Courseplay du champ à la bonne largeur.
@@ -58,7 +60,9 @@ Les mods qui déclarent AutoDrive comme mod requis (par exemple certains carrefo
 
 **FarmPilot is an autonomous mod: it runs the farm on its own.** Tell it which field to work, with which tool and which field comes next, and FarmPilot chains it all: it fetches the tool, hitches it, drives to the field, works it, refills, comes back, parks the tool at its spot and moves on to the next field. You manage the farm, it does the work.
 
-FarmPilot is based on **AutoDrive 3.0.1.4** by Stephan Schlosser and the AutoDrive team (MIT licence, see [LICENSE](LICENSE) and [credits.txt](credits.txt)). Many thanks to the whole AutoDrive team.
+FarmPilot is based on **AutoDrive 3.0.1.4** by Stephan Schlosser and the AutoDrive team (MIT licence, original notice in [LICENSE-AutoDrive-MIT.txt](LICENSE-AutoDrive-MIT.txt)). Many thanks to the whole AutoDrive team.
+
+FarmPilot is released under the **GNU GPL v3** (see [LICENSE](LICENSE)). Files changed and added compared with AutoDrive: [CHANGES.md](CHANGES.md). Licences and credits: [NOTICE.md](NOTICE.md), [credits.txt](credits.txt).
 
 ### Autonomous mode: a farm that works by itself
 - **From the shed to the field, without you**: fetches the chosen tool (reversing, hitching, hoses and PTO), drives to the field and starts the field's Courseplay course at the right width.

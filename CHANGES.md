@@ -1,0 +1,259 @@
+# FarmPilot: changes from AutoDrive 3.0.1.4
+
+FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan-S/FS25_AutoDrive, release commit 93cff22, MIT licence, Copyright (c) 2024 Stephan Schlosser).
+Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
+The full history of each change is in the git log of this repository and in CHANGELOG.md.
+
+Summary (FarmPilot V1.0.2.0): 87 files modified, 153 files added, 3 files removed.
+
+## Modified files (lines added / removed)
+
+- README.md (+63 / -38)
+- credits.txt (+8 / -0)
+- gui/colorSettingsGUI.xml (+3 / -3)
+- gui/debugSettingsPage.xml (+6 / -0)
+- gui/enterDestinationFilterGUI.xml (+3 / -3)
+- gui/enterDriverNameGUI.xml (+3 / -3)
+- gui/enterGroupNameGUI.xml (+3 / -3)
+- gui/enterTargetNameGUI.xml (+3 / -3)
+- gui/globalSettingsPage.xml (+66 / -0)
+- gui/guiProfiles.xml (+13 / -0)
+- gui/notificationsHistoryGUI.xml (+3 / -3)
+- gui/routesManagerGUI.xml (+3 / -3)
+- gui/scanConfirmationGUI.xml (+3 / -3)
+- gui/vehicleSettingsPage.xml (+19 / -7)
+- modDesc.xml (+92 / -36)
+- register.lua (+296 / -12)
+- scripts/AutoDrive.lua (+56 / -2)
+- scripts/Events/HudInputEvent.lua (+12 / -0)
+- scripts/ExternalInterface.lua (+49 / -0)
+- scripts/Gui.lua (+33 / -0)
+- scripts/Hud.lua (+142 / -30)
+- scripts/Hud/HudButton.lua (+41 / -0)
+- scripts/Hud/HudIcon.lua (+120 / -9)
+- scripts/Hud/PullDownList.lua (+160 / -10)
+- scripts/Manager/GraphManager.lua (+106 / -8)
+- scripts/Manager/HarvestManager.lua (+40 / -16)
+- scripts/Manager/InputManager.lua (+20 / -2)
+- scripts/Manager/RoutesManager.lua (+1 / -1)
+- scripts/Manager/Scheduler.lua (+25 / -0)
+- scripts/Modes/CombineUnloaderMode.lua (+88 / -68)
+- scripts/Modes/LoadMode.lua (+3 / -0)
+- scripts/Modes/PickupAndDeliverMode.lua (+3 / -0)
+- scripts/Modes/UnloadAtMode.lua (+3 / -0)
+- scripts/Modules/CollisionDetectionModule.lua (+3 / -0)
+- scripts/Modules/DrivePathModule.lua (+66 / -33)
+- scripts/Modules/PathFinderModule.lua (+202 / -114)
+- scripts/Modules/SpecialDrivingModule.lua (+6 / -6)
+- scripts/Modules/StateModule.lua (+58 / -78)
+- scripts/Modules/TaskModule.lua (+76 / -1)
+- scripts/Modules/TrailerModule.lua (+0 / -8)
+- scripts/PathCalculation.lua (+27 / -8)
+- scripts/Settings.lua (+142 / -5)
+- scripts/Specialization.lua (+129 / -33)
+- scripts/Sync.lua (+1 / -1)
+- scripts/Tasks/AbstractTask.lua (+26 / -0)
+- scripts/Tasks/CatchCombinePipeTask.lua (+107 / -12)
+- scripts/Tasks/DriveToDestinationTask.lua (+10 / -2)
+- scripts/Tasks/DriveToVehicleTask.lua (+26 / -56)
+- scripts/Tasks/EmptyHarvesterTask.lua (+6 / -3)
+- scripts/Tasks/ExitFieldTask.lua (+27 / -67)
+- scripts/Tasks/FollowCombineTask.lua (+96 / -45)
+- scripts/Tasks/FollowVehicleTask.lua (+16 / -1)
+- scripts/Tasks/HandleHarvesterTurnTask.lua (+59 / -20)
+- scripts/Tasks/LoadAtDestinationTask.lua (+1 / -2)
+- scripts/Tasks/ParkTask.lua (+2 / -2)
+- scripts/Tasks/RefuelTask.lua (+1 / -2)
+- scripts/Tasks/RepairTask.lua (+1 / -2)
+- scripts/Tasks/Turns/ForwardOffsetTurn.lua (+5 / -2)
+- scripts/Tasks/UnloadAtDestinationTask.lua (+10 / -3)
+- scripts/Tasks/UnloadBGATask.lua (+0 / -47)
+- scripts/Tasks/WaitForCallTask.lua (+13 / -2)
+- scripts/Utils/AutoDriveUtilFuncs.lua (+26 / -20)
+- scripts/Utils/AutoDriveVehicleData.lua (+15 / -3)
+- scripts/Utils/CombineUtil.lua (+44 / -0)
+- scripts/Utils/TrailerUtil.lua (+0 / -40)
+- scripts/Utils/UtilFuncs.lua (+0 / -18)
+- scripts/XML.lua (+43 / -12)
+- textures/ad_gui.dds (binary, replaced)
+- textures/ad_gui.xml (+7 / -0)
+- translations/translation_br.xml (+477 / -82)
+- translations/translation_cs.xml (+478 / -83)
+- translations/translation_ct.xml (+478 / -83)
+- translations/translation_cz.xml (+477 / -82)
+- translations/translation_da.xml (+478 / -83)
+- translations/translation_de.xml (+478 / -83)
+- translations/translation_ea.xml (+479 / -84)
+- translations/translation_en.xml (+478 / -83)
+- translations/translation_es.xml (+479 / -84)
+- translations/translation_fr.xml (+531 / -136)
+- translations/translation_hu.xml (+478 / -83)
+- translations/translation_it.xml (+470 / -75)
+- translations/translation_nl.xml (+478 / -83)
+- translations/translation_pl.xml (+477 / -82)
+- translations/translation_pt.xml (+478 / -83)
+- translations/translation_ru.xml (+479 / -84)
+- translations/translation_tr.xml (+573 / -178)
+- translations/translation_uk.xml (+479 / -84)
+
+## New files (written for FarmPilot)
+
+- CHANGELOG.md
+- gui/autonomousCoursesGUI.xml
+- gui/baleLoaderSettingsGUI.xml
+- gui/helpLine.xml
+- gui/seederSettingsGUI.xml
+- gui/sprayerSettingsGUI.xml
+- gui/trailerSwapGUI.xml
+- help/fp_help_autonome_hud.dds
+- hud/corner_bl.dds
+- hud/corner_br.dds
+- hud/corner_tl.dds
+- hud/corner_tr.dds
+- icon_FarmPilot.dds
+- scripts/Addon/AutoDriveAddon.lua
+- scripts/Addon/EngineStop.lua
+- scripts/Addon/LightsOff.lua
+- scripts/Addon/RearTool.lua
+- scripts/Addon/SiloEmpty.lua
+- scripts/Addon/TurnLights.lua
+- scripts/Addon/TurnLightsBends.lua
+- scripts/Addon/TurnLightsOtherMods.lua
+- scripts/Addon/Weighing.lua
+- scripts/Events/AutonomousToolEvent.lua
+- scripts/Events/TrailerSwapEvent.lua
+- scripts/Gui/AutonomousCoursesGUI.lua
+- scripts/Gui/BaleLoaderSettingsGUI.lua
+- scripts/Gui/SeederSettingsGUI.lua
+- scripts/Gui/SprayerSettingsGUI.lua
+- scripts/Gui/TrailerSwapGUI.lua
+- scripts/Manager/AutonomousManager.lua
+- scripts/Manager/AutonomousManagerCourses.lua
+- scripts/Manager/AutonomousManagerFields.lua
+- scripts/Manager/AutonomousManagerFront.lua
+- scripts/Manager/AutonomousManagerTools.lua
+- scripts/Manager/BaleLoaderManager.lua
+- scripts/Manager/BalerManager.lua
+- scripts/Manager/ChaseDisplay.lua
+- scripts/Manager/DirtRoadManager.lua
+- scripts/Manager/HarvestManagerChopperJob.lua
+- scripts/Manager/HarvestManagerQueue.lua
+- scripts/Manager/RefillSources.lua
+- scripts/Manager/SeederManager.lua
+- scripts/Manager/SprayerManager.lua
+- scripts/Modes/AutonomousBales.lua
+- scripts/Modes/AutonomousFront.lua
+- scripts/Modes/AutonomousFuel.lua
+- scripts/Modes/AutonomousMode.lua
+- scripts/Modes/AutonomousParkButton.lua
+- scripts/Modes/AutonomousRefill.lua
+- scripts/Modes/AutonomousSprayerDump.lua
+- scripts/Modes/CombineUnloaderModeBlocked.lua
+- scripts/Modes/CombineUnloaderModeChopperChase.lua
+- scripts/Modes/CombineUnloaderModeCourseplay.lua
+- scripts/Modes/CombineUnloaderModeFillNode.lua
+- scripts/Modes/CombineUnloaderModeJobDone.lua
+- scripts/Modes/CombineUnloaderModeQueue.lua
+- scripts/Modes/CombineUnloaderModeTracks.lua
+- scripts/Modes/TrailerHitch.lua
+- scripts/Modes/TrailerSwap.lua
+- scripts/Modules/ApproachModule.lua
+- scripts/Modules/AvoidModule.lua
+- scripts/Modules/BandRouteModule.lua
+- scripts/Modules/BandTourModule.lua
+- scripts/Modules/BandTurnModule.lua
+- scripts/Modules/BandTurnModuleChopperSearch.lua
+- scripts/Modules/BandTurnModuleDrive.lua
+- scripts/Modules/CornerModule.lua
+- scripts/Modules/CornerModuleBends.lua
+- scripts/Modules/CornerModuleEndManoeuvre.lua
+- scripts/Modules/CornerModuleEndRoute.lua
+- scripts/Modules/DrivePathModuleCurveSpeed.lua
+- scripts/Modules/DrivePathModuleObstacles.lua
+- scripts/Modules/DrivePathModuleStuck.lua
+- scripts/Modules/FieldParkModule.lua
+- scripts/Modules/FieldParkModuleEntrance.lua
+- scripts/Modules/FieldParkModuleHarvester.lua
+- scripts/Modules/FieldParkModuleMemo.lua
+- scripts/Modules/FieldParkModulePath.lua
+- scripts/Modules/FieldParkModuleSearch.lua
+- scripts/Modules/IntersectionHold.lua
+- scripts/Modules/IntersectionModule.lua
+- scripts/Modules/IntersectionModuleTraffic.lua
+- scripts/Modules/IntersectionModuleZone.lua
+- scripts/Modules/ObstacleDetourEscape.lua
+- scripts/Modules/ObstacleDetourModule.lua
+- scripts/Modules/ObstacleDetourQueue.lua
+- scripts/Modules/PathFinderModuleBand.lua
+- scripts/Modules/PathFinderModuleCorners.lua
+- scripts/Modules/PathFinderModuleCrop.lua
+- scripts/Modules/PathFinderModuleCropMap.lua
+- scripts/Modules/PathFinderModuleEdge.lua
+- scripts/Modules/PathFinderModuleField.lua
+- scripts/Modules/PathFinderModuleFieldScan.lua
+- scripts/Modules/PathFinderModuleGrid.lua
+- scripts/Modules/PathFinderModuleGuided.lua
+- scripts/Modules/PathFinderModuleLog.lua
+- scripts/Modules/PathFinderModuleObstacles.lua
+- scripts/Modules/PathFinderModulePark.lua
+- scripts/Modules/PathFinderModulePartial.lua
+- scripts/Modules/PathFinderModuleRear.lua
+- scripts/Modules/PathFinderModuleVerify.lua
+- scripts/Modules/StateModuleAutonomous.lua
+- scripts/Modules/StateModuleFront.lua
+- scripts/Modules/StateModuleTrailer.lua
+- scripts/Modules/TrafficYieldModule.lua
+- scripts/Modules/TrafficYieldModuleAnticipation.lua
+- scripts/Modules/TrafficYieldModuleApproach.lua
+- scripts/Modules/TrafficYieldModuleDeadlock.lua
+- scripts/Modules/TrafficYieldModuleDetour.lua
+- scripts/Modules/TrafficYieldModuleEarlyPlan.lua
+- scripts/Modules/TrafficYieldModuleObstacles.lua
+- scripts/Modules/TrafficYieldModuleParker.lua
+- scripts/Modules/TrafficYieldModuleReverser.lua
+- scripts/Modules/TrafficYieldModuleRoute.lua
+- scripts/Modules/TrafficYieldModuleSingleTrack.lua
+- scripts/Modules/TrafficYieldModuleSpot.lua
+- scripts/Modules/TrafficYieldModuleTrain.lua
+- scripts/PathCalculationShift.lua
+- scripts/PathCalculationWidth.lua
+- scripts/Tasks/BaleCollectTask.lua
+- scripts/Tasks/CatchCombinePipeTaskChopperRoute.lua
+- scripts/Tasks/CatchCombinePipeTaskChopperUTurn.lua
+- scripts/Tasks/CatchCombinePipeTaskClear.lua
+- scripts/Tasks/CatchCombinePipeTaskHandover.lua
+- scripts/Tasks/DetachToolTask.lua
+- scripts/Tasks/DriveToDestinationTaskArrival.lua
+- scripts/Tasks/DriveToDestinationTaskFieldEntrance.lua
+- scripts/Tasks/DriveToVehicleTaskFieldPark.lua
+- scripts/Tasks/DriveToVehicleTaskFollow.lua
+- scripts/Tasks/DriveToVehicleTaskTrack.lua
+- scripts/Tasks/ExitFieldTaskExitPoints.lua
+- scripts/Tasks/ExitFieldTaskStuck.lua
+- scripts/Tasks/FetchFrontToolTask.lua
+- scripts/Tasks/FetchToolTask.lua
+- scripts/Tasks/FollowCombineCropGuard.lua
+- scripts/Tasks/FollowCombinePipeHold.lua
+- scripts/Tasks/FollowCombineTaskChaseLine.lua
+- scripts/Tasks/FollowCombineTaskChopperDrive.lua
+- scripts/Tasks/FollowCombineTaskChopperPlace.lua
+- scripts/Tasks/FollowCombineTaskChopperUTurn.lua
+- scripts/Tasks/FollowCombineTaskTurn.lua
+- scripts/Tasks/FrontPlaceTask.lua
+- scripts/Tasks/HandleHarvesterTurnTaskEndRow.lua
+- scripts/Tasks/HandleHarvesterTurnTaskHarvesterWay.lua
+- scripts/Tasks/HandleHarvesterTurnTaskReverseToPipe.lua
+- scripts/Tasks/HandleHarvesterTurnTaskTurns.lua
+- scripts/Tasks/StepAsideTask.lua
+- scripts/Tasks/Turns/SquareTurn.lua
+- scripts/Tasks/Turns/YTurn.lua
+- scripts/Tasks/WaitForCallTaskFieldPark.lua
+- scripts/Tasks/WaitForCallTaskRoadside.lua
+- scripts/Utils/AutoDriveFoldGuard.lua
+- scripts/Utils/FarmPilotLogFilter.lua
+
+## Removed files
+
+- .gitignore
+- drawing/diffuseColorShader.xml
+- icon_AutoDrive.dds

@@ -1,5 +1,6 @@
 FarmPilot:
 bibifr (Fabien) - FarmPilot, based on AutoDrive 3.0.1.4
+Licence: GNU GPL v3 (see LICENSE). Changes from AutoDrive: CHANGES.md. Third-party code: NOTICE.md
 
 Translations (FarmPilot):
 Turkish: huseyinsayar
@@ -40,3 +41,9 @@ andrefelipeschulle
 
 Tips & Tricks for Lua/FS: 
 DeckerMMIV
+
+Dubins curves (scripts/Utils/Dubins.lua, MIT):
+Andrew Walker
+
+Compatible with (no code included):
+Courseplay (Courseplay.devTeam, GPLv3)

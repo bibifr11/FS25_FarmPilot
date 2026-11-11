@@ -441,8 +441,8 @@
 		<text name="AD_obstacleDetour_start" text="bir engel tarafından tıkandı, etrafından dolaşmak için geri gidiyor" />
 		<text name="AD_obstacleDetour_found" text="engelin etrafından dolaşıyor" />
 		<text name="AD_obstacleDetour_failed" text="engelin etrafından dolaşacak hiçbir yol bulunamadı: müdahale gerekiyor" />
-		<text name="AD_obstacleDetour_creep" text="creeps forward to get past the obstacle" />
-		<text name="AD_obstacleDetour_reroute" text="remembers this passage as blocked and takes another route" />
+		<text name="AD_obstacleDetour_creep" text="engeli aşmak için yavaşça ilerliyor" />
+		<text name="AD_obstacleDetour_reroute" text="bu geçişi engelli olarak hatırlar ve başka bir rota izler" />
 		<text name="AD_trafficYield_giveWay" text="karşıdan gelen bir aracın geçmesine izin vermek için geri gidiyor" />
 		<text name="AD_ty_waitFor" text="Bekleniyor:" />
 		<text name="AD_ty_toPass" text="geçmesi" />

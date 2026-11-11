@@ -81,6 +81,17 @@ function DriveToVehicleTask:planToParkSpot()
         self.state = DriveToVehicleTask.STATE_PARK_DRIVE
         return
     end
+    -- 10/11, combine: the way follows the border from here to the place on the strip it has cut
+    local combine = not spot.roadside and ADFieldPark.isCombineJob(self.vehicle)
+    if combine then
+        wayPoints = ADFieldPark.findApproach(self.vehicle, spot)
+        if wayPoints ~= nil then
+            self.parkLeadIn = nil
+            self.vehicle.ad.drivePathModule:setWayPoints(wayPoints)
+            self.state = DriveToVehicleTask.STATE_PARK_DRIVE
+            return
+        end
+    end
     local target, leadIn = ADFieldPark.getLeadIn(self.vehicle, spot)
     self.parkLeadIn = leadIn
     wayPoints = ADFieldPark.findDirectPath(self.vehicle, target)
@@ -90,6 +101,11 @@ function DriveToVehicleTask:planToParkSpot()
         return
     end
     if spot.roadside then
+        self:planToParkSpot()
+        return
+    end
+    if combine and ADFieldPark.getCutWidth(spot, ADFieldPark.NARROW_STRIP) < ADFieldPark.NARROW_STRIP then
+        -- no room for the AutoDrive pathfinder in a strip this narrow (see WaitForCallTask:planToNextSpot)
         self:planToParkSpot()
         return
     end

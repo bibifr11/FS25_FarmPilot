@@ -48,6 +48,7 @@ ADFieldPark = {}
 -- ------------------------------------------------------------------------------------------------------------
 ADFieldPark.parked = {}                             -- vehicle -> spot where it is parked, waiting for a call
 ADFieldPark.harvesterMotion = {}                    -- harvester -> {x, z, t, dx, dz, tDir, sense...}
+ADFieldPark.cutOnly = false                         -- combine: the crop along the edge only counts as a fringe next to cut ground (isBorderFringe)
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages communs
@@ -116,18 +117,54 @@ function ADFieldPark.hasGrowingCrop(x, z)
 end
 
 -- crop strip the harvester left along the field edge (its header does not reach the edge): off field within
--- ADFieldPark.FRINGE in some direction
+-- ADFieldPark.FRINGE in some direction.
+-- 10/11 (combine on its first headland: the unloaders went to park in the standing crop along the border, ahead of
+-- it): for a combine (ADFieldPark.cutOnly) the strip only counts when the ground just inside it is cut; the uncut
+-- headland along the edge is standing crop, never driven over nor parked on
 function ADFieldPark.isBorderFringe(x, z)
     local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 0, z)
     for _, d in ipairs({1, 2, ADFieldPark.FRINGE}) do
+        local ox, oz = 0, 0
         for i = 0, 7 do
             local a = i * math.pi / 4
-            if not AutoDrive.checkIsOnField(x + math.sin(a) * d, y, z + math.cos(a) * d) then
-                return true
+            local sx, sz = math.sin(a), math.cos(a)
+            if not AutoDrive.checkIsOnField(x + sx * d, y, z + sz * d) then
+                if not ADFieldPark.cutOnly then
+                    return true
+                end
+                ox, oz = ox + sx, oz + sz
             end
+        end
+        local length = MathUtil.vector2Length(ox, oz)
+        if length > 0.1 then
+            -- (ox, oz) points out of the field: cut ground the other way, just inside
+            return ADFieldPark.isCutInside(x, y, z, -ox / length, -oz / length)
         end
     end
     return false
+end
+
+-- cut field ground within ADFieldPark.FRINGE of (x, z) along (dx, dz), pointing into the field
+function ADFieldPark.isCutInside(x, y, z, dx, dz)
+    for d = 0.5, ADFieldPark.FRINGE, 0.5 do
+        local px, pz = x + dx * d, z + dz * d
+        if AutoDrive.checkIsOnField(px, y, pz) and not ADFieldPark.hasGrowingCrop(px, pz) then
+            return true
+        end
+    end
+    return false
+end
+
+-- the harvester of this unloader is a combine: its unloaders only drive and park on cut ground (ADFieldPark.cutOnly).
+-- Forage harvester: the rules of the narrow first strip stay as they are
+function ADFieldPark.isCombineJob(vehicle)
+    local spot = ADFieldPark.parked[vehicle]
+    local harvester = spot ~= nil and spot.harvester or nil
+    if harvester == nil then
+        local x, _, z = ADTrafficYieldModule.getPosition(vehicle)
+        harvester = ADFieldPark.findHarvester(vehicle, x, z)
+    end
+    return not (harvester ~= nil and harvester.ad ~= nil and harvester.ad.isChopper == true)
 end
 
 -- field ground within distance of (x, z)
@@ -288,11 +325,13 @@ function ADFieldPark.isGroundFree(cx, cz, dx, dz, halfW, halfL, nearbyWayPoints,
             and (ADFieldPark.relaxed or ADFieldPark.isNearField(p[1], p[2], halfW + margin + 0.2))
         if not onField and not onGrass then
             ADFieldPark.reject = AutoDrive.checkIsOnField(p[1], h, p[2]) and "other field" or "off field"
+            ADFieldPark.rejectX, ADFieldPark.rejectZ = p[1], p[2] -- traces privées (FieldParkModuleSearch.lua)
             return nil
         end
         local crop, fruitTypeIndex = ADFieldPark.hasGrowingCrop(p[1], p[2])
         if crop and not ADFieldPark.isCropIsland(fruitTypeIndex, p[1], p[2], {}) and not (ADFieldPark.relaxed and ADFieldPark.isBorderFringe(p[1], p[2])) then
             ADFieldPark.reject = "crop"
+            ADFieldPark.rejectX, ADFieldPark.rejectZ = p[1], p[2] -- traces privées (FieldParkModuleSearch.lua)
             return nil
         end
     end
@@ -489,6 +528,7 @@ function ADFieldPark.isGoodWaitingPlace(vehicle)
         local hx, _, hz = getWorldTranslation(harvester.components[1].node)
         ADFieldPark.area = ADFieldPark.getHarvesterArea(hx, hz)
     end
+    ADFieldPark.cutOnly = not (harvester ~= nil and harvester.ad ~= nil and harvester.ad.isChopper == true)
     local dx, dz = ADTrafficYieldModule.getDirection(vehicle)
     local front, rear = ADTrafficYieldModule.getTrainExtents(vehicle)
     local length = front + rear
@@ -523,7 +563,7 @@ function ADFieldPark.isGoodWaitingPlace(vehicle)
         return false, "no border"
     end
     if math.abs(dx * tx + dz * tz) < math.cos(math.rad(ADFieldPark.PARALLEL_TOLERANCE_PARKED)) then
-        return false, string.format("not parallel to the border (%.0f�)", math.deg(math.acos(math.min(1, math.abs(dx * tx + dz * tz)))))
+        return false, string.format("not parallel to the border (%.0f°)", math.deg(math.acos(math.min(1, math.abs(dx * tx + dz * tz)))))
     end
     if (bx - cx) * nx + (bz - cz) * nz - halfW >= ADFieldPark.BORDER_GAPS[#ADFieldPark.BORDER_GAPS] + 0.5 then
         return false, "too far from the border"

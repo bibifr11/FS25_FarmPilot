@@ -58,7 +58,7 @@ end
 -- Textes des fichiers translations/translation_xx.xml de l'addon
 function ADAddon.getText(key)
     if g_i18n ~= nil then
-        local ok, text = pcall(g_i18n.getText, g_i18n, key)
+        local ok, text = FarmPilotCall(g_i18n.getText, g_i18n, key)
         if ok and type(text) == "string" and text ~= "" and not text:find("^Missing") then
             return text
         end
@@ -188,7 +188,7 @@ local function installSettingRows()
         if page.settingElements ~= nil and page.settingElements.blinkValue ~= nil and not page.adAddonRowsAdded then
             page.adAddonRowsAdded = true
             for _, info in ipairs(ADAddon.settingRows) do
-                local ok, err = pcall(ADAddon.addSettingRow, page, info)
+                local ok, err = FarmPilotCall(ADAddon.addSettingRow, page, info)
                 if not ok then
                     ADAddon.warning("error adding setting " .. info.name .. ": " .. tostring(err))
                 end
@@ -212,7 +212,7 @@ function ADAddon:loadMap(name)
         return
     end
     for _, module in ipairs(ADAddon.modules) do
-        local ok, err = pcall(module.install, autoDrive)
+        local ok, err = FarmPilotCall(module.install, autoDrive)
         if not ok then
             ADAddon.warning("error: " .. tostring(err))
         end

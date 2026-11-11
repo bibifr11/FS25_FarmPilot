@@ -42,7 +42,7 @@ ADSprayerDump.NO_CHANGE_TIME = 10000    -- ms sans baisse du niveau après la de
 ADSprayerDump.UNLOAD_TIMEOUT = 60000    -- ms au plus pour vider
 
 local function log(fmt, ...)
-    local ok, s = pcall(string.format, fmt, ...)
+    local ok, s = FarmPilotCall(string.format, fmt, ...)
     print("[FarmPilot Épandeur] " .. (ok and s or tostring(fmt)))
 end
 
@@ -175,7 +175,7 @@ function ADSprayerDump.onFieldFinished(vehicle)
     if sm:isActive() then
         return false
     end
-    local okD, d = pcall(ADSprayerDump.decide, vehicle)
+    local okD, d = FarmPilotCall(ADSprayerDump.decide, vehicle)
     if not okD then
         log("ERREUR vider le reste : %s", tostring(d))
         return false
@@ -307,7 +307,7 @@ function ADSprayerDump.onParkButton(input, vehicle, farmId)
     if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.fpSkipParkDump then
         return false
     end
-    local okD, d = pcall(ADSprayerDump.decideForPark, vehicle)
+    local okD, d = FarmPilotCall(ADSprayerDump.decideForPark, vehicle)
     if not okD then
         log("ERREUR bouton parking, vider le reste : %s", tostring(d))
         return false
@@ -390,7 +390,7 @@ function ADSprayerDump.continueAfterDump(vehicle)
         vehicle.ad.fpDumpThen = nil
         vehicle.ad.fpSkipParkDump = true
         local farmId = vehicle.getOwnerFarmId ~= nil and vehicle:getOwnerFarmId() or nil
-        local okP, errP = pcall(ADInputManager.input_parkVehicle, ADInputManager, vehicle, farmId)
+        local okP, errP = FarmPilotCall(ADInputManager.input_parkVehicle, ADInputManager, vehicle, farmId)
         vehicle.ad.fpSkipParkDump = nil
         if not okP then
             log("ERREUR parking après la vidange : %s", tostring(errP))
@@ -398,7 +398,7 @@ function ADSprayerDump.continueAfterDump(vehicle)
         return
     end
     vehicle.ad.fpDumpDone = true
-    local ok, err = pcall(AutoDrive.onCpFinished, vehicle)
+    local ok, err = FarmPilotCall(AutoDrive.onCpFinished, vehicle)
     if not ok then
         log("ERREUR suite après la vidange : %s", tostring(err))
     end
@@ -469,7 +469,7 @@ function ADDumpRestTask:update(dt)
             self.lastLevel = self.startLevel
             self.lastChange = self.timer
             self.requested = true
-            local ok, err = pcall(self.tool.unloadFillUnits, self.tool, true)
+            local ok, err = FarmPilotCall(self.tool.unloadFillUnits, self.tool, true)
             if not ok then
                 self:finish("erreur du jeu : " .. tostring(err))
             end

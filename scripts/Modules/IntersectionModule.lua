@@ -80,7 +80,14 @@ ADIntersectionModule.tracks = {}
 -- Outils
 -- ------------------------------------------------------------------------------------------------------------
 function ADIntersectionModule.log(text, ...)
-    print("AutoDrive : [intersection] " .. string.format(text, ...))
+    local line = string.format(text, ...)
+    print("AutoDrive : [intersection] " .. line)
+    -- (11/11) au journal aussi (log.txt ne garde ces lignes qu'avec un canal debug), sauf le détail des voies
+    -- surveillées et les rappels d'attente
+    if ADAutonomousManager ~= nil and ADAutonomousManager.log ~= nil and string.find(line, "^portion ") == nil
+        and string.find(line, "attend toujours", 1, true) == nil then
+        ADAutonomousManager.log("croisement : %s", line)
+    end
 end
 
 function ADIntersectionModule.isIntersectionPoint(wp)

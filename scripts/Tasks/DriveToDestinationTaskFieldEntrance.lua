@@ -12,7 +12,10 @@
 -- - une autre benne de cette moissonneuse est dans la zone d'entrée sans être dans le champ : attente sur la route
 --   (ZONE_HOLD_TIMEOUT au plus) ;
 -- - le champ a déjà ses bennes (ADFieldPark.FIELD_CAPACITY) : arrêt sur la route, la tâche finit ici et
---   WaitForCallTask la gare au bord de la route (WaitForCallTaskRoadside.lua).
+--   WaitForCallTask la gare au bord de la route (WaitForCallTaskRoadside.lua) ;
+-- - 11/11 (champ 56), moissonneuse : avant l'entrée, la place est cherchée depuis le point du champ sans y aller ;
+--   aucune place, ou aucun trajet propre depuis l'entrée : arrêt sur le chemin, même suite que le champ complet
+--   (jamais d'attente au point du champ, sur la fourrière de la moissonneuse).
 --
 -- Branché par : DriveToDestinationTask:updateArrival (DriveToDestinationTaskArrival.lua) ; DriveToDestinationTask.lua
 -- (abort, finished : attente effacée).
@@ -24,6 +27,8 @@
 DriveToDestinationTask.FIELD_FULL_STOP_DISTANCE = 60 -- m before the field point: the field being full, it stops on the road here
 DriveToDestinationTask.FIELD_FULL_STOP_MIN = 25     -- m: closer than this it goes on to the field point as before
 DriveToDestinationTask.FIELD_FULL_CHECK = 1000      -- ms between two looks
+
+DriveToDestinationTask.NO_PLACE_SEARCH_DISTANCE = 100 -- m before the field point: combine, the place is looked for from it while driving (11/11)
 
 DriveToDestinationTask.ZONE_RADIUS = 35          -- m around the field point: the entrance zone
 DriveToDestinationTask.ZONE_HOLD_MAX = 60        -- m before the field point: the unloader holds on the road from here
@@ -154,6 +159,141 @@ function DriveToDestinationTask:isFieldFullStop(dt)
         return false
     end
     print(string.format("[AD-File] %s: champ complet (%d bennes), je m'arrete sur la route a %.0f m avant l'entree", tostring(self.vehicle:getName()), ADFieldPark.FIELD_CAPACITY, distance))
+    self.vehicle.ad.specialDrivingModule:stopVehicle()
+    self.vehicle.ad.specialDrivingModule:update(dt)
+    self:finished()
+    return true
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Moissonneuse : pas de place atteignable depuis l'entrée, arrêt sur le chemin avant (11/11, champ 56)
+-- ------------------------------------------------------------------------------------------------------------
+-- 11/11 (champ 56 : la benne est allée jusqu'au point du champ, n'a trouvé aucune place ni aucun trajet propre,
+-- a reculé dans la prairie, est revenue et a attendu à l'entrée, en plein sur la fourrière de la moissonneuse) :
+-- benne vide qui revient au champ d'une moissonneuse, à NO_PLACE_SEARCH_DISTANCE m du point du champ, la place est
+-- cherchée depuis ce point (pose d'arrivée : le dernier tronçon du trajet), sans y aller, pendant qu'elle roule.
+-- Arrivée à FIELD_FULL_STOP_MIN m avant la fin de la recherche : elle attend là. Une place et un trajet propre
+-- depuis l'entrée (ADFieldPark.findWayFromEntrance) : elle continue comme avant. Sinon elle s'arrête sur le chemin
+-- (à FIELD_FULL_STOP_DISTANCE m au plus du point du champ), la tâche finit ici et WaitForCallTask la gare au bord de la route si possible, puis cherche de nouveau de temps en
+-- temps depuis le point du champ (vehicle.ad.noPlaceAhead, voir WaitForCallTaskFieldPark.lua).
+function DriveToDestinationTask:getEntrancePose(wp)
+    local wayPoints = self.vehicle.ad.drivePathModule.wayPoints
+    local previous = nil
+    if wayPoints ~= nil then
+        for i = #wayPoints, 1, -1 do
+            local p = wayPoints[i]
+            if MathUtil.vector2Length(p.x - wp.x, p.z - wp.z) > 2 then
+                previous = p
+                break
+            end
+        end
+    end
+    local dx, dz
+    if previous ~= nil then
+        local l = MathUtil.vector2Length(wp.x - previous.x, wp.z - previous.z)
+        dx, dz = (wp.x - previous.x) / l, (wp.z - previous.z) / l
+    else
+        dx, dz = ADTrafficYieldModule.getDirection(self.vehicle)
+    end
+    return {x = wp.x, z = wp.z, dx = dx, dz = dz}
+end
+
+function DriveToDestinationTask:isNoPlaceStop(dt)
+    if self.noPlaceDone then
+        return false
+    end
+    local mode = self.vehicle.ad.modes ~= nil and self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD] or nil
+    if mode == nil or ADFieldPark == nil or ADFieldPark.findWayFromEntrance == nil or not ADFieldPark.isEnabled()
+        or self.vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_UNLOAD or mode.state ~= mode.STATE_DRIVE_TO_START
+        or self.routeIsPartial or self.vehicle.ad.trafficYieldModule == nil or AutoDrive:getIsCPActive(self.vehicle) then
+        return false
+    end
+    local marker = self.vehicle.ad.stateModule:getFirstMarker()
+    local wp = marker ~= nil and ADGraphManager:getWayPointById(marker.id) or nil
+    if wp == nil then
+        return false
+    end
+    local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
+    local distance = MathUtil.vector2Length(wp.x - x, wp.z - z)
+    if self.noPlaceStopAt ~= nil then
+        -- no place reachable: it stops on the road once within FIELD_FULL_STOP_DISTANCE m of the field point
+        if distance > DriveToDestinationTask.FIELD_FULL_STOP_DISTANCE then
+            return false
+        end
+        return self:stopNoPlace(dt, distance)
+    end
+    if self.noPlaceSearch == nil then
+        if distance > DriveToDestinationTask.NO_PLACE_SEARCH_DISTANCE then
+            return false
+        end
+        self.noPlaceDone = true
+        if distance < DriveToDestinationTask.FIELD_FULL_STOP_MIN or AutoDrive.checkIsOnField(x, y, z) then
+            -- started near the field: as before
+            return false
+        end
+        local harvester = ADFieldPark.findHarvester(self.vehicle, wp.x, wp.z)
+        if harvester == nil or (harvester.ad ~= nil and harvester.ad.isChopper == true) then
+            -- forage harvester: its own rules (narrow first strip), unchanged
+            return false
+        end
+        local trailers = AutoDrive.getAllUnits(self.vehicle)
+        local fillLevel = trailers ~= nil and #trailers > 0 and AutoDrive.getAllFillLevels(trailers) or 0
+        if fillLevel ~= nil and fillLevel > 0.1 then
+            return false
+        end
+        self.noPlaceDone = false
+        self.noPlaceOrigin = self:getEntrancePose(wp)
+        self.noPlaceSearch = ADFieldPark.newSearch(self.vehicle, self.noPlaceOrigin)
+        self.vehicle.ad.trafficYieldModule:log("field park: %.0f m before the field point, looking for a place from it (x=%.0f z=%.0f heading %.0f°)",
+            distance, wp.x, wp.z, math.deg(math.atan2(self.noPlaceOrigin.dx, self.noPlaceOrigin.dz)))
+        return false
+    end
+    local spots = ADFieldPark.searchStep(self.noPlaceSearch)
+    if spots == nil then
+        if distance <= DriveToDestinationTask.FIELD_FULL_STOP_MIN then
+            -- the search is not done yet: wait here, before the entrance
+            self.vehicle.ad.specialDrivingModule:stopVehicle()
+            self.vehicle.ad.specialDrivingModule:update(dt)
+            return true
+        end
+        return false
+    end
+    local search = self.noPlaceSearch
+    self.noPlaceSearch = nil
+    self.noPlaceDone = true
+    if search.result ~= nil then
+        self.vehicle.ad.trafficYieldModule:log("field park: %s", search.result)
+    end
+    if WaitForCallTask ~= nil and WaitForCallTask.HARVESTER_AWAY ~= nil and WaitForCallTask.HARVESTER_AWAY[search.result or ""] then
+        -- no harvester at work in this field: as before (waits at the entrance, the HUD says why)
+        return false
+    end
+    local index, way = nil, nil
+    if #spots > 0 and not search.waitSense then
+        index, way = ADFieldPark.findWayFromEntrance(self.vehicle, spots, self.noPlaceOrigin)
+    end
+    if index ~= nil then
+        self.vehicle.ad.trafficYieldModule:log("field park: place %d reachable from the field point (%s), driving on", index, way)
+        return false
+    end
+    self.noPlaceStopAt = {spots = #spots > 0 and not search.waitSense and #spots or 0}
+    self.noPlaceDone = false
+    if distance > DriveToDestinationTask.FIELD_FULL_STOP_DISTANCE then
+        return false
+    end
+    return self:stopNoPlace(dt, distance)
+end
+
+function DriveToDestinationTask:stopNoPlace(dt, distance)
+    local found = self.noPlaceStopAt.spots
+    self.noPlaceStopAt = nil
+    self.noPlaceDone = true
+    if found > 0 then
+        print(string.format("[AD-File] %s: %d place(s) dans le champ mais aucun trajet propre depuis l'entree, je m'arrete sur le chemin a %.0f m avant", tostring(self.vehicle:getName()), found, distance))
+    else
+        print(string.format("[AD-File] %s: aucune place dans le champ pour l'instant, je m'arrete sur le chemin a %.0f m avant l'entree", tostring(self.vehicle:getName()), distance))
+    end
+    self.vehicle.ad.noPlaceAhead = {origin = self.noPlaceOrigin, time = g_time or 0}
     self.vehicle.ad.specialDrivingModule:stopVehicle()
     self.vehicle.ad.specialDrivingModule:update(dt)
     self:finished()

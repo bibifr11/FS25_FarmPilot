@@ -548,3 +548,4 @@ end
 -- Véhicule arrêté devant en file (pont-bascule) : ObstacleDetourQueue.lua (chargé avant ce fichier)
 -- ------------------------------------------------------------------------------------------------------------
 if ADObstacleDetourQueue ~= nil then ADObstacleDetourQueue.install(ADObstacleDetourModule) end -- 08/11 vehicule arrete devant en file (pont-bascule) : ObstacleDetourQueue.lua
+if ADObstacleDetourEscape ~= nil then ADObstacleDetourEscape.install(ADObstacleDetourModule) end -- 09/11 contournement raté : au pas, sinon passage bouché retenu et autre route : ObstacleDetourEscape.lua

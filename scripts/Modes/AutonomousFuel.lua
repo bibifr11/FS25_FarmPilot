@@ -194,7 +194,7 @@ function ADFuelRun.onCpFuelEmpty(vehicle)
         return false
     end
     local why = string.format("Courseplay arrêté faute de carburant (%s)", percent(ADFuelRun.fuelLevel(vehicle)))
-    local ok, started = pcall(ADFuelRun.start, vehicle, "back", why)
+    local ok, started = FarmPilotCall(ADFuelRun.start, vehicle, "back", why)
     if not ok then
         log("ERREUR plein de carburant : %s", tostring(started))
         return false
@@ -214,7 +214,7 @@ function ADFuelRun.beforeNextField(vehicle)
         return false
     end
     local why = string.format("champ fini, carburant à %s", percent(level))
-    local ok, started = pcall(ADFuelRun.start, vehicle, "next", why)
+    local ok, started = FarmPilotCall(ADFuelRun.start, vehicle, "next", why)
     if not ok then
         log("ERREUR plein de carburant : %s", tostring(started))
         return false
@@ -240,7 +240,7 @@ function ADFuelRun.afterStop(vehicle)
             return
         end
         vehicle.ad.fpFuelDone = true
-        local ok, err = pcall(AutoDrive.onCpFinished, vehicle)
+        local ok, err = FarmPilotCall(AutoDrive.onCpFinished, vehicle)
         if not ok then
             log("ERREUR champ suivant après le plein : %s", tostring(err))
         end

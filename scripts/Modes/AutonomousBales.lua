@@ -68,7 +68,7 @@ end
 
 function ADBaleCollect.onArrival(mode)
     local vehicle = mode.vehicle
-    local ok, ctx = pcall(ADBaleCollect.makeContext, vehicle)
+    local ok, ctx = FarmPilotCall(ADBaleCollect.makeContext, vehicle)
     if not ok then
         log("ERREUR remorque à balles : %s", tostring(ctx))
         return false
@@ -143,7 +143,7 @@ local function firstTrip(mode)
         or mode.parkStage ~= nil or mode.dumpStage ~= nil or mode.fuelStage ~= nil then
         return false
     end
-    local ok, ctx = pcall(ADBaleCollect.makeContext, vehicle)
+    local ok, ctx = FarmPilotCall(ADBaleCollect.makeContext, vehicle)
     if not ok or ctx == nil then
         return false
     end
@@ -292,7 +292,7 @@ function ADBaleCollect.continueAfterField(vehicle)
     if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.stateModule:isActive() then
         return
     end
-    local ok, err = pcall(AutoDrive.onCpFinished, vehicle)
+    local ok, err = FarmPilotCall(AutoDrive.onCpFinished, vehicle)
     if not ok then
         log("ERREUR suite après le ramassage : %s", tostring(err))
     end
@@ -374,7 +374,7 @@ function ADBaleUnloadTask:update(dt)
         end
         local stopped = math.abs(self.vehicle.lastSpeedReal or 0) < 0.0015 or self.timer >= ADBaleUnloadTask.STOP_TIMEOUT
         if stopped and not ADBaleLoaderManager.isBusy(loader) and not ADBaleLoaderManager.isUnloading(loader) and loader.startAutomaticBaleUnloading ~= nil then
-            local ok, err = pcall(loader.startAutomaticBaleUnloading, loader)
+            local ok, err = FarmPilotCall(loader.startAutomaticBaleUnloading, loader)
             if not ok then
                 self:finish("erreur du jeu : " .. tostring(err))
                 return
@@ -409,13 +409,13 @@ function ADBaleUnloadTask:update(dt)
         local spec = ADBaleLoaderManager.spec(loader)
         if spec ~= nil and BaleLoader ~= nil and loader.doStateChange ~= nil then
             if not spec.isInWorkPosition and self.resetStep == 0 then
-                pcall(loader.doStateChange, loader, BaleLoader.CHANGE_BUTTON_WORK_TRANSPORT)
+                FarmPilotCall(loader.doStateChange, loader, BaleLoader.CHANGE_BUTTON_WORK_TRANSPORT)
                 self.resetStep = 1
                 self:holdVehicle(dt)
                 return
             end
             if spec.isInWorkPosition then
-                pcall(loader.doStateChange, loader, BaleLoader.CHANGE_BUTTON_WORK_TRANSPORT)
+                FarmPilotCall(loader.doStateChange, loader, BaleLoader.CHANGE_BUTTON_WORK_TRANSPORT)
             end
         end
         self:holdVehicle(dt)

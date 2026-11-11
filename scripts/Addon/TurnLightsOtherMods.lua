@@ -73,7 +73,7 @@ function ADAddonTurnLightsOtherMods.update(vehicle)
     for specName, label in pairs(ADAddonTurnLightsOtherMods.KNOWN) do
         local spec = type(byName) == "table" and byName[specName] or nil
         if spec == nil and g_specializationManager ~= nil and g_specializationManager.getSpecializationObjectByName ~= nil then
-            local ok, s = pcall(g_specializationManager.getSpecializationObjectByName, g_specializationManager, specName)
+            local ok, s = FarmPilotCall(g_specializationManager.getSpecializationObjectByName, g_specializationManager, specName)
             spec = ok and s or nil
         end
         wrap(spec, label)

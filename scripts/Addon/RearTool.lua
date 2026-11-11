@@ -86,7 +86,7 @@ function ADAddonRearTool:update(dt)
     end
     for _, vehicle in ipairs(vehicleSystem.vehicles) do
         if vehicle.rootVehicle == vehicle then
-            local ok, err = pcall(ADAddonRearTool.selectRear, vehicle)
+            local ok, err = FarmPilotCall(ADAddonRearTool.selectRear, vehicle)
             if not ok then
                 ADAddon.warning("rear implement error: " .. tostring(err))
             end

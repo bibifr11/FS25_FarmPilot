@@ -5,7 +5,6 @@ ADDrivePathModule.MAXLOOKAHEADPOINTS = 20
 ADDrivePathModule.MAX_SPEED_DEVIATION = 6
 ADDrivePathModule.MAX_STEERING_ANGLE = 30
 ADDrivePathModule.PAUSE_TIMEOUT = 3000
-ADDrivePathModule.BLINK_TIMEOUT = 1000
 
 function ADDrivePathModule:new(vehicle)
     local o = {}
@@ -15,7 +14,6 @@ function ADDrivePathModule:new(vehicle)
     o.min_distance = AutoDrive.defineMinDistanceByVehicleType(vehicle)
     o.minDistanceTimer = AutoDriveTON:new()
     o.waitTimer = AutoDriveTON:new()
-    o.blinkTimer = AutoDriveTON:new()
     o.brakeHysteresisActive = false
     o.lastUsedWayPoint = nil
     ADDrivePathModule.reset(o)
@@ -40,7 +38,6 @@ function ADDrivePathModule:reset(retainLastUsedWaypoint)
     self.minDistanceToNextWp = math.huge
     self.minDistanceTimer:timer(false, 5000, 0)
     self.waitTimer:timer(false, ADDrivePathModule.PAUSE_TIMEOUT, 0)
-    self.blinkTimer:timer(false, ADDrivePathModule.BLINK_TIMEOUT, 0)
     self.vehicle.ad.stateModule:setCurrentWayPointId(-1)
     self.vehicle.ad.stateModule:setNextWayPointId(-1)
     self.isReversing = false
@@ -160,10 +157,6 @@ end
 
 function ADDrivePathModule:setDirtyFlag()
     self.wayPointsDirtyFlag = true
-end
-
-function ADDrivePathModule:resetDirtyFlag()
-    self.wayPointsDirtyFlag = false
 end
 
 function ADDrivePathModule:update(dt)
@@ -319,7 +312,8 @@ function ADDrivePathModule:followWaypoints(dt)
             local highestAngle = self:getHighestApproachingAngle()
 
             if self:isOnRoadNetwork() then
-                self.speedLimit = math.min(self.speedLimit, self:getMaxSpeedForAngle(highestAngle))
+                -- (10/11) angle serré : limite selon la distance à l'angle (elle sautait quand le tracteur ralentissait)
+                maxSpeedDiff = self:applyAngleSpeedLimit(maxSpeedDiff) -- voir DrivePathModuleCurveSpeed.lua
                 -- (07/11) vitesse proportionnelle au virage : selon le rayon réel du virage
                 maxSpeedDiff = self:applyCurveSpeedLimit(maxSpeedDiff) -- voir DrivePathModuleCurveSpeed.lua
             else
@@ -700,11 +694,6 @@ function ADDrivePathModule:getNextWayPointId()
     return -1
 end
 
-function ADDrivePathModule:getNextWayPoints()
-    local cId = self:getCurrentWayPointIndex()
-    return self.wayPoints[cId + 1], self.wayPoints[cId + 2], self.wayPoints[cId + 3], self.wayPoints[cId + 4], self.wayPoints[cId + 5]
-end
-
 function ADDrivePathModule:setCurrentWayPointIndex(waypointId)
     self.currentWayPoint = waypointId
     self.vehicle.ad.stateModule:setCurrentWayPointId(self:getCurrentWayPointId())
@@ -822,19 +811,8 @@ function ADDrivePathModule:checkActiveAttributesSet(dt)
                     self.vehicle:setBeaconLightsVisibility(false)
                 end
             end
-            local blinkangle = AutoDrive.getSetting("blinkValue") or 0
-
-            if blinkangle > 0 then
-                if self.blinkTimer:timer(math.abs(self.turnAngle) < blinkangle, ADDrivePathModule.BLINK_TIMEOUT, dt * AutoDrive.PERF_FRAMES) then -- Rough estimate for the dt time. But should be fine
-                    self.vehicle:setTurnLightState(Lights.TURNLIGHT_OFF)
-                else
-                    if self.turnAngle > blinkangle and self:isOnRoadNetwork() then
-                        self.vehicle:setTurnLightState(Lights.TURNLIGHT_LEFT)
-                    elseif self.turnAngle < - blinkangle and self:isOnRoadNetwork() then
-                        self.vehicle:setTurnLightState(Lights.TURNLIGHT_RIGHT)
-                    end
-                end
-            end
+            -- (09/11) ancien clignotant d'AutoDrive retiré : remplacé par celui de FarmPilot (Addon/TurnLights.lua,
+            -- TurnLightsBends.lua), qui garde le réglage « Clignotant automatique » (blinkValue)
         end
 
     end

@@ -69,16 +69,16 @@ end
 function ADAutonomousManager.toolWidth(vehicle)
     local wwu = ADAutonomousManager.cpGlobal("WorkWidthUtil")
     if wwu ~= nil and wwu.getAutomaticWorkWidthAndOffset ~= nil then
-        local ok, w = pcall(wwu.getAutomaticWorkWidthAndOffset, vehicle)
+        local ok, w = FarmPilotCall(wwu.getAutomaticWorkWidthAndOffset, vehicle)
         if ok and type(w) == "number" and w > 0.1 then
             return ADAutonomousManager.snapWidth(w)
         end
     end
     -- repli : réglage « largeur de travail » de Courseplay sur ce véhicule
     if vehicle.getCourseGeneratorSettings ~= nil then
-        local ok, cs = pcall(vehicle.getCourseGeneratorSettings, vehicle)
+        local ok, cs = FarmPilotCall(vehicle.getCourseGeneratorSettings, vehicle)
         if ok and cs ~= nil and cs.workWidth ~= nil and cs.workWidth.getValue ~= nil then
-            local okV, w = pcall(cs.workWidth.getValue, cs.workWidth)
+            local okV, w = FarmPilotCall(cs.workWidth.getValue, cs.workWidth)
             if okV and type(w) == "number" and w > 0.1 then
                 return ADAutonomousManager.snapWidth(w)
             end
@@ -110,7 +110,7 @@ local function collectImplements(object, out, depth)
     if object == nil or depth > 6 or object.getAttachedImplements == nil then
         return
     end
-    local ok, implements = pcall(object.getAttachedImplements, object)
+    local ok, implements = FarmPilotCall(object.getAttachedImplements, object)
     if not ok or type(implements) ~= "table" then
         return
     end
@@ -141,9 +141,11 @@ end
 function ADAutonomousManager.workTools(vehicle)
     local list, tools = {}, {}
     collectImplements(vehicle, list, 0)
+    -- (10/11) l'attelage avant à part (outil frontal, masse), voir AutonomousManagerFront.lua
+    local front = ADAutonomousManager.frontSet ~= nil and ADAutonomousManager.frontSet(vehicle) or {}
     for _, o in ipairs(list) do
         for _, name in ipairs(ADAutonomousManager.WORK_SPECS) do
-            if o[name] ~= nil then
+            if o[name] ~= nil and not front[o] then
                 tools[#tools + 1] = o
                 break
             end
@@ -168,11 +170,11 @@ end
 -- Nom affiché dans le HUD : fonction et largeur
 -- ------------------------------------------------------------------------------------------------------------
 function ADAutonomousManager.toolLabel(tool)
-    local okN, n = pcall(function() return tool:getFullName() end)
+    local okN, n = FarmPilotCall(function() return tool:getFullName() end)
     if okN and n ~= nil and n ~= "" then
         return tostring(n)
     end
-    local okG, g = pcall(function() return tool:getName() end)
+    local okG, g = FarmPilotCall(function() return tool:getName() end)
     return okG and tostring(g) or "?"
 end
 
@@ -187,7 +189,7 @@ end
 function ADAutonomousManager.toolFunction(tool)
     local category = nil
     if g_storeManager ~= nil and g_storeManager.getItemByXMLFilename ~= nil and tool ~= nil and tool.configFileName ~= nil then
-        local ok, item = pcall(g_storeManager.getItemByXMLFilename, g_storeManager, tool.configFileName)
+        local ok, item = FarmPilotCall(g_storeManager.getItemByXMLFilename, g_storeManager, tool.configFileName)
         if ok and item ~= nil and type(item.categoryName) == "string" then
             category = string.upper(item.categoryName)
         end
@@ -199,7 +201,7 @@ function ADAutonomousManager.toolFunction(tool)
             return txt
         end
         -- catégorie inconnue (mod) : son titre dans le jeu
-        local okC, cat = pcall(g_storeManager.getCategoryByName, g_storeManager, category)
+        local okC, cat = FarmPilotCall(g_storeManager.getCategoryByName, g_storeManager, category)
         if okC and cat ~= nil and type(cat.title) == "string" and cat.title ~= "" then
             return cat.title
         end
@@ -246,13 +248,13 @@ end
 function ADAutonomousManager.computeToolWorkWidth(tool)
     local wwu = ADAutonomousManager.cpGlobal("WorkWidthUtil")
     if wwu ~= nil and wwu.getAutomaticWorkWidthAndOffset ~= nil then
-        local ok, w = pcall(wwu.getAutomaticWorkWidthAndOffset, tool)
+        local ok, w = FarmPilotCall(wwu.getAutomaticWorkWidthAndOffset, tool)
         if ok and type(w) == "number" and w > 0.1 then
             return ADAutonomousManager.snapWidth(w)
         end
     end
     if g_storeManager ~= nil and g_storeManager.getItemByXMLFilename ~= nil and tool.configFileName ~= nil then
-        local ok, item = pcall(g_storeManager.getItemByXMLFilename, g_storeManager, tool.configFileName)
+        local ok, item = FarmPilotCall(g_storeManager.getItemByXMLFilename, g_storeManager, tool.configFileName)
         local w = ok and item ~= nil and item.specs ~= nil and item.specs.workingWidth or nil
         if type(w) == "number" and w > 0.1 then
             return ADAutonomousManager.snapWidth(w)
@@ -282,9 +284,9 @@ end
 
 -- « Déchaumeur (8 m) » : fonction et largeur (HUD)
 function ADAutonomousManager.toolShortLabel(tool)
-    local okF, fn = pcall(ADAutonomousManager.toolFunction, tool)
+    local okF, fn = FarmPilotCall(ADAutonomousManager.toolFunction, tool)
     fn = okF and fn or ADAutonomousManager.toolLabel(tool)
-    local okW, w = pcall(ADAutonomousManager.toolWorkWidth, tool)
+    local okW, w = FarmPilotCall(ADAutonomousManager.toolWorkWidth, tool)
     local wt = okW and ADAutonomousManager.widthText(w) or nil
     if wt ~= nil then
         return string.format("%s (%s)", fn, wt), fn, w
@@ -298,7 +300,7 @@ end
 -- (07/11) un seul outil, attelé à l'arrière du tracteur (masses et cuves avant ignorées) ; plusieurs outils : plus tard.
 local function farmOf(object)
     if object ~= nil and object.getOwnerFarmId ~= nil then
-        local ok, id = pcall(object.getOwnerFarmId, object)
+        local ok, id = FarmPilotCall(object.getOwnerFarmId, object)
         if ok then
             return id
         end
@@ -336,7 +338,9 @@ function ADAutonomousManager.matchJoints(vehicle, tool, freeOnly)
         local free = rj.joint.jointIndex == nil or rj.joint.jointIndex == 0
         if free or not freeOnly then
             for inputIndex, input in ipairs(inputs) do
-                if input.jointType == rj.joint.jointType and input.node ~= nil then
+                -- (10/11) point d'attelage d'un outil frontal : pas à l'arrière, voir AutonomousManagerFront.lua
+                if input.jointType == rj.joint.jointType and input.node ~= nil
+                    and not (ADAutonomousManager.isFrontInput ~= nil and ADAutonomousManager.isFrontInput(tool, input)) then
                     return rj.index, rj.joint, inputIndex, input
                 end
             end
@@ -373,7 +377,7 @@ function ADAutonomousManager.fetchableTools(vehicle)
     end
     local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
     for _, v in pairs(system.vehicles) do
-        local ok, fetchable = pcall(ADAutonomousManager.isFetchableTool, vehicle, v)
+        local ok, fetchable = FarmPilotCall(ADAutonomousManager.isFetchableTool, vehicle, v)
         if ok and fetchable then
             local tx, _, tz = getWorldTranslation(v.components[1].node)
             local label, fn, w = ADAutonomousManager.toolShortLabel(v)
@@ -459,7 +463,7 @@ local function identityOf(list)
         local k = shortConfigName(o)
         if k ~= nil then
             keys[#keys + 1] = k
-            local okN, n = pcall(function() return o:getFullName() end)
+            local okN, n = FarmPilotCall(function() return o:getFullName() end)
             names[#names + 1] = okN and tostring(n) or k
         end
     end
@@ -485,7 +489,7 @@ function ADAutonomousManager.toolIdentity(vehicle)
     local id = identityOf(work) or all
     if id == nil then
         local k = shortConfigName(vehicle)
-        local okN, n = pcall(function() return vehicle:getFullName() end)
+        local okN, n = FarmPilotCall(function() return vehicle:getFullName() end)
         return { key = k or "?", name = okN and tostring(n) or (k or "?") }
     end
     if all ~= nil and all.key ~= id.key then

@@ -142,7 +142,7 @@ local function bandCollisionCallback(probe, transformId)
         if object == nil or object.rootVehicle == nil then
             probe.hits = probe.hits + 1
             if probe.name == nil then
-                local ok, n = pcall(function()
+                local ok, n = FarmPilotCall(function()
                     if object ~= nil and object.getName ~= nil then
                         return object:getName()
                     end

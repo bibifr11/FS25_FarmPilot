@@ -147,7 +147,7 @@ end
 -- sense of the outermost headland of the Courseplay course of the harvester (or of the tractor pulling it): +1 / -1
 -- like getHarvesterSense, from the signed area of the headland loop; nil without Courseplay course or headland
 function ADFieldPark.getCourseSense(harvester, m)
-    local ok, sense = pcall(function()
+    local ok, sense = FarmPilotCall(function()
         for _, v in ipairs({harvester, harvester.getRootVehicle ~= nil and harvester:getRootVehicle() or nil, harvester.trailingVehicle}) do
             local course = v ~= nil and v.getFieldWorkCourse ~= nil and v:getFieldWorkCourse() or nil
             if course ~= nil and course.waypoints ~= nil then

@@ -66,7 +66,7 @@ function ADTrafficYieldModule:tryDetour(partner, maxExtra, probe)
         end
         return weights
     end
-    local ok, path = pcall(ADGraphManager.pathFromTo, ADGraphManager, startWp.id, lastWp.id, {nextWp.id})
+    local ok, path = FarmPilotCall(ADGraphManager.pathFromTo, ADGraphManager, startWp.id, lastWp.id, {nextWp.id})
     ADPathCalculator.getDetourWeights = originalWeights
     if not ok or path == nil or #path < 2 or path[1].id ~= startWp.id or path[#path].id ~= lastWp.id then
         self:log("no other way to avoid %s: no route found", ADTrafficYieldModule.getName(partner))
@@ -257,7 +257,7 @@ function ADTrafficYieldModule:tryStraightOn(turnOffIndex, probe, allowBehind)
         if length >= nextTry then
             tries = tries + 1
             nextTry = length + 25
-            local ok, result = pcall(ADGraphManager.pathFromTo, ADGraphManager, current.id, lastWp.id, {})
+            local ok, result = FarmPilotCall(ADGraphManager.pathFromTo, ADGraphManager, current.id, lastWp.id, {})
             if ok and result ~= nil and #result >= 2 and result[1].id == current.id and result[#result].id == lastWp.id then
                 path = result
                 break
@@ -276,7 +276,7 @@ function ADTrafficYieldModule:tryStraightOn(turnOffIndex, probe, allowBehind)
         current = nextWp
     end
     if path == nil and length >= 15 then
-        local ok, result = pcall(ADGraphManager.pathFromTo, ADGraphManager, current.id, lastWp.id, {})
+        local ok, result = FarmPilotCall(ADGraphManager.pathFromTo, ADGraphManager, current.id, lastWp.id, {})
         if ok and result ~= nil and #result >= 2 and result[1].id == current.id and result[#result].id == lastWp.id then
             path = result
         end

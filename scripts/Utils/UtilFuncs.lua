@@ -950,24 +950,6 @@ function AutoDrive.checkIsOnField(worldX, worldY, worldZ)
 	return isOnField
 end
 
-function AutoDrive.checkIsOnField_notFS22(startWorldX, worldY, startWorldZ)
-    local data = g_currentMission.densityMapModifiers.getAIDensityHeightArea
-    local modifier = data.modifier
-    local filter = data.filter
-    local widthWorldX = startWorldX - 0.1
-    local widthWorldZ = startWorldZ - 0.1
-    local heightWorldX = startWorldX + 0.1
-    local heightWorldZ = startWorldZ + 0.1
-    modifier:setParallelogramWorldCoords(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, "ppp")
-    filter:setValueCompareParams("greater", 0)
-    local _, detailArea, _ = modifier:executeGet(filter)
-    if detailArea == 0 then
-        return false
-    else
-        return true
-    end
-end
-
 --[[
 Sprayer.registerOverwrittenFunctions =
 	Utils.appendedFunction(
@@ -1315,6 +1297,8 @@ function AutoDrive.driveInDirection(self, dt, steeringAngleLimit, acceleration, 
 	lx, lz = AutoDrive.localToLocalForReverseDriving(self, lx, lz)
 	AutoDrive.debugTransformMsg(self, "AutoDrive:driveInDirection(%f, %f), limit=%f, slow_limit=%f, accel=%f, slow_accel=%f, allowed=%s, forwards=%s, speed=%f, slowdown=%f", 
 	                            lx, lz, steeringAngleLimit, slowAngleLimit, acceleration, slowAcceleration, tostring(allowedToDrive), tostring(moveForwards), maxSpeed, slowDownFactor)
+	-- FarmPilot : conduite douce, accélérateur dosé, voir UtilFuncsSmoothDrive.lua
+	acceleration, slowAcceleration, slowAngleLimit, maxSpeed, slowDownFactor = AutoDrive.smoothDriveInputs(self, dt, acceleration, slowAcceleration, slowAngleLimit, allowedToDrive, lx, lz, maxSpeed, slowDownFactor)
 	if AutoDrive.isReverseDriving(self) then
 		steeringAngleLimit = -steeringAngleLimit
 	end

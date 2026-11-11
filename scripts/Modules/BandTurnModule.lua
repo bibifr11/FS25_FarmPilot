@@ -242,12 +242,6 @@ function ADBandTurn.move(geo, pose, ds, k, out)
     return {x = x, z = z, a = wrap(a), tx = tx, tz = tz, b = b}
 end
 
--- trailer axle from the tractor pose and trailer heading
-function ADBandTurn.trailerFrom(geo, x, z, a, b)
-    local hx, hz = x - math.sin(a) * geo.hitch, z - math.cos(a) * geo.hitch
-    return hx - math.sin(b) * geo.trailer, hz - math.cos(b) * geo.trailer
-end
-
 -- ------------------------------------------------------------------------------------------------------------
 -- Lecture de la carte locale dans le jeu (sur plusieurs images)
 -- ------------------------------------------------------------------------------------------------------------

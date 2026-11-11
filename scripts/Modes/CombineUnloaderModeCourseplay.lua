@@ -27,7 +27,7 @@ CombineUnloaderMode.ROW_ENTRY_STRAIGHT = 10 -- m
 CombineUnloaderMode.ROW_ENTRY_MAX = 150 -- m of course read
 function CombineUnloaderMode.getCpRowEntry(combine)
     CombineUnloaderMode.cpRowEntryWhy = nil
-    local ok, ex, ez, dx, dz = pcall(function()
+    local ok, ex, ez, dx, dz = FarmPilotCall(function()
         local strategy = combine.getCpDriveStrategy ~= nil and combine:getCpDriveStrategy() or nil
         if strategy == nil or strategy.getCurrentCourse == nil or strategy.ppc == nil then
             return nil
@@ -93,7 +93,7 @@ end
 -- Courseplay's own course ahead of the harvester (23/10: it drives straight, turn, straight, turn): heading change
 -- over the next `ahead` m and the side (1 left, -1 right in the harvester frame), distance to the first bend. nil if unknown
 function CombineUnloaderMode.getCpTurnAhead(combine, ahead)
-    local ok, angle, side, bendAt = pcall(function()
+    local ok, angle, side, bendAt = FarmPilotCall(function()
         local strategy = combine.getCpDriveStrategy ~= nil and combine:getCpDriveStrategy() or nil
         if strategy == nil or strategy.getCurrentCourse == nil or strategy.ppc == nil then
             return nil
@@ -160,7 +160,7 @@ CombineUnloaderMode.JOG_MIN_TIME = 4000 -- ms behind at least
 
 -- max deviation and end deviation (deg) of the course ahead from the harvester heading, distance to the first bend
 function CombineUnloaderMode.getCpCourseShape(combine, ahead)
-    local ok, maxDev, endDev, bendAt = pcall(function()
+    local ok, maxDev, endDev, bendAt = FarmPilotCall(function()
         local strategy = combine.getCpDriveStrategy ~= nil and combine:getCpDriveStrategy() or nil
         if strategy == nil or strategy.getCurrentCourse == nil or strategy.ppc == nil then
             return nil
@@ -229,7 +229,7 @@ function CombineUnloaderMode.getCpRowTurn(combine)
     if cache ~= nil and cache.t == now then
         return cache.res, cache.why
     end
-    local ok, res, why = pcall(CombineUnloaderMode.readCpRowTurn, combine)
+    local ok, res, why = FarmPilotCall(CombineUnloaderMode.readCpRowTurn, combine)
     if not ok then
         why = "erreur de lecture des points Courseplay : " .. tostring(res)
         res = nil

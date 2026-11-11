@@ -136,12 +136,20 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	-- le HUD grandit d'une ligne dans ce mode seulement (refait au changement de mode, voir drawHud)
 	-- (décidé par drawHud avec le véhicule affiché ; sinon le véhicule suivi)
 	-- (09/11) modes avec benne : la même ligne de plus devient « Remorque » (fpRowKind « trailer », voir TrailerHitch.lua)
-	self.fpRowKind = self.fpForceRowKind
-	if self.fpRowKind == nil then
-		self.fpRowKind = AutoDriveHud.fpRowKind(vehicle) or false
+	-- (10/11) variable locale : self.fpRowKind vide renvoyait la fonction AutoDriveHud.fpRowKind (même nom),
+	-- le HUD se croyait en mode Autonome et créait les lignes « Outil avant » sans position (blocage au chargement)
+	local fpKind = self.fpForceRowKind
+	if fpKind == nil then
+		fpKind = AutoDriveHud.fpRowKind(vehicle) or false
 	end
+	self.fpRowKind = fpKind
 	self.fpNextToolRow = self.fpRowKind ~= false
 	local pullDownRows = self.fpNextToolRow and 4 or 3
+	-- (10/11) mode Autonome : lignes « Outil avant » et « Outil avant suivant » en plus (6 lignes)
+	self.fpFrontRows = self.fpRowKind == "next"
+	if self.fpFrontRows then
+		pullDownRows = 6
+	end
 
 	self.borderX, self.borderY = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
 	self.buttonWidth, self.buttonHeight = getNormalizedScreenValues(uiScale * buttonSize, uiScale * buttonSize)
@@ -179,6 +187,18 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	self.row3 = self.posY + (self.pullDownRowOffset + 2 + extraRow) * self.borderY + (self.pullDownRowOffset + 1 + extraRow) * self.buttonHeight
 	self.row4 = self.posY + (self.pullDownRowOffset + 3 + extraRow) * self.borderY + (self.pullDownRowOffset + 2 + extraRow) * self.buttonHeight
 	self.rowHeader = self.posY + (self.pullDownRowOffset + 4 + extraRow) * self.borderY + (self.pullDownRowOffset + 3 + extraRow) * self.buttonHeight
+	if self.fpFrontRows then
+		-- (10/11) de bas en haut : Outil suivant / Outil avant suivant / Champ suivant / Outil / Outil avant / Champ
+		local function rowAt(i)
+			return self.posY + (self.pullDownRowOffset + i) * self.borderY + (self.pullDownRowOffset + i - 1) * self.buttonHeight
+		end
+		self.rowFpNextFront = rowAt(2)
+		self.rowFpNextTool = rowAt(3)
+		self.row3 = rowAt(4)
+		self.rowFpFront = rowAt(5)
+		self.row4 = rowAt(6)
+		self.rowHeader = rowAt(7)
+	end
 
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.posY - 0 * self.gapHeight, self.width, self.height + 5 * self.gapHeight, "ad_gui.Background", 0, "background"))
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.rowHeader, self.width, self.headerHeight, "ad_gui.Header", 1, "header"))
@@ -201,7 +221,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	local orderUnload, orderFill = nil, nil
 	if self.fpRowKind == "next" then
 		rowFill, rowUnload, rowNextTool = self.row3, self.rowFpNextTool, self.row2
-		orderFill, orderUnload = 2, 3
+		orderFill, orderUnload = 3, 4 -- (10/11) Outil avant au rang 2, Outil avant suivant au rang 5
 	elseif self.fpRowKind == "trailer" then
 		-- modes avec benne : 1re destination / 2e destination / produit / Remorque (dernière ligne, rang 4)
 		rowFill, rowNextTool = self.rowFpNextTool, self.row2
@@ -254,8 +274,18 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		-- liste d'outils comme la ligne « Outil » (même type), pour le champ suivant ; dernière ligne, rang 4
 		local nextTool = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowNextTool, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
 		nextTool.fpNext = true
-		nextTool.order = 4
+		nextTool.order = 6
 		table.insert(self.hudElements, nextTool)
+		-- (10/11) « Outil avant » sous le champ, « Outil avant suivant » sous le champ suivant (outils frontaux et masses)
+		local frontList = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, self.rowFpFront, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+		frontList.fpFront = true
+		frontList.order = 2
+		table.insert(self.hudElements, frontList)
+		local nextFrontList = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, self.rowFpNextFront, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+		nextFrontList.fpFront = true
+		nextFrontList.fpNext = true
+		nextFrontList.order = 5
+		table.insert(self.hudElements, nextFrontList)
 		-- roue dentée du semoir pour le champ suivant
 		local nextGear = ADHudButton:new(self.posX + self.gapWidth, rowNextTool, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_seeder_tooltipNext", 1, false)
 		nextGear.fpNext = true

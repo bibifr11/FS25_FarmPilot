@@ -33,11 +33,11 @@ end
 
 -- true si c'est un épandeur (fenêtre ouverte) ; false = la ligne a un semoir ou rien (fenêtre du semoir comme avant)
 function ADSprayerSettingsGui.open(vehicle, isNext)
-    local okS, seeder = pcall(ADSeederManager.context, vehicle, isNext == true)
+    local okS, seeder = FarmPilotCall(ADSeederManager.context, vehicle, isNext == true)
     if okS and seeder ~= nil then
         return false
     end
-    local okC, ctx = pcall(ADSprayerManager.context, vehicle, isNext == true)
+    local okC, ctx = FarmPilotCall(ADSprayerManager.context, vehicle, isNext == true)
     if not okC or ctx == nil then
         return false
     end
@@ -139,7 +139,7 @@ function ADSprayerSettingsGui:fieldQuantityText()
     if ftIndex == nil then
         return g_i18n:getText("gui_ad_sprayer_quantityField")
     end
-    local okE, est = pcall(ADSprayerManager.estimate, self.ctx.vehicle, self.ctx.tool, ftIndex, self.ctx.marker, 1)
+    local okE, est = FarmPilotCall(ADSprayerManager.estimate, self.ctx.vehicle, self.ctx.tool, ftIndex, self.ctx.marker, 1)
     if not okE or est == nil then
         return string.format("%s (%s)", g_i18n:getText("gui_ad_sprayer_quantityField"), g_i18n:getText("gui_ad_sprayer_noEstimate"))
     end
@@ -182,7 +182,7 @@ function ADSprayerSettingsGui:refreshItems()
             self.rows[#self.rows + 1] = { kind = "marker", name = m.name, text = m.name, value = value }
         end
     else
-        local okL, label = pcall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
+        local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
         info = string.format(g_i18n:getText("gui_ad_sprayer_head"), okL and label or ADAutonomousManager.toolLabel(self.ctx.tool), tostring(self.ctx.field))
         local d = self.draft
         -- produit
@@ -226,9 +226,9 @@ function ADSprayerSettingsGui:refreshItems()
     if current ~= nil then
         for i, r in ipairs(self.rows) do
             if r.name == current then
-                pcall(self.settingsList.setSelectedIndex, self.settingsList, i)
+                FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, i)
                 if self.settingsList.makeCellVisible ~= nil then
-                    pcall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
+                    FarmPilotCall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
                 end
                 break
             end
@@ -267,7 +267,7 @@ function ADSprayerSettingsGui:act(row)
         d.fillType = row.name
         self.mode = "settings"
         self:refreshItems()
-        pcall(self.settingsList.setSelectedIndex, self.settingsList, 1)
+        FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, 1)
         return
     elseif row.kind == "quantity" then
         d.quantity = d.quantity == ADSprayerManager.QUANTITY_FIELD and ADSprayerManager.QUANTITY_FULL or ADSprayerManager.QUANTITY_FIELD
@@ -279,12 +279,12 @@ function ADSprayerSettingsGui:act(row)
         d.refill = row.name
         self.mode = "settings"
         self:refreshItems()
-        pcall(self.settingsList.setSelectedIndex, self.settingsList, #self.rows)
+        FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, #self.rows)
         return
     end
     local index = self.settingsList:getSelectedIndexInSection()
     self:refreshItems()
-    pcall(self.settingsList.setSelectedIndex, self.settingsList, index)
+    FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, index)
 end
 
 function ADSprayerSettingsGui:onDoubleClick(list, section, index, cell)

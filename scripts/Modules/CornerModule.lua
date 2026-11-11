@@ -199,7 +199,7 @@ function ADCornerModule:readGeometry()
     self.geoSource = "tractor alone"
     self.geoWhy = nil
     if self.trailerLength > 0 and ADBandTurn ~= nil and ADBandTurn.getGeometry ~= nil then
-        local ok, geo, why = pcall(ADBandTurn.getGeometry, self.vehicle)
+        local ok, geo, why = FarmPilotCall(ADBandTurn.getGeometry, self.vehicle)
         if ok and geo == nil then
             self.geoWhy = why -- "pas de remorque a roues": mounted tools only (end manoeuvre: part of the tractor)
         end

@@ -1,52 +1,99 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="113">
+<modDesc descVersion="116">
 	<author>bibifr</author>
 	<title>
 		<en>FarmPilot</en>
-		<fr>FarmPilot</fr>
-		<de>FarmPilot</de>
 	</title>
 	<description>
 		<en>
-<![CDATA[FarmPilot drives your vehicles on a network of routes: tell a tractor near the network to drive to the shop, a field or a sell point, or to unload a combine or a forage harvester.
-Based on AutoDrive 3.0.1.4 by Stephan Schlosser and the AutoDrive team (MIT licence).
+<![CDATA[FarmPilot drives your vehicles on a network of routes. Send a tractor near the network to the shop, a field or a sell point, let it unload a combine or a forage harvester, or run it in Autonomous mode (field work, bale collection, trailer swap, refuelling).
 
-Changelog 1.0.0.0:
-- Head-on passing on two-way roads and tracks (one pulls over, the other reverses), traffic rules on two-way tracks
-- Unloaders wait inside the field, parked along the edge on harvested ground
-- Forage harvester: unloader follows from behind, headland turns, backing out when stuck
-- Leaving the field without crossing standing crop, "Strict" field mode
-- Smart driver: drives around obstacles on the road, wide corners at the real radius of the combination, narrow passages, intersections
-- Built-in (former AutoDrive Addon): weighbridge stop with weight display, turn light before turns and crossings, engine stop delay, only low beams on when the engine is stopped, leaves a silo that stays empty, rear implement selected at start
-- Existing AutoDrive users keep their road network and settings (AutoDrive files are reused). If AutoDrive is also active, FarmPilot disables it.
-Full changelog: https://github.com/bibifr11/FS25_FarmPilot
-]]>
+Main features:
+- Head-on passing on two-way roads and tracks, traffic rules at intersections
+- Unloaders wait inside the field along the edge, forage harvester follow from behind with headland turns
+- Drives around fixed obstacles, wide corners at the real radius of the combination, narrow passages
+- Weighbridge stop with weight display, turn signals before turns, engine stop delay
+- Autonomous mode: baler on windrows, bale trailer, sowing with seed refill, trailer swap
+- Existing AutoDrive road networks and settings are reused
+
+Controls (default, can be changed in the controls menu):
+- Left Alt + Num 0: show/hide the FarmPilot HUD
+- Left Ctrl + Left Alt + Num 0: open the settings
+- Middle mouse button: mouse cursor on/off
+- Left Ctrl + Left Alt + Right / Left: next / previous destination
+- Left Ctrl + Left Alt + O / Num 4: next / previous fill type
+- Left Ctrl + Left Alt + Num 1: routes manager
+- Left Ctrl + Left Alt + M: notification history
+- Left Ctrl + Left Alt + Num 5: Autonomous courses
+- Left Ctrl + Left Shift + F: create field points
+- Left Shift + C / V: copy / paste vehicle settings
+Recording routes, start/stop and editing are done from the HUD.
+
+PC only (scripts are not allowed on consoles). Multiplayer supported.
+
+Based on AutoDrive 3.0.1.4 (MIT licence, Copyright (c) 2024 Stephan Schlosser). FarmPilot licence: GNU GPL v3. Credits: Stephan-S, Axel32019, TyKonKet, OlfDE (GUI textures), FinalsFarming and the AutoDrive contributors. Turkish translation: HSayar / huseyinsayar.
+Source code: https://github.com/bibifr11/FS25_FarmPilot]]>
 		</en>
 		<fr>
-<![CDATA[FarmPilot conduit vos véhicules sur un réseau de routes : envoyez un tracteur proche du réseau au magasin, à un champ ou à un point de vente, ou faites-lui vider une moissonneuse ou une ensileuse.
-Basé sur AutoDrive 3.0.1.4 de Stephan Schlosser et de l'équipe AutoDrive (licence MIT).
+<![CDATA[FarmPilot conduit vos véhicules sur un réseau de routes. Envoyez un tracteur proche du réseau au magasin, à un champ ou à un point de vente, faites-lui vider une moissonneuse ou une ensileuse, ou lancez le mode Autonome (travail des champs, ramassage des balles, échange de bennes, plein).
 
-Changelog 1.0.0.0 :
-- Croisement face à face sur routes et chemins à double sens (l'un se range, l'autre recule), règles de circulation sur les chemins à double sens
-- Les bennes attendent dans le champ, garées le long de la bordure sur le sol récolté
-- Ensileuse : la benne suit par derrière, demi-tours de bout de rang, recul de dégagement quand elle est coincée
-- Sortie du champ sans passer dans la culture, mode champ « Strict »
-- Conducteur intelligent : contourne les obstacles sur la route, virages larges au vrai rayon de l'attelage, passages étroits, intersections
-- Intégré (ancien AutoDrive Addon) : arrêt sur pont-bascule avec affichage du poids, clignotant avant les virages et croisements, délai de coupure moteur, seuls les phares de base allumés moteur coupé, départ d'un silo qui reste vide, outil arrière sélectionné au lancement
-- Les joueurs d'AutoDrive gardent leur réseau et leurs réglages (les fichiers AutoDrive sont repris). Si AutoDrive est aussi activé, FarmPilot le désactive.
-Changelog complet : https://github.com/bibifr11/FS25_FarmPilot
-]]>
+Fonctions :
+- Croisement face à face sur routes et chemins à double sens, règles de priorité aux intersections
+- Les bennes attendent dans le champ le long de la bordure ; derrière l'ensileuse, la benne suit avec demi-tour en bout de rang
+- Contourne les obstacles fixes, virages larges au vrai rayon de l'attelage, passages étroits
+- Arrêt sur pont-bascule avec le poids, clignotant avant les virages, délai de coupure moteur
+- Mode Autonome : presse sur andains, remorque à balles, semis avec remplissage du semoir, échange de bennes
+- Les réseaux et réglages AutoDrive existants sont repris
+
+Commandes (par défaut, modifiables dans le menu des commandes) :
+- Alt gauche + Pavé 0 : afficher/masquer le HUD FarmPilot
+- Ctrl gauche + Alt gauche + Pavé 0 : ouvrir les réglages
+- Bouton central de la souris : curseur on/off
+- Ctrl gauche + Alt gauche + Droite / Gauche : destination suivante / précédente
+- Ctrl gauche + Alt gauche + O / Pavé 4 : produit suivant / précédent
+- Ctrl gauche + Alt gauche + Pavé 1 : gestionnaire de routes
+- Ctrl gauche + Alt gauche + M : historique des notifications
+- Ctrl gauche + Alt gauche + Pavé 5 : parcours autonomes
+- Ctrl gauche + Maj gauche + F : créer les points de champ
+- Maj gauche + C / V : copier / coller les réglages du véhicule
+L'enregistrement des routes, le départ/arrêt et l'édition se font depuis le HUD.
+
+PC uniquement (scripts interdits sur consoles). Multijoueur pris en charge.
+
+Basé sur AutoDrive 3.0.1.4 (licence MIT, Copyright (c) 2024 Stephan Schlosser). Licence de FarmPilot : GNU GPL v3. Crédits : Stephan-S, Axel32019, TyKonKet, OlfDE (textures GUI), FinalsFarming et les contributeurs d'AutoDrive. Traduction turque : HSayar / huseyinsayar.
+Code source : https://github.com/bibifr11/FS25_FarmPilot]]>
 		</fr>
 		<de>
-<![CDATA[FarmPilot fährt deine Fahrzeuge auf einem Routennetz: schicke einen Traktor in der Nähe des Netzes zum Shop, zu einem Feld oder einer Verkaufsstelle, oder lass ihn einen Drescher oder Häcksler abfahren.
-Basiert auf AutoDrive 3.0.1.4 von Stephan Schlosser und dem AutoDrive-Team (MIT-Lizenz).
-Enthält das frühere AutoDrive Addon (Brückenwaage, Blinker, Motor-Abschaltverzögerung, Licht bei Motorstopp, leeres Silo, Heckgerät).
-Bestehende AutoDrive-Netze und Einstellungen werden übernommen. Ist AutoDrive ebenfalls aktiv, deaktiviert FarmPilot es.
-Changelog: https://github.com/bibifr11/FS25_FarmPilot
-]]>
+<![CDATA[FarmPilot fährt deine Fahrzeuge auf einem Routennetz. Schicke einen Traktor in der Nähe des Netzes zum Shop, zu einem Feld oder einer Verkaufsstelle, lass ihn einen Mähdrescher oder Häcksler abfahren oder nutze den Autonom-Modus (Feldarbeit, Ballen einsammeln, Anhängerwechsel, Tanken).
+
+Funktionen:
+- Begegnungsverkehr auf zweispurigen Straßen und Wegen, Vorfahrtsregeln an Kreuzungen
+- Abfahrer warten im Feld am Rand, beim Häcksler folgt der Abfahrer von hinten mit Wendemanöver am Vorgewende
+- Umfährt feste Hindernisse, weite Kurven mit dem echten Radius des Gespanns, enge Durchfahrten
+- Halt auf der Brückenwaage mit Gewichtsanzeige, Blinker vor Abbiegungen, Motor-Abschaltverzögerung
+- Autonom-Modus: Ballenpresse auf Schwaden, Ballenwagen, Säen mit Saatgut-Nachfüllung, Anhängerwechsel
+- Bestehende AutoDrive-Netze und Einstellungen werden übernommen
+
+Steuerung (Standard, im Steuerungsmenü änderbar):
+- Linke Alt + Num 0: FarmPilot-HUD ein/aus
+- Linke Strg + Linke Alt + Num 0: Einstellungen öffnen
+- Mittlere Maustaste: Mauszeiger ein/aus
+- Linke Strg + Linke Alt + Rechts / Links: nächstes / vorheriges Ziel
+- Linke Strg + Linke Alt + O / Num 4: nächste / vorherige Fruchtart
+- Linke Strg + Linke Alt + Num 1: Routen-Manager
+- Linke Strg + Linke Alt + M: Benachrichtigungsverlauf
+- Linke Strg + Linke Alt + Num 5: Autonome Kurse
+- Linke Strg + Linke Umschalt + F: Feldpunkte erstellen
+- Linke Umschalt + C / V: Fahrzeugeinstellungen kopieren / einfügen
+Routen aufnehmen, Start/Stopp und Bearbeiten erfolgen über das HUD.
+
+Nur PC (Skripte sind auf Konsolen nicht erlaubt). Multiplayer wird unterstützt.
+
+Basiert auf AutoDrive 3.0.1.4 (MIT-Lizenz, Copyright (c) 2024 Stephan Schlosser). FarmPilot-Lizenz: GNU GPL v3. Credits: Stephan-S, Axel32019, TyKonKet, OlfDE (GUI-Texturen), FinalsFarming und die AutoDrive-Mitwirkenden. Türkische Übersetzung: HSayar / huseyinsayar.
+Quellcode: https://github.com/bibifr11/FS25_FarmPilot]]>
 		</de>
 	</description>
-	<version>1.0.1.39</version>
+	<version>1.0.3.3</version>
 	<multiplayer supported="true" />
 	<iconFilename>icon_FarmPilot.dds</iconFilename>
 	<extraSourceFiles>

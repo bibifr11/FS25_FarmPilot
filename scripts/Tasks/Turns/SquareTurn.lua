@@ -109,7 +109,7 @@ function SquareTurn:getRadius()
 end
 
 function SquareTurn:getTrainLength()
-    local ok, len = pcall(AutoDrive.getTractorTrainLength, self.turnParameters.vehicle, true, true)
+    local ok, len = FarmPilotCall(AutoDrive.getTractorTrainLength, self.turnParameters.vehicle, true, true)
     if ok and type(len) == "number" and len > 0 then
         return len
     end
@@ -119,7 +119,7 @@ end
 -- the place behind the harvester's new row (world), or the new row entry itself
 function SquareTurn:getIdealEnd()
     local p = self.turnParameters
-    local ok, points = pcall(self.task.generateReverseToCombineSection, self.task, true)
+    local ok, points = FarmPilotCall(self.task.generateReverseToCombineSection, self.task, true)
     if ok and points ~= nil and points[1] ~= nil then
         return {x = points[1].x, z = points[1].z}
     end
@@ -136,7 +136,7 @@ function SquareTurn:getCombineBoxes()
     if combine == nil or combine.components == nil or combine.components[1] == nil or getWorldTranslation == nil or localDirectionToWorld == nil then
         return nil
     end
-    local ok, box = pcall(function()
+    local ok, box = FarmPilotCall(function()
         local node = combine.components[1].node
         local cx, _, cz = getWorldTranslation(node)
         local dx, _, dz = localDirectionToWorld(node, 0, 0, 1)
@@ -155,16 +155,16 @@ function SquareTurn:getCombineBoxes()
         local width = combine.size ~= nil and combine.size.width ~= nil and math.abs(combine.size.width) or 3
         local toolLength, toolWidth = 0, 0
         if AutoDrive.getFrontToolLength ~= nil then
-            local okL, len = pcall(AutoDrive.getFrontToolLength, combine)
+            local okL, len = FarmPilotCall(AutoDrive.getFrontToolLength, combine)
             toolLength = okL and type(len) == "number" and len or 0
         end
         if AutoDrive.getFrontToolWidth ~= nil then
-            local okW, w = pcall(AutoDrive.getFrontToolWidth, combine)
+            local okW, w = FarmPilotCall(AutoDrive.getFrontToolWidth, combine)
             toolWidth = okW and type(w) == "number" and w or 0
         end
         local trainHalf = 1.5
         if p.vehicle.ad ~= nil and p.vehicle.ad.pathFinderModule ~= nil and p.vehicle.ad.pathFinderModule.getTrainWidth ~= nil then
-            local okT, tw = pcall(p.vehicle.ad.pathFinderModule.getTrainWidth, p.vehicle.ad.pathFinderModule)
+            local okT, tw = FarmPilotCall(p.vehicle.ad.pathFinderModule.getTrainWidth, p.vehicle.ad.pathFinderModule)
             if okT and type(tw) == "number" then
                 trainHalf = tw / 2
             end
@@ -407,7 +407,7 @@ function SquareTurn:buildPoints(c)
         points[#points + 1] = wp
     end)
     -- harvester AI turn (not the Courseplay end of row, where it gives nothing): the reverse to its pipe
-    local ok, section = pcall(self.task.generateReverseToCombineSection, self.task)
+    local ok, section = FarmPilotCall(self.task.generateReverseToCombineSection, self.task)
     if ok and section ~= nil then
         for _, node in ipairs(section) do
             points[#points + 1] = node

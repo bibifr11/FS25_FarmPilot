@@ -164,7 +164,7 @@ function ADIntersectionHold.install(module)
     local originalHandle, originalRetreat, originalLog = module.handle, module.startRetreat, module.log
     module.handle = function(vehicle, dt)
         ADIntersectionHold.current = vehicle
-        local ok, held = pcall(originalHandle, vehicle, dt)
+        local ok, held = FarmPilotCall(originalHandle, vehicle, dt)
         ADIntersectionHold.current = nil
         if not ok then
             error(held, 0)

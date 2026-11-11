@@ -49,7 +49,7 @@ function HandleHarvesterTurnTask:updateCurrentTurn()
     if self.currentTurn ~= nil then
         -- 25/10 (599 Lua errors in 19 s): a Lua error while generating a turn must not stop
         -- AutoDrive every frame, the turn is dropped and the next one tried
-        local ok, result = pcall(self.currentTurn.update, self.currentTurn)
+        local ok, result = FarmPilotCall(self.currentTurn.update, self.currentTurn)
         if ok then
             turnReady = result
             if not result and self.currentTurn.failed then
@@ -129,7 +129,7 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- how far inside the tractor's track the trailer axle runs on an arc of radius r (off-tracking)
 function HandleHarvesterTurnTask:getTrailerOfftrack(r)
-    local ok, len = pcall(AutoDrive.getTractorTrainLength, self.vehicle, false, true)
+    local ok, len = FarmPilotCall(AutoDrive.getTractorTrainLength, self.vehicle, false, true)
     local trailer = ok and type(len) == "number" and len or 7
     trailer = math.min(trailer, r * 0.95)
     return r - math.sqrt(math.max(0, r * r - trailer * trailer))

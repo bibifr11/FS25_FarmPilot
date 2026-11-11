@@ -52,6 +52,8 @@ function DriveToDestinationTask:updateArrival(dt)
         return true
     elseif self:isFieldFullStop(dt) then
         return true
+    elseif self:isNoPlaceStop(dt) then
+        return true
     end
     -- S8: the last link of the route, still known when the target is reached (the route is cleared then)
     local wayPoints = self.vehicle.ad.drivePathModule.wayPoints

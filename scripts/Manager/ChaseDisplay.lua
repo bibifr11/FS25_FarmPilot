@@ -76,7 +76,7 @@ function ADChaseDisplay.draw()
         if vehicle ~= nil and vehicle.ad ~= nil and vehicle.components ~= nil and vehicle.ad.stateModule ~= nil
             and vehicle.ad.stateModule.isActive ~= nil and vehicle.ad.stateModule:isActive()
             and vehicle.ad.stateModule.getMode ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD then
-            local ok, err = pcall(ADChaseDisplay.drawVehicle, vehicle)
+            local ok, err = FarmPilotCall(ADChaseDisplay.drawVehicle, vehicle)
             if not ok and not ADChaseDisplay.errorLogged then
                 ADChaseDisplay.errorLogged = true
                 print("[AD-Affichage] erreur d'affichage de la poursuite : " .. tostring(err))
@@ -157,7 +157,7 @@ function ADChaseDisplay.drawVehicle(vehicle)
             end
             lines[#lines + 1] = what
         end
-        local ok, info = pcall(task.getInfoText, task)
+        local ok, info = FarmPilotCall(task.getInfoText, task)
         lines[#lines + 1] = taskName .. ((ok and info ~= nil) and (" : " .. tostring(info)) or "")
     end
     if mode ~= nil and mode.getStateName ~= nil then

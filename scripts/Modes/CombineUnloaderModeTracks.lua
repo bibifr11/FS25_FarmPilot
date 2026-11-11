@@ -167,13 +167,13 @@ function CombineUnloaderMode.cropAt(x, z)
         return nil
     end
     if PathFinderModule.getMapCropAt ~= nil then
-        local ok, crop = pcall(PathFinderModule.getMapCropAt, x, z)
+        local ok, crop = FarmPilotCall(PathFinderModule.getMapCropAt, x, z)
         if ok then
             return crop
         end
     end
     if PathFinderModule.readCropAt ~= nil then
-        local ok, crop = pcall(PathFinderModule.readCropAt, x, z)
+        local ok, crop = FarmPilotCall(PathFinderModule.readCropAt, x, z)
         if ok then
             return crop
         end

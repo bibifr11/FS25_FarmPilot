@@ -52,7 +52,7 @@ local function nameOf(object)
         return "?"
     end
     if object.getName ~= nil then
-        local ok, name = pcall(object.getName, object)
+        local ok, name = FarmPilotCall(object.getName, object)
         if ok and name ~= nil then
             return tostring(name)
         end
@@ -79,7 +79,7 @@ end
 
 local function combinationOf(root)
     if root.getChildVehicles ~= nil then
-        local ok, list = pcall(root.getChildVehicles, root)
+        local ok, list = FarmPilotCall(root.getChildVehicles, root)
         if ok and type(list) == "table" then
             return list
         end
@@ -194,7 +194,7 @@ function ADObstacleDetourQueue.getVehicleInFront(vehicle)
     for _, other in pairs(AutoDrive.getAllVehicles()) do
         if other ~= nil and other ~= vehicle and rootOf(other) ~= myRoot and not AutoDrive:checkIsConnected(myRoot, other)
             and other.components ~= nil and other.size ~= nil and other.size.width ~= nil and other.size.length ~= nil and other.rootNode ~= nil then
-            local ok, hit = pcall(AutoDrive.boxesIntersect, boundingBox, AutoDrive.getBoundingBoxForVehicle(other))
+            local ok, hit = FarmPilotCall(AutoDrive.boxesIntersect, boundingBox, AutoDrive.getBoundingBoxForVehicle(other))
             if ok and hit == true then
                 return other, nil
             end

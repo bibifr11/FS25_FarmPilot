@@ -98,7 +98,7 @@ function ADTaskModule:update(dt)
         -- 28/10 18:28: while it waits (two-way track, red points, queue) or manoeuvres for another vehicle, the HUD says
         -- what for and for whom instead of the text of the task
         if ADTrafficYieldModule ~= nil and ADTrafficYieldModule.getWaitInfo ~= nil then
-            local ok, waitInfo = pcall(ADTrafficYieldModule.getWaitInfo, self.vehicle)
+            local ok, waitInfo = FarmPilotCall(ADTrafficYieldModule.getWaitInfo, self.vehicle)
             if ok and waitInfo ~= nil then
                 taskInfo = waitInfo
             end

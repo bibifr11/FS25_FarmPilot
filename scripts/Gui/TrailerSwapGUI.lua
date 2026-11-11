@@ -81,7 +81,7 @@ function ADTrailerSwapGui:refreshItems()
     for _, folder in ipairs(folders) do
         local value = ""
         if vehicle ~= nil then
-            local ok, nPlaces, nFree, nEmpty = pcall(ADTrailerSwap.folderInfo, vehicle, folder)
+            local ok, nPlaces, nFree, nEmpty = FarmPilotCall(ADTrailerSwap.folderInfo, vehicle, folder)
             if ok then
                 value = string.format(g_i18n:getText("gui_ad_trailerSwap_folderValue"), nPlaces, nFree, nEmpty)
             end
@@ -99,7 +99,7 @@ function ADTrailerSwapGui:refreshItems()
     self.settingsList:reloadData()
     for i, r in ipairs(self.rows) do
         if r.folder == (current or "") then
-            pcall(self.settingsList.setSelectedIndex, self.settingsList, i)
+            FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, i)
             break
         end
     end

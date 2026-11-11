@@ -184,7 +184,7 @@ function ADSeederSettingsGui:refreshItems()
             self.rows[#self.rows + 1] = { kind = "marker", name = m.name, text = m.name, value = value }
         end
     else
-        local okL, label = pcall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
+        local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
         info = string.format(g_i18n:getText("gui_ad_seeder_head"), okL and label or ADAutonomousManager.toolLabel(self.ctx.tool), tostring(self.ctx.field))
         local d = self.draft
         -- culture
@@ -234,9 +234,9 @@ function ADSeederSettingsGui:refreshItems()
     if current ~= nil then
         for i, r in ipairs(self.rows) do
             if r.name == current then
-                pcall(self.settingsList.setSelectedIndex, self.settingsList, i)
+                FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, i)
                 if self.settingsList.makeCellVisible ~= nil then
-                    pcall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
+                    FarmPilotCall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
                 end
                 break
             end
@@ -283,7 +283,7 @@ function ADSeederSettingsGui:act(row)
         d.fruit = row.name
         self.mode = "settings"
         self:refreshItems()
-        pcall(self.settingsList.setSelectedIndex, self.settingsList, 1)
+        FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, 1)
         return
     elseif row.kind == "fill" then
         if hasFill(d, row.name) then
@@ -313,12 +313,12 @@ function ADSeederSettingsGui:act(row)
         self.mode = "settings"
         self:refreshItems()
         -- retour sur la ligne « Zone de ravitaillement »
-        pcall(self.settingsList.setSelectedIndex, self.settingsList, #self.rows)
+        FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, #self.rows)
         return
     end
     local index = self.settingsList:getSelectedIndexInSection()
     self:refreshItems()
-    pcall(self.settingsList.setSelectedIndex, self.settingsList, index)
+    FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, index)
 end
 
 function ADSeederSettingsGui:onDoubleClick(list, section, index, cell)

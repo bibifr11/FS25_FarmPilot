@@ -23,8 +23,8 @@ local function collect(dir, parentName, out, depth)
     if dir == nil or depth > 6 or #out >= ADAutonomousManager.MAX_FILES then
         return
     end
-    pcall(dir.refresh, dir)
-    local okF, files = pcall(dir.getFiles, dir)
+    FarmPilotCall(dir.refresh, dir)
+    local okF, files = FarmPilotCall(dir.getFiles, dir)
     if okF and type(files) == "table" then
         for _, f in ipairs(files) do
             if #out >= ADAutonomousManager.MAX_FILES then
@@ -33,10 +33,10 @@ local function collect(dir, parentName, out, depth)
             out[#out + 1] = { file = f, dir = parentName }
         end
     end
-    local okD, dirs = pcall(dir.getDirectories, dir)
+    local okD, dirs = FarmPilotCall(dir.getDirectories, dir)
     if okD and type(dirs) == "table" then
         for _, sub in ipairs(dirs) do
-            local okN, n = pcall(sub.getName, sub)
+            local okN, n = FarmPilotCall(sub.getName, sub)
             collect(sub, okN and n or parentName, out, depth + 1)
         end
     end
@@ -99,14 +99,14 @@ function ADAutonomousManager.startPrefetch()
     if storage == nil or storage.getRootDirectory == nil then
         return
     end
-    local okR, root = pcall(storage.getRootDirectory, storage)
+    local okR, root = FarmPilotCall(storage.getRootDirectory, storage)
     local files = {}
     if okR and root ~= nil then
         collect(root, "", files, 0)
     end
     local paths = {}
     for _, e in ipairs(files) do
-        local okP, path = pcall(e.file.getFullPath, e.file)
+        local okP, path = FarmPilotCall(e.file.getFullPath, e.file)
         if okP and path ~= nil then
             paths[#paths + 1] = path
         end
@@ -125,10 +125,10 @@ function ADAutonomousManager.prefetchStep(n)
         local path = pf.paths[pf.i]
         pf.i = pf.i + 1
         if ADAutonomousManager.cache[path] == nil then
-            local okI, r = pcall(ADAutonomousManager.readCourse, path)
+            local okI, r = FarmPilotCall(ADAutonomousManager.readCourse, path)
             local info = okI and r or false
             if info then
-                pcall(ADAutonomousManager.courseHits, info)
+                FarmPilotCall(ADAutonomousManager.courseHits, info)
             end
             ADAutonomousManager.cache[path] = info
             done = done + 1
@@ -150,21 +150,21 @@ function ADAutonomousManager.listCourses()
         log("stockage des parcours Courseplay introuvable (g_Courseplay %s)", tostring(cp))
         return nil
     end
-    local okR, root = pcall(storage.getRootDirectory, storage)
+    local okR, root = FarmPilotCall(storage.getRootDirectory, storage)
     local files = {}
     if okR and root ~= nil then
         collect(root, "", files, 0)
     end
     local out = {}
     for _, e in ipairs(files) do
-        local okP, path = pcall(e.file.getFullPath, e.file)
+        local okP, path = FarmPilotCall(e.file.getFullPath, e.file)
         e.path = okP and path or nil
-        local okN, n = pcall(e.file.getName, e.file)
+        local okN, n = FarmPilotCall(e.file.getName, e.file)
         e.fname = okN and tostring(n) or "?"
         if e.path ~= nil then
             local info = ADAutonomousManager.cache[e.path]
             if info == nil then
-                local okI, r = pcall(ADAutonomousManager.readCourse, e.path)
+                local okI, r = FarmPilotCall(ADAutonomousManager.readCourse, e.path)
                 info = okI and r or false
                 ADAutonomousManager.cache[e.path] = info
             end

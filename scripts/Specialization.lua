@@ -147,6 +147,9 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#parkDestinationName", "parkDestination name")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpTool", "FarmPilot Autonome: tool to attach (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpNextTool", "FarmPilot Autonome: tool for the next field (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpFrontTool", "FarmPilot Autonome: front tool or weight to attach (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpNextFrontTool", "FarmPilot Autonome: front tool for the next field (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpMassReturn", "FarmPilot Autonome: weight left at its place, taken back at the end (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpTrailer", "FarmPilot: trailer to attach in the modes with a trailer (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSwapFolder", "FarmPilot: folder of the places for the trailer swap")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
@@ -1239,6 +1242,7 @@ function AutoDrive:stopAutoDrive()
         ADScheduler:removePathfinderVehicle(self)
 
         if self.ad.stateModule:isActive() then
+            if ADAutonomousManager ~= nil and ADAutonomousManager.journalStop ~= nil then FarmPilotCall(ADAutonomousManager.journalStop, self) end -- arrêt écrit au journal, voir AutonomousManager.lua
             self.ad.drivePathModule:reset()
             self.ad.specialDrivingModule:reset()
             self.ad.trailerModule:reset()
@@ -1353,13 +1357,13 @@ function AutoDrive:stopAutoDrive()
                     AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_cpFailed", ADAutonomousManager.courseLabel(autonomousCourse))
                 end
             elseif autonomousRestart then
-                local okR, restarted = pcall(ADAutonomousManager.restartCourse, ADAutonomousManager, self)
+                local okR, restarted = FarmPilotCall(ADAutonomousManager.restartCourse, ADAutonomousManager, self)
                 if not okR or not restarted then
                     ADAutonomousManager.log("%s : Courseplay n'a pas pu repartir au dernier point (%s)", tostring(self.ad.stateModule:getName()), tostring(okR and restarted or "erreur"))
                     AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_cpRestartFailed")
                 end
             elseif autonomousAI then
-                local ok, started, why = pcall(ADAutonomousManager.startBaseWorker, self)
+                local ok, started, why = FarmPilotCall(ADAutonomousManager.startBaseWorker, self)
                 if not ok or not started then
                     ADAutonomousManager.log("%s : l'ouvrier du jeu n'a pas pu démarrer (%s)", tostring(self.ad.stateModule:getName()), tostring(ok and why or started))
                     AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_aiFailed")
@@ -1377,6 +1381,7 @@ function AutoDrive:stopAutoDrive()
             if ADBaleCollect ~= nil then ADBaleCollect.afterStop(self) end -- remorque à balles : champ ramassé, champ suivant / parking, voir AutonomousBales.lua
             if ADTrailerHitch ~= nil then ADTrailerHitch.afterStop(self) end -- remorque choisie : à sa place, puis le tracteur, voir TrailerHitch.lua
             if ADParkButton ~= nil then ADParkButton.afterStop(self) end -- dépose au parking finie : mode d'avant rendu, voir AutonomousParkButton.lua
+            if ADParkUnload ~= nil then ADParkUnload.afterStop(self) end -- bouton parking : benne vidée, la suite du bouton, voir AutonomousParkUnload.lua
             if ADFuelRun ~= nil then ADFuelRun.afterStop(self) end -- plein fait avant le champ suivant : on y va, voir AutonomousFuel.lua
         end
     else
@@ -1837,6 +1842,20 @@ function AutoDrive:toggleMouse()
     self.ad.lastMouseState = g_inputBinding:getShowMouseCursor()
 end
 
+-- FarmPilot (11/11) : feux de détresse seulement en vraie marche arrière, à HAZARD_KMH au moins, et éteints dès
+-- que le véhicule roule en avant à cette vitesse. Avant : allumés au moindre recul (quelques centimètres au
+-- départ avec un outil lourd derrière) et éteints seulement à l'arrêt complet : il roulait en warning jusqu'au
+-- prochain arrêt (réseau secondaire surtout, peu d'arrêts). Les clignotants de virage (TurnLightsBends.lua)
+-- ne sont pas touchés.
+AutoDrive.HAZARD_KMH = 1 -- km/h
+
+local function traceHazard(vehicle, what, speed)
+    if ADTraces ~= nil then -- traces privées, voir FarmPilotTraces.lua
+        local name = vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule:getName() or "?"
+        ADTraces.log("[AD-Warning] %s : feux de détresse %s (%.1f km/h, sens %s)", tostring(name), what, speed, tostring(vehicle.movingDirection))
+    end
+end
+
 function AutoDrive:updateAutoDriveLights(switchOff)
     if not self.setTurnLightState then
         AutoDrive.errorMsg(self, "AutoDrive:updateAutoDriveLights self.setTurnLightState %s", tostring(self.setTurnLightState))
@@ -1864,11 +1883,19 @@ function AutoDrive:updateAutoDriveLights(switchOff)
 
         if self.setTurnLightState then
             if AutoDrive.getSetting("useHazardLightReverse", self) then
-                local drivingReverse = (self.lastSpeedReal * self.movingDirection) < 0
-                local isReverseDrivingMode = AutoDrive.isReverseDriving(self)
-                if drivingReverse ~= isReverseDrivingMode then
+                local speed = (self.lastSpeedReal or 0) * 3600
+                local drivingReverse = ((self.lastSpeedReal or 0) * (self.movingDirection or 0)) < 0
+                local backward = drivingReverse ~= AutoDrive.isReverseDriving(self)
+                local state = self.spec_lights ~= nil and self.spec_lights.turnLightState or nil
+                if backward and speed >= AutoDrive.HAZARD_KMH then
+                    if state ~= Lights.TURNLIGHT_HAZARD then
+                        traceHazard(self, "allumés, marche arrière", speed)
+                    end
                     self:setTurnLightState(Lights.TURNLIGHT_HAZARD, true)
-                elseif self.lastSpeedReal * 3600 < 0.1 then
+                elseif speed < 0.1 then
+                    self:setTurnLightState(Lights.TURNLIGHT_OFF)
+                elseif not backward and speed >= AutoDrive.HAZARD_KMH and state == Lights.TURNLIGHT_HAZARD then
+                    traceHazard(self, "éteints, il roule en avant", speed)
                     self:setTurnLightState(Lights.TURNLIGHT_OFF)
                 end
             end

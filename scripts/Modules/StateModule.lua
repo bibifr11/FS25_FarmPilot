@@ -201,7 +201,7 @@ end
 
 function ADStateModule:saveToXMLFile(xmlFile, key)
     xmlFile:setValue(key .. "#mode", self.mode)
-    -- numéro du marqueur dans la config (sans les marqueurs de debug) + son nom
+    -- numéro du marqueur dans la config (sans les marqueurs de dbg) + son nom
     local firstIndex = ADGraphManager:getSavedMarkerIndex(self.firstMarker)
     if firstIndex ~= nil then
         xmlFile:setValue(key .. "#firstMarker", firstIndex)
@@ -354,50 +354,50 @@ function ADStateModule:update(dt)
 
     if g_client ~= nil and AutoDrive:getIsEntered(self.vehicle) and AutoDrive.getDebugChannelIsSet(AutoDrive.DC_VEHICLEINFO) then
 		-- debug output only displayed on client with entered vehicle
-        local debug = {}
-        debug.active = self.active
-        debug.mode = self.mode
+        local dbg = {}
+        dbg.active = self.active
+        dbg.mode = self.mode
         if self.firstMarker ~= nil then
-            debug.firstMarker = self.firstMarker.name
+            dbg.firstMarker = self.firstMarker.name
         end
         if self.secondMarker ~= nil then
-            debug.secondMarker = self.secondMarker.name
+            dbg.secondMarker = self.secondMarker.name
         end
-        debug.creationMode = self.creationMode
-        debug.fillType = self.fillType
-        debug.loopCounter = self.loopCounter
-        debug.loopsDone = self.loopsDone
-        debug.speedLimit = self.speedLimit
-        debug.fieldSpeedLimit = self.fieldSpeedLimit
-        debug.parkDestination = self.parkDestination
-        debug.parkDestinationAtJobFinished = self.parkDestinationAtJobFinished
+        dbg.creationMode = self.creationMode
+        dbg.fillType = self.fillType
+        dbg.loopCounter = self.loopCounter
+        dbg.loopsDone = self.loopsDone
+        dbg.speedLimit = self.speedLimit
+        dbg.fieldSpeedLimit = self.fieldSpeedLimit
+        dbg.parkDestination = self.parkDestination
+        dbg.parkDestinationAtJobFinished = self.parkDestinationAtJobFinished
         if self.currentDestination ~= nil then
-            debug.currentDestination = self.currentDestination.name
+            dbg.currentDestination = self.currentDestination.name
         end
-        debug.currentTaskInfo = self.currentTaskInfo
-        debug.currentLocalizedTaskInfo = self.currentLocalizedTaskInfo
-        debug.currentWayPointId = self.currentWayPointId
-        debug.nextWayPointId = self.nextWayPointId
-        debug.startHelper = self.startHelper
-        debug.usedHelper = self.usedHelper
-        debug.driverName = self.driverName
-        debug.remainingDriveTime = self.remainingDriveTime
+        dbg.currentTaskInfo = self.currentTaskInfo
+        dbg.currentLocalizedTaskInfo = self.currentLocalizedTaskInfo
+        dbg.currentWayPointId = self.currentWayPointId
+        dbg.nextWayPointId = self.nextWayPointId
+        dbg.startHelper = self.startHelper
+        dbg.usedHelper = self.usedHelper
+        dbg.driverName = self.driverName
+        dbg.remainingDriveTime = self.remainingDriveTime
         if self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD].combine ~= nil then
-            debug.combine = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD].combine:getName()
+            dbg.combine = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD].combine:getName()
         else
-            debug.combine = "-"
+            dbg.combine = "-"
         end
         if ADHarvestManager:getAssignedUnloader(self.vehicle) ~= nil then
-            debug.unloader = ADHarvestManager:getAssignedUnloader(self.vehicle):getName()
+            dbg.unloader = ADHarvestManager:getAssignedUnloader(self.vehicle):getName()
         else
-            debug.unloader = "-"
+            dbg.unloader = "-"
         end
         if self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader() ~= nil then
-            debug.follower = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader():getName()
+            dbg.follower = self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader():getName()
         else
-            debug.follower = "-"
+            dbg.follower = "-"
         end
-        AutoDrive.renderTable(0.4, 0.4, 0.014, debug)
+        AutoDrive.renderTable(0.4, 0.4, 0.014, dbg)
     end
 end
 

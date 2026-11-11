@@ -57,7 +57,7 @@ function ADHarvestManager:checkChopperDriver(harvester, vehicle, driverStopped)
             harvester.ad.cpSeenActive = true
             print(string.format("[AD-Chantier] %s: Courseplay au travail, fin de chantier surveillee", tostring(harvester:getName())))
         end
-        if harvester.ad.jobDone and AutoDrive:getIsCPActive(vehicle) then
+        if harvester.ad.jobDone and harvester.ad.combineJobSince == nil and AutoDrive:getIsCPActive(vehicle) then -- (moissonneuse : son nouveau chantier est décidé dans HarvestManagerCombineJob.lua)
             print(string.format("[AD-Chantier] %s: Courseplay repart, nouveau chantier", tostring(harvester:getName())))
             harvester.ad.jobDone = nil
         end

@@ -25,7 +25,7 @@ ADRefillSources = {}
 ADRefillSources.RADIUS = 50          -- m entre le marqueur et la zone de chargement / le big bag
 
 local function safe(f, ...)
-    local ok, a, b, c = pcall(f, ...)
+    local ok, a, b, c = FarmPilotCall(f, ...)
     if ok then
         return a, b, c
     end
@@ -319,7 +319,7 @@ function ADRefillSources.filter(gui)
     local farmId = vehicle ~= nil and vehicle.getOwnerFarmId ~= nil and vehicle:getOwnerFarmId() or nil
     ]==]
     local farmId = ownerFarm(gui)
-    local okF, sources = pcall(ADRefillSources.find, indexes, farmId)
+    local okF, sources = FarmPilotCall(ADRefillSources.find, indexes, farmId)
     if not okF then
         print("[FarmPilot Plein] ERREUR recherche des zones : " .. tostring(sources))
         return nil, nil
@@ -333,7 +333,7 @@ function ADRefillSources.filter(gui)
         for _ in pairs(allowed) do
             nAllowed = nAllowed + 1
         end
-        local okR, line = pcall(ADRefillSources.report, indexes, ftNames, farmId, nAllowed)
+        local okR, line = FarmPilotCall(ADRefillSources.report, indexes, ftNames, farmId, nAllowed)
         if okR and line ~= nil then
             print(line)
         end

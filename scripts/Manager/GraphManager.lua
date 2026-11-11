@@ -149,7 +149,16 @@ function ADGraphManager:getPathTo(vehicle, waypointId, startPoint)
     end
 
     local closestWaypoint = nil
-    if startPoint ~= nil and startPoint.id ~= nil then
+    local how = "dernier point suivi"
+    -- FarmPilot : réseau rejoint par une courbe calculée, la route part du point rejoint, voir GraphManagerStart.lua
+    if ADGraphManager.joinedStart ~= nil then
+        local ok, joined = FarmPilotCall(ADGraphManager.joinedStart, self, vehicle, x, z)
+        if ok and joined ~= nil then
+            closestWaypoint = joined
+            how = "point rejoint par la courbe"
+        end
+    end
+    if closestWaypoint == nil and startPoint ~= nil and startPoint.id ~= nil then
         -- consider id to avoid using Pathfinder wayPoints
         local distanceToStartPoint = MathUtil.vector2Length(x - startPoint.x, z - startPoint.z)
         if distanceToStartPoint < 5 then
@@ -158,11 +167,22 @@ function ADGraphManager:getPathTo(vehicle, waypointId, startPoint)
     end
     if closestWaypoint == nil then
         closestWaypoint = self:findMatchingWayPointForVehicle(vehicle)
+        how = "devant le véhicule"
     end
     if closestWaypoint ~= nil then
         local outCandidates = self:getBestOutPoints(vehicle, closestWaypoint)
         wp = self:pathFromTo(closestWaypoint, waypointId, outCandidates, vehicle)
     end
+    -- FarmPilot : point de départ sans issue, les points suivants devant le véhicule sont essayés, voir GraphManagerStart.lua
+    if ADGraphManager.pathFromOtherStart ~= nil and not ADGraphManager.isRouteTo(wp, waypointId) then
+        local ok, other, otherId = FarmPilotCall(ADGraphManager.pathFromOtherStart, self, vehicle, waypointId, closestWaypoint)
+        if ok and other ~= nil then
+            wp = other
+            how = string.format("autre départ, le point %s était sans issue", tostring(closestWaypoint))
+            closestWaypoint = otherId
+        end
+    end
+    if ADGraphManager.traceRoute ~= nil then FarmPilotCall(ADGraphManager.traceRoute, vehicle, waypointId, closestWaypoint, how, wp or {}) end -- traces privées, voir GraphManagerStart.lua
 
     return wp
 end
@@ -184,7 +204,7 @@ function ADGraphManager:pathFromTo(startWaypointId, targetWaypointId, preferredN
             wp = ADPathCalculator:GetPath(startWaypointId, targetWaypointId, preferredNeighbors, vehicle)
             -- (07/11) a destination behind a turn too tight for the train: another way in (ADCornerModule:avoidTightEnd)
             if vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.cornerModule ~= nil and vehicle.ad.cornerModule.avoidTightEnd ~= nil and wp ~= nil and #wp >= 3 then
-                local ok, other = pcall(vehicle.ad.cornerModule.avoidTightEnd, vehicle.ad.cornerModule, wp, startWaypointId, targetWaypointId, preferredNeighbors)
+                local ok, other = FarmPilotCall(vehicle.ad.cornerModule.avoidTightEnd, vehicle.ad.cornerModule, wp, startWaypointId, targetWaypointId, preferredNeighbors)
                 if ok and other ~= nil then
                     wp = other
                 elseif not ok then

@@ -1,3 +1,74 @@
+--[[
+FarmPilot, based on AutoDrive 3.0.1.4
+
+LICENSE (MIT)
+MIT License
+
+Copyright (c) 2024 Stephan Schlosser
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+CREDITS
+FarmPilot:
+bibifr - FarmPilot, based on AutoDrive 3.0.1.4
+
+Translations (FarmPilot):
+Turkish: huseyinsayar
+
+Original mod: AutoDrive (https://github.com/Stephan-S/FS25_AutoDrive), MIT licence, Copyright (c) 2024 Stephan Schlosser
+
+Main developers:
+Stephan-S
+Axel32019
+TyKonKet
+
+GUI Textures and Design:
+OlfDE
+
+Logo Design:
+FinalsFarming 
+
+Others:
+Anonymous-any
+Roby1164
+Gonimy-Vetrom
+Bandesss
+raxtor
+raupach
+Dzi4d3k
+PromGames
+jala15
+cristiancundari
+Iwan1803
+rogeriodec
+Efratror
+pvaiko
+Datalund
+Bobster82
+criss20ster
+Gariot
+andrefelipeschulle
+
+Tips & Tricks for Lua/FS: 
+DeckerMMIV
+]]
+
 --
 -- Mod: AutoDrive
 --
@@ -8,6 +79,8 @@
 
 -- #############################################################################
 
+source(Utils.getFilename("scripts/Utils/FarmPilotLogFilter.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Utils/FarmPilotTraces.lua", g_currentModDirectory)) -- traces privées : fichier à part, interrupteur sur le PC
 source(Utils.getFilename("scripts/AutoDrive.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/AutoDriveVehicleData.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/AutoDrivePlaceableData.lua", g_currentModDirectory))
@@ -65,6 +138,7 @@ source(Utils.getFilename("scripts/Utils/AutoDriveTON.lua", g_currentModDirectory
 source(Utils.getFilename("scripts/Utils/TrailerUtil.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/CombineUtil.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/UtilFuncs.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Utils/UtilFuncsSmoothDrive.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/Queue.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/RingQueue.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/Buffer.lua", g_currentModDirectory))
@@ -84,10 +158,12 @@ source(Utils.getFilename("scripts/Manager/DrawingManager.lua", g_currentModDirec
 source(Utils.getFilename("scripts/Manager/ChaseDisplay.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/MessagesManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/GraphManager.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/GraphManagerStart.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/DirtRoadManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/TriggerManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/HarvestManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/HarvestManagerChopperJob.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/HarvestManagerCombineJob.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/HarvestManagerQueue.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/InputManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/UserDataManager.lua", g_currentModDirectory))
@@ -102,6 +178,8 @@ source(Utils.getFilename("scripts/Tasks/DriveToDestinationTaskFieldEntrance.lua"
 source(Utils.getFilename("scripts/Tasks/StopAndDisableADTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/DetachToolTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/FetchToolTask.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Tasks/FetchFrontToolTask.lua", g_currentModDirectory)) -- mode Autonome : attelage avant
+source(Utils.getFilename("scripts/Tasks/FrontPlaceTask.lua", g_currentModDirectory)) -- mode Autonome : outil avant posé à côté
 source(Utils.getFilename("scripts/Tasks/BaleCollectTask.lua", g_currentModDirectory)) -- remorque à balles : ramassage des balles du champ
 source(Utils.getFilename("scripts/Tasks/UnloadAtDestinationTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/LoadAtDestinationTask.lua", g_currentModDirectory))
@@ -167,6 +245,7 @@ source(Utils.getFilename("scripts/Modules/IntersectionModule.lua", g_currentModD
 source(Utils.getFilename("scripts/Modules/IntersectionModuleZone.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/IntersectionModuleTraffic.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ObstacleDetourQueue.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/ObstacleDetourEscape.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ObstacleDetourModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ApproachModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/CornerModule.lua", g_currentModDirectory))
@@ -206,6 +285,7 @@ source(Utils.getFilename("scripts/Modules/PathFinderModuleBand.lua", g_currentMo
 source(Utils.getFilename("scripts/Modules/PathFinderModuleLog.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/StateModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/StateModuleAutonomous.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/StateModuleFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant
 source(Utils.getFilename("scripts/Modules/StateModuleTrailer.lua", g_currentModDirectory)) -- remorque des modes avec benne
 source(Utils.getFilename("scripts/Modules/RecordingModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/TrainModule.lua", g_currentModDirectory))
@@ -225,10 +305,13 @@ source(Utils.getFilename("scripts/Modes/CombineUnloaderModeTracks.lua", g_curren
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeCourseplay.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeChopperChase.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/AutonomousFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant (outils frontaux, masses)
+source(Utils.getFilename("scripts/Modes/AutonomousNoseIn.lua", g_currentModDirectory)) -- mode Autonome : entrée le nez en avant dans une place prise en marche arrière
 source(Utils.getFilename("scripts/Modes/AutonomousParkButton.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/AutonomousManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/AutonomousManagerFields.lua", g_currentModDirectory)) -- mode Autonome : champs, ouvrier du jeu
 source(Utils.getFilename("scripts/Manager/AutonomousManagerTools.lua", g_currentModDirectory)) -- mode Autonome : outil attelé, outil à atteler
+source(Utils.getFilename("scripts/Manager/AutonomousManagerFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant (outils frontaux, masses)
 source(Utils.getFilename("scripts/Manager/AutonomousManagerCourses.lua", g_currentModDirectory)) -- mode Autonome : parcours enregistrés de Courseplay
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/BalerManager.lua", g_currentModDirectory)) -- presse : parcours qui tombe sur les andains
@@ -241,6 +324,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousBales.lua", g_currentModDirect
 source(Utils.getFilename("scripts/Modes/AutonomousFuel.lua", g_currentModDirectory)) -- plein de carburant : Courseplay à sec, avant le champ suivant
 source(Utils.getFilename("scripts/Modes/TrailerHitch.lua", g_currentModDirectory)) -- modes avec benne : remorque à atteler, reposée à sa place
 source(Utils.getFilename("scripts/Modes/TrailerSwap.lua", g_currentModDirectory)) -- échange de bennes à la livraison
+source(Utils.getFilename("scripts/Modes/AutonomousParkUnload.lua", g_currentModDirectory)) -- bouton parking : benne pas vide, vidée d'abord
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))
@@ -446,7 +530,7 @@ function AutoDriveRegister:update(dt)
     -- FarmPilot : prévient le joueur une fois que la partie tourne
     if AutoDriveRegister.originalDisabled and not AutoDriveRegister.originalDisabledShown and g_currentMission ~= nil and g_currentMission.isRunning then
         AutoDriveRegister.originalDisabledShown = true
-        pcall(function()
+        FarmPilotCall(function()
             g_currentMission:showBlinkingWarning("FarmPilot : AutoDrive désactivé, retirez FS25_AutoDrive de vos mods / AutoDrive disabled, remove FS25_AutoDrive from your mods", 10000)
         end)
     end
@@ -531,7 +615,7 @@ function AutoDriveRegister.disableOriginalAutoDrive()
     end
 
     -- les autres mods qui cherchent FS25_AutoDrive trouvent FarmPilot
-    pcall(function()
+    FarmPilotCall(function()
         if _G[g_currentModName] ~= nil then
             _G["FS25_AutoDrive"] = _G[g_currentModName]
         end
@@ -543,7 +627,6 @@ function AutoDriveRegister.disableOriginalAutoDrive()
     end)
 
     AutoDriveRegister.originalDisabled = true
-    Logging.warning("[FarmPilot] FS25_AutoDrive is also active: AutoDrive disabled by FarmPilot (%d vehicle types, %d listeners). Remove FS25_AutoDrive from your mods.", vehicleTypes, removed)
 end
 
 local function check()
@@ -570,7 +653,7 @@ local function check()
                 addModEventListener(AutoDriveRegister)
                 addModEventListener(AutoDrive)
                 -- FarmPilot : les autres mods (Courseplay, addons...) cherchent AutoDrive sous FS25_AutoDrive
-                pcall(function()
+                FarmPilotCall(function()
                     if _G["FS25_AutoDrive"] == nil and _G[g_currentModName] ~= nil then
                         _G["FS25_AutoDrive"] = _G[g_currentModName]
                     end

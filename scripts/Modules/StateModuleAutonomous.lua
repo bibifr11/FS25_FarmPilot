@@ -74,6 +74,7 @@ function ADStateModule:resetAutonomousState()
     self.fpNextToolUniqueId = nil
     self.fpNextToolNetId = nil
     if self.resetTrailerState ~= nil then self:resetTrailerState() end -- remorque des modes avec benne, voir StateModuleTrailer.lua
+    if self.resetFrontState ~= nil then self:resetFrontState() end -- attelage avant, voir StateModuleFront.lua
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -100,6 +101,7 @@ function ADStateModule:loadAutonomousState(xmlFile, key)
         self.fpNextToolUniqueId = nil
     end
     if self.loadTrailerState ~= nil then self:loadTrailerState(xmlFile, key) end -- remorque des modes avec benne, voir StateModuleTrailer.lua
+    if self.loadFrontState ~= nil then self:loadFrontState(xmlFile, key) end -- attelage avant, voir StateModuleFront.lua
 end
 
 function ADStateModule:saveAutonomousState(xmlFile, key)
@@ -119,6 +121,7 @@ function ADStateModule:saveAutonomousState(xmlFile, key)
         xmlFile:setValue(key .. "#fpNextTool", fpNextToolUniqueId)
     end
     if self.saveTrailerState ~= nil then self:saveTrailerState(xmlFile, key) end -- remorque des modes avec benne, voir StateModuleTrailer.lua
+    if self.saveFrontState ~= nil then self:saveFrontState(xmlFile, key) end -- attelage avant, voir StateModuleFront.lua
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -139,6 +142,7 @@ function ADStateModule:writeAutonomousState(streamId)
         NetworkUtil.writeNodeObjectId(streamId, fpNextToolId)
     end
     if self.writeTrailerState ~= nil then self:writeTrailerState(streamId) end -- remorque des modes avec benne (même ordre à la lecture)
+    if self.writeFrontState ~= nil then self:writeFrontState(streamId) end -- attelage avant (même ordre à la lecture)
 end
 
 function ADStateModule:readAutonomousState(streamId)
@@ -160,6 +164,7 @@ function ADStateModule:readAutonomousState(streamId)
     end
     self.fpNextToolUniqueId = nil
     if self.readTrailerState ~= nil then self:readTrailerState(streamId) end -- remorque des modes avec benne (même ordre qu'à l'écriture)
+    if self.readFrontState ~= nil then self:readFrontState(streamId) end -- attelage avant (même ordre qu'à l'écriture)
 end
 
 -- ------------------------------------------------------------------------------------------------------------

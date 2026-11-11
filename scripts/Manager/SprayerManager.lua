@@ -37,7 +37,7 @@ ADSprayerManager.QUANTITY_FULL = "full"
 ADSprayerManager.QUANTITY_FIELD = "field"
 
 local function log(fmt, ...)
-    local ok, s = pcall(string.format, fmt, ...)
+    local ok, s = FarmPilotCall(string.format, fmt, ...)
     print("[FarmPilot Épandeur] " .. (ok and s or tostring(fmt)))
 end
 ADSprayerManager.log = log
@@ -52,14 +52,14 @@ function ADSprayerManager.fillUnit(tool)
     end
     local unit = nil
     if tool.getSprayerFillUnitIndex ~= nil then
-        local ok, u = pcall(tool.getSprayerFillUnitIndex, tool)
+        local ok, u = FarmPilotCall(tool.getSprayerFillUnitIndex, tool)
         unit = ok and u or nil
     end
     unit = unit or tool.spec_sprayer.fillUnitIndex
     if type(unit) ~= "number" or tool.getFillUnitCapacity == nil then
         return nil
     end
-    local okC, cap = pcall(tool.getFillUnitCapacity, tool, unit)
+    local okC, cap = FarmPilotCall(tool.getFillUnitCapacity, tool, unit)
     if not okC or type(cap) ~= "number" or cap <= 0 then
         return nil
     end
@@ -84,7 +84,7 @@ function ADSprayerManager.attachedSprayer(vehicle)
         return vehicle
     end
     local best, bestCap = nil, 0
-    local okT, tools = pcall(ADAutonomousManager.workTools, vehicle)
+    local okT, tools = FarmPilotCall(ADAutonomousManager.workTools, vehicle)
     for _, t in ipairs(okT and tools or {}) do
         if ADSprayerManager.isSprayer(t) then
             local _, cap = ADSprayerManager.fillUnit(t)
@@ -227,9 +227,9 @@ function ADSprayerManager.workSpeed(tool, vehicle)
     end
     local cpSpeed = nil
     if vehicle ~= nil and vehicle.getCpSettings ~= nil then
-        local ok, s = pcall(vehicle.getCpSettings, vehicle)
+        local ok, s = FarmPilotCall(vehicle.getCpSettings, vehicle)
         if ok and s ~= nil and s.fieldWorkSpeed ~= nil and s.fieldWorkSpeed.getValue ~= nil then
-            local okV, v = pcall(s.fieldWorkSpeed.getValue, s.fieldWorkSpeed)
+            local okV, v = FarmPilotCall(s.fieldWorkSpeed.getValue, s.fieldWorkSpeed)
             cpSpeed = okV and tonumber(v) or nil
         end
     end
@@ -257,10 +257,10 @@ function ADSprayerManager.litersPerHa(tool, fillTypeIndex, vehicle)
     local usageScale = ADSprayerManager.usageScaleFor(tool, fillTypeIndex)
     local usageWidth = usageScale.workingWidth
     if usageScale.workAreaIndex ~= nil and tool.getWorkAreaWidth ~= nil then
-        local ok, w = pcall(tool.getWorkAreaWidth, tool, usageScale.workAreaIndex)
+        local ok, w = FarmPilotCall(tool.getWorkAreaWidth, tool, usageScale.workAreaIndex)
         usageWidth = ok and w or usageWidth
     end
-    local okW, realWidth = pcall(ADAutonomousManager.toolWorkWidth, tool)
+    local okW, realWidth = FarmPilotCall(ADAutonomousManager.toolWorkWidth, tool)
     realWidth = okW and realWidth or nil
     if type(usageWidth) ~= "number" or usageWidth <= 0 then
         return nil
@@ -282,7 +282,7 @@ local function fieldByNumber(n)
         return nil
     end
     if g_fieldManager.getFieldById ~= nil then
-        local ok, f = pcall(g_fieldManager.getFieldById, g_fieldManager, n)
+        local ok, f = FarmPilotCall(g_fieldManager.getFieldById, g_fieldManager, n)
         if ok and f ~= nil and tonumber(ADAutonomousManager.fieldNumber(f)) == tonumber(n) then
             return f
         end
@@ -301,7 +301,7 @@ local function areaOf(f)
         return 0
     end
     if f.getAreaHa ~= nil then
-        local ok, a = pcall(f.getAreaHa, f)
+        local ok, a = FarmPilotCall(f.getAreaHa, f)
         if ok and type(a) == "number" then
             return a
         end
@@ -324,7 +324,7 @@ function ADSprayerManager.markerArea(marker)
         end
     end
     for n in tostring(marker.name or ""):gmatch("%d+") do
-        local okG, g = pcall(ADAutonomousManager.groupOf, tonumber(n))
+        local okG, g = FarmPilotCall(ADAutonomousManager.groupOf, tonumber(n))
         if okG and g ~= nil then
             for _, m in ipairs(g.members or { n }) do
                 add(m)
@@ -357,12 +357,12 @@ function ADSprayerManager.remainingShare(vehicle)
     if vehicle == nil or vehicle.getFieldWorkCourse == nil or vehicle.getCpLastRememberedWaypointIx == nil then
         return 1
     end
-    local okC, course = pcall(vehicle.getFieldWorkCourse, vehicle)
-    local okI, ix = pcall(vehicle.getCpLastRememberedWaypointIx, vehicle)
+    local okC, course = FarmPilotCall(vehicle.getFieldWorkCourse, vehicle)
+    local okI, ix = FarmPilotCall(vehicle.getCpLastRememberedWaypointIx, vehicle)
     if not okC or not okI or course == nil or ix == nil or course.getProgress == nil then
         return 1
     end
-    local okP, progress = pcall(course.getProgress, course, ix)
+    local okP, progress = FarmPilotCall(course.getProgress, course, ix)
     if not okP or type(progress) ~= "number" then
         return 1
     end
@@ -452,7 +452,7 @@ function ADSprayerManager.hudGear(vehicle, isNext, seederStatus)
     if seederStatus ~= nil and seederStatus ~= "none" then
         return seederStatus, isNext and "gui_ad_seeder_tooltipNext" or "gui_ad_seeder_tooltip"
     end
-    local ok, status = pcall(ADSprayerManager.status, vehicle, isNext)
+    local ok, status = FarmPilotCall(ADSprayerManager.status, vehicle, isNext)
     status = ok and status or "none"
     return status, isNext and "gui_ad_sprayer_tooltipNext" or "gui_ad_sprayer_tooltip"
 end
@@ -462,7 +462,7 @@ function ADSprayerManager.startBlock(vehicle)
     for _, isNext in ipairs({ false, true }) do
         local ctx = ADSprayerManager.context(vehicle, isNext)
         if ctx ~= nil and not ADSprayerManager.isValid(ADSprayerManager:get(ctx.field, ctx.toolKey)) then
-            local okL, label = pcall(ADAutonomousManager.toolShortLabel, ctx.tool)
+            local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, ctx.tool)
             return { label = okL and label or ADAutonomousManager.toolLabel(ctx.tool), field = ctx.field, isNext = isNext }
         end
     end
@@ -505,7 +505,7 @@ end
 
 -- true = départ refusé (message et log faits)
 function ADSprayerManager.refuseStart(mode)
-    local ok, refused = pcall(ADSprayerManager.checkStart, mode.vehicle)
+    local ok, refused = FarmPilotCall(ADSprayerManager.checkStart, mode.vehicle)
     if not ok then
         log("ERREUR réglages de l'épandeur : %s", tostring(refused))
         return false
@@ -521,10 +521,10 @@ function ADSprayerManager.applyCpSettings(vehicle)
     if vehicle.getCpSettings == nil then
         return
     end
-    local okS, settings = pcall(vehicle.getCpSettings, vehicle)
+    local okS, settings = FarmPilotCall(vehicle.getCpSettings, vehicle)
     local refill = okS and settings ~= nil and settings.refillOnTheField or nil
     if refill ~= nil and refill.getValue ~= nil and refill:getValue() ~= 0 then
-        pcall(refill.setValue, refill, 0)
+        FarmPilotCall(refill.setValue, refill, 0)
         log("Courseplay : « plein dans le champ » remis sur désactivé (FarmPilot va remplir à la zone)")
     end
 end
@@ -555,7 +555,7 @@ function ADSprayerManager.plan(vehicle, after)
     local tool = ctx.tool
     local ftIndex = g_fillTypeManager:getFillTypeIndexByName(s.fillType)
     local unit, cap = ADSprayerManager.fillUnit(tool)
-    pcall(ADSprayerManager.applyCpSettings, vehicle)
+    FarmPilotCall(ADSprayerManager.applyCpSettings, vehicle)
     if ADSprayerManager.helperBuys(tool) then
         log("%s : le jeu achète le produit pour l'ouvrier (options du jeu) : la cuve ne se videra pas au champ", name)
     end
@@ -594,7 +594,7 @@ function ADSprayerManager.plan(vehicle, after)
 end
 
 function ADSprayerManager.preparePlan(vehicle, after)
-    local ok, plan = pcall(ADSprayerManager.plan, vehicle, after or "field")
+    local ok, plan = FarmPilotCall(ADSprayerManager.plan, vehicle, after or "field")
     if not ok then
         log("ERREUR plan de plein : %s", tostring(plan))
         return nil

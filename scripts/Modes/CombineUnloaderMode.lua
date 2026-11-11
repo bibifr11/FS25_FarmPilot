@@ -265,10 +265,10 @@ function CombineUnloaderMode:getNextTask()
         CombineUnloaderMode.debugMsg(self.vehicle, "CombineUnloaderMode:getNextTask - STATE_LEAVE_CROP")
         self:setToWaitForCall()
     elseif self:isParkAfterJobStep() then
-        nextTask = self:getParkAfterJobStepTask() -- ensileuse, chantier terminé : vers le parking, voir CombineUnloaderModeJobDone.lua
+        nextTask = self:getParkAfterJobStepTask() -- chantier terminé (ensileuse, moissonneuse) : vers le parking, voir CombineUnloaderModeJobDone.lua
     elseif self.state == self.STATE_DRIVE_TO_UNLOAD then
         CombineUnloaderMode.debugMsg(self.vehicle, "CombineUnloaderMode:getNextTask - STATE_DRIVE_TO_UNLOAD")
-        self:forgetJobDoneWithoutPark() -- ensileuse, chantier terminé sans parking : retour au champ, voir CombineUnloaderModeJobDone.lua
+        self:forgetJobDoneWithoutPark() -- chantier terminé sans parking (ensileuse, moissonneuse) : retour au champ, voir CombineUnloaderModeJobDone.lua
         nextTask = DriveToDestinationTask:new(self.vehicle, self.vehicle.ad.stateModule:getFirstMarker().id)
         if (AutoDrive.getSetting("rotateTargets", self.vehicle) == AutoDrive.RT_ONLYDELIVER or AutoDrive.getSetting("rotateTargets", self.vehicle) == AutoDrive.RT_PICKUPANDDELIVER) and AutoDrive.getSetting("useFolders") then
             local nextTarget = ADMultipleTargetsManager:getNextTarget(self.vehicle, true)
@@ -535,19 +535,6 @@ function CombineUnloaderMode:getPipeSlopeCorrection2()
     return currentElevationCorrection
 end
 
-function CombineUnloaderMode:getPipeSlopeCorrection1()
-    self.combineX, self.combineY, self.combineZ = getWorldTranslation(self.combineNode)
-    local nodeX, nodeY, nodeZ = getWorldTranslation(AutoDrive.getDischargeNode(self.combine))
-    local heightUnderCombine = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, self.combineX, self.combineY, self.combineZ)
-    local heightUnderPipe = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, nodeX, nodeY, nodeZ)
-    -- want this to be negative if the ground is lower under the pipe
-    local dh = heightUnderPipe - heightUnderCombine
-    local hyp = MathUtil.vector3Length(self.combineX - nodeX, heightUnderCombine - heightUnderPipe, self.combineZ - nodeZ)
-    local run = math.sqrt(hyp * hyp - dh * dh)
-    local elevationCorrection = (hyp + (nodeY - heightUnderPipe) * (dh / hyp)) - run
-    return elevationCorrection * self.pipeSide
-end
-
 function CombineUnloaderMode:getPipeSlopeCorrection()
     return self:getPipeSlopeCorrection2()
 end
@@ -682,42 +669,6 @@ function CombineUnloaderMode:getDynamicSideChaseOffsetZ_fromDischargeNode(planni
         offset = offset + (self.vehicle.size.length/2)
     end
     return offset
-end
-
-function CombineUnloaderMode:getDynamicSideChaseOffsetZ_FS19()
-    -- The default maximum will place the front of the unloader at the back of the header
-    local pipeZOffsetToCombine = 0
-    if AutoDrive.isPipeOut(self.combine) then
-        local nodeX, nodeY, nodeZ = getWorldTranslation(AutoDrive.getDischargeNode(self.combine))
-        local _, _, diffZ = AutoDrive.worldToLocal(self.combine, nodeX, nodeY, nodeZ, self.combine.ad.ADRootNode)
-        pipeZOffsetToCombine = diffZ
-    end
-    local vehicleX, vehicleY, vehicleZ = getWorldTranslation(self.vehicle.components[1].node)
-
---[[
-    -- AimTargetNode - not used as it not always fit to the fill area of trailers
-    if self.targetTrailer.getFillUnitAutoAimTargetNode ~= nil then
-        local node = self.targetTrailer:getFillUnitAutoAimTargetNode(1)
-        if node ~= nil then
-            -- use dynamic fill in trailer if available, to better follow unloading the harvester
-            targetNode = node
-        end
-    end
-]]
-    local _, _, diffZ = AutoDrive.worldToLocal(self.targetTrailer, vehicleX, vehicleY, vehicleZ)
-
-    -- We gradually move the chase node forward as a function of fill level because it's pretty and
-    -- helps the sugarcane harvester. We start at at the front of the trailer. We use an exponential
-    -- to increase dwell time towards the front of the trailer, since loads migrate towards the back.
-
-    -- The constant additions should put at precisely at the joint of the vehicle and trailer, then correct for
-    -- only moving the midpoint of the tractor
-    local constantAdditionsZ = 1 + self.vehicle.size.length / 2 - self.targetTrailer.size.length / 2
-    -- We then gradually move back, but don't use the last part of trailer for cosmetic reasons
-    local dynamicAdditionsZ = diffZ + pipeZOffsetToCombine
-    dynamicAdditionsZ = dynamicAdditionsZ + math.max((self.targetTrailer.size.length * 0.5 - 2) ^ self.targetTrailerFillRatio, 0)
-    local sideChaseTermZ = constantAdditionsZ + dynamicAdditionsZ
-    return sideChaseTermZ
 end
 
 function CombineUnloaderMode:getSideChaseOffsetZ(dynamic)

@@ -65,7 +65,7 @@ function ADDetachToolTask:update(dt)
             local attacher = self.tool:getAttacherVehicle()
             -- (07/11) mod d'attelage manuel : prise de force et flexibles débranchés d'abord
             -- (sinon le mod refuse le dételage)
-            local okM, done = pcall(ADAutonomousManager.setManualConnections, attacher, self.tool, false)
+            local okM, done = FarmPilotCall(ADAutonomousManager.setManualConnections, attacher, self.tool, false)
             if not okM then
                 ADAutonomousManager.log("ERREUR débranchement flexibles / prise de force : %s", tostring(done))
             elseif #done > 0 then

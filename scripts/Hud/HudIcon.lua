@@ -48,7 +48,7 @@ function ADHudIcon.getCorners()
     if ADHudIcon.corners == nil then
         ADHudIcon.corners = {}
         for _, k in ipairs({ "tl", "tr", "bl", "br" }) do
-            local ok, o = pcall(createImageOverlay, Utils.getFilename("hud/corner_" .. k .. ".dds", AutoDrive.directory or g_currentModDirectory))
+            local ok, o = FarmPilotCall(createImageOverlay, Utils.getFilename(({ tl = "hud/corner_tl.dds", tr = "hud/corner_tr.dds", bl = "hud/corner_bl.dds", br = "hud/corner_br.dds" })[k], AutoDrive.directory or g_currentModDirectory))
             if ok and o ~= nil and o ~= 0 then
                 ADHudIcon.corners[k] = o
             else
@@ -68,7 +68,7 @@ function ADHudIcon.cornersReady(cs)
     end
     if getIsOverlayReady ~= nil then
         for _, k in ipairs({ "tl", "tr", "bl", "br" }) do
-            local ok, r = pcall(getIsOverlayReady, cs[k])
+            local ok, r = FarmPilotCall(getIsOverlayReady, cs[k])
             if ok and not r then
                 return false
             end

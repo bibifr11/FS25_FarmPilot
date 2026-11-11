@@ -93,12 +93,6 @@ function ExitFieldTask:startPathPlanning()
     return self:startExitPlanning()
 end
 
---[==[ Mis de côté (09/11) : inutilisé
-function ExitFieldTask:selectNextStrategy()
-    self.nextExitStrategy = (self.nextExitStrategy + 1) % (ExitFieldTask.STRATEGY_CLOSEST + 1)
-end
-]==]
-
 function ExitFieldTask:continue()
 end
 

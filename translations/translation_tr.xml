@@ -31,9 +31,9 @@
 		<text name="input_ADDisplayMapPoints"							text="FP - Show waypoints" />
 		<text name="input_ADDebugSelectNeighbor"						text="FP - Komşu Noktayı Seçin" />
 		<text name="input_ADDebugChangeNeighbor"						text="FP - Sonraki Komşu Noktasını Seçin" />
-		<text name="input_ADDebugPreviousNeighbor"						text="FP - Select previous Neighbour Point" />
-		<text name="input_ADDebugCreateConnection"						text="FP - Bağlantıyı değiştir." />
-		<text name="input_ADDebugToggleConnectionInverted"				text="FP - Toggle connection between inverted" />
+		<text name="input_ADDebugPreviousNeighbor"						text="FP - Önceki Komşu Noktayı Seç" />
+		<text name="input_ADDebugCreateConnection"						text="FP - Bağlantı Oluştur" />
+		<text name="input_ADDebugToggleConnectionInverted"				text="FP - Bağlantı Yönünü Ters Çevir" />
 		<text name="input_ADDebugCreateMapMarker"						text="FP - Hedef Ekle / Düzenle" />
 		<text name="input_ADRenameMapMarker"							text="FP - Seçili Hedefi düzenleyin" />
 		<text name="input_ADDebugDeleteWayPoint"						text="FP - Ara Noktayı Sil" />
@@ -441,6 +441,8 @@
 		<text name="AD_obstacleDetour_start" text="bir engel tarafından tıkandı, etrafından dolaşmak için geri gidiyor" />
 		<text name="AD_obstacleDetour_found" text="engelin etrafından dolaşıyor" />
 		<text name="AD_obstacleDetour_failed" text="engelin etrafından dolaşacak hiçbir yol bulunamadı: müdahale gerekiyor" />
+		<text name="AD_obstacleDetour_creep" text="creeps forward to get past the obstacle" />
+		<text name="AD_obstacleDetour_reroute" text="remembers this passage as blocked and takes another route" />
 		<text name="AD_trafficYield_giveWay" text="karşıdan gelen bir aracın geçmesine izin vermek için geri gidiyor" />
 		<text name="AD_ty_waitFor" text="Bekleniyor:" />
 		<text name="AD_ty_toPass" text="geçmesi" />
@@ -491,6 +493,7 @@
 		<text name="AD_task_waiting_call_short" text="çağrı bekleniyor" />
 		<text name="AD_task_wait_roadside" text="Yol kenarında bekleniyor" />
 		<text name="AD_task_no_spot_retry" text="Yer bulunamadı, sonraki deneme:" />
+		<text name="AD_task_no_harvester_retry" text="Bu tarlada hasat makinesi yok, sonraki deneme:" />
 		<text name="AD_task_loaded_wait" text="Yüklendi, çağrı bekleniyor" />
 		<text name="AD_task_plan_to" text="Rotası planlanıyor:" />
 		<text name="AD_task_no_path_retry" text="Yol bulunamadı, sonraki deneme:" />
@@ -562,6 +565,7 @@
 		<text name="AD_autonomous_nextField" text="Sonraki tarla: %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Sonraki tarla: yok" />
 		<text name="AD_autonomous_nextFieldGo" text="tarla tamamlandı, « %s » adlı sonraki tarlaya sürülüyor" />
+		<text name="AD_autonomous_skipNoNext" text="no next field set, keeps driving to « %s »" />
 		<text name="AD_task_autonomous_detach" text="Ekipmanı çıkar" />
 		<text name="AD_task_autonomous_fetch" text="Ekipmanı bağla" />
 		<text name="AD_autonomous_dropGo" text="tarla bitti, ekipman « %s » konumuna gidiyor" />
@@ -577,6 +581,21 @@
 		<text name="AD_autonomous_nextTool" text="Sonraki ekipman: %s" />
 		<text name="AD_autonomous_nextToolNone" text="Sonraki ekipman: aynı" />
 		<text name="AD_autonomous_nextToolListNone" text="Aynı" />
+		<text name="AD_fpFn_mass" text="Ağırlık" />
+		<text name="AD_autonomous_frontTool" text="Ön: %s" />
+		<text name="AD_autonomous_frontToolNone" text="Ön: takılı olan" />
+		<text name="AD_autonomous_nextFrontTool" text="Sonraki ön: %s" />
+		<text name="AD_autonomous_nextFrontToolNone" text="Sonraki ön: aynısı" />
+		<text name="AD_autonomous_frontNoJoint" text="&quot;%s&quot; bu traktörün önüne takılamıyor (veya ön bağlantı dolu)" />
+		<text name="AD_autonomous_frontNoPark" text="&quot;%s&quot; (ön) için park yeri ve yanına bırakılacak bir şey yok: takılı kalıyor" />
+		<text name="AD_autonomous_massBlocked" text="&quot;%s&quot; (ön) için park yeri ve yanına bırakılacak bir şey yok: &quot;%s&quot; alınamıyor, traktör burada kalıyor (ağırlığın üstüne park etmiyor)" />
+		<text name="AD_autonomous_massNoPark" text="traktörün &quot;%s&quot; bırakılacak park yeri yok: ayarlayın (park düğmesi, hiçbir şey seçili değil)" />
+		<text name="AD_autonomous_frontBeside" text="&quot;%s&quot; ekipmanını &quot;%s&quot; yanına bırakıyor" />
+		<text name="AD_autonomous_frontDropAt" text="&quot;%s&quot; ekipmanını &quot;%s&quot; yerinin dibine bırakıyor, önden giriyor" />
+		<text name="AD_autonomous_frontDropAhead" text="&quot;%s&quot; ekipmanını &quot;%s&quot; yerine, &quot;%s&quot; önüne bırakıyor" />
+		<text name="AD_autonomous_frontPlaceFailed" text="&quot;%s&quot; bırakılamadı (yanında yer veya yol yok): burada duruyor" />
+		<text name="AD_task_autonomous_frontPlace" text="Ön ekipmanı bırakma" />
+		<text name="AD_task_autonomous_backOff" text="Yerden çıkış" />
 		<text name="AD_autonomous_swapGo" text="tarla bitti: ekipman « %s » konumuna gidiyor, ardından sonraki tarla « %s » için « %s » bağlanıyor" />
 		<text name="AD_autonomous_swapSeveral" text="sonraki ekipman « %s »: birden fazla ekipman takılı, ekipman değiştirilmiyor, durdurulup bekleniyor" />
 		<text name="AD_autonomous_swapNoToolPark" text="sonraki ekipman « %s »: takılı ekipmanın park yeri yok, durdurulup bekleniyor" />
@@ -700,6 +719,9 @@
 		<text name="AD_autonomous_dumpFailed" text="tankta kalan kısım « %s » konumuna boşaltılamadı (yer yok veya reddedildi): tankta tutuluyor" />
 		<text name="AD_autonomous_dumpParkGo" text="park ediliyor: önce deponun geri kalanı '%s' konumundaki büyük çuvallara boşaltılıyor" />
 		<text name="AD_autonomous_dumpKept" text="depoda kalan %s: büyük çuvallara boşaltılamıyor veya uygun yer bulunamadı (günlüğe bakın)" />
+		<text name="AD_autonomous_parkUnloadGo" text="parking: trailer not empty, first unloading at « %s »" />
+		<text name="AD_autonomous_parkUnloadNone" text="parking: trailer not empty (%s L of %s), but no unload destination set: it stays loaded" />
+		<text name="AD_autonomous_parkUnloadFailed" text="parking: nothing is unloading at « %s » (%s L left): parking without unloading" />
 		<text name="AD_task_autonomous_dump" text="Kalan kısmı büyük çuvallara boşaltır" />
 		<text name="gui_ad_baleLoader_title" text="Balya yükleyici ayarları" />
 		<text name="gui_ad_baleLoader_head" text="Yükleyici: %s · Tarla: %s · Alınan: %s" />
@@ -721,18 +743,18 @@
 		<text name="AD_autonomous_baleLoaderTodo" text="'%s' için '%s' ayarlarının doğrulanması gerekiyor (turuncu dişli), başlatma reddedildi" />
 		<text name="AD_autonomous_balesStart" text="%s tarlasının balyaları toplanıyor (toplanacak %d adet)" />
 		<text name="AD_autonomous_balesNone" text="%s tarlasında toplanacak başka balya kalmadı" />
-		<text name="AD_autonomous_balesFull" text="yükleyici dolu (%d balya): '%s' konumuna bırakılıyor, ardından tarlaya dönülüyor" />
-		<text name="AD_autonomous_balesLast" text="son balyalar (%d): '%s' konumuna bırakılıyor" />
-		<text name="AD_autonomous_balesContinue" text="drop-off requested (%d bales): « %s »" />
-		<text name="AD_autonomous_balesContinueEmpty" text="no bales on the trailer: field %s left, moving on" />
-		<text name="AD_autonomous_fuelBack" text="out of fuel: refuelling at « %s », then back to the field" />
-		<text name="AD_autonomous_fuelNext" text="fuel at %s: refuelling at « %s » before the next field" />
+		<text name="AD_autonomous_balesFull" text="yükleyici dolu (%d balya): '%s' konumuna taşınıyor, ardından tarlaya dönülecek." />
+		<text name="AD_autonomous_balesLast" text="son balyalar (%d): '%s' konumuna taşınıyor." />
+		<text name="AD_autonomous_balesContinue" text="bırakma istendi (%d balya): « %s »" />
+		<text name="AD_autonomous_balesContinueEmpty" text="römorkta balya yok: %s tarlasından ayrıldı, devam ediliyor" />
+		<text name="AD_autonomous_fuelBack" text="yakıt bitti: « %s » konumunda yakıt ikmali yapılıyor, ardından tarlaya dönülüyor" />
+		<text name="AD_autonomous_fuelNext" text="%s konumunda yakıt: sonraki tarladan önce « %s » konumunda yakıt ikmali yapılıyor" />
 		<text name="AD_autonomous_balesBack" text="bırakma işlemi tamamlandı, '%s' tarlasına dönülüyor" />
 		<text name="AD_autonomous_balesUnloadFailed" text="balyalar '%s' konumuna bırakılamadı (günlüğe bakın), bekleniyor" />
 		<text name="AD_autonomous_balesNoWork" text="balya yükleyici kolu dışarı çıkmıyor, bekleniyor" />
 		<text name="AD_autonomous_balesNoLoader" text="balya yükleyici ayrılmış, bekleniyor" />
 		<text name="AD_task_autonomous_bales" text="Balyalar toplanıyor" />
-		<text name="AD_task_autonomous_baleUnload" text="Balyalar bırakılıyor" />
+		<text name="AD_task_autonomous_baleUnload" text="Balyalar boşaltılıyor." />
 		<text name="AD_autonomous_sprayerOtherProduct" text="tankta hâlâ %s (%.0f L) var ve seçilen ürün %s: tankı boşaltın, başlatma reddedildi" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay son ara noktada yeniden başlatılamadı, bekleniyor" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->

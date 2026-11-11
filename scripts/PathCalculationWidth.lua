@@ -70,11 +70,11 @@ function ADPathCalculator.getWheelsWidth(vehicle)
         if node == nil or node == 0 or type(width) ~= "number" or width <= 0 then
             return
         end
-        local ok, visible = pcall(getEffectiveVisibility, node)
+        local ok, visible = FarmPilotCall(getEffectiveVisibility, node)
         if ok and visible == false then
             return -- dual wheel not mounted
         end
-        local okPos, x = pcall(localToLocal, node, root, 0, 0, 0)
+        local okPos, x = FarmPilotCall(localToLocal, node, root, 0, 0, 0)
         if okPos and type(x) == "number" then
             minX = math.min(minX, x - width / 2)
             maxX = math.max(maxX, x + width / 2)
@@ -209,18 +209,18 @@ ADPathCalculator.narrowInfo = {}               -- ["fromId>toId"] = {hitName, hx
 function ADPathCalculator.recordNarrowSection(a, b, halfWidth, hitNode)
     local hitName, hx, hy, hz = "?", nil, nil, nil
     if hitNode ~= nil and hitNode ~= 0 then
-        local okName, name = pcall(getName, hitNode)
+        local okName, name = FarmPilotCall(getName, hitNode)
         if okName and name ~= nil then
             hitName = name
         end
-        local okParent, parent = pcall(getParent, hitNode)
+        local okParent, parent = FarmPilotCall(getParent, hitNode)
         if okParent and parent ~= nil and parent ~= 0 then
-            local okParentName, parentName = pcall(getName, parent)
+            local okParentName, parentName = FarmPilotCall(getName, parent)
             if okParentName and parentName ~= nil then
                 hitName = parentName .. "/" .. hitName
             end
         end
-        local okPos, x, y, z = pcall(getWorldTranslation, hitNode)
+        local okPos, x, y, z = FarmPilotCall(getWorldTranslation, hitNode)
         if okPos then
             hx, hy, hz = x, y, z
         end
@@ -285,11 +285,11 @@ function ADPathCalculator.isMapBorder(node)
         if node == nil or node == 0 then
             return false
         end
-        local ok, name = pcall(getName, node)
+        local ok, name = FarmPilotCall(getName, node)
         if ok and type(name) == "string" and string.find(string.lower(name), "border", 1, true) ~= nil then
             return true
         end
-        local okParent, parent = pcall(getParent, node)
+        local okParent, parent = FarmPilotCall(getParent, node)
         node = okParent and parent or nil
     end
     return false

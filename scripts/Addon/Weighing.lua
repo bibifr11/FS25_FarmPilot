@@ -58,7 +58,7 @@ local T = ADAddon.getText
 local function formatTons(kg)
     -- séparateur décimal de la langue du jeu
     if g_i18n ~= nil and g_i18n.formatNumber ~= nil then
-        local ok, n = pcall(g_i18n.formatNumber, g_i18n, kg / 1000, 1)
+        local ok, n = FarmPilotCall(g_i18n.formatNumber, g_i18n, kg / 1000, 1)
         if ok and type(n) == "string" then
             return n .. " t"
         end
@@ -109,7 +109,7 @@ end
 
 local function placeableName(p)
     if p.getName ~= nil then
-        local ok, name = pcall(p.getName, p)
+        local ok, name = FarmPilotCall(p.getName, p)
         if ok and type(name) == "string" then return name end
     end
     return ""
@@ -123,7 +123,7 @@ local function acceptsFillType(p, fillTypeIndex)
         return ss.acceptedFillTypes[fillTypeIndex] == true
     end
     if ss.getIsFillTypeAllowed ~= nil then
-        local ok, res = pcall(ss.getIsFillTypeAllowed, ss, fillTypeIndex)
+        local ok, res = FarmPilotCall(ss.getIsFillTypeAllowed, ss, fillTypeIndex)
         return ok and res == true
     end
     return true
@@ -196,13 +196,13 @@ local function getStationCenter(station)
     -- getShapeWorldBoundingSphere : centre en coordonnées du monde
     -- (getShapeBoundingSphere donne un centre local au noeud : à repasser dans le monde)
     if getShapeWorldBoundingSphere ~= nil then
-        local ok, x, _, z = pcall(getShapeWorldBoundingSphere, node)
+        local ok, x, _, z = FarmPilotCall(getShapeWorldBoundingSphere, node)
         if ok and x ~= nil then
             return x, z
         end
     end
     if getShapeBoundingSphere ~= nil then
-        local ok, lx, ly, lz = pcall(getShapeBoundingSphere, node)
+        local ok, lx, ly, lz = FarmPilotCall(getShapeBoundingSphere, node)
         if ok and lx ~= nil then
             local x, _, z = localToWorld(node, lx, ly, lz)
             return x, z
@@ -404,7 +404,7 @@ local function recordWeighing(vehicle, d)
     if register == nil or register.addWeighing == nil then
         return
     end
-    local ok, err = pcall(register.addWeighing, register, {
+    local ok, err = FarmPilotCall(register.addWeighing, register, {
         vehicle = d.name,
         site = d.site,
         driver = d.driver,
@@ -520,7 +520,7 @@ function ADAddonWeighing.install(autoDrive)
 
     local originalUpdate = taskModule.update
     taskModule.update = function(self, dt, ...)
-        local ok, wait = pcall(weighStep, self, dt)
+        local ok, wait = FarmPilotCall(weighStep, self, dt)
         if not ok then
             if not ADAddonWeighing.errorShown then
                 ADAddonWeighing.errorShown = true
@@ -576,7 +576,7 @@ local function getPlayerName()
         function() return g_gameSettings:getValue("nickname") end,
     }
     for _, f in ipairs(tries) do
-        local ok, name = pcall(f)
+        local ok, name = FarmPilotCall(f)
         if ok and type(name) == "string" and name ~= "" then
             return name
         end
@@ -586,7 +586,7 @@ end
 
 local function getControlledVehicle()
     if g_localPlayer ~= nil and g_localPlayer.getCurrentVehicle ~= nil then
-        local ok, v = pcall(g_localPlayer.getCurrentVehicle, g_localPlayer)
+        local ok, v = FarmPilotCall(g_localPlayer.getCurrentVehicle, g_localPlayer)
         if ok and v ~= nil then return v end
     end
     return g_currentMission ~= nil and g_currentMission.controlledVehicle or nil
@@ -662,7 +662,7 @@ function ADAddonWeighing:updateManual(dt)
 end
 
 function ADAddonWeighing:update(dt)
-    local ok, err = pcall(self.updateManual, self, dt)
+    local ok, err = FarmPilotCall(self.updateManual, self, dt)
     if not ok and not self.manualErrorShown then
         self.manualErrorShown = true
         ADAddon.warning("manual weighing error: " .. tostring(err))
@@ -674,7 +674,7 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 local function uiScale()
     if g_gameSettings ~= nil and g_gameSettings.getValue ~= nil then
-        local ok, v = pcall(g_gameSettings.getValue, g_gameSettings, "uiScale")
+        local ok, v = FarmPilotCall(g_gameSettings.getValue, g_gameSettings, "uiScale")
         if ok and type(v) == "number" and v > 0 then return v end
     end
     return 1
@@ -687,7 +687,7 @@ local function corners()
     if cornerOv == nil then
         cornerOv = {}
         for _, k in ipairs({ "tl", "tr", "bl", "br" }) do
-            local ok, o = pcall(createImageOverlay, Utils.getFilename("hud/corner_" .. k .. ".dds", modDir))
+            local ok, o = FarmPilotCall(createImageOverlay, Utils.getFilename(({ tl = "hud/corner_tl.dds", tr = "hud/corner_tr.dds", bl = "hud/corner_bl.dds", br = "hud/corner_br.dds" })[k], modDir))
             if ok and o ~= nil and o ~= 0 then cornerOv[k] = o else cornerOv = false break end
         end
     end
@@ -695,7 +695,7 @@ local function corners()
         -- (07/11) pas de dessin avant que les images soient prêtes (« renderOverlay called too soon »)
         if getIsOverlayReady ~= nil then
             for _, k in ipairs({ "tl", "tr", "bl", "br" }) do
-                local ok, r = pcall(getIsOverlayReady, cornerOv[k])
+                local ok, r = FarmPilotCall(getIsOverlayReady, cornerOv[k])
                 if ok and not r then return nil end
             end
         end
@@ -804,7 +804,7 @@ function ADAddonWeighing:draw()
                 alpha = math.min(alpha, (d.untilTime - g_time) / self.FADE_MS)
             end
             alpha = math.max(0, math.min(1, alpha))
-            local ok, h = pcall(self.drawPanel, self, d, alpha, yTop)
+            local ok, h = FarmPilotCall(self.drawPanel, self, d, alpha, yTop)
             if ok then
                 yTop = yTop - h - 0.01
             elseif not self.drawErrorShown then

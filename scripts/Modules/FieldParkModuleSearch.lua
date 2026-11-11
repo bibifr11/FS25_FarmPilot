@@ -12,6 +12,8 @@
 -- les places dans le mauvais sens ne comptent pas) ; pas au-delà d'une benne garée (25/10) ; file derrière une benne
 -- garée sur sa bande, même si la culture est proche (25/10) ; (ensileuse) place pour qu'une autre benne double
 -- (PASS_MIN_WIDTH) et hors du chemin de l'ensileuse (LANE_LENGTH).
+-- 11/11 (champ 56) : moissonneuse, la place est cherchée aussi plus loin du bord, jusqu'à 8 m, sur la bande coupée
+-- (bande laissée debout le long des buissons) ; traces privées : le point et la culture de chaque refus.
 --
 -- Branché par : WaitForCallTaskFieldPark.lua et DriveToVehicleTaskFieldPark.lua (newSearch, searchStep) ;
 -- PathFinderModulePark.lua et CombineUnloaderModeTracks.lua (getPassWidth, isInHarvesterWay).
@@ -30,6 +32,11 @@ ADFieldPark.WIDE_ENTRANCE_CLEARANCE = 25
 ADFieldPark.ENTRANCE_CLEARANCE = 40                 -- m between the parked train and the place where the unloader waits (field entrance)
 ADFieldPark.NOSE_SEARCH = 30                        -- m looked at ahead of the tractor to find the field it waits at
 ADFieldPark.CENTRE_OFFSETS = {0, 0.5, 1, 1.5, 2}    -- m from the border to the centre line of the train, into the field: astride the border first, half on the grass
+-- 11/11 (champ 56, bande coupée de 10,8 m le long des buissons) : moissonneuse, la bande laissée debout le long du bord
+-- peut être plus large que ADFieldPark.FRINGE ; la place est cherchée aussi plus loin du bord, sur la bande coupée
+ADFieldPark.COMBINE_CENTRE_OFFSETS = {0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8}
+ADFieldPark.TRACE_REFUSALS = 40                     -- refused positions written to the private traces per search (crop first)
+ADFieldPark.TRACE_REFUSALS_EVERY = 180000           -- ms between two such lists for the same unloader
 -- forage harvester (opening a field, narrow cut strip): a spot must leave room for another trailer to pass,
 -- and stay out of the harvester's way
 ADFieldPark.PASS_MIN_WIDTH = 4                      -- m of free cut ground beside the parked train
@@ -39,6 +46,7 @@ ADFieldPark.LANE_MARGIN = 2                         -- m added to the harvester 
 ADFieldPark.HARVESTER_MIN_DISTANCE = 15             -- m between the parked train and the harvester
 ADFieldPark.QUEUE_ENTRANCE_CLEARANCE = 15           -- forage harvester: m kept from the entrance by an unloader queued behind another
 ADFieldPark.BETWEEN_MARGIN = 2 -- m added to the half length of the parked train across the straight line to the place
+ADFieldPark.COMBINE_MIN_DISTANCE = 20               -- m between the parked train and the combine (it backs up in the corners of its headland)
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Fonction principale : nouvelle recherche, un pas de recherche
@@ -147,6 +155,7 @@ function ADFieldPark.searchStep(search)
     end
     ADFieldPark.area = search.area
     ADFieldPark.relaxed = search.relaxed == true
+    ADFieldPark.cutOnly = not search.chopper
     ADFieldPark.updateHarvesterMotion(search.harvester)
     if not search.queueDone then
         search.queueDone = true
@@ -261,6 +270,11 @@ function ADFieldPark.isSpotAllowed(search, cx, cz, dx, dz, queued)
     if ADFieldPark.overlapsTakenSpot(search, cx, cz, dx, dz) then
         return false
     end
+    if not search.chopper and ADFieldPark.isNearCombine(search.harvester, cx, cz, search.halfL) then
+        -- 10/11: on the strip the combine has just cut, never right behind it (it backs up in the corners)
+        ADFieldPark.reject = "too close to the harvester"
+        return false
+    end
     if queued then
         if ADFieldPark.isInHarvesterWay(search.harvester, cx, cz, search.halfW, search.halfL) then
             return false
@@ -292,6 +306,15 @@ function ADFieldPark.isSpotAllowed(search, cx, cz, dx, dz, queued)
         return false
     end
     return ADFieldPark.distanceToFootprint(search.x, search.z, cx, cz, dx, dz, search.halfW, search.halfL) >= (search.wide and ADFieldPark.WIDE_ENTRANCE_CLEARANCE or ADFieldPark.ENTRANCE_CLEARANCE)
+end
+
+-- combine: the footprint (centre cx, cz) closer than ADFieldPark.COMBINE_MIN_DISTANCE to it
+function ADFieldPark.isNearCombine(harvester, cx, cz, halfL)
+    if harvester == nil or harvester.components == nil then
+        return false
+    end
+    local hx, _, hz = getWorldTranslation(harvester.components[1].node)
+    return MathUtil.vector2Length(cx - hx, cz - hz) - halfL < ADFieldPark.COMBINE_MIN_DISTANCE
 end
 
 -- an unloader parked in the field (not beside the road) stands between the searching unloader and the place (cx, cz):
@@ -405,14 +428,18 @@ function ADFieldPark.addCandidates(search, radius, angle)
             end
         end
     end
+    -- 11/11 : moissonneuse, aussi plus loin du bord (bande laissée debout le long des buissons)
+    local offsets = search.chopper and ADFieldPark.CENTRE_OFFSETS or ADFieldPark.COMBINE_CENTRE_OFFSETS
     for _, sign in ipairs({1, -1}) do
         local dx, dz = tx * sign, tz * sign
+        local tried = ADFieldPark.traceWanted(search) and {} or nil
         -- the centre line of the train on the border (half on the grass), a little into the field when
         -- something stands there
-        for _, offset in ipairs(ADFieldPark.CENTRE_OFFSETS) do
+        for _, offset in ipairs(offsets) do
             local px, pz = bx - nx * offset, bz - nz * offset
             local maxH = nil
             ADFieldPark.reject = "side or entrance"
+            ADFieldPark.rejectX = nil
             if ADFieldPark.isSpotAllowed(search, px, pz, dx, dz) then
                 maxH = ADFieldPark.isGroundFree(px, pz, dx, dz, halfW, halfL, search.nearby, py)
                 if maxH ~= nil and search.vehicle.ad.trafficYieldModule:overlapHit(px, maxH + 1.9, pz, math.atan2(dx, dz), halfW, 1.3, halfL) then
@@ -422,7 +449,11 @@ function ADFieldPark.addCandidates(search, radius, angle)
             end
             if maxH == nil then
                 ADFieldPark.count(search, ADFieldPark.reject)
+                if tried ~= nil then
+                    table.insert(tried, {offset = offset, reason = ADFieldPark.reject, x = ADFieldPark.rejectX, z = ADFieldPark.rejectZ})
+                end
             else
+                tried = nil
                 -- nose pointing away from the entrance: the train drives straight in along the border
                 local ox, oz = px - search.x, pz - search.z
                 local away = (dx * ox + dz * oz) / math.max(MathUtil.vector2Length(ox, oz), 0.1)
@@ -431,6 +462,9 @@ function ADFieldPark.addCandidates(search, radius, angle)
                 table.insert(search.candidates, {cx = px, cz = pz, dx = dx, dz = dz, nx = nx, nz = nz, maxH = maxH, cost = cost})
                 break
             end
+        end
+        if tried ~= nil then
+            ADFieldPark.keepRefusal(search, radius, angle, sign, bx, bz, tried)
         end
     end
 end
@@ -513,6 +547,7 @@ function ADFieldPark.pickSpots(search)
     ADFieldPark.relaxed = false
     if #candidates == 0 then
         search.result = "no harvested ground along the border"
+        ADFieldPark.traceRefusals(search)
     end
     -- nose the way the harvester sets off along the border (its first headland)
     if sense ~= nil then
@@ -568,4 +603,91 @@ function ADFieldPark.pickSpots(search)
         end
     end
     return spots
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Traces privées : pourquoi chaque position le long du bord a été refusée (11/11, champ 56)
+-- ------------------------------------------------------------------------------------------------------------
+-- Seulement quand les traces privées sont allumées (FarmPilot_traces.txt, voir FarmPilotTraces.lua) ; écrit quand
+-- la recherche finit sans aucune place ; au plus TRACE_REFUSALS lignes (refus « crop » d'abord), une liste toutes
+-- les TRACE_REFUSALS_EVERY ms par benne.
+ADFieldPark.refusalTraced = {}
+
+function ADFieldPark.traceWanted(search)
+    if ADTraces == nil or not ADTraces.isOn() then
+        return false
+    end
+    local last = ADFieldPark.refusalTraced[search.vehicle]
+    return last == nil or (g_time or 0) - last >= ADFieldPark.TRACE_REFUSALS_EVERY
+end
+
+-- a position along the border where every distance from it was refused
+function ADFieldPark.keepRefusal(search, radius, angle, sign, bx, bz, tried)
+    local crop = false
+    for _, t in ipairs(tried) do
+        if t.reason == "crop" then
+            crop = true
+        end
+    end
+    search.refusals = search.refusals or {}
+    table.insert(search.refusals, {crop = crop, radius = radius, angle = angle, sign = sign, bx = bx, bz = bz, tried = tried,
+        pass = search.wide and "large" or (search.relaxed and "bande coupée" or "normale")})
+end
+
+-- fruit, growth state, distance to the field edge and edge strip test at a refused crop point
+function ADFieldPark.describeCrop(x, z, py)
+    local text = "?"
+    if FSDensityMapUtil ~= nil and FSDensityMapUtil.getFruitTypeIndexAtWorldPos ~= nil then
+        local fruitTypeIndex, growthState = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(x, z)
+        local fruit = fruitTypeIndex ~= nil and g_fruitTypeManager:getFruitTypeByIndex(fruitTypeIndex) or nil
+        text = string.format("%s état %s", fruit ~= nil and tostring(fruit.name) or tostring(fruitTypeIndex), tostring(growthState))
+    end
+    local edge = nil
+    for a = 0, 315, 45 do
+        local d = ADFieldPark.castToBorder(x, z, math.sin(math.rad(a)), math.cos(math.rad(a)), 15, py)
+        if d ~= nil and (edge == nil or d < edge) then
+            edge = d
+        end
+    end
+    return string.format("%s, %s du bord, bande du bord %s", text, edge ~= nil and string.format("%.1f m", edge) or "> 15 m",
+        ADFieldPark.isBorderFringe(x, z) and "oui" or "non")
+end
+
+function ADFieldPark.traceRefusals(search)
+    local list = search.refusals
+    search.refusals = nil
+    if list == nil or #list == 0 or not ADFieldPark.traceWanted(search) then
+        return
+    end
+    ADFieldPark.refusalTraced[search.vehicle] = g_time or 0
+    local name = search.vehicle.getName ~= nil and search.vehicle:getName() or "?"
+    local ordered = {}
+    for _, r in ipairs(list) do
+        if r.crop then
+            table.insert(ordered, r)
+        end
+    end
+    for _, r in ipairs(list) do
+        if not r.crop then
+            table.insert(ordered, r)
+        end
+    end
+    ADTraces.log("[AD-Place] %s : aucune place, %d positions refusées le long du bord (entrée %.1f,%.1f), les %d premières :",
+        name, #list, search.x, search.z, math.min(#ordered, ADFieldPark.TRACE_REFUSALS))
+    for i = 1, math.min(#ordered, ADFieldPark.TRACE_REFUSALS) do
+        local r = ordered[i]
+        local parts = {}
+        local last = nil
+        for _, t in ipairs(r.tried) do
+            if t.x ~= nil then
+                table.insert(parts, string.format("%g m %s à %.1f,%.1f (%s)", t.offset, t.reason, t.x, t.z, ADFieldPark.describeCrop(t.x, t.z, search.py)))
+                last = nil
+            elseif t.reason ~= last then
+                table.insert(parts, string.format("%g m %s", t.offset, t.reason))
+                last = t.reason
+            end
+        end
+        ADTraces.log("[AD-Place] %s : passe %s, anneau %d m %d°, sens %d, bord %.1f,%.1f : %s", name, r.pass, r.radius, r.angle, r.sign,
+            r.bx, r.bz, table.concat(parts, " | "))
+    end
 end

@@ -441,6 +441,8 @@
 		<text name="AD_obstacleDetour_start" text="est bloqué par un obstacle, recule pour le contourner" />
 		<text name="AD_obstacleDetour_found" text="contourne l'obstacle" />
 		<text name="AD_obstacleDetour_failed" text="ne trouve aucun contournement de l'obstacle : intervention nécessaire" />
+		<text name="AD_obstacleDetour_creep" text="avance au pas pour passer l'obstacle" />
+		<text name="AD_obstacleDetour_reroute" text="garde ce passage comme bouché et prend une autre route" />
 		<text name="AD_trafficYield_giveWay" text="recule pour laisser passer un véhicule en face" />
 		<text name="AD_ty_waitFor" text="Attend que" />
 		<text name="AD_ty_toPass" text="passe" />
@@ -491,6 +493,7 @@
 		<text name="AD_task_waiting_call_short" text="attend un appel" />
 		<text name="AD_task_wait_roadside" text="Attend au bord de la route" />
 		<text name="AD_task_no_spot_retry" text="Aucune place, nouvel essai dans" />
+		<text name="AD_task_no_harvester_retry" text="Pas de machine de récolte dans ce champ, nouvel essai dans" />
 		<text name="AD_task_loaded_wait" text="Chargé, attend un appel" />
 		<text name="AD_task_plan_to" text="Calcule le trajet vers" />
 		<text name="AD_task_no_path_retry" text="Pas de trajet, nouvel essai dans" />
@@ -562,6 +565,7 @@
 		<text name="AD_autonomous_nextField" text="Champ suivant : %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Champ suivant : aucun" />
 		<text name="AD_autonomous_nextFieldGo" text="champ fini, départ vers le champ suivant « %s »" />
+		<text name="AD_autonomous_skipNoNext" text="pas de champ suivant réglé, la route vers « %s » continue" />
 		<text name="AD_task_autonomous_detach" text="Dételer l'outil" />
 		<text name="AD_task_autonomous_fetch" text="Atteler l'outil" />
 		<text name="AD_autonomous_dropGo" text="champ fini, l'outil va à sa place « %s »" />
@@ -570,13 +574,28 @@
 		<text name="AD_autonomous_dropSeveral" text="plusieurs outils attelés : pas de dételage, il se gare comme avant" />
 		<text name="AD_autonomous_dropNoToolPark" text="l'outil n'a pas de place de parking : il se gare comme avant" />
 		<text name="AD_autonomous_dropNoTractorPark" text="le tracteur n'a pas de place de parking (à part celle de l'outil) : outil gardé, il se gare comme avant" />
-		<text name="AD_autonomous_tool" text="Outil : %s" />
-		<text name="AD_autonomous_toolNone" text="Outil : celui attelé" />
+		<text name="AD_autonomous_tool" text="Outil AR : %s" />
+		<text name="AD_autonomous_toolNone" text="Outil AR : celui attelé" />
 		<text name="AD_autonomous_toolListNone" text="Celui attelé" />
 		<text name="AD_autonomous_toolListEntry" text="%s · %d m" />
-		<text name="AD_autonomous_nextTool" text="Outil suivant : %s" />
-		<text name="AD_autonomous_nextToolNone" text="Outil suivant : le même" />
+		<text name="AD_autonomous_nextTool" text="Outil AR suivant : %s" />
+		<text name="AD_autonomous_nextToolNone" text="Outil AR suivant : le même" />
 		<text name="AD_autonomous_nextToolListNone" text="Le même" />
+		<text name="AD_fpFn_mass" text="Masse" />
+		<text name="AD_autonomous_frontTool" text="Outil AV : %s" />
+		<text name="AD_autonomous_frontToolNone" text="Outil AV : celui attelé" />
+		<text name="AD_autonomous_nextFrontTool" text="Outil AV suivant : %s" />
+		<text name="AD_autonomous_nextFrontToolNone" text="Outil AV suivant : le même" />
+		<text name="AD_autonomous_frontNoJoint" text="« %s » ne s'attelle pas à l'avant de ce tracteur (ou l'attelage avant est déjà pris)" />
+		<text name="AD_autonomous_frontNoPark" text="« %s » (avant) n'a pas de place de parking et rien à côté de quoi le poser : il reste attelé" />
+		<text name="AD_autonomous_massBlocked" text="« %s » (avant) n'a pas de place de parking ni rien à côté de quoi le poser : « %s » ne peut pas être reprise, le tracteur reste ici (pas garé sur la masse)" />
+		<text name="AD_autonomous_massNoPark" text="le tracteur n'a pas de place de parking pour y poser « %s » : réglez-la (bouton parking, rien de sélectionné)" />
+		<text name="AD_autonomous_frontBeside" text="pose « %s » à côté de « %s »" />
+		<text name="AD_autonomous_frontDropAt" text="pose « %s » au fond de la place « %s », le nez en avant" />
+		<text name="AD_autonomous_frontDropAhead" text="pose « %s » dans la place « %s », devant « %s »" />
+		<text name="AD_autonomous_frontPlaceFailed" text="« %s » pas posé (pas de place libre à côté, ou pas de chemin) : arrêt ici" />
+		<text name="AD_task_autonomous_frontPlace" text="Pose de l'outil avant" />
+		<text name="AD_task_autonomous_backOff" text="Sortie de la place" />
 		<text name="AD_autonomous_swapGo" text="champ fini : l'outil va à sa place « %s », puis « %s » est attelé pour le champ suivant « %s »" />
 		<text name="AD_autonomous_swapSeveral" text="outil suivant « %s » : plusieurs outils attelés, pas de changement d'outil, arrêt et attente" />
 		<text name="AD_autonomous_swapNoToolPark" text="outil suivant « %s » : l'outil attelé n'a pas de place de parking, arrêt et attente" />
@@ -700,6 +719,9 @@
 		<text name="AD_autonomous_dumpFailed" text="reste de la cuve pas vidé à « %s » (pas de place ou refusé) : gardé dans la cuve" />
 		<text name="AD_autonomous_dumpParkGo" text="parking : vide d'abord le reste de la cuve en big bags à « %s »" />
 		<text name="AD_autonomous_dumpKept" text="reste de %s gardé dans la cuve : pas de vidange en big bags possible ou aucune zone (voir le log)" />
+		<text name="AD_autonomous_parkUnloadGo" text="parking : benne pas vide, va d'abord vider à « %s »" />
+		<text name="AD_autonomous_parkUnloadNone" text="parking : benne pas vide (%s L de %s), mais pas de destination de déchargement réglée : elle reste chargée" />
+		<text name="AD_autonomous_parkUnloadFailed" text="parking : rien ne se vide à « %s » (reste %s L) : parking sans vider" />
 		<text name="AD_task_autonomous_dump" text="Vide le reste en big bags" />
 		<text name="gui_ad_baleLoader_title" text="Réglages de la remorque à balles" />
 		<text name="gui_ad_baleLoader_head" text="Remorque : %s · Champ : %s · Prend les %s" />

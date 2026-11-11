@@ -178,7 +178,7 @@ function AutoDrive.loadHelpLine()
 	if g_helpLineManager == nil or g_helpLineManager.loadFromXML == nil then
 		return
 	end
-	local ok, err = pcall(function()
+	local ok, err = FarmPilotCall(function()
 		local filename = Utils.getFilename("gui/helpLine.xml", AutoDrive.directory)
 		local modName = Utils.getModNameAndBaseDirectory(filename)
 		if modName ~= nil and g_helpLineManager.getCategories ~= nil and g_helpLineManager:getCategories(modName) ~= nil then
@@ -740,7 +740,7 @@ function AutoDrive:update(dt)
 		AutoDrive.isFirstRun = false
 		self:init()
 		if ADAutonomousManager ~= nil and ADAutonomousManager.linkCourseplayMouse ~= nil then
-			pcall(ADAutonomousManager.linkCourseplayMouse)
+			FarmPilotCall(ADAutonomousManager.linkCourseplayMouse)
 		end
 		if AutoDrive.devAutoDriveInit ~= nil then
 			AutoDrive.devAutoDriveInit()
@@ -777,6 +777,7 @@ function AutoDrive:update(dt)
 	ADMessagesManager:update(dt)
 	ADTriggerManager:update(dt)
 	ADRoutesManager:update(dt)
+	if ADTraces ~= nil then ADTraces.update(dt) end -- traces privées et journal : lignes en attente écrites, voir FarmPilotTraces.lua
 	PathFinderModule.refreshFieldMap()
 	PathFinderModule.updateFieldScan()
 

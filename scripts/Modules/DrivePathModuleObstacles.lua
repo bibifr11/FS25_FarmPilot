@@ -55,7 +55,7 @@ function ADDrivePathModule.shiftAroundObstacles(vehicle, wayPoints, firstIndex)
     if wayPoints == nil or #wayPoints < 3 or ADPathCalculator.shiftAroundObstacles == nil then
         return wayPoints
     end
-    local ok, shifted = pcall(ADPathCalculator.shiftAroundObstacles, vehicle, wayPoints, firstIndex)
+    local ok, shifted = FarmPilotCall(ADPathCalculator.shiftAroundObstacles, vehicle, wayPoints, firstIndex)
     if not ok then
         print(string.format("[AD-Poteau] %s: error %s, route kept", tostring(vehicle.getName ~= nil and vehicle:getName() or "?"), tostring(shifted)))
         return wayPoints
@@ -108,6 +108,10 @@ function ADDrivePathModule:handleDrivingModules(dt, obstacleDetected)
     -- another AutoDrive vehicle closer than the gap on the route: stop here, like the sensors would
     if not obstacleDetected and self.vehicle.ad.approachModule ~= nil and self.vehicle.ad.approachModule:shouldStop() then
         obstacleDetected = true
+    end
+    -- contournement raté devant un objet fixe : au pas sans le capteur avant (ObstacleDetourEscape.lua)
+    if ADObstacleDetourEscape ~= nil then
+        obstacleDetected = ADObstacleDetourEscape.creepOverride(self, dt, obstacleDetected)
     end
     return false, obstacleDetected
 end

@@ -42,7 +42,7 @@ AutoDrive.settings.fpSiloEmptyWait = {
 
 -- temps d'attente du véhicule en ms ; nil = Non (pas de départ anticipé)
 function ADAddonSiloEmpty.waitTime(vehicle)
-    local ok, wait = pcall(AutoDrive.getSetting, "fpSiloEmptyWait", vehicle)
+    local ok, wait = FarmPilotCall(AutoDrive.getSetting, "fpSiloEmptyWait", vehicle)
     if not ok or type(wait) ~= "number" then
         return ADAddonSiloEmpty.WAIT_TIME
     end

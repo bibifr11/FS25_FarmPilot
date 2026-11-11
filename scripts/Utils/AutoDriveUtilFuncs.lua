@@ -137,26 +137,6 @@ function AutoDrive.getMinLookaheadByVehicleType(vehicle)
     return math.max(min_lookAhead, 2)
 end
 
-function AutoDrive.defineMinDistanceByVehicleTypeOld(vehicle)
-    local min_distance = 1.8
-    if
-        vehicle.typeDesc == "combine" or vehicle.typeDesc == "harvester" or vehicle.typeName == "combineDrivable" or vehicle.typeName == "selfPropelledMower" or vehicle.typeName == "woodHarvester" or vehicle.typeName == "combineCutterFruitPreparer" or vehicle.typeName == "drivableMixerWagon" or
-            vehicle.typeName == "cottonHarvester" or
-            vehicle.typeName == "pdlc_claasPack.combineDrivableCrawlers"
-     then
-        min_distance = 6
-    elseif vehicle.typeDesc == "telehandler" or vehicle.spec_crabSteering ~= nil then --If vehicle has 4 steering wheels like xerion or hardi self Propelled sprayer then also min_distance = 3;
-        min_distance = 3
-    elseif vehicle.typeDesc == "truck" then
-        min_distance = 3
-    end
-    -- If vehicle is quadtrack then also min_distance = 6;
-    if vehicle.spec_articulatedAxis ~= nil and vehicle.spec_articulatedAxis.rotSpeed ~= nil then
-        min_distance = 6
-    end
-    return min_distance
-end
-
 function AutoDrive.getVehicleMaxSpeed(vehicle)
     -- 255 is the max value to prevent errors with MP sync
     if vehicle ~= nil and vehicle.spec_motorized ~= nil and vehicle.spec_motorized.motor ~= nil then

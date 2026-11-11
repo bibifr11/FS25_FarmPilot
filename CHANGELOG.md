@@ -3,6 +3,26 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.1.40 → 1.0.3.3
+
+🇫🇷 FR
+- Licence : FarmPilot passe en GNU GPL v3 (avis MIT d'AutoDrive conservé, voir NOTICE.md et CHANGES.md).
+- Mode Autonome : bouton >> corrigé ; outil qui a bougé dans sa place ou rangé de travers attelé quand même ; attelage avant (masse, faucheuse avant) : masse posée nez en avant, reprise après le chantier, faucheuse avant rangée devant la faucheuse arrière dans la même place.
+- Bennes et moissonneuse : stationnement en bord de champ pendant la 1re fourrière, arrêt sur le chemin avant le champ quand aucune place n'est libre, fin de chantier de la moissonneuse.
+- Places de parking prises en marche arrière, entrée nez en avant par les routes, demi-tours par les routes, sortie de place en courbe.
+- Conduite : passage bouché par un objet fixe contourné, vitesse sans saccades avant un angle serré, conduite plus douce ; warnings seulement en vraie marche arrière.
+- Lignes de suivi retirées de log.txt (seulement en mode debug), code AutoDrive inutilisé supprimé.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Licence: FarmPilot moves to the GNU GPL v3 (AutoDrive's MIT notice kept, see NOTICE.md and CHANGES.md).
+- Autonomous mode: >> button fixed; a tool that moved in its spot or is parked crooked is still hitched; front hitch (weight, front mower): weight dropped nose first, picked up again after the job, front mower parked in front of the rear mower in the same spot.
+- Trailers and combine: parking at the field edge during the first headland, stop on the track before the field when no spot is free, end of the combine's job.
+- Parking spots taken in reverse, entering nose first via roads, U-turns via roads, leaving a spot in a curve.
+- Driving: a passage blocked by a fixed object is driven around, no speed jerks before a sharp corner, smoother driving; hazard lights only when really reversing.
+- Tracking lines removed from log.txt (debug mode only), unused AutoDrive code removed.
+
 ## 1.0.1.39
 
 🇫🇷 FR

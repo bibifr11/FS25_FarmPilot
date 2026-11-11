@@ -43,7 +43,7 @@ ADTrailerHitch.FAIL_KEYS = {
 }
 
 function ADTrailerHitch.log(fmt, ...)
-    local ok, txt = pcall(string.format, fmt, ...)
+    local ok, txt = FarmPilotCall(string.format, fmt, ...)
     print("[FarmPilot Remorque] " .. (ok and txt or tostring(fmt)))
 end
 
@@ -75,7 +75,7 @@ end
 
 local function farmOf(v)
     if v ~= nil and v.getOwnerFarmId ~= nil then
-        local ok, farm = pcall(v.getOwnerFarmId, v)
+        local ok, farm = FarmPilotCall(v.getOwnerFarmId, v)
         if ok then
             return farm
         end
@@ -117,7 +117,7 @@ function ADTrailerHitch.label(trailer)
     if name == nil or name == "" then
         name = ADAutonomousManager.toolLabel(trailer)
     end
-    local okC, _, capacity = pcall(AutoDrive.getObjectFillLevels, trailer)
+    local okC, _, capacity = FarmPilotCall(AutoDrive.getObjectFillLevels, trailer)
     if okC and type(capacity) == "number" and capacity > 0 then
         return string.format("%s · %s L", tostring(name), thousands(capacity))
     end
@@ -133,7 +133,7 @@ function ADTrailerHitch.fetchableTrailers(vehicle)
     end
     local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
     for _, v in pairs(system.vehicles) do
-        local ok, fetchable = pcall(ADTrailerHitch.isFetchableTrailer, vehicle, v)
+        local ok, fetchable = FarmPilotCall(ADTrailerHitch.isFetchableTrailer, vehicle, v)
         if ok and fetchable then
             local tx, _, tz = getWorldTranslation(v.components[1].node)
             out[#out + 1] = { tool = v, name = ADTrailerHitch.label(v), distance = MathUtil.vector2Length(tx - vx, tz - vz) }
@@ -158,7 +158,7 @@ local function attachedTrailers(vehicle)
     if vehicle == nil or vehicle.getAttachedImplements == nil then
         return list
     end
-    local ok, implements = pcall(vehicle.getAttachedImplements, vehicle)
+    local ok, implements = FarmPilotCall(vehicle.getAttachedImplements, vehicle)
     if ok and type(implements) == "table" then
         for _, impl in ipairs(implements) do
             local o = impl.object
@@ -219,7 +219,7 @@ function ADTrailerHitch.beforeStart(mode, user)
     if not ADTrailerHitch.isTrailerMode(vehicle) then
         return false
     end
-    local ok, trailer, err, wanted = pcall(ADTrailerHitch.trailerToFetch, vehicle)
+    local ok, trailer, err, wanted = FarmPilotCall(ADTrailerHitch.trailerToFetch, vehicle)
     if not ok then
         ADTrailerHitch.log("ERREUR remorque à atteler : %s", tostring(trailer))
         return false
@@ -249,7 +249,7 @@ function ADTrailerHitch.startFetch(mode, trailer, user, after)
     vehicle.ad.onRouteToPark = false
     mode.fpHitch = { trailer = trailer, user = user, stage = nil, stuck = 0, after = after }
     message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_trailer_fetchGo", ADTrailerHitch.label(trailer))
-    local okR, wp, kind, markerName = pcall(AutonomousMode.fetchRoutePoint, vehicle, trailer)
+    local okR, wp, kind, markerName = FarmPilotCall(AutonomousMode.fetchRoutePoint, vehicle, trailer)
     if not okR then
         ADTrailerHitch.log("ERREUR route vers la remorque : %s", tostring(wp))
         wp = nil
@@ -258,6 +258,7 @@ function ADTrailerHitch.startFetch(mode, trailer, user, after)
         ADTrailerHitch.log("%s : va chercher « %s » par le réseau (%s %s)", nameOf(vehicle), ADTrailerHitch.label(trailer),
             kind == "marker" and "sa place" or "point devant la remorque", tostring(kind == "marker" and markerName or wp.id))
         mode.fpHitch.stage = "route"
+        mode.fpHitch.place = kind == "marker" and wp or nil
         mode.fpHitch.task = DriveToDestinationTask:new(vehicle, wp.id)
         vehicle.ad.taskModule:addTask(mode.fpHitch.task)
     else
@@ -269,7 +270,7 @@ end
 function ADTrailerHitch.startAttach(mode)
     local h = mode.fpHitch
     h.stage = "attach"
-    h.task = ADFetchToolTask:new(mode.vehicle, h.trailer)
+    h.task = ADFetchToolTask:new(mode.vehicle, h.trailer, true)
     mode.vehicle.ad.taskModule:addTask(h.task)
 end
 
@@ -279,12 +280,18 @@ function ADTrailerHitch.monitor(mode, dt)
     if h == nil or h.stage ~= "route" or h.task == nil or mode.vehicle.ad.taskModule:getActiveTask() ~= h.task then
         return
     end
-    local ok, ready, distance = pcall(ADFetchToolTask.readyFor, mode.vehicle, h.trailer)
+    local ok, ready, distance, reachable = FarmPilotCall(ADFetchToolTask.readyFor, mode.vehicle, h.trailer)
     if not ok or distance == nil then
         return
     end
     if ready and distance <= AutonomousMode.FETCH_HANDOVER then
         ADTrailerHitch.log("%s : devant la remorque par le réseau (%.1f m), marche arrière", nameOf(mode.vehicle), distance)
+        h.task:finished()
+        return
+    end
+    -- (10/11) remorque qui a bougé dans sa place : comme l'outil, on lâche la route et on recule vers son point d'attelage
+    if reachable and distance <= AutonomousMode.FETCH_HANDOVER and AutonomousMode.reversingInPlace(mode.vehicle, h.place) then
+        ADTrailerHitch.log("%s : remorque pas dans l'axe (%.1f m), on lâche la route et on vise son point d'attelage", nameOf(mode.vehicle), distance)
         h.task:finished()
         return
     end
@@ -370,7 +377,7 @@ function ADTrailerHitch.trailerToDrop(vehicle)
     if ADParkButton == nil or ADParkButton.toolToDrop == nil then
         return nil
     end
-    local okD, tool = pcall(ADParkButton.toolToDrop, vehicle)
+    local okD, tool = FarmPilotCall(ADParkButton.toolToDrop, vehicle)
     if okD and tool == trailer then
         return trailer
     end
@@ -424,7 +431,7 @@ function ADTrailerHitch.afterStop(vehicle)
         message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_trailer_dropGo", ADTrailerHitch.label(trailer))
         if ADParkButton ~= nil then ADParkButton.rememberMode(vehicle) end -- mode d'avant rendu à l'arrêt, voir AutonomousParkButton.lua
         vehicle.ad.stateModule:setMode(AutoDrive.MODE_AUTONOMOUS)
-        local ok, started = pcall(AutonomousMode.parkWithToolDrop, vehicle, trailer)
+        local ok, started = FarmPilotCall(AutonomousMode.parkWithToolDrop, vehicle, trailer)
         if not ok or not started then
             ADTrailerHitch.log("%s : dépose de la remorque pas lancée (%s)", nameOf(vehicle), ok and "refusée" or tostring(started))
             if ADParkButton ~= nil then ADParkButton.restoreMode(vehicle) end

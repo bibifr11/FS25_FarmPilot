@@ -454,21 +454,6 @@ function FollowCombineTask:update(dt)
     end
 end
 
-function FollowCombineTask:startPathPlanningForCircling()
-    local sideOffset = 0
-    if self.chaseSide ~= nil and self.chaseSide == AutoDrive.CHASEPOS_LEFT then
-        sideOffset = 8
-    elseif self.chaseSide ~= nil and self.chaseSide == AutoDrive.CHASEPOS_RIGHT then
-        sideOffset = -8
-    end
-
-    local targetPos = AutoDrive.createWayPointRelativeToVehicle(self.vehicle, sideOffset, 0)
-    local directionX, directionY, directionZ = AutoDrive.localToWorld(self.vehicle, 0, 0, 0, self.vehicle.ad.ADRootNode)
-    local direction = {x = directionX - targetPos.x, z = directionZ - targetPos.z}
-    self.vehicle.ad.pathFinderModule:reset()
-    self.vehicle.ad.pathFinderModule:startPathPlanningTo(targetPos, direction)
-end
-
 function FollowCombineTask:updateStates(dt)
     local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
     local cx, cy, cz = getWorldTranslation(self.combine.components[1].node)

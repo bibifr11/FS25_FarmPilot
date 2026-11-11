@@ -9,7 +9,8 @@
 -- route : aucun champ, sauf à l'entrée (pas de demi-tour dans le champ).
 --
 -- Branché par : WaitForCallTaskFieldPark.lua et DriveToVehicleTaskFieldPark.lua (getLeadIn, findDirectPath,
--- appendLeadIn ; isPathClear aussi pour contrôler un trajet du pathfinder).
+-- appendLeadIn ; isPathClear aussi pour contrôler un trajet du pathfinder) ; findWayFromEntrance :
+-- DriveToDestinationTaskFieldEntrance.lua et WaitForCallTaskFieldPark.lua (11/11).
 -- ============================================================================================================
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -22,7 +23,12 @@ ADFieldPark.START_ANY_FIELD = 12                    -- m from the unloader never
 ADFieldPark.LEAD_EXTRA = 4                          -- m added to the train length for the end of the path along the border
 ADFieldPark.LEAD_MIN = 8                            -- m, shortest end along the border (near a field corner)
 ADFieldPark.LEAD_STEP = 2                           -- m between two points of the end along the border
-ADFieldPark.LEAD_ACROSS = 8                         -- m looked at on each side to find the border at each point
+ADFieldPark.LEAD_ACROSS = 12                        -- m looked at on each side to find the border at each point
+-- 10/11, combine: way along the border to a place on the strip it has cut (findApproach)
+ADFieldPark.APPROACH_MAX = 170                      -- m of border followed back from the place
+ADFieldPark.APPROACH_ENTRIES = {6, 10, 14, 18, 24, 32} -- m ahead of the unloader, along the border, where it may join the line
+ADFieldPark.NARROW_STRIP = 16                       -- m: cut ground narrower than this beside a place leaves no room for the AutoDrive pathfinder
+ADFieldPark.TURN_BACK_OFF = {3, 6}                  -- m backed off straight when the turn into the cut strip is too wide from where the unloader stands
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Fin du chemin le long du bord du champ
@@ -35,57 +41,8 @@ function ADFieldPark.getLeadIn(vehicle, spot)
     local front, rear = ADTrafficYieldModule.getTrainExtents(vehicle)
     local full = front + rear + ADFieldPark.LEAD_EXTRA
     local halfW = ADTrafficYieldModule.getWidth(vehicle) / 2 + 0.3
-    -- the field of the harvester: the border is looked for on it, the trace never on another field nor a road
-    local area = nil
-    local m = spot.harvester ~= nil and ADFieldPark.harvesterMotion[spot.harvester] or nil
-    if m ~= nil and m.area ~= nil then
-        area = m.area
-    elseif spot.harvester ~= nil and spot.harvester.components ~= nil then
-        local hx, _, hz = getWorldTranslation(spot.harvester.components[1].node)
-        area = ADFieldPark.getHarvesterArea(hx, hz)
-    end
-    local savedArea, savedRelaxed = ADFieldPark.area, ADFieldPark.relaxed
-    ADFieldPark.area, ADFieldPark.relaxed = area, false
+    local trace, area = ADFieldPark.traceBorder(spot, full)
     local py = spot.y or 0
-    -- distance of the spot from the border (along the normal pointing out of the field)
-    local trace = {{x = spot.x, z = spot.z}}
-    -- normal of the train pointing out of the field, and the distance of the spot from the border along it
-    local nx, nz = spot.dirZ, -spot.dirX
-    local offset = ADFieldPark.borderAcross(spot.x, spot.z, nx, nz, py)
-    local back = ADFieldPark.borderAcross(spot.x, spot.z, -nx, -nz, py)
-    if offset == nil or (back ~= nil and math.abs(back) < math.abs(offset)) then
-        nx, nz, offset = -nx, -nz, back
-    end
-    if offset ~= nil then
-        local x, z, hx, hz = spot.x, spot.z, -spot.dirX, -spot.dirZ
-        local travelled = 0
-        while travelled < full do
-            -- one step back, then across to the border (same side), at the same distance from it
-            local cx, cz = x + hx * ADFieldPark.LEAD_STEP, z + hz * ADFieldPark.LEAD_STEP
-            local d = ADFieldPark.borderAcross(cx, cz, nx, nz, py)
-            if d == nil then
-                break
-            end
-            local px, pz = cx + nx * (d - offset), cz + nz * (d - offset)
-            local step = MathUtil.vector2Length(px - x, pz - z)
-            if step < 0.5 or ((px - x) * hx + (pz - z) * hz) / step < 0.7 then
-                -- the border turns too much here (field corner)
-                break
-            end
-            local ohx, ohz = hx, hz
-            hx, hz = (px - x) / step, (pz - z) / step
-            -- the normal turns with the border, same side
-            local mx, mz = hz, -hx
-            if mx * nx + mz * nz < 0 then
-                mx, mz = -mx, -mz
-            end
-            nx, nz = mx, mz
-            x, z = px, pz
-            travelled = travelled + step
-            table.insert(trace, 1, {x = x, z = z})
-        end
-    end
-    ADFieldPark.area, ADFieldPark.relaxed = savedArea, savedRelaxed
     local roads = ADFieldPark.getWayPointsAround(spot.x, spot.z, full + 20)
     local reason = "no border"
     -- shortened from its far end until it is clear
@@ -125,6 +82,63 @@ function ADFieldPark.getLeadIn(vehicle, spot)
     return spot, nil
 end
 
+-- points along the field border back from the spot, at the same distance from the border as the spot, every
+-- ADFieldPark.LEAD_STEP m over length m at most (it stops where the border turns too much, a field corner). The first
+-- point is the farthest from the spot, the last one the spot itself. Returns the points and the field of the harvester
+function ADFieldPark.traceBorder(spot, length)
+    -- the field of the harvester: the border is looked for on it, the trace never on another field nor a road
+    local area = nil
+    local m = spot.harvester ~= nil and ADFieldPark.harvesterMotion[spot.harvester] or nil
+    if m ~= nil and m.area ~= nil then
+        area = m.area
+    elseif spot.harvester ~= nil and spot.harvester.components ~= nil then
+        local hx, _, hz = getWorldTranslation(spot.harvester.components[1].node)
+        area = ADFieldPark.getHarvesterArea(hx, hz)
+    end
+    local savedArea, savedRelaxed = ADFieldPark.area, ADFieldPark.relaxed
+    ADFieldPark.area, ADFieldPark.relaxed = area, false
+    local py = spot.y or 0
+    -- distance of the spot from the border (along the normal pointing out of the field)
+    local trace = {{x = spot.x, z = spot.z}}
+    -- normal of the train pointing out of the field, and the distance of the spot from the border along it
+    local nx, nz = spot.dirZ, -spot.dirX
+    local offset = ADFieldPark.borderAcross(spot.x, spot.z, nx, nz, py)
+    local back = ADFieldPark.borderAcross(spot.x, spot.z, -nx, -nz, py)
+    if offset == nil or (back ~= nil and math.abs(back) < math.abs(offset)) then
+        nx, nz, offset = -nx, -nz, back
+    end
+    if offset ~= nil then
+        local x, z, hx, hz = spot.x, spot.z, -spot.dirX, -spot.dirZ
+        local travelled = 0
+        while travelled < length do
+            -- one step back, then across to the border (same side), at the same distance from it
+            local cx, cz = x + hx * ADFieldPark.LEAD_STEP, z + hz * ADFieldPark.LEAD_STEP
+            local d = ADFieldPark.borderAcross(cx, cz, nx, nz, py)
+            if d == nil then
+                break
+            end
+            local px, pz = cx + nx * (d - offset), cz + nz * (d - offset)
+            local step = MathUtil.vector2Length(px - x, pz - z)
+            if step < 0.5 or ((px - x) * hx + (pz - z) * hz) / step < 0.7 then
+                -- the border turns too much here (field corner)
+                break
+            end
+            hx, hz = (px - x) / step, (pz - z) / step
+            -- the normal turns with the border, same side
+            local mx, mz = hz, -hx
+            if mx * nx + mz * nz < 0 then
+                mx, mz = -mx, -mz
+            end
+            nx, nz = mx, mz
+            x, z = px, pz
+            travelled = travelled + step
+            table.insert(trace, 1, {x = x, z = z})
+        end
+    end
+    ADFieldPark.area, ADFieldPark.relaxed = savedArea, savedRelaxed
+    return trace, area
+end
+
 -- distance from (x, z) to the field border along (nx, nz) (pointing out of the field), negative when (x, z) is off the
 -- field; nil when no border within ADFieldPark.LEAD_ACROSS m
 function ADFieldPark.borderAcross(x, z, nx, nz, py)
@@ -161,12 +175,26 @@ end
 -- direct path to a spot: a Dubins curve from the unloader to the spot, checked every meter with the width of the
 -- train against growing crop and every few meters against obstacles. The AutoDrive pathfinder works on a grid of
 -- the turn radius size, too coarse for a harvested strip along the border, so it is only used when this fails
-function ADFieldPark.findDirectPath(vehicle, spot)
+-- start (optional): {x, z, dx, dz} the curve starts from instead of where the unloader stands
+function ADFieldPark.findDirectPath(vehicle, spot, start)
     if ADDubins == nil then
         return nil
     end
+    local path, reasons, x, z, rx, rz = ADFieldPark.findDubins(vehicle, spot, false, start)
+    if path == nil then
+        vehicle.ad.trafficYieldModule:log("field park: no direct path from x=%.0f z=%.0f heading %.0f°:%s",
+            x, z, math.deg(math.atan2(rx, rz)), reasons or " no curve")
+    end
+    return path
+end
+
+-- the Dubins curve itself; shortestOnly: only the shortest curve of each turn radius (no detour by another curve type)
+function ADFieldPark.findDubins(vehicle, spot, shortestOnly, start)
     local x, _, z = ADTrafficYieldModule.getPosition(vehicle)
     local rx, rz = ADTrafficYieldModule.getDirection(vehicle)
+    if start ~= nil then
+        x, z, rx, rz = start.x, start.z, start.dx, start.dz
+    end
     local q0 = {x, -z, AutoDrive.normalizeAngle(math.atan2(rx, rz) + math.pi * 1.5)}
     local q1 = {spot.x, -spot.z, AutoDrive.normalizeAngle(math.atan2(spot.dirX, spot.dirZ) + math.pi * 1.5)}
     -- the crop is checked with the real width of the train plus a small margin
@@ -202,7 +230,7 @@ function ADFieldPark.findDirectPath(vehicle, spot)
     local reasons = nil
     for _, radius in ipairs(radii) do
         -- 0: shortest path, then each path type in turn
-        for pathType = 0, 6 do
+        for pathType = 0, shortestOnly and 0 or 6 do
             dubins.outPath = {}
             local result
             if pathType == 0 then
@@ -224,13 +252,187 @@ function ADFieldPark.findDirectPath(vehicle, spot)
             end
         end
     end
-    vehicle.ad.trafficYieldModule:log("field park: no direct path from x=%.0f z=%.0f heading %.0f°:%s",
-        x, z, math.deg(math.atan2(rx, rz)), reasons or " no curve")
+    return nil, reasons, x, z, rx, rz
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Moissonneuse : chemin le long du bord jusqu'à une place sur la bande coupée (10/11)
+-- ------------------------------------------------------------------------------------------------------------
+-- the way to a place on the strip the combine has cut follows the border from where the unloader stands: a short
+-- curve onto the line along the border (same distance from it as the place), then that line to the place. The single
+-- curve to the last meters before the place (findDirectPath) cuts across the grass, a hedge or the standing crop
+-- beside a narrow strip. Returns the path; nil when the border cannot be followed (corner, crop, obstacle, road) or
+-- joined from here
+function ADFieldPark.findApproach(vehicle, spot, start)
+    if ADDubins == nil or spot.roadside then
+        return nil
+    end
+    local trace, area = ADFieldPark.traceBorder(spot, ADFieldPark.APPROACH_MAX)
+    local minPoints = math.ceil(ADFieldPark.LEAD_MIN / ADFieldPark.LEAD_STEP) + 1
+    if #trace < minPoints then
+        return nil
+    end
+    local py = spot.y or 0
+    local halfW = ADTrafficYieldModule.getWidth(vehicle) / 2 + 0.3
+    -- from the place back: the part of the line that is clear (crop, obstacle, grass far from the border)
+    local back = {}
+    for i = #trace, 1, -1 do
+        local t = trace[i]
+        table.insert(back, {x = t.x, y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, t.x, py, t.z), z = t.z})
+    end
+    local blocked, _, _, index = ADFieldPark.isPathClear(vehicle, back, halfW, nil, false)
+    local count = blocked ~= nil and index - 1 or #back
+    -- never on another field, never across a road
+    local roads = ADFieldPark.getWayPointsAround(spot.x, spot.z, ADFieldPark.APPROACH_MAX + 20)
+    for k = 1, count do
+        local p = back[k]
+        local stop = area ~= nil and not area.capped and AutoDrive.checkIsOnField(p.x, 0, p.z) and not PathFinderModule.isInFieldArea(area, p.x, p.z)
+        for _, wp in ipairs(roads) do
+            if not stop and MathUtil.vector2Length(wp.x - p.x, wp.z - p.z) < halfW + 1 then
+                stop = true
+            end
+        end
+        if stop then
+            count = k - 1
+            break
+        end
+    end
+    if count < minPoints then
+        return nil
+    end
+    -- in driving order: the farthest clear point first, the place last
+    local line = {}
+    for k = count, 1, -1 do
+        table.insert(line, back[k])
+    end
+    local x, _, z = ADTrafficYieldModule.getPosition(vehicle)
+    if start ~= nil then
+        x, z = start.x, start.z
+    end
+    local nearest, nearestDistance = 1, math.huge
+    for k, p in ipairs(line) do
+        local d = MathUtil.vector2Length(p.x - x, p.z - z)
+        if d < nearestDistance then
+            nearest, nearestDistance = k, d
+        end
+    end
+    -- the line is joined a few meters ahead of the unloader, a little farther when the curve does not fit
+    local tried = {}
+    for _, ahead in ipairs(ADFieldPark.APPROACH_ENTRIES) do
+        local k = math.min(nearest + math.ceil(ahead / ADFieldPark.LEAD_STEP), #line - minPoints + 1)
+        if not tried[k] then
+            tried[k] = true
+            local p, n = line[k], line[k + 1]
+            local l = math.max(MathUtil.vector2Length(n.x - p.x, n.z - p.z), 0.01)
+            local target = {x = p.x, y = p.y, z = p.z, dirX = (n.x - p.x) / l, dirZ = (n.z - p.z) / l}
+            local path = ADFieldPark.findDubins(vehicle, target, true, start)
+            if path ~= nil then
+                for i = k + 1, #line do
+                    table.insert(path, {x = line[i].x, y = line[i].y, z = line[i].z})
+                end
+                vehicle.ad.trafficYieldModule:log("field park: way along the border, joined %d m ahead, %d points", ahead, #path)
+                return path
+            end
+        end
+    end
     return nil
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Moissonneuse : un trajet existe-t-il depuis l'entrée ? (11/11, champ 56)
+-- ------------------------------------------------------------------------------------------------------------
+-- 11/11 (champ 56 : la benne est allée au point du champ, aucun trajet propre vers les places trouvées, la culture du
+-- coin juste devant le nez ; elle a attendu là, en plein sur la fourrière de la moissonneuse) : avant d'aller à
+-- l'entrée, la benne vérifie depuis le chemin qu'un trajet propre part de l'entrée (start = {x, z, dx, dz}, la pose
+-- au point du champ) vers une des places : trajet mémorisé, le long du bord, courbe directe, ou petit recul puis le
+-- long du bord ; le pathfinder d'AutoDrive seulement où la bande coupée est large (comme à l'entrée).
+-- Rend l'index de la place et la façon, nil quand aucune.
+function ADFieldPark.findWayFromEntrance(vehicle, spots, start)
+    for i = 1, math.min(#spots, ADFieldPark.MAX_TRIES) do
+        local spot = spots[i]
+        if not spot.roadside then
+            local memo = spot.memo
+            if memo ~= nil and memo.path ~= nil and memo.start ~= nil and memo.target ~= nil
+                and MathUtil.vector2Length(start.x - memo.start.x, start.z - memo.start.z) <= ADFieldPark.MEMO_START_DISTANCE
+                and start.dx * memo.start.dx + start.dz * memo.start.dz >= math.cos(math.rad(ADFieldPark.MEMO_START_ANGLE))
+                and MathUtil.vector2Length(spot.x - memo.target.x, spot.z - memo.target.z) <= 1 then
+                return i, "remembered"
+            end
+            if ADFieldPark.findApproach(vehicle, spot, start) ~= nil then
+                return i, "along the border"
+            end
+            local target = ADFieldPark.getLeadIn(vehicle, spot)
+            if ADFieldPark.findDirectPath(vehicle, target, start) ~= nil then
+                return i, "direct"
+            end
+            for _, d in ipairs(ADFieldPark.TURN_BACK_OFF) do
+                if ADFieldPark.findApproach(vehicle, spot, {x = start.x - start.dx * d, z = start.z - start.dz * d, dx = start.dx, dz = start.dz}) ~= nil then
+                    return i, string.format("backing off %d m, then along the border", d)
+                end
+            end
+            if ADFieldPark.getCutWidth(spot, ADFieldPark.NARROW_STRIP) >= ADFieldPark.NARROW_STRIP then
+                return i, "pathfinder (wide cut strip)"
+            end
+        end
+    end
+    return nil
+end
+
+-- the turn into the cut strip is too wide from where the unloader stands (its nose is already in the field): m to
+-- back off straight so that the way along the border fits; nil when backing off does not help, or something stands
+-- behind the train
+function ADFieldPark.findTurnBackOff(vehicle, spot)
+    local x, y, z = ADTrafficYieldModule.getPosition(vehicle)
+    local dx, dz = ADTrafficYieldModule.getDirection(vehicle)
+    local _, rear = ADTrafficYieldModule.getTrainExtents(vehicle)
+    local halfW = ADTrafficYieldModule.getWidth(vehicle) / 2 + 0.3
+    for _, d in ipairs(ADFieldPark.TURN_BACK_OFF) do
+        local bx, bz = x - dx * (rear + d / 2), z - dz * (rear + d / 2)
+        if vehicle.ad.trafficYieldModule:overlapHit(bx, (y or 0) + 1.9, bz, math.atan2(dx, dz), halfW, 1.3, d / 2) then
+            return nil
+        end
+        if ADFieldPark.findApproach(vehicle, spot, {x = x - dx * d, z = z - dz * d, dx = dx, dz = dz}) ~= nil then
+            return d
+        end
+    end
+    return nil
+end
+
+-- cut field ground beside a place, from its centre line into the field (the narrowest of rear, middle and nose), in m
+-- up to maxWidth: how wide the strip cut by the combine is there
+function ADFieldPark.getCutWidth(spot, maxWidth)
+    local best = 0
+    for _, side in ipairs({1, -1}) do
+        -- GIANTS local +x (left) of the heading is (dz, -dx)
+        local nx, nz = spot.dirZ * side, -spot.dirX * side
+        local width = math.huge
+        for _, f in ipairs({-1, 0, 1}) do
+            local px, pz = spot.cx + spot.dirX * spot.halfL * f, spot.cz + spot.dirZ * spot.halfL * f
+            local w, entered = 0, false
+            for o = 0.5, maxWidth, 0.5 do
+                local x, z = px + nx * o, pz + nz * o
+                if AutoDrive.checkIsOnField(x, 0, z) then
+                    entered = true
+                    if ADFieldPark.hasGrowingCrop(x, z) and not ADFieldPark.isBorderFringe(x, z) then
+                        break
+                    end
+                    w = o
+                elseif entered or o > 4 then
+                    -- off the field again, or the grass side of the place
+                    break
+                end
+            end
+            width = math.min(width, w)
+        end
+        best = math.max(best, width)
+    end
+    return best
 end
 
 function ADFieldPark.isPathClear(vehicle, path, halfW, fieldRule, anyGrass)
     local islandCache = {}
+    -- combine: the uncut headland along the edge is not a fringe (see isBorderFringe)
+    ADFieldPark.cutOnly = ADFieldPark.isCombineJob(vehicle)
     -- the roads around (from beside the road into the field, the path follows the road to the entrance)
     local roads = ADFieldPark.getWayPointsAround(path[1].x, path[1].z, ADFieldPark.ROADSIDE_RANGE + 60)
     for i = 1, #path - 1 do

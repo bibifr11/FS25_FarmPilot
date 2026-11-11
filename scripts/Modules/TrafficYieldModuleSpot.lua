@@ -514,7 +514,7 @@ function ADTrafficYieldModule:searchSpotBehind(other)
     local savedPartner = self.partner
     self.partner = other
     self.spotTwoWayOnly = true
-    local ok, spot = pcall(self.searchSpotBySides, self, behind + gap, true, fromIndex)
+    local ok, spot = FarmPilotCall(self.searchSpotBySides, self, behind + gap, true, fromIndex)
     self.spotTwoWayOnly = nil
     self.partner = savedPartner
     if not ok then

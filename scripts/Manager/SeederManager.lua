@@ -134,7 +134,7 @@ function ADSeederManager.fruitChoices(tool)
     -- (celui que le semoir lui-même vérifie : FruitTypeDesc:getIsPlantableInPeriod)
     local outside = false
     if tool.getCanPlantOutsideSeason ~= nil then
-        local okO, o = pcall(tool.getCanPlantOutsideSeason, tool)
+        local okO, o = FarmPilotCall(tool.getCanPlantOutsideSeason, tool)
         outside = okO and o == true
     end
     for _, e in ipairs(out) do
@@ -142,7 +142,7 @@ function ADSeederManager.fruitChoices(tool)
     end
     local allowed = spec.allowsSeedChanging ~= false
     if tool.getIsSeedChangeAllowed ~= nil then
-        local ok, a = pcall(tool.getIsSeedChangeAllowed, tool)
+        local ok, a = FarmPilotCall(tool.getIsSeedChangeAllowed, tool)
         if ok and a ~= nil then
             allowed = a
         end
@@ -156,7 +156,7 @@ function ADSeederManager.isPlantableNow(fruitIndex)
     if ft == nil or ft.getIsPlantableInPeriod == nil or mission == nil or mission.missionInfo == nil or mission.environment == nil then
         return true
     end
-    local ok, r = pcall(ft.getIsPlantableInPeriod, ft, mission.missionInfo.growthMode, mission.environment.currentPeriod)
+    local ok, r = FarmPilotCall(ft.getIsPlantableInPeriod, ft, mission.missionInfo.growthMode, mission.environment.currentPeriod)
     return not ok or r == true
 end
 
@@ -308,7 +308,7 @@ function ADSeederManager.startBlock(vehicle)
     for _, isNext in ipairs({ false, true }) do
         local ctx = ADSeederManager.context(vehicle, isNext)
         if ctx ~= nil and not ADSeederManager.isValid(ADSeederManager:get(ctx.field, ctx.toolKey)) then
-            local okL, label = pcall(ADAutonomousManager.toolShortLabel, ctx.tool)
+            local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, ctx.tool)
             return { label = okL and label or ADAutonomousManager.toolLabel(ctx.tool), field = ctx.field, isNext = isNext }
         end
     end
@@ -387,13 +387,13 @@ function ADSeederManager.applyCpSettings(vehicle, s, fillTypes)
     if vehicle.getCpSettings == nil then
         return
     end
-    local okS, settings = pcall(vehicle.getCpSettings, vehicle)
+    local okS, settings = FarmPilotCall(vehicle.getCpSettings, vehicle)
     if not okS or settings == nil then
         return
     end
     local refill = settings.refillOnTheField
     if refill ~= nil and refill.getValue ~= nil and refill:getValue() ~= 0 then
-        pcall(refill.setValue, refill, 0)
+        FarmPilotCall(refill.setValue, refill, 0)
         log("Courseplay : « plein dans le champ » remis sur désactivé (FarmPilot va remplir à la zone)")
     end
     local fert = settings.sowingMachineFertilizerEnabled
@@ -405,7 +405,7 @@ function ADSeederManager.applyCpSettings(vehicle, s, fillTypes)
             end
         end
         if fert:getValue() ~= wantFert then
-            pcall(fert.setValue, fert, wantFert)
+            FarmPilotCall(fert.setValue, fert, wantFert)
             log("Courseplay : engrais du semoir %s", wantFert and "activé" or "désactivé")
         end
     end
@@ -426,12 +426,12 @@ function ADSeederManager.prepare(vehicle)
     if s.fruit ~= nil and tool.setSeedFruitType ~= nil and g_fruitTypeManager ~= nil then
         local ft = g_fruitTypeManager:getFruitTypeByName(s.fruit)
         if ft ~= nil and ADSeederManager.currentFruit(tool) ~= s.fruit then
-            pcall(tool.setSeedFruitType, tool, ft.index)
+            FarmPilotCall(tool.setSeedFruitType, tool, ft.index)
             log("culture « %s » mise sur le semoir", tostring(s.fruit))
         end
     end
     local fillTypes = ADSeederManager.fillTypeIndices(s)
-    pcall(ADSeederManager.applyCpSettings, vehicle, s, fillTypes)
+    FarmPilotCall(ADSeederManager.applyCpSettings, vehicle, s, fillTypes)
     local marker = ADGraphManager:getMapMarkerByName(s.refill)
     return {
         tool = tool, settings = s, marker = marker, fillTypes = fillTypes, field = ctx.field,

@@ -49,7 +49,7 @@ local function findBaler(object, depth)
     if object.getAttachedImplements == nil then
         return nil
     end
-    local ok, implements = pcall(object.getAttachedImplements, object)
+    local ok, implements = FarmPilotCall(object.getAttachedImplements, object)
     if not ok or type(implements) ~= "table" then
         return nil
     end
@@ -79,7 +79,7 @@ function ADBalerManager.windrowTypes(baler)
     end
     local spec = baler ~= nil and baler.spec_baler or nil
     if spec ~= nil and spec.fillUnitIndex ~= nil and baler.getFillUnitSupportedFillTypes ~= nil then
-        local ok, types = pcall(baler.getFillUnitSupportedFillTypes, baler, spec.fillUnitIndex)
+        local ok, types = FarmPilotCall(baler.getFillUnitSupportedFillTypes, baler, spec.fillUnitIndex)
         if ok and type(types) == "table" then
             for ft, supported in pairs(types) do
                 if supported then
@@ -111,7 +111,7 @@ function ADBalerManager.hasWindrow(x, z, dx, dz, types)
     local wx, wz = sx + px * 2 * hw, sz + pz * 2 * hw
     local hx, hz = sx + dx * 2 * hl, sz + dz * 2 * hl
     for _, ft in ipairs(types) do
-        local ok, level = pcall(DensityMapHeightUtil.getFillLevelAtArea, ft, sx, sz, wx, wz, hx, hz)
+        local ok, level = FarmPilotCall(DensityMapHeightUtil.getFillLevelAtArea, ft, sx, sz, wx, wz, hx, hz)
         if ok and level ~= nil and level > 0 then
             return true
         end
@@ -206,7 +206,7 @@ function ADBalerManager.choose(vehicle, courses, g)
     local best, bestScore, tested = nil, 0, 0
     for _, e in ipairs(courses or {}) do
         if e.groupKeys ~= nil and e.groupKeys[g.key] then
-            local okR, pts = pcall(ADBalerManager.readLine, e.path)
+            local okR, pts = FarmPilotCall(ADBalerManager.readLine, e.path)
             if okR and pts ~= nil then
                 local hits, probes = ADBalerManager.score(pts, types)
                 local s = probes > 0 and hits / probes or 0

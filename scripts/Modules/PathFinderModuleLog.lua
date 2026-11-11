@@ -90,7 +90,7 @@ PathFinderModule.DUMP_MAX_CELLS = 150
 PathFinderModule.DUMP_MARGIN = 20
 PathFinderModule.DUMP_CHARS = {["libre"] = "o", ["champ"] = "F", ["culture"] = "C", ["obstacle/pente"] = "X", ["vehicule"] = "V"}
 function PathFinderModule:dumpSearchMap(tag, path, badPoint)
-    local ok, err = pcall(function()
+    local ok, err = FarmPilotCall(function()
         local now = g_time or 0
         if self.lastDumpTime ~= nil and now - self.lastDumpTime < PathFinderModule.DUMP_INTERVAL then
             return

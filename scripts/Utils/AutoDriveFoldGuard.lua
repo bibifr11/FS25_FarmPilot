@@ -44,7 +44,7 @@ ADFoldGuard.JOINT_STILL = 500     -- ms sans variation de position d'un attelage
 -- ------------------------------------------------------------------------------------------------------------
 function ADFoldGuard.nameOf(object)
     if object ~= nil and object.getName ~= nil then
-        local ok, name = pcall(object.getName, object)
+        local ok, name = FarmPilotCall(object.getName, object)
         if ok and name ~= nil then
             return tostring(name)
         end
@@ -131,7 +131,7 @@ function ADFoldGuard.isGameOrderPending(vehicle)
         if direction ~= nil then
             local finished = false
             if action.getIsFinished ~= nil then
-                local ok, f = pcall(action.getIsFinished, action, direction)
+                local ok, f = FarmPilotCall(action.getIsFinished, action, direction)
                 finished = ok and f == true
             end
             if not finished then

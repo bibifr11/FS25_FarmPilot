@@ -205,7 +205,7 @@ function ADDirtRoads.routeSpeed(vehicle)
     if vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule.getSpeedLimit ~= nil then
         speed = vehicle.ad.stateModule:getSpeedLimit() or speed
         if AutoDrive.getVehicleMaxSpeed ~= nil then
-            local ok, maxSpeed = pcall(AutoDrive.getVehicleMaxSpeed, vehicle)
+            local ok, maxSpeed = FarmPilotCall(AutoDrive.getVehicleMaxSpeed, vehicle)
             if ok and maxSpeed ~= nil and maxSpeed > 0 then
                 speed = math.min(speed, maxSpeed)
             end
@@ -354,7 +354,7 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     local allowed, why = ADDirtRoads.isAllowed(vehicle)
     -- tertiaire prise ailleurs qu'à l'accès au départ / à la destination : seulement faute d'autre route
     local firstWp = wayPoints[1]
-    local okA, access = pcall(ADDirtRoads.accessPoints, firstWp ~= nil and firstWp.id or nil, lastWp ~= nil and lastWp.id or nil)
+    local okA, access = FarmPilotCall(ADDirtRoads.accessPoints, firstWp ~= nil and firstWp.id or nil, lastWp ~= nil and lastWp.id or nil)
     local through = 0
     for _, wp in ipairs(wayPoints) do
         if ADDirtRoads.isDirt(wp) and okA and not access[wp.id] then

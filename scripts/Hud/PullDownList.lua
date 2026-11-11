@@ -116,6 +116,13 @@ function ADPullDownList:fpGetTool(vehicle)
     if self.fpTrailer then
         return vehicle.ad.stateModule.getFpTrailer ~= nil and vehicle.ad.stateModule:getFpTrailer() or nil
     end
+    if self.fpFront then
+        -- (10/11) lignes « Outil avant » / « Outil avant suivant », voir AutonomousManagerFront.lua
+        if vehicle.ad.stateModule.getFpFrontTool == nil then
+            return nil
+        end
+        return self.fpNext and vehicle.ad.stateModule:getFpNextFrontTool() or (not self.fpNext and vehicle.ad.stateModule:getFpFrontTool()) or nil
+    end
     if self.fpNext then
         return vehicle.ad.stateModule.getFpNextTool ~= nil and vehicle.ad.stateModule:getFpNextTool() or nil
     end
@@ -127,9 +134,11 @@ end
 function ADPullDownList:createSelection_FpTool(vehicle)
     local ok, list
     if self.fpTrailer then
-        ok, list = pcall(ADTrailerHitch.fetchableTrailers, vehicle)
+        ok, list = FarmPilotCall(ADTrailerHitch.fetchableTrailers, vehicle)
+    elseif self.fpFront then
+        ok, list = FarmPilotCall(ADAutonomousManager.fetchableFrontTools, vehicle)
     else
-        ok, list = pcall(ADAutonomousManager.fetchableTools, vehicle)
+        ok, list = FarmPilotCall(ADAutonomousManager.fetchableTools, vehicle)
     end
     if not ok then
         list = {}
@@ -162,7 +171,7 @@ function ADPullDownList:update(dt)
 end
 
 function ADPullDownList:onDraw(vehicle, uiScale)
-    if self.fpNext and not self:isFpTool(vehicle) then
+    if (self.fpNext or self.fpFront) and not self:isFpTool(vehicle) then
         return
     end
     if not (self.type ~= ADPullDownList.TYPE_FILLTYPE or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOAD or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_PICKUPANDDELIVER or self:isFpTool(vehicle)) then
@@ -670,10 +679,18 @@ function ADPullDownList:getNewState_FillType(vehicle)
         if self.state == ADPullDownList.STATE_COLLAPSED and self.fpTrailer then
             local trailer = self:fpGetTool(vehicle)
             self.text = trailer ~= nil and string.format(g_i18n:getText("AD_trailer_row"), ADTrailerHitch.label(trailer)) or g_i18n:getText("AD_trailer_rowNone")
+        elseif self.state == ADPullDownList.STATE_COLLAPSED and self.fpFront then
+            local tool = self:fpGetTool(vehicle)
+            if tool ~= nil then
+                local okL, label = FarmPilotCall(ADAutonomousManager.frontLabel, tool)
+                self.text = string.format(g_i18n:getText(self.fpNext and "AD_autonomous_nextFrontTool" or "AD_autonomous_frontTool"), okL and label or ADAutonomousManager.toolLabel(tool))
+            else
+                self.text = g_i18n:getText(self.fpNext and "AD_autonomous_nextFrontToolNone" or "AD_autonomous_frontToolNone")
+            end
         elseif self.state == ADPullDownList.STATE_COLLAPSED then
             local tool = self:fpGetTool(vehicle)
             if tool ~= nil then
-                local okL, label = pcall(ADAutonomousManager.toolShortLabel, tool)
+                local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, tool)
                 self.text = string.format(g_i18n:getText(self.fpNext and "AD_autonomous_nextTool" or "AD_autonomous_tool"), okL and label or ADAutonomousManager.toolLabel(tool))
             else
                 self.text = g_i18n:getText(self.fpNext and "AD_autonomous_nextToolNone" or "AD_autonomous_toolNone")
@@ -714,7 +731,7 @@ function ADPullDownList:hit(posX, posY, layer)
 end
 
 function ADPullDownList:act(vehicle, posX, posY, isDown, isUp, button)
-    if self.fpNext and not self:isFpTool(vehicle) then
+    if (self.fpNext or self.fpFront) and not self:isFpTool(vehicle) then
         return false
     end
     if (self.type ~= ADPullDownList.TYPE_FILLTYPE or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOAD or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_PICKUPANDDELIVER or self:isFpTool(vehicle)) and (self.type ~= ADPullDownList.TYPE_UNLOAD or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOAD or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_PICKUPANDDELIVER or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD or self:isFpNextField(vehicle)) then
@@ -791,7 +808,7 @@ function ADPullDownList:act(vehicle, posX, posY, isDown, isUp, button)
                 AutoDriveHudInputEventEvent:sendFpNextFieldEvent(vehicle, 0)
             elseif self.state == ADPullDownList.STATE_COLLAPSED and self:isFpTool(vehicle) then
                 -- FarmPilot mode Autonome : clic droit = plus d'outil à atteler (celui attelé ; outil suivant : le même)
-                ADAutonomousToolEvent.send(vehicle, nil, self.fpNext, self.fpTrailer)
+                ADAutonomousToolEvent.send(vehicle, nil, self.fpNext, self.fpTrailer, self.fpFront)
             elseif self.state == ADPullDownList.STATE_EXPANDED and self.type ~= ADPullDownList.TYPE_FILLTYPE and hitIcon ~= nil and hitIcon == ADPullDownList.ICON_FILTER and hitIndex ~= nil and hitIndex == 0 then
                 -- clear filter
                 vehicle.ad.destinationFilterText = ""
@@ -911,7 +928,7 @@ function ADPullDownList:collapse(vehicle, setItem)
                 end
             elseif self:isFpTool(vehicle) then
                 local e = self.fpToolList ~= nil and self.fpToolList[selectedEntry.returnValue] or nil
-                ADAutonomousToolEvent.send(vehicle, e ~= nil and e.tool or nil, self.fpNext, self.fpTrailer)
+                ADAutonomousToolEvent.send(vehicle, e ~= nil and e.tool or nil, self.fpNext, self.fpTrailer, self.fpFront)
             elseif self.type == ADPullDownList.TYPE_FILLTYPE then
                 -- AutoDrive.debugMsg(vehicle, "ADPullDownList:collapse self.hovered %s selectedEntry.returnValue %s", tostring(self.hovered), tostring(selectedEntry.returnValue))
                 AutoDriveHudInputEventEvent:sendFillTypeEvent(vehicle, selectedEntry.returnValue)

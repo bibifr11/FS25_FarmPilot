@@ -369,47 +369,6 @@ function AutoDrive.getTrailersOfImplement(vehicle, attachedImplement, onlyDischa
     return trailersOfImplement
 end
 
--- new, return list of all fillUnits of vehicle and trailers for nonFuel or nil - currently not used
-function AutoDrive.getAllNonFuelFillUnits_old(vehicle, initialize)
-    local nonFuelFillUnits = nil
-    if vehicle == nil or vehicle.ad == nil then
-        return nonFuelFillUnits
-    end
-    if vehicle.ad.nonFuelFillUnits == nil or initialize then
-
-        local trailers = AutoDrive.getAllUnits(vehicle)
-        if trailers then
-            for trailerIndex, trailer in ipairs(trailers) do
-                if trailer.getFillUnits then
-                    for fillUnitIndex, fillUnit in pairs(trailer:getFillUnits()) do
-                        for fillType, _ in pairs(trailer:getFillUnitSupportedFillTypes(fillUnitIndex)) do
-
-                            local fillTypeName = g_fillTypeManager:getFillTypeNameByIndex(fillType)
-                            if not table.contains(AutoDrive.fuelFillTypes, fillTypeName) then
-
-                                if fillUnit.exactFillRootNode then
-                                    if nonFuelFillUnits == nil then
-                                        nonFuelFillUnits = {}
-                                    end
-                                    table.insert(nonFuelFillUnits, {fillUnit = fillUnit, node = fillUnit.exactFillRootNode, object = trailer, fillUnitIndex = fillUnitIndex})
-                                elseif fillUnit.fillRootNode then
-                                    if nonFuelFillUnits == nil then
-                                        nonFuelFillUnits = {}
-                                    end
-                                    table.insert(nonFuelFillUnits, {fillUnit = fillUnit, node = fillUnit.fillRootNode, object = trailer, fillUnitIndex = fillUnitIndex})
-                                end
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        vehicle.ad.nonFuelFillUnits = nonFuelFillUnits
-    end
-    return vehicle.ad.nonFuelFillUnits
-end
-
 -- consider only dischargable fillUnits
 function AutoDrive.getAllDischargeableUnits(vehicle, initialize)
     local dischargeableUnits = nil
@@ -541,7 +500,10 @@ function AutoDrive.getDistanceToUnloadPosition(vehicle)
     local x, _, z = getWorldTranslation(vehicle.components[1].node)
     local destination = nil
     local rootVehicle = vehicle.getRootVehicle and vehicle:getRootVehicle()
-    if rootVehicle.ad.stateModule:getMode() == AutoDrive.MODE_DELIVERTO then
+    local parkUnload = ADParkUnload ~= nil and ADParkUnload.unloadMarker(rootVehicle) or nil -- bouton parking, benne à vider d'abord : la destination notée au départ, voir AutonomousParkUnload.lua
+    if parkUnload ~= nil then
+        destination = ADGraphManager:getWayPointById(parkUnload.id)
+    elseif rootVehicle.ad.stateModule:getMode() == AutoDrive.MODE_DELIVERTO then
         -- in deliver mode only 1st target in HUD is taken
         if rootVehicle.ad.stateModule:getFirstMarker() == nil then
             return math.huge

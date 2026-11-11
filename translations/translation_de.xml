@@ -478,6 +478,7 @@
 		<text name="AD_task_waiting_call_short" text="wartet auf Anruf" />
 		<text name="AD_task_wait_roadside" text="Wartet am Straßenrand" />
 		<text name="AD_task_no_spot_retry" text="Kein Platz, neuer Versuch in" />
+		<text name="AD_task_no_harvester_retry" text="Kein Erntefahrzeug auf diesem Feld, neuer Versuch in" />
 		<text name="AD_task_loaded_wait" text="Beladen, wartet auf Anruf" />
 		<text name="AD_task_plan_to" text="Plant den Weg nach" />
 		<text name="AD_task_no_path_retry" text="Kein Weg gefunden, neuer Versuch in" />
@@ -545,6 +546,8 @@
 		<text name="AD_obstacleDetour_start" text="wird von einem Hindernis blockiert und setzt zurück, um es zu umfahren" />
 		<text name="AD_obstacleDetour_found" text="umfährt das Hindernis" />
 		<text name="AD_obstacleDetour_failed" text="findet keinen Weg um das Hindernis: Hilfe nötig" />
+		<text name="AD_obstacleDetour_creep" text="fährt im Schritttempo am Hindernis vorbei" />
+		<text name="AD_obstacleDetour_reroute" text="merkt sich diese Durchfahrt als blockiert und nimmt einen anderen Weg" />
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonom" />
 		<text name="input_ADAutonomousCourses" text="FP - Autonome Kurse (Wahl je Feld)" />
@@ -562,6 +565,7 @@
 		<text name="AD_autonomous_nextField" text="Nächstes Feld: %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Nächstes Feld: keins" />
 		<text name="AD_autonomous_nextFieldGo" text="Feld fertig, Fahrt zum nächsten Feld « %s »" />
+		<text name="AD_autonomous_skipNoNext" text="kein nächstes Feld eingestellt, fährt weiter nach « %s »" />
 		<text name="AD_task_autonomous_detach" text="Gerät abkuppeln" />
 		<text name="AD_task_autonomous_fetch" text="Gerät ankuppeln" />
 		<text name="AD_autonomous_dropGo" text="Feld fertig, das Gerät fährt zu seinem Platz « %s »" />
@@ -570,13 +574,28 @@
 		<text name="AD_autonomous_dropSeveral" text="mehrere Geräte angehängt: kein Abkuppeln, Parken wie bisher" />
 		<text name="AD_autonomous_dropNoToolPark" text="das Gerät hat keinen Parkplatz: Parken wie bisher" />
 		<text name="AD_autonomous_dropNoTractorPark" text="der Traktor hat keinen Parkplatz (außer dem des Geräts): Gerät bleibt dran, Parken wie bisher" />
-		<text name="AD_autonomous_tool" text="Gerät: %s" />
-		<text name="AD_autonomous_toolNone" text="Gerät: das angehängte" />
+		<text name="AD_autonomous_tool" text="Heck: %s" />
+		<text name="AD_autonomous_toolNone" text="Heck: das angehängte" />
 		<text name="AD_autonomous_toolListNone" text="Das angehängte" />
 		<text name="AD_autonomous_toolListEntry" text="%s · %d m" />
-		<text name="AD_autonomous_nextTool" text="Nächstes Gerät: %s" />
-		<text name="AD_autonomous_nextToolNone" text="Nächstes Gerät: dasselbe" />
+		<text name="AD_autonomous_nextTool" text="Nächstes Heckgerät: %s" />
+		<text name="AD_autonomous_nextToolNone" text="Nächstes Heckgerät: dasselbe" />
 		<text name="AD_autonomous_nextToolListNone" text="Dasselbe" />
+		<text name="AD_fpFn_mass" text="Gewicht" />
+		<text name="AD_autonomous_frontTool" text="Front: %s" />
+		<text name="AD_autonomous_frontToolNone" text="Front: das angehängte" />
+		<text name="AD_autonomous_nextFrontTool" text="Nächstes Frontgerät: %s" />
+		<text name="AD_autonomous_nextFrontToolNone" text="Nächstes Frontgerät: dasselbe" />
+		<text name="AD_autonomous_frontNoJoint" text="&quot;%s&quot; passt nicht an die Front dieses Traktors (oder die Front ist belegt)" />
+		<text name="AD_autonomous_frontNoPark" text="&quot;%s&quot; (Front) hat keinen Parkplatz und nichts, neben das es gestellt werden kann: bleibt angehängt" />
+		<text name="AD_autonomous_massBlocked" text="&quot;%s&quot; (Front) hat keinen Parkplatz und nichts, neben das es gestellt werden kann: &quot;%s&quot; kann nicht aufgenommen werden, der Traktor bleibt hier (nicht auf dem Gewicht geparkt)" />
+		<text name="AD_autonomous_massNoPark" text="der Traktor hat keinen Parkplatz, um &quot;%s&quot; abzustellen: bitte festlegen (Park-Taste, nichts ausgewählt)" />
+		<text name="AD_autonomous_frontBeside" text="stellt &quot;%s&quot; neben &quot;%s&quot; ab" />
+		<text name="AD_autonomous_frontDropAt" text="stellt &quot;%s&quot; hinten im Platz &quot;%s&quot; ab, vorwärts eingefahren" />
+		<text name="AD_autonomous_frontDropAhead" text="stellt &quot;%s&quot; im Platz &quot;%s&quot; ab, vor &quot;%s&quot;" />
+		<text name="AD_autonomous_frontPlaceFailed" text="&quot;%s&quot; nicht abgestellt (kein Platz daneben oder kein Weg): Stopp" />
+		<text name="AD_task_autonomous_frontPlace" text="Frontgerät abstellen" />
+		<text name="AD_task_autonomous_backOff" text="Platz verlassen" />
 		<text name="AD_autonomous_swapGo" text="Feld fertig: das Gerät fährt zu seinem Platz « %s », dann wird « %s » für das nächste Feld « %s » angehängt" />
 		<text name="AD_autonomous_swapSeveral" text="nächstes Gerät « %s »: mehrere Geräte angehängt, kein Gerätewechsel, Halt und Warten" />
 		<text name="AD_autonomous_swapNoToolPark" text="nächstes Gerät « %s »: das angehängte Gerät hat keinen Parkplatz, Halt und Warten" />
@@ -700,6 +719,9 @@
 		<text name="AD_autonomous_dumpFailed" text="Resttank bei « %s » nicht entleert (kein Platz oder abgelehnt): bleibt im Tank" />
 		<text name="AD_autonomous_dumpParkGo" text="Parken: zuerst Resttank in Big Bags bei « %s » entleeren" />
 		<text name="AD_autonomous_dumpKept" text="%s bleibt im Tank: keine Entleerung in Big Bags möglich oder kein Ort gefunden (siehe Log)" />
+		<text name="AD_autonomous_parkUnloadGo" text="Parken: Anhänger nicht leer, fährt zuerst zum Entladen nach « %s »" />
+		<text name="AD_autonomous_parkUnloadNone" text="Parken: Anhänger nicht leer (%s L %s), aber kein Entladeziel eingestellt: er bleibt beladen" />
+		<text name="AD_autonomous_parkUnloadFailed" text="Parken: bei « %s » wird nichts entladen (Rest %s L): Parken ohne Entladen" />
 		<text name="AD_task_autonomous_dump" text="Entleert den Rest in Big Bags" />
 		<text name="gui_ad_baleLoader_title" text="Ballensammelwagen-Einstellungen" />
 		<text name="gui_ad_baleLoader_head" text="Wagen: %s · Feld: %s · Nimmt %s" />

@@ -214,14 +214,14 @@ end
 function ADSeederRefill.triggerName(trigger)
     local source = trigger.source
     if source ~= nil and source.getName ~= nil then
-        local ok, name = pcall(source.getName, source)
+        local ok, name = FarmPilotCall(source.getName, source)
         if ok and name ~= nil then
             return tostring(name)
         end
     end
     local placeable = source ~= nil and source.owningPlaceable or nil
     if placeable ~= nil and placeable.getName ~= nil then
-        local ok, name = pcall(placeable.getName, placeable)
+        local ok, name = FarmPilotCall(placeable.getName, placeable)
         if ok and name ~= nil then
             return tostring(name)
         end
@@ -262,7 +262,7 @@ function ADSeederRefill.stockText(trigger, vehicle, fillTypes)
     elseif vehicle.getOwnerFarmId ~= nil then
         farmId = vehicle:getOwnerFarmId()
     end
-    local ok, levels = pcall(source.getAllFillLevels, source, farmId)
+    local ok, levels = FarmPilotCall(source.getAllFillLevels, source, farmId)
     if not ok or type(levels) ~= "table" then
         return "illisible"
     end
@@ -491,7 +491,7 @@ function ADSeederRefill.onLoadEnd(mode)
         vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
         return true
     end
-    local ok, err = pcall(ADSeederRefill.diagnose, mode, "fin refusée au point")
+    local ok, err = FarmPilotCall(ADSeederRefill.diagnose, mode, "fin refusée au point")
     if not ok then
         log("ERREUR diagnostic du plein : %s", tostring(err))
     end
@@ -521,7 +521,7 @@ function ADSeederRefill.cpEmptyState(vehicle)
     end
     parts[#parts + 1] = "ouvrier encore enregistré " .. (job and "oui (FarmPilot ne peut pas démarrer)" or "non")
     if vehicle.getCpSettings ~= nil then
-        local ok, settings = pcall(vehicle.getCpSettings, vehicle)
+        local ok, settings = FarmPilotCall(vehicle.getCpSettings, vehicle)
         if ok and settings ~= nil and settings.refillOnTheField ~= nil and settings.refillOnTheField.getValue ~= nil then
             parts[#parts + 1] = "Courseplay plein dans le champ " .. tostring(settings.refillOnTheField:getValue())
         end
@@ -530,7 +530,7 @@ function ADSeederRefill.cpEmptyState(vehicle)
     if info ~= nil then
         parts[#parts + 1] = string.format("ouvrier achète semence %s, engrais %s", tostring(info.helperBuySeeds), tostring(info.helperBuyFertilizer))
     end
-    local ok, ctx = pcall(ADSeederManager.context, vehicle, false)
+    local ok, ctx = FarmPilotCall(ADSeederManager.context, vehicle, false)
     if ok and ctx ~= nil and ctx.tool ~= nil then
         parts[#parts + 1] = "semoir " .. ADSeederRefill.allUnitsText(ctx.tool)
     else
@@ -590,7 +590,7 @@ end
 -- 4. diagnostic à l'arrivée et pendant l'attente, puis le suivi d'origine (cuves pleines = fini)
 ADSeederRefill.originalMonitorRefill = AutonomousMode.monitorRefill
 function AutonomousMode:monitorRefill(dt)
-    local ok, err = pcall(ADSeederRefill.watch, self, dt)
+    local ok, err = FarmPilotCall(ADSeederRefill.watch, self, dt)
     if not ok then
         log("ERREUR diagnostic du plein : %s", tostring(err))
     end
@@ -610,7 +610,7 @@ end
 ADSeederRefill.originalHandleRefillStage = AutonomousMode.handleRefillStage
 function AutonomousMode:handleRefillStage()
     if self.refillStage == "load" then
-        local ok, stay = pcall(ADSeederRefill.onLoadEnd, self)
+        local ok, stay = FarmPilotCall(ADSeederRefill.onLoadEnd, self)
         if not ok then
             log("ERREUR fin du plein : %s", tostring(stay))
         elseif stay then
@@ -623,7 +623,7 @@ end
 -- 7. Courseplay « cuve vide » : état avant, plein lancé ou non après
 ADSeederRefill.originalOnCpEmpty = AutonomousMode.onCpEmpty
 function AutonomousMode.onCpEmpty(vehicle)
-    local ok, state = pcall(ADSeederRefill.cpEmptyState, vehicle)
+    local ok, state = FarmPilotCall(ADSeederRefill.cpEmptyState, vehicle)
     local started = ADSeederRefill.originalOnCpEmpty(vehicle)
     log("%s : Courseplay signale une cuve vide (onCpEmpty) : %s -> plein %s", vehicleName(vehicle), ok and tostring(state) or "?",
         started and "lancé" or "pas lancé")

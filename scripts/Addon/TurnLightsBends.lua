@@ -33,6 +33,7 @@
 --  5. Marche arrière : rien n'est touché, les feux de détresse d'AutoDrive restent.
 --  6. Points d'un virage redessiné (isCornerPoint) : toujours la route, le clignotant reste jusqu'au bout.
 --  7. Arrêté avec un clignotant demandé : AutoDrive ne l'éteint plus (il le faisait à chaque image).
+--  8. Moteur coupé (arrêt prolongé) : clignotant éteint, pas rallumé tant que le moteur ne tourne pas (09/11).
 -- ============================================================================================================
 
 ADAddonTurnLightsBends = {}
@@ -289,6 +290,20 @@ function ADAddonTurnLightsBends.update(module, minAngle, dt)
         end
         return
     end
+    -- règle 8 (09/11) : moteur coupé à l'arrêt = clignotant éteint, pas rallumé. Avant, AutoDrive
+    -- l'éteignait à chaque image et FarmPilot le rallumait (log « eteint par un autre script (etat 0), remis »).
+    -- Moteur redémarré et virage toujours devant : il se rallume au passage suivant.
+    if vehicle.getIsMotorStarted ~= nil and not vehicle:getIsMotorStarted() then
+        if (module.adAddonBlinkDir or 0) ~= 0 then
+            module.adAddonBlinkDir = 0
+            module.adAddonBlinkClearX = nil
+            if vehicle.setTurnLightState ~= nil then
+                vehicle:setTurnLightState(Lights.TURNLIGHT_OFF)
+            end
+            log(vehicle, "moteur coupe : clignotant eteint")
+        end
+        return
+    end
     local maxDistance = setting("blinkDistance", 50)
     local current = module.adAddonBlinkDir or 0
     local direction, bend = 0, nil
@@ -364,7 +379,7 @@ function ADAddonTurnLightsBends.install(autoDrive)
             end
             return setter(v, state, ...)
         end
-        local ok, err = pcall(original, vehicle, switchOff, ...)
+        local ok, err = FarmPilotCall(original, vehicle, switchOff, ...)
         rawset(vehicle, "setTurnLightState", own)
         if not ok then
             error(err, 0)

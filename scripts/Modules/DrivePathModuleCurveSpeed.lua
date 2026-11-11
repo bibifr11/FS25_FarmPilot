@@ -10,7 +10,10 @@
 -- La limite gardée entre deux calculs (une image sur 4) reste dans DrivePathModule.lua (followWaypoints), mêlée au
 -- calcul d'origine.
 --
--- Branché par une ligne dans DrivePathModule.lua : followWaypoints (limite de vitesse sur le réseau).
+-- (10/11) Angle serré entre deux segments : mêmes vitesses que la règle d'origine, mais freinage prévu selon la
+-- distance (la limite ne saute plus quand le tracteur ralentit).
+--
+-- Branché par deux lignes dans DrivePathModule.lua : followWaypoints (limite de vitesse sur le réseau).
 -- ============================================================================================================
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -125,6 +128,75 @@ function ADDrivePathModule:getCurveSpeedLimit()
         return best
     end
     return math.max(ADDrivePathModule.CURVE_MIN_SPEED, best)
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Limite de vitesse d'un angle serré entre deux segments
+-- ------------------------------------------------------------------------------------------------------------
+-- (10/11) la vitesse saccadait avant un angle serré (3-6-4-5-6 km/h). La règle d'origine (3 km/h au-dessus de 50°,
+-- 12 à 60 km/h entre 5 et 50°) ne voyait l'angle que dans une distance qui raccourcit quand le tracteur ralentit :
+-- une fois ralenti, l'angle sortait de la vue, la limite sautait, le tracteur réaccélérait, le revoyait, freinait...
+-- Ici : mêmes vitesses à l'angle, mais chaque angle devant le tracteur donne sa vitesse AU point de l'angle et on
+-- freine assez tôt pour l'atteindre (comme pour les virages) ; la limite ne dépend plus de la vitesse du tracteur.
+ADDrivePathModule.ANGLE_MIN = 5 -- ° : en dessous, pas un angle
+
+-- vitesse (km/h) à un angle de la route, règle d'origine d'AutoDrive
+function ADDrivePathModule.speedForAngle(angle)
+    if angle < ADDrivePathModule.ANGLE_MIN then
+        return math.huge
+    elseif angle < 50 then
+        return 12 + 48 * (1 - math.clamp(angle - 5, 0, 25) / 25)
+    end
+    return 3
+end
+
+-- limite (km/h) de l'angle le plus contraignant devant le tracteur, à partir du point visé
+function ADDrivePathModule:getAngleSpeedLimit()
+    local wps = self.wayPoints
+    local idx = self:getCurrentWayPointIndex()
+    if wps == nil or idx == nil or idx < 2 or wps[idx] == nil or wps[idx + 1] == nil or self.isReversing then
+        return math.huge
+    end
+    local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
+    local v = math.abs(self.vehicle.lastSpeedReal or 0) * 1000
+    local look = math.min(ADDrivePathModule.CURVE_LOOK_MAX, math.max(ADDrivePathModule.CURVE_LOOK_MIN, v * v / (2 * ADDrivePathModule.CURVE_BRAKE) + 30))
+    local factor = AutoDrive.getSetting("cornerSpeed", self.vehicle) or 1
+    -- d : route entre le tracteur et le point k, moins la distance à laquelle un point compte comme atteint (le
+    -- point visé passe alors au suivant) : la vitesse de l'angle est tenue à ce moment-là, comme avant
+    local d = math.sqrt((wps[idx].x - x) ^ 2 + (wps[idx].z - z) ^ 2) - (self.min_distance or 0)
+    local best = math.huge
+    for k = idx, math.min(#wps - 1, idx + ADDrivePathModule.CURVE_POINTS_MAX) do
+        local p, c, n = wps[k - 1], wps[k], wps[k + 1]
+        local ax, az, bx, bz = c.x - p.x, c.z - p.z, n.x - c.x, n.z - c.z
+        local la, lb = math.sqrt(ax * ax + az * az), math.sqrt(bx * bx + bz * bz)
+        if la > 0.05 and lb > 0.05 then
+            local turn = math.abs((math.atan2(bx, bz) - math.atan2(ax, az) + math.pi) % (2 * math.pi) - math.pi)
+            local vb = ADDrivePathModule.speedForAngle(math.deg(turn)) * factor / 3.6
+            if vb < math.huge then
+                best = math.min(best, math.sqrt(vb * vb + 2 * ADDrivePathModule.CURVE_BRAKE * math.max(0, d)) * 3.6)
+            end
+            if turn >= ADDrivePathModule.CURVE_REVERSAL then
+                -- changement de sens (marche arrière) : au pas à ce point, comme avant, et rien à regarder au-delà
+                break
+            end
+        end
+        d = d + lb
+        if d > look then
+            break
+        end
+    end
+    return best
+end
+
+-- (ADDrivePathModule:followWaypoints) la limite de l'angle, si elle est plus basse ; renvoie maxSpeedDiff
+function ADDrivePathModule:applyAngleSpeedLimit(maxSpeedDiff)
+    local angleLimit = self:getAngleSpeedLimit()
+    if angleLimit < self.speedLimit then
+        self.speedLimit = angleLimit
+        -- comme pour un virage : on freine dès 2 km/h de trop, la limite baisse peu à peu jusqu'à l'angle
+        maxSpeedDiff = math.min(maxSpeedDiff, ADDrivePathModule.CURVE_SPEED_DEVIATION)
+    end
+    return maxSpeedDiff
 end
 
 -- (ADDrivePathModule:followWaypoints) la limite du virage, si elle est plus basse ; renvoie maxSpeedDiff

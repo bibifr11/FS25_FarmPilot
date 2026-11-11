@@ -1,20 +1,23 @@
 -- ============================================================================================================
 -- FarmPilot : CombineUnloaderModeJobDone.lua
--- Complément de CombineUnloaderMode (mode AutoDrive d'origine « décharger la moissonneuse ») : fin de chantier
--- de l'ENSILEUSE (benne qui roule à côté). Ne concerne pas la moissonneuse (benne sous la goulotte).
+-- Complément de CombineUnloaderMode (mode AutoDrive d'origine « décharger la moissonneuse ») : ce que fait la
+-- benne à la fin du chantier de sa machine. Le signal de fin n'est pas le même pour l'ensileuse et pour la
+-- moissonneuse ; la suite de la benne est la même.
 --
 -- (26/10) Quand l'ensileuse a terminé, signal de renvoi au tracteur pour vider ; celles qui sont vides et
 -- reviennent vont au garage.
 -- (26/10) Sans parking dans leur réglage, elles reviennent au champ.
+-- (10/11) Pareil quand la moissonneuse a fini son champ (avant : la benne restait au bord du champ).
 --
--- Règle : Courseplay arrêté sur l'ensileuse (HarvestManagerChopperJob.lua) = chantier terminé. Chaque benne de
--- cette ensileuse part vider ce qu'elle porte (même peu : JOB_DONE_MIN_LOAD), puis roule jusqu'à sa destination de
--- parking AutoDrive (le « P » du véhicule) et AutoDrive s'arrête ; une benne vide va tout de suite au parking.
+-- Règle : chantier terminé = Courseplay arrêté sur l'ensileuse (HarvestManagerChopperJob.lua), ou champ fini pour la
+-- moissonneuse (HarvestManagerCombineJob.lua). Chaque benne de cette machine part vider ce qu'elle porte (même
+-- peu : JOB_DONE_MIN_LOAD), puis roule jusqu'à sa destination de parking AutoDrive (le « P » du véhicule) et
+-- AutoDrive s'arrête ; une benne vide va tout de suite au parking.
 -- Sans parking réglé : benne vide = elle reste au champ et attend ; benne chargée = elle vide puis revient au champ.
 --
--- Branché par : HarvestManagerChopperJob.lua (onHarvesterJobDone) ; dans CombineUnloaderMode.lua, une ligne dans
--- start (l'ancienne fin de chantier est oubliée) et deux dans getNextTask (étapes vers le parking ; vidée sans
--- parking : retour au champ).
+-- Branché par : HarvestManagerChopperJob.lua et HarvestManagerCombineJob.lua (onHarvesterJobDone) ; dans
+-- CombineUnloaderMode.lua, une ligne dans start (l'ancienne fin de chantier est oubliée) et deux dans getNextTask
+-- (étapes vers le parking ; vidée sans parking : retour au champ).
 -- ============================================================================================================
 
 -- ------------------------------------------------------------------------------------------------------------

@@ -30,7 +30,7 @@ end
 
 -- true si la ligne a une remorque à balles (fenêtre ouverte) ; false = fenêtre du semoir ou de l'épandeur comme avant
 function ADBaleLoaderSettingsGui.open(vehicle, isNext)
-    local okC, ctx = pcall(ADBaleLoaderManager.context, vehicle, isNext == true)
+    local okC, ctx = FarmPilotCall(ADBaleLoaderManager.context, vehicle, isNext == true)
     if not okC or ctx == nil then
         return false
     end
@@ -122,7 +122,7 @@ local KIND_TEXT = {
 
 -- marqueurs de dépôt : près d'un point de vente des balles d'abord (« vente »), puis tous les autres
 function ADBaleLoaderSettingsGui:depositRows()
-    local okS, sale = pcall(ADBaleLoaderManager.saleMarkers, self.ctx.tool)
+    local okS, sale = FarmPilotCall(ADBaleLoaderManager.saleMarkers, self.ctx.tool)
     sale = okS and sale or {}
     local markers = {}
     for _, m in pairs(ADGraphManager:getMapMarkers()) do
@@ -164,8 +164,8 @@ function ADBaleLoaderSettingsGui:refreshItems()
         self.rows = rows
         info = g_i18n:getText(nSale > 0 and "gui_ad_baleLoader_pickDeposit" or "gui_ad_baleLoader_pickDepositNoSale")
     else
-        local okL, label = pcall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
-        local okK, kind = pcall(ADBaleLoaderManager.baleKinds, self.ctx.tool)
+        local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
+        local okK, kind = FarmPilotCall(ADBaleLoaderManager.baleKinds, self.ctx.tool)
         local kindText = okK and KIND_TEXT[kind or ""] ~= nil and g_i18n:getText(KIND_TEXT[kind]) or "?"
         info = string.format(g_i18n:getText("gui_ad_baleLoader_head"), okL and label or ADAutonomousManager.toolLabel(self.ctx.tool), tostring(self.ctx.field), kindText)
         local d = self.draft
@@ -198,9 +198,9 @@ function ADBaleLoaderSettingsGui:refreshItems()
     if current ~= nil then
         for i, r in ipairs(self.rows) do
             if r.name == current then
-                pcall(self.settingsList.setSelectedIndex, self.settingsList, i)
+                FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, i)
                 if self.settingsList.makeCellVisible ~= nil then
-                    pcall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
+                    FarmPilotCall(self.settingsList.makeCellVisible, self.settingsList, 1, i)
                 end
                 break
             end
@@ -247,12 +247,12 @@ function ADBaleLoaderSettingsGui:act(row)
         d.deposit = row.name
         self.mode = "settings"
         self:refreshItems()
-        pcall(self.settingsList.setSelectedIndex, self.settingsList, #self.rows)
+        FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, #self.rows)
         return
     end
     local index = self.settingsList:getSelectedIndexInSection()
     self:refreshItems()
-    pcall(self.settingsList.setSelectedIndex, self.settingsList, index)
+    FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, index)
 end
 
 function ADBaleLoaderSettingsGui:onDoubleClick(list, section, index, cell)

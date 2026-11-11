@@ -98,6 +98,7 @@ end
 
 function ADHarvestManager:update(dt)
     self.assignmentDelayTimer:timer(true, 10000, dt)
+    self:updateCombineJobs() -- moissonneuse : champ fini, départ de ses bennes, voir HarvestManagerCombineJob.lua
     for _, idleHarvester in pairs(self.idleHarvesters) do
         local vehicle = idleHarvester
         if vehicle.isTrailedHarvester then
@@ -121,6 +122,7 @@ function ADHarvestManager:update(dt)
         local unloader = self:getAssignedUnloader(harvester)
         local driverStopped = not ((vehicle.getIsAIActive ~= nil and vehicle:getIsAIActive()) or (AutoDrive:getIsEntered(vehicle:getRootVehicle()) and AutoDrive.isPipeOut(vehicle)))
         driverStopped = self:checkChopperDriver(harvester, vehicle, driverStopped) -- ensileuse : arrêts courts du conducteur, fin de chantier, voir HarvestManagerChopperJob.lua
+        driverStopped = self:checkCombineJob(harvester, driverStopped) -- moissonneuse : champ fini, plus d'appel de benne, voir HarvestManagerCombineJob.lua
         if driverStopped
             or (vehicle.ad.onRouteToRefuel or vehicle.ad.onRouteToRepair) -- harvester is going to refuel or park
             or (unloader ~= nil and unloader.ad.stateModule:getFirstMarker() ~= vehicle.ad.stateModule:getFirstMarker()) -- harvester - unloader targets do not match
@@ -203,8 +205,8 @@ function ADHarvestManager:update(dt)
 
 
     if AutoDrive.getDebugChannelIsSet(AutoDrive.DC_COMBINEINFO) then
-        local debug = {}
-        debug.harvesters = {}
+        local dbg = {}
+        dbg.harvesters = {}
         for _, harvester in pairs(self.harvesters) do
             local infoTable = {}
             infoTable.name = harvester:getName()
@@ -214,9 +216,9 @@ function ADHarvestManager:update(dt)
             if self:getAssignedUnloader(harvester) ~= nil and self:getAssignedUnloader(harvester).ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader() ~= nil then
                 infoTable.follower = self:getAssignedUnloader(harvester).ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader():getName()
             end
-            table.insert(debug.harvesters, infoTable)
+            table.insert(dbg.harvesters, infoTable)
         end
-        debug.idleUnloaders = {}
+        dbg.idleUnloaders = {}
         for _, idleUnloader in pairs(self.idleUnloaders) do
             local infoTable = {}
             infoTable.name = idleUnloader:getName()
@@ -226,9 +228,9 @@ function ADHarvestManager:update(dt)
             if idleUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader() ~= nil then
                 infoTable.follower = idleUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader():getName()
             end
-            table.insert(debug.idleUnloaders, infoTable)
+            table.insert(dbg.idleUnloaders, infoTable)
         end
-        debug.activeUnloaders = {}
+        dbg.activeUnloaders = {}
         for _, activeUnloader in pairs(self.activeUnloaders) do
             local infoTable = {}
             infoTable.name = activeUnloader:getName()
@@ -238,10 +240,10 @@ function ADHarvestManager:update(dt)
             if activeUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader() ~= nil then
                 infoTable.follower = activeUnloader.ad.modes[AutoDrive.MODE_UNLOAD]:getFollowingUnloader():getName()
             end
-            table.insert(debug.activeUnloaders, infoTable)
+            table.insert(dbg.activeUnloaders, infoTable)
         end
-        debug.delayTimer = self.assignmentDelayTimer.elapsedTime
-        AutoDrive.renderTable(0.65, 0.6, 0.014, debug, 3)
+        dbg.delayTimer = self.assignmentDelayTimer.elapsedTime
+        AutoDrive.renderTable(0.65, 0.6, 0.014, dbg, 3)
     end
 end
 

@@ -455,13 +455,6 @@ function UnloadBGATask:checkForStopLoading() --stop loading when shovel is fille
     return self.shovelFillLevel >= 0.98
 end
 
-function UnloadBGATask:checkForIdleCondition() --idle if shovel filled and no trailer available to fill;
-    if self.shovelFillLevel >= 0.98 and ((((self.targetTrailer ~= nil or self.trailerLeftCapacity <= 1) or self.targetTrailer == nil) and not self.self.unloadToTrigger) or (self.unloadToTrigger and not self.targetUnloadTriggerFree)) then
-        return true
-    end
-    return false
-end
-
 function UnloadBGATask:handleShovel(dt)
     if self.shovelState == nil then
         self.shovelState = self.SHOVELSTATE_UNKNOWN
@@ -804,46 +797,6 @@ function UnloadBGATask:getBunkerCenter(trigger)
     local x3, z3 = trigger.bunkerSiloArea.hx, trigger.bunkerSiloArea.hz
 
     return x1 + 0.5 * ((x2 - x1) + (x3 - x1)), z1 + 0.5 * ((z2 - z1) + (z3 - z1))
-end
-
-function UnloadBGATask:isAlmostInBunkerSiloArea(distanceToCheck)
-    local trigger = self.targetBunker
-    local x1, z1 = trigger.bunkerSiloArea.sx, trigger.bunkerSiloArea.sz
-    local x2, z2 = trigger.bunkerSiloArea.wx, trigger.bunkerSiloArea.wz
-    local x3, z3 = trigger.bunkerSiloArea.hx, trigger.bunkerSiloArea.hz
-
-    local otherBoundingBox = {{x = x1, z = z1}, {x = x2, z = z2}, {x = x3, z = z3}, {x = x2 + (x3 - x1), z = z2 + (z3 - z1)}}
-
-    local x, y, z = getWorldTranslation(self.vehicle.components[1].node)
-    --create bounding box to check for vehicle
-    local rx, _, rz =  AutoDrive.localDirectionToWorld(self.vehicle, math.sin(self.vehicle.rotatedTime), 0, math.cos(self.vehicle.rotatedTime))
-    local vehicleVector = {x = rx, z = rz}
-    local width = self.vehicle.size.width
-    local length = self.vehicle.size.length
-    local ortho = {x = -vehicleVector.z, z = vehicleVector.x}
-    local boundingBox = {}
-    boundingBox[1] = {
-        x = x + (width / 2) * ortho.x,
-        y = y + 2,
-        z = z + (width / 2) * ortho.z
-    }
-    boundingBox[2] = {
-        x = x - (width / 2) * ortho.x,
-        y = y + 2,
-        z = z - (width / 2) * ortho.z
-    }
-    boundingBox[3] = {
-        x = x - (width / 2) * ortho.x + (length / 2 + distanceToCheck) * vehicleVector.x,
-        y = y + 2,
-        z = z - (width / 2) * ortho.z + (length / 2 + distanceToCheck) * vehicleVector.z
-    }
-    boundingBox[4] = {
-        x = x + (width / 2) * ortho.x + (length / 2 + distanceToCheck) * vehicleVector.x,
-        y = y + 2,
-        z = z + (width / 2) * ortho.z + (length / 2 + distanceToCheck) * vehicleVector.z
-    }
-
-    return AutoDrive.boxesIntersect(boundingBox, otherBoundingBox)
 end
 
 function UnloadBGATask:isShovelInBunkerArea()

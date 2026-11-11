@@ -203,7 +203,7 @@ function ADTrafficYieldModule:isShapeBlockingVehicle(shapeId)
     if getCollisionFilterGroup == nil or getCollisionFilterMask == nil or bitAND == nil then
         return true
     end
-    local ok, shapeGroup, shapeMask, vehGroup, vehMask = pcall(function()
+    local ok, shapeGroup, shapeMask, vehGroup, vehMask = FarmPilotCall(function()
         local vehicleNode = self.vehicle.components[1].node
         return getCollisionFilterGroup(shapeId), getCollisionFilterMask(shapeId), getCollisionFilterGroup(vehicleNode), getCollisionFilterMask(vehicleNode)
     end)

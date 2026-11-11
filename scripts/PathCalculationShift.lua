@@ -239,7 +239,7 @@ function ADPathCalculator.isShiftClear(points, halfWidth, offset)
                 if ADPathCalculator.widthHits > 0 then
                     local name = "?"
                     if ADPathCalculator.widthHitNode ~= nil and getName ~= nil then
-                        local ok, hitName = pcall(getName, ADPathCalculator.widthHitNode)
+                        local ok, hitName = FarmPilotCall(getName, ADPathCalculator.widthHitNode)
                         if ok and hitName ~= nil then
                             name = hitName
                         end

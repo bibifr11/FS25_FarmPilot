@@ -431,9 +431,10 @@ end
 function AutoDrive:onCpFinished()
     AutoDrive.debugPrint(self, AutoDrive.DC_EXTERNALINTERFACEINFO, "AutoDrive:onCpFinished start... enableParkAtJobFinished %s", AutoDrive.getSetting("enableParkAtJobFinished", self))
     if self.isServer then
+        if ADHarvestManager ~= nil and ADHarvestManager.onFieldFinished ~= nil then FarmPilotCall(ADHarvestManager.onFieldFinished, ADHarvestManager, self) end -- moissonneuse : champ fini, ses bennes partent vider puis rentrent, voir HarvestManagerCombineJob.lua
         if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : vider le reste en big bags d'abord, voir AutonomousSprayerDump.lua
         -- FarmPilot mode Autonome : champ fini, champ suivant s'il y en a un (sinon se garer comme avant)
-        local okNext, goneNext = pcall(AutonomousMode.goToNextField, self)
+        local okNext, goneNext = FarmPilotCall(AutonomousMode.goToNextField, self)
         if not okNext then
             ADAutonomousManager.log("ERREUR champ suivant : %s", tostring(goneNext))
         elseif goneNext then
@@ -441,7 +442,7 @@ function AutoDrive:onCpFinished()
         end
         -- FarmPilot mode Autonome : outil posé à sa place, puis tracteur garé à la sienne
         if AutoDrive.getSetting("enableParkAtJobFinished", self) then
-            local okDrop, dropped = pcall(AutonomousMode.parkWithToolDrop, self)
+            local okDrop, dropped = FarmPilotCall(AutonomousMode.parkWithToolDrop, self)
             if not okDrop then
                 ADAutonomousManager.log("ERREUR dételage au parking : %s", tostring(dropped))
             elseif dropped then
@@ -532,7 +533,7 @@ function AutoDrive:onCpEmpty()
     end
     -- FarmPilot mode Autonome (08/11) : semoir vide -> plein à la zone de ravitaillement, retour, Courseplay repart
     if self.isServer then
-        local okR, started = pcall(AutonomousMode.onCpEmpty, self)
+        local okR, started = FarmPilotCall(AutonomousMode.onCpEmpty, self)
         if not okR then
             ADAutonomousManager.log("ERREUR semoir vide : %s", tostring(started))
         elseif started then
@@ -1065,6 +1066,10 @@ function AutoDrive:onAIJobFinished()
         rootVehicle.ad.isAIJobFinished = true
     end
 
+    if self.isServer and self.ad ~= nil and self.ad.fpAIJobFinishedOk == true and ADHarvestManager ~= nil and ADHarvestManager.onFieldFinished ~= nil then
+        FarmPilotCall(ADHarvestManager.onFieldFinished, ADHarvestManager, self) -- moissonneuse : champ fini par l'ouvrier du jeu, ses bennes partent vider puis rentrent, voir HarvestManagerCombineJob.lua
+    end
+
     local trailers, _ = AutoDrive.getAllUnits(self)
     local fillLevel, _, _ = AutoDrive.getAllFillLevels(trailers)
     if (self.ad.stateModule:getMode() == AutoDrive.MODE_PICKUPANDDELIVER and fillLevel > 0) -- something to unload
@@ -1080,14 +1085,14 @@ function AutoDrive:onAIJobFinished()
         end
         if finishedOk and self.isServer then
             if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : vider le reste en big bags d'abord, voir AutonomousSprayerDump.lua
-            local okNext, goneNext = pcall(AutonomousMode.goToNextField, self)
+            local okNext, goneNext = FarmPilotCall(AutonomousMode.goToNextField, self)
             if not okNext then
                 ADAutonomousManager.log("ERREUR champ suivant : %s", tostring(goneNext))
             elseif goneNext then
                 return
             end
             if AutoDrive.getSetting("enableParkAtJobFinished", self) then
-                local okDrop, dropped = pcall(AutonomousMode.parkWithToolDrop, self)
+                local okDrop, dropped = FarmPilotCall(AutonomousMode.parkWithToolDrop, self)
                 if not okDrop then
                     ADAutonomousManager.log("ERREUR dételage au parking : %s", tostring(dropped))
                 elseif dropped then

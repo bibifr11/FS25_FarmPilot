@@ -269,30 +269,6 @@ end
 PathFinderModule.OFF_FIELD_NEAR_ENDS = 12
 PathFinderModule.OFF_FIELD_MAX_DISTANCE = 8
 
--- grass strip along a field: field ground within OFF_FIELD_MAX_DISTANCE
-function PathFinderModule:isNearFieldGround(x, z)
-    self.nearFieldCache = self.nearFieldCache or {}
-    local key = string.format("%d|%d", math.floor(x), math.floor(z))
-    local cached = self.nearFieldCache[key]
-    if cached ~= nil then
-        return cached
-    end
-    local result = false
-    for _, d in ipairs({PathFinderModule.OFF_FIELD_MAX_DISTANCE / 2, PathFinderModule.OFF_FIELD_MAX_DISTANCE}) do
-        for i = 0, 7 do
-            local a = i * math.pi / 4
-            if AutoDrive.checkIsOnField(x + math.cos(a) * d, 0, z + math.sin(a) * d) then
-                result = true
-                break
-            end
-        end
-        if result then
-            break
-        end
-    end
-    self.nearFieldCache[key] = result
-    return result
-end
 function PathFinderModule:isFieldPositionAllowed(x, z, isOnField)
     if isOnField == nil then
         isOnField = PathFinderModule.getMapOnFieldAt(x, z)

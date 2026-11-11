@@ -228,7 +228,7 @@ function ADAddonTurnLights.install(autoDrive)
         end
         local own = rawget(vehicle, "setTurnLightState")
         vehicle.setTurnLightState = function() end
-        local ok, err = pcall(originalCheck, self, dt)
+        local ok, err = FarmPilotCall(originalCheck, self, dt)
         rawset(vehicle, "setTurnLightState", own)
         if not ok then
             error(err, 0)

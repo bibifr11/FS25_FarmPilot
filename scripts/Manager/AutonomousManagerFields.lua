@@ -28,13 +28,13 @@ local log = ADAutonomousManager.log   -- la fonction de AutonomousManager.lua
 -- ------------------------------------------------------------------------------------------------------------
 function ADAutonomousManager.fieldAt(x, z)
     if g_fieldManager ~= nil and g_fieldManager.getFieldAtWorldPosition ~= nil then
-        local ok, f = pcall(g_fieldManager.getFieldAtWorldPosition, g_fieldManager, x, z)
+        local ok, f = FarmPilotCall(g_fieldManager.getFieldAtWorldPosition, g_fieldManager, x, z)
         if ok and f ~= nil then
             return f
         end
     end
     if g_farmlandManager ~= nil and g_farmlandManager.getFarmlandAtWorldPosition ~= nil then
-        local ok, fl = pcall(g_farmlandManager.getFarmlandAtWorldPosition, g_farmlandManager, x, z)
+        local ok, fl = FarmPilotCall(g_farmlandManager.getFarmlandAtWorldPosition, g_farmlandManager, x, z)
         if ok and fl ~= nil and fl.field ~= nil then
             return fl.field
         end
@@ -48,7 +48,7 @@ function ADAutonomousManager.fieldNumber(f)
     end
     local id = nil
     if f.getId ~= nil then
-        local ok, r = pcall(f.getId, f)
+        local ok, r = FarmPilotCall(f.getId, f)
         if ok then
             id = r
         end
@@ -134,7 +134,7 @@ end
 -- (anneaux de 15 m jusqu'à 150 m) ; renvoie aussi un point du champ
 function ADAutonomousManager.nearField(vehicle)
     local x, _, z = getWorldTranslation(vehicle.components[1].node)
-    local okM, mf, mx, mz = pcall(ADAutonomousManager.markerField, vehicle, x, z)
+    local okM, mf, mx, mz = FarmPilotCall(ADAutonomousManager.markerField, vehicle, x, z)
     if okM and mf ~= nil then
         return mf, mx, mz
     end
@@ -163,13 +163,13 @@ end
 -- (07/11) fin d'un travail « champ » de l'ouvrier du jeu : note si le champ est fini (et non arrêté par le joueur
 -- ou en erreur), avant l'événement onAIJobFinished qui décide du champ suivant (ExternalInterface)
 function ADAutonomousManager.onAIJobFieldWorkStop(job, aiMessage)
-    local ok, vehicle = pcall(function() return job.vehicleParameter:getVehicle() end)
+    local ok, vehicle = FarmPilotCall(function() return job.vehicleParameter:getVehicle() end)
     if not ok or vehicle == nil or vehicle.ad == nil then
         return
     end
     local finished = false
     if aiMessage ~= nil and AIMessageSuccessFinishedJob ~= nil and aiMessage.isa ~= nil then
-        local okIsa, isa = pcall(aiMessage.isa, aiMessage, AIMessageSuccessFinishedJob)
+        local okIsa, isa = FarmPilotCall(aiMessage.isa, aiMessage, AIMessageSuccessFinishedJob)
         finished = okIsa and isa == true
     end
     vehicle.ad.fpAIJobFinishedOk = finished
@@ -214,7 +214,7 @@ local function asFields()
     if type(env) ~= "table" then
         return nil
     end
-    local ok, f = pcall(function() return env.AS_Fields end)
+    local ok, f = FarmPilotCall(function() return env.AS_Fields end)
     if ok and type(f) == "table" and type(f.groups) == "table" then
         return f
     end

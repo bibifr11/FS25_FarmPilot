@@ -106,22 +106,6 @@ function ADTrafficYieldModule:extendSectionToEntrance(mine, section)
     return distance, extended, inside
 end
 
---[==[ Mis de côté (09/11) : inutilisé
--- S4: seconds before my front reaches the single track (0 when already inside), nil without head-on section
-function ADTrafficYieldModule:getSingleTrackArrival(other)
-    local _, mine, section, inside = self:getOncomingGap(other)
-    if mine == nil then
-        return nil, false, nil
-    end
-    local front = ADTrafficYieldModule.getTrainExtents(self.vehicle)
-    local speed = math.max(ADTrafficYieldModule.getSpeedKmh(self.vehicle), ADTrafficYieldModule.S4_MIN_SPEED) / 3.6
-    if inside then
-        return 0, true, mine
-    end
-    return math.max(0, mine - front) / speed, false, mine
-end
-]==]
-
 function ADTrafficYieldModule:getOncomingGap(other)
     if not ADTrafficYieldModule.isAdVehicleUsable(other) then
         return nil
@@ -220,7 +204,7 @@ function ADTrafficYieldModule:searchCrossingSpot(other, situation)
     local maxAhead = situation.gap - myFront - otherFront - ADTrafficYieldModule.SPOT_CLEARANCE
     local spot = nil
     if maxAhead > 10 then
-        local ok, result = pcall(self.searchSpotBySides, self, maxAhead, true)
+        local ok, result = FarmPilotCall(self.searchSpotBySides, self, maxAhead, true)
         if ok then
             spot = result
         else

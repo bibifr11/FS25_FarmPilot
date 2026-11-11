@@ -106,7 +106,7 @@ end
 -- the place beside the harvester's new row (world), or the new row entry itself
 function YTurn:getIdealEnd()
     local p = self.turnParameters
-    local ok, points = pcall(self.task.generateReverseToCombineSection, self.task, true)
+    local ok, points = FarmPilotCall(self.task.generateReverseToCombineSection, self.task, true)
     if ok and points ~= nil and points[1] ~= nil then
         return {x = points[1].x, z = points[1].z}
     end
@@ -251,7 +251,7 @@ function YTurn:buildPoints(c)
         addPoint(points, x, z, false)
     end
     -- harvester AI turn (not the Courseplay end of row, where it gives nothing): the reverse to its pipe
-    local ok, section = pcall(self.task.generateReverseToCombineSection, self.task)
+    local ok, section = FarmPilotCall(self.task.generateReverseToCombineSection, self.task)
     if ok and section ~= nil then
         for _, node in ipairs(section) do
             points[#points + 1] = node

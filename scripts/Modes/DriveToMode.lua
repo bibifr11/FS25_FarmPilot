@@ -47,6 +47,7 @@ function DriveToMode:handleFinishedTask()
         end
         if self.vehicle.ad.isStoppingWithError == false then
             AutoDriveMessageEvent.sendMessageOrNotification(self.vehicle, ADMessagesManager.messageTypes.INFO, "$l10n_AD_Driver_of; %s $l10n_AD_has_reached; %s", 5000, self.vehicle.ad.stateModule:getName(), target)
+            if ADParkButton ~= nil then ADParkButton.onDriveToArrived(self.vehicle, self.destinationID) end -- parking d'origine arrivé à la place du tracteur : choix d'outils du mode Autonome effacés, voir AutonomousParkButton.lua
         end
     end
 end

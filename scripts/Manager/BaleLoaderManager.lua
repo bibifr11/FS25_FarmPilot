@@ -38,7 +38,7 @@ ADBaleLoaderManager.MAX_HEIGHT = 1.6       -- m : centre de la balle plus haut q
 ADBaleLoaderManager.SALE_FILLTYPES = { "STRAW", "DRYGRASS_WINDROW", "GRASS_WINDROW", "SILAGE", "COTTON" }
 
 local function log(fmt, ...)
-    local ok, s = pcall(string.format, fmt, ...)
+    local ok, s = FarmPilotCall(string.format, fmt, ...)
     print("[FarmPilot Balles] " .. (ok and s or tostring(fmt)))
 end
 ADBaleLoaderManager.log = log
@@ -47,7 +47,7 @@ local function safe(f, ...)
     if f == nil then
         return nil
     end
-    local ok, a, b, c = pcall(f, ...)
+    local ok, a, b, c = FarmPilotCall(f, ...)
     if ok then
         return a, b, c
     end
@@ -70,7 +70,7 @@ function ADBaleLoaderManager.attachedLoader(vehicle)
     if ADBaleLoaderManager.isBaleLoader(vehicle) then
         return vehicle
     end
-    local okT, tools = pcall(ADAutonomousManager.workTools, vehicle)
+    local okT, tools = FarmPilotCall(ADAutonomousManager.workTools, vehicle)
     for _, t in ipairs(okT and tools or {}) do
         if ADBaleLoaderManager.isBaleLoader(t) then
             return t
@@ -210,7 +210,7 @@ function ADBaleLoaderManager.setWorkPosition(loader, work)
     if ADBaleLoaderManager.isBusy(loader) or ADBaleLoaderManager.isUnloading(loader) then
         return false
     end
-    local ok = pcall(loader.doStateChange, loader, BaleLoader.CHANGE_BUTTON_WORK_TRANSPORT)
+    local ok = FarmPilotCall(loader.doStateChange, loader, BaleLoader.CHANGE_BUTTON_WORK_TRANSPORT)
     return ok
 end
 
@@ -310,7 +310,7 @@ function ADBaleLoaderManager.fieldNumbers(fieldNum)
     if fieldNum == nil then
         return set
     end
-    local okG, g = pcall(ADAutonomousManager.groupOf, fieldNum)
+    local okG, g = FarmPilotCall(ADAutonomousManager.groupOf, fieldNum)
     for _, n in ipairs(okG and g ~= nil and g.members or { fieldNum }) do
         set[tonumber(n) or n] = true
     end
@@ -586,7 +586,7 @@ function ADBaleLoaderManager.hudGear(vehicle, isNext, status, toolTip)
     if status ~= nil and status ~= "none" then
         return status, toolTip
     end
-    local ok, s = pcall(ADBaleLoaderManager.status, vehicle, isNext)
+    local ok, s = FarmPilotCall(ADBaleLoaderManager.status, vehicle, isNext)
     s = ok and s or "none"
     if s == "none" then
         return status, toolTip
@@ -599,7 +599,7 @@ function ADBaleLoaderManager.startBlock(vehicle)
     for _, isNext in ipairs({ false, true }) do
         local ctx = ADBaleLoaderManager.context(vehicle, isNext)
         if ctx ~= nil and not ADBaleLoaderManager.isValid(ADBaleLoaderManager:get(ctx.field, ctx.toolKey)) then
-            local okL, label = pcall(ADAutonomousManager.toolShortLabel, ctx.tool)
+            local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, ctx.tool)
             return { label = okL and label or ADAutonomousManager.toolLabel(ctx.tool), field = ctx.field, isNext = isNext }
         end
     end
@@ -624,7 +624,7 @@ end
 
 -- true = départ refusé (message et log faits)
 function ADBaleLoaderManager.refuseStart(mode)
-    local ok, refused = pcall(ADBaleLoaderManager.checkStart, mode.vehicle)
+    local ok, refused = FarmPilotCall(ADBaleLoaderManager.checkStart, mode.vehicle)
     if not ok then
         log("ERREUR réglages de la remorque à balles : %s", tostring(refused))
         return false

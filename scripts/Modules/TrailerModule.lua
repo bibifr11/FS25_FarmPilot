@@ -107,10 +107,6 @@ function ADTrailerModule:getBunkerTrigger()
     return self.bunkerTrigger
 end
 
-function ADTrailerModule:getSiloTrigger()
-    return self.siloTrigger
-end
-
 function ADTrailerModule:getBunkerSiloSpeed()
     local trailer = self.bunkerTrailer
     local trigger = self.bunkerTrigger
@@ -760,10 +756,6 @@ function ADTrailerModule:wasAtSuitableTrigger()
         AutoDrive.debugPrint(self.vehicle, AutoDrive.DC_TRAILERINFO, "ADTrailerModule:wasAtSuitableTrigger return false")
         return false
     end
-end
-
-function ADTrailerModule:isOverloadingFromFillable()
-    return self.isActiveAtTrigger and self.isFillingToTrailer
 end
 
 function ADTrailerModule:clearTrailerUnloadTimers()

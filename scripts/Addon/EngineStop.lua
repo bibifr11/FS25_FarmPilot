@@ -113,7 +113,7 @@ function ADAddonEngineStop.install(autoDrive)
         -- textes traduits seulement maintenant (pas encore chargés à la lecture du fichier)
         setting.texts[1] = delayText(0)
         if g_server ~= nil then
-            pcall(migrateOldSetting, autoDrive)
+            FarmPilotCall(migrateOldSetting, autoDrive)
         end
     end
 

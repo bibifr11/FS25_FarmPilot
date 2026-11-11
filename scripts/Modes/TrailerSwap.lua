@@ -45,7 +45,7 @@ ADTrailerSwap.FAIL_KEYS = {
 ADTrailerSwap.claims = {}
 
 function ADTrailerSwap.log(fmt, ...)
-    local ok, txt = pcall(string.format, fmt, ...)
+    local ok, txt = FarmPilotCall(string.format, fmt, ...)
     print("[FarmPilot Échange] " .. (ok and txt or tostring(fmt)))
 end
 
@@ -176,7 +176,7 @@ end
 -- Bennes
 -- ------------------------------------------------------------------------------------------------------------
 function ADTrailerSwap.isEmpty(trailer)
-    local ok, level, capacity = pcall(AutoDrive.getObjectFillLevels, trailer)
+    local ok, level, capacity = FarmPilotCall(AutoDrive.getObjectFillLevels, trailer)
     if not ok or type(level) ~= "number" then
         return false
     end
@@ -207,7 +207,7 @@ function ADTrailerSwap.accepts(trailer, types)
     for fillType, _ in pairs(types) do
         local any = false
         for i = 1, #spec.fillUnits do
-            local ok, supported = pcall(trailer.getFillUnitSupportsFillType, trailer, i, fillType)
+            local ok, supported = FarmPilotCall(trailer.getFillUnitSupportsFillType, trailer, i, fillType)
             if ok and supported then
                 any = true
                 break
@@ -225,7 +225,7 @@ local function towsTrailer(trailer)
     if trailer.getAttachedImplements == nil then
         return false
     end
-    local ok, implements = pcall(trailer.getAttachedImplements, trailer)
+    local ok, implements = FarmPilotCall(trailer.getAttachedImplements, trailer)
     if ok and type(implements) == "table" then
         for _, impl in ipairs(implements) do
             if impl.object ~= nil and ADTrailerHitch.isTrailerObject(impl.object) then
@@ -362,7 +362,7 @@ function ADTrailerSwap.onUnloadTask(task)
     if mode == nil or mode.fpHitch ~= nil or mode.fpSwap ~= nil then
         return false
     end
-    local ok, plan, err, folder = pcall(ADTrailerSwap.plan, vehicle)
+    local ok, plan, err, folder = FarmPilotCall(ADTrailerSwap.plan, vehicle)
     if not ok then
         ADTrailerSwap.log("ERREUR échange de bennes : %s", tostring(plan))
         return false
@@ -482,7 +482,7 @@ function ADTrailerSwap.refreshUnits(mode)
         mode.tractorTrainLength = AutoDrive.getTractorTrainLength(vehicle, true, false)
     end
     if AutoDrive.getAllDischargeableUnits ~= nil then
-        pcall(AutoDrive.getAllDischargeableUnits, vehicle, true)
+        FarmPilotCall(AutoDrive.getAllDischargeableUnits, vehicle, true)
     end
     vehicle.ad.trailerModule:reset()
 end

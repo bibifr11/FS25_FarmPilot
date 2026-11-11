@@ -15,7 +15,16 @@
 --   reste où elle est ;
 -- - en file derrière une autre benne garée : elle prend sa place quand elle part ;
 -- - aucune place pour l'instant : attente au bord de la route avant l'entrée (WaitForCallTaskRoadside.lua), ou
---   petit recul si le nez est dans le champ, puis nouvel essai plus tard.
+--   petit recul si le nez est dans le champ, puis nouvel essai plus tard ;
+-- - 10/11, moissonneuse : le trajet suit le bord du champ depuis l'entrée jusqu'à la place (bande coupée) ; virage
+--   trop large pour y entrer (nez déjà dans le champ) : recul de quelques mètres d'abord ; bande étroite sans trajet
+--   le long du bord : pas de pathfinder d'AutoDrive, place suivante ; reculée par la route faute de place : retour au
+--   point du champ par le réseau dès qu'une place existe.
+-- - 11/11 (champ 56), moissonneuse : arrêtée sur le chemin avant l'entrée faute de place atteignable, ou reculée par la
+--   route : elle ne retourne au point du champ qu'avec une place ET un trajet propre depuis l'entrée ; sinon elle
+--   attend sur le chemin (au bord de la route si possible), jamais à l'entrée.
+-- - 11/11 : aucune machine de récolte au travail dans ce champ (garée ailleurs, pas encore arrivée) : même attente,
+--   mais le HUD et le journal le disent (« Pas de machine de récolte dans ce champ »), pas « Aucune place ».
 -- Pas pour un véhicule conduit par Courseplay (il ne fait que passer).
 --
 -- Branché par une ligne dans WaitForCallTask.lua : setUp, update, abort, finished, getInfoText, getI18nInfo.
@@ -32,11 +41,20 @@ WaitForCallTask.STATE_WAITING = 4
 WaitForCallTask.STATE_SEARCHING = 5
 WaitForCallTask.STATE_BACKING_OFF = 6
 WaitForCallTask.STATE_TO_ENTRANCE = 7 -- beside the road, a place is free in the field: back on the network to the field point first
+WaitForCallTask.NO_PLACE_AHEAD_VALID = 10000 -- ms: stopped on the road before the entrance this recently (DriveToDestinationTask)
 
 -- no spot in the field yet and the nose in the field (the AutoDrive waiting point can be at the very corner):
 -- back off a little, out of the way of the harvester, a bit more on the next try
 WaitForCallTask.BACK_OFF_DISTANCES = {2, 3}
 WaitForCallTask.BACK_OFF_TIMEOUT = 15000
+
+-- (11/11) résultats de recherche qui ne sont pas un manque de place : aucune machine de récolte au travail dans ce
+-- champ (moissonneuse garée ailleurs, pas encore arrivée). Le HUD et le journal le disent tel quel.
+WaitForCallTask.HARVESTER_AWAY = {
+    ["no harvester"] = true,
+    ["harvester not in the field yet"] = true,
+    ["harvester not in the field ahead"] = true
+}
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Mise en place (WaitForCallTask:setUp)
@@ -50,6 +68,17 @@ function WaitForCallTask:setUpFieldPark()
     if ADFieldPark ~= nil and ADFieldPark.isEnabled() and self.vehicle.ad.trafficYieldModule ~= nil and not cpDriven then
         self.state = WaitForCallTask.STATE_CHECK
         self.checkTimer = AutoDriveTON:new()
+        -- 11/11 : arrêtée sur le chemin avant l'entrée faute de place atteignable (DriveToDestinationTaskFieldEntrance.lua) :
+        -- elle cherche de nouveau depuis le point du champ, sans y aller, et n'y va qu'avec un trajet propre
+        local ahead = self.vehicle.ad.noPlaceAhead
+        self.vehicle.ad.noPlaceAhead = nil
+        if ahead ~= nil and (g_time or 0) - ahead.time < WaitForCallTask.NO_PLACE_AHEAD_VALID then
+            self.noPlaceOrigin = ahead.origin
+            self.noPlaceRoadside = true
+            self.noPlaceTimer = 0
+            self.routeBackOffDone = true
+            self.stoppedBeforeEntrance = true
+        end
     end
 end
 
@@ -101,9 +130,10 @@ function WaitForCallTask:updateFieldPark(dt)
             end
             local search = self.search
             self.search = nil
+            self.harvesterAway = WaitForCallTask.HARVESTER_AWAY[search.result or ""] == true
             if self.probeFromRoadside then
                 self.probeFromRoadside = nil
-                if #spots > 0 and not search.waitSense then
+                if #spots > 0 and not search.waitSense and self:hasWayFromEntrance(search, spots) then
                     print(string.format("[AD-File] %s: une place est libre dans le champ maintenant, j'y vais (%d places)", tostring(self.vehicle:getName()), #spots))
                     self.noPlaceRoadside = nil
                     self:leaveRoadside()
@@ -115,6 +145,24 @@ function WaitForCallTask:updateFieldPark(dt)
                 -- the sense of the first headland is not known yet: wait beside the road until it is
                 print(string.format("[AD-File] %s: sens de la 1re fourriere pas encore connu, attente au bord de la route", tostring(self.vehicle:getName())))
                 self:goRoadside(search.harvester)
+            elseif self.noPlaceRoadside and not search.chopper and self:isAwayFromEntrance() then
+                -- 10/11, combine: backed off along the route while the field had no place, a place exists now:
+                -- back on the network to the field point first, the way along the border starts there.
+                -- 11/11 (champ 56) : seulement avec un trajet propre depuis l'entrée ; sinon elle reste sur le chemin
+                -- (au bord de la route si une place y est atteignable) et cherche de nouveau plus tard
+                if #spots > 0 and not search.waitSense and self:hasWayFromEntrance(search, spots) then
+                    print(string.format("[AD-File] %s: une place est libre dans le champ maintenant, j'y vais (%d places)", tostring(self.vehicle:getName()), #spots))
+                    self.noPlaceRoadside = nil
+                    self:leaveRoadside()
+                elseif self.stoppedBeforeEntrance and search.harvester ~= nil and not self.roadsideTried and (self.parkedSpot == nil or not self.parkedSpot.roadside) then
+                    self.roadsideTried = true
+                    print(string.format("[AD-File] %s: pas de place atteignable dans le champ, attente sur le chemin avant l'entree", tostring(self.vehicle:getName())))
+                    self:goRoadside(search.harvester)
+                else
+                    self.vehicle.ad.trafficYieldModule:log("field park: still no place reachable in the field, waiting on the road")
+                    self.state = WaitForCallTask.STATE_WAITING
+                    self.retryTime = 0
+                end
             else
                 self.spots = spots
                 self.spotIndex = 0
@@ -186,6 +234,11 @@ function WaitForCallTask:updateFieldPark(dt)
                 -- back on the road: the roadside places are looked for again from here
                 self.backOffTargets = nil
                 self.vehicle.ad.specialDrivingModule:releaseVehicle()
+                self.state = WaitForCallTask.STATE_CHECK
+                self.checkTimer = AutoDriveTON:new()
+            elseif self.turnBackOff then
+                -- backed off to turn into the cut strip: the place is looked for again from here
+                self.turnBackOff = nil
                 self.state = WaitForCallTask.STATE_CHECK
                 self.checkTimer = AutoDriveTON:new()
             else
@@ -351,7 +404,11 @@ function WaitForCallTask:planToNextSpot()
                 self.noPlaceOrigin = {x = x, z = z, dx = dx, dz = dz}
                 self.noPlaceRoadside = true
                 self.noPlaceTimer = 0
-                print(string.format("[AD-File] %s: aucune place dans le champ pour l'instant, attente au bord de la route avant l'entree", tostring(self.vehicle:getName())))
+                if self.harvesterAway then
+                    print(string.format("[AD-File] %s: la machine de recolte n'est pas dans ce champ, attente au bord de la route avant l'entree", tostring(self.vehicle:getName())))
+                else
+                    print(string.format("[AD-File] %s: aucune place dans le champ pour l'instant, attente au bord de la route avant l'entree", tostring(self.vehicle:getName())))
+                end
                 self:goRoadside(harvester)
                 if self.spots == nil or #self.spots == 0 then
                     if not self:startRouteBackOff() then
@@ -360,6 +417,15 @@ function WaitForCallTask:planToNextSpot()
                 end
                 return
             end
+            if self.harvesterAway and not self.harvesterAwayLogged then
+                self.harvesterAwayLogged = true
+                print(string.format("[AD-File] %s: aucune machine de recolte au travail pour ce champ, attente ici", tostring(self.vehicle:getName())))
+            end
+        end
+        if roadside and self.noPlaceRoadside and self:isAwayFromEntrance() then
+            -- 11/11 : déjà sur le chemin avant l'entrée, aucune place au bord de la route atteignable d'ici : elle
+            -- attend là (pas de recul) et cherche de nouveau plus tard
+            return
         end
         if roadside and self:startRouteBackOff() then
             return
@@ -389,6 +455,18 @@ function WaitForCallTask:planToNextSpot()
         self.state = WaitForCallTask.STATE_DRIVING
         return
     end
+    -- 10/11, combine: the way follows the border from here to the place on the strip it has cut
+    local combine = not spot.roadside and ADFieldPark.isCombineJob(self.vehicle)
+    if combine then
+        wayPoints = ADFieldPark.findApproach(self.vehicle, spot)
+        if wayPoints ~= nil then
+            self.leadIn = nil
+            self.plannedPath = wayPoints
+            self.vehicle.ad.drivePathModule:setWayPoints(wayPoints)
+            self.state = WaitForCallTask.STATE_DRIVING
+            return
+        end
+    end
     -- the last part follows the border: the whole train, trailers included, stops aligned with it
     local target, leadIn = ADFieldPark.getLeadIn(self.vehicle, spot)
     self.leadIn = leadIn
@@ -409,6 +487,25 @@ function WaitForCallTask:planToNextSpot()
         module:log("field park: no direct path to roadside spot %d without the field, next one", self.spotIndex)
         self:planToNextSpot()
         return
+    end
+    if combine then
+        -- the nose already in the field, the turn into the cut strip does not fit from here: back off straight
+        -- a few meters (once), the place is looked for again from there
+        local distance = not self.turnBackOffDone and ADFieldPark.findTurnBackOff(self.vehicle, spot) or nil
+        if distance ~= nil then
+            self.turnBackOffDone = true
+            module:log("field park: the turn into the cut strip does not fit from here, backing off %d m first", distance)
+            print(string.format("[AD-File] %s: virage trop large pour entrer dans la bande coupee, je recule de %d m", tostring(self.vehicle:getName()), distance))
+            self:startTurnBackOff(distance)
+            return
+        end
+        if ADFieldPark.getCutWidth(spot, ADFieldPark.NARROW_STRIP) < ADFieldPark.NARROW_STRIP then
+            -- the AutoDrive pathfinder (grid of the turn radius) has no room in a strip this narrow: its route
+            -- would cross the standing crop and be refused after a long search
+            module:log("field park: no way along the border to spot %d and the cut strip is narrow, next one", self.spotIndex)
+            self:planToNextSpot()
+            return
+        end
     end
     self.planningTime = 0
     self.smoothingTime = nil
@@ -478,6 +575,22 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils (helpers)
 -- ------------------------------------------------------------------------------------------------------------
+-- 11/11 (champ 56) : depuis le chemin, une place trouvée ne compte que si un trajet propre y mène depuis l'entrée
+-- (ADFieldPark.findWayFromEntrance) : la benne ne va plus attendre au point du champ sans pouvoir entrer
+function WaitForCallTask:hasWayFromEntrance(search, spots)
+    if search.chopper or self.noPlaceOrigin == nil or ADFieldPark.findWayFromEntrance == nil then
+        return true
+    end
+    local index, way = ADFieldPark.findWayFromEntrance(self.vehicle, spots, self.noPlaceOrigin)
+    if index == nil then
+        self.vehicle.ad.trafficYieldModule:log("field park: %d place(s) in the field, no clean way to them from the field point (x=%.0f z=%.0f)",
+            #spots, self.noPlaceOrigin.x, self.noPlaceOrigin.z)
+        return false
+    end
+    self.vehicle.ad.trafficYieldModule:log("field park: place %d reachable from the field point (%s)", index, way)
+    return true
+end
+
 -- something in the trailers: the unloader comes from a harvester, not from the road
 function WaitForCallTask:hasLoad()
     local trailers = AutoDrive.getAllUnits(self.vehicle)
@@ -508,6 +621,18 @@ function WaitForCallTask:startBackOff()
     self.backOffStart = {x = x, z = z}
     self.backOffTime = 0
     self.vehicle.ad.trafficYieldModule:log("field park: nose in the field, backing off %d m", distance)
+    self.state = WaitForCallTask.STATE_BACKING_OFF
+end
+
+-- 10/11, combine: backs off straight before the turn into the cut strip (see planToNextSpot)
+function WaitForCallTask:startTurnBackOff(distance)
+    local x, _, z = ADTrafficYieldModule.getPosition(self.vehicle)
+    self.turnBackOff = true
+    self.backOffDistance = distance
+    self.backOffTimeout = WaitForCallTask.BACK_OFF_TIMEOUT
+    self.backOffTargets = nil
+    self.backOffStart = {x = x, z = z}
+    self.backOffTime = 0
     self.state = WaitForCallTask.STATE_BACKING_OFF
 end
 
@@ -573,7 +698,7 @@ function WaitForCallTask:getFieldParkI18nInfo()
         return "$l10n_AD_task_parked_wait;"
     elseif self.retryTime ~= nil then
         local left = math.max(0, ADFieldPark.RETRY_DELAY - self.retryTime)
-        return "$l10n_AD_task_no_spot_retry;" .. string.format(" %d s", math.ceil(left / 1000))
+        return (self.harvesterAway and "$l10n_AD_task_no_harvester_retry;" or "$l10n_AD_task_no_spot_retry;") .. string.format(" %d s", math.ceil(left / 1000))
     elseif self.loaded then
         return "$l10n_AD_task_loaded_wait;"
     end

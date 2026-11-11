@@ -22,7 +22,7 @@
 -- measures the real dimensions of every unit of the train in its current (transport) state, with the
 -- AutoDrive dimension sensor; done once when a plan starts, the results are cached in vehicle.ad.adDimensions
 function ADTrafficYieldModule.measureTrain(vehicle)
-    local ok = pcall(function()
+    local ok = FarmPilotCall(function()
         AutoDrive.getAllVehicleDimensions(vehicle, true)
     end)
     if not ok then
@@ -162,7 +162,7 @@ function ADTrafficYieldModule.isTowedUnit(root, unit)
         return false
     end
     if AutoDrive.isImplementAllowedForReverseDriving ~= nil then
-        local ok, towed = pcall(AutoDrive.isImplementAllowedForReverseDriving, root, unit)
+        local ok, towed = FarmPilotCall(AutoDrive.isImplementAllowedForReverseDriving, root, unit)
         if ok and towed then
             return true
         end

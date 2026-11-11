@@ -40,10 +40,169 @@ ADAutonomousManager.PREFETCH_PER_FRAME = 1   -- fichiers de parcours lus par ima
 ADAutonomousManager.prefetch = nil          -- lecture en cours : { paths, i }
 ADAutonomousManager.prefetched = false      -- cache rempli depuis le dernier départ
 
+-- (10/11) Journal du mode Autonome : les lignes de suivi ne vont dans log.txt qu'avec un canal debug (filtre du
+-- log, FarmPilotLogFilter.lua). Les JOURNAL_LINES dernières sont gardées et écrites dans un fichier à part,
+-- journal_autonome.xml dans le dossier modSettings du mod, pour relire ce que le tracteur a fait après un essai.
+ADAutonomousManager.JOURNAL_FILE = "journal_autonome.xml"
+ADAutonomousManager.JOURNAL_LINES = 600
+ADAutonomousManager.JOURNAL_DELAY = 1000   -- ms au moins entre deux écritures du fichier
+ADAutonomousManager.JOURNAL_MESSAGE_REPEAT = 30000 -- ms avant de réécrire le même message ou la même ligne de suivi
+ADAutonomousManager.journal = {}
+ADAutonomousManager.journalDirty = false
+ADAutonomousManager.journalWritten = nil   -- g_time de la dernière écriture
+
+local function journalWrite()
+    local folder = AutoDrive.getModSettingsFolder()
+    createFolder(folder)
+    local xml = createXMLFile("FarmPilotJournal", folder .. ADAutonomousManager.JOURNAL_FILE, "journal")
+    if xml == nil or xml == 0 then
+        return
+    end
+    for i, line in ipairs(ADAutonomousManager.journal) do
+        local key = string.format("journal.line(%d)", i - 1)
+        setXMLString(xml, key .. "#t", line.t)
+        setXMLString(xml, key .. "#text", line.text)
+    end
+    saveXMLFile(xml)
+    delete(xml)
+end
+
+-- écrit le fichier s'il y a du nouveau ; force : même si la dernière écriture date de moins de JOURNAL_DELAY ms
+function ADAutonomousManager.journalFlush(force)
+    if not ADAutonomousManager.journalDirty or createXMLFile == nil or AutoDrive == nil or AutoDrive.getModSettingsFolder == nil then
+        return
+    end
+    local now = g_time or 0
+    local last = ADAutonomousManager.journalWritten
+    if not force and last ~= nil and now >= last and now - last < ADAutonomousManager.JOURNAL_DELAY then
+        return
+    end
+    ADAutonomousManager.journalWritten = now
+    ADAutonomousManager.journalDirty = false
+    FarmPilotCall(journalWrite)
+end
+
+local function journalAdd(text)
+    local journal = ADAutonomousManager.journal
+    journal[#journal + 1] = { t = getDate ~= nil and getDate("%d/%m %H:%M:%S") or "", text = text }
+    while #journal > ADAutonomousManager.JOURNAL_LINES do
+        table.remove(journal, 1)
+    end
+    ADAutonomousManager.journalDirty = true
+    ADAutonomousManager.journalFlush(false)
+end
+
 local function log(fmt, ...)
-    print("[FarmPilot Autonome] " .. string.format(fmt, ...))
+    local text = string.format(fmt, ...)
+    print("[FarmPilot Autonome] " .. text)
+    journalAdd(text)
 end
 ADAutonomousManager.log = log
+
+-- (11/11) Lignes de suivi d'autres sujets gardées au journal (le filtre du log les retire de log.txt sans canal
+-- debug, FarmPilotLogFilter.lua) : places des bennes au champ et départs pour vider. La même ligne n'est pas
+-- réécrite avant JOURNAL_MESSAGE_REPEAT ms.
+ADAutonomousManager.JOURNAL_TRACES = { { "^%[AD%-File%] ", "bennes au champ : " }, { "^%[AD%-Vider%] ", "départ pour vider : " } }
+ADAutonomousManager.journalLastTrace = nil
+ADAutonomousManager.journalLastTraceTime = nil
+
+function ADAutonomousManager.journalTrace(line)
+    if type(line) ~= "string" then
+        return
+    end
+    for _, trace in ipairs(ADAutonomousManager.JOURNAL_TRACES) do
+        local _, last = string.find(line, trace[1])
+        if last ~= nil then
+            local now = g_time or 0
+            local before = ADAutonomousManager.journalLastTraceTime
+            if line == ADAutonomousManager.journalLastTrace and before ~= nil and now >= before and now - before < ADAutonomousManager.JOURNAL_MESSAGE_REPEAT then
+                return
+            end
+            ADAutonomousManager.journalLastTrace = line
+            ADAutonomousManager.journalLastTraceTime = now
+            journalAdd(trace[2] .. string.sub(line, last + 1))
+            return
+        end
+    end
+end
+
+-- (11/11) Les avertissements et les erreurs affichés au joueur vont aussi au journal : après un essai, on relit ce
+-- que le chauffeur a annoncé (« ne peut pas rejoindre… »), pas seulement ce qu'il a fait. Le même message n'est
+-- pas réécrit avant JOURNAL_MESSAGE_REPEAT ms.
+ADAutonomousManager.JOURNAL_MESSAGE_KINDS = { [2] = "avertissement", [3] = "alerte" } -- ADMessagesManager.messageTypes WARN, ERROR
+ADAutonomousManager.journalLastMessage = nil
+ADAutonomousManager.journalLastMessageTime = nil
+
+function ADAutonomousManager.journalMessage(messageType, text, ...)
+    local kind = ADAutonomousManager.JOURNAL_MESSAGE_KINDS[messageType]
+    if kind == nil or type(text) ~= "string" then
+        return
+    end
+    local shown = AutoDrive ~= nil and AutoDrive.localize ~= nil and AutoDrive.localize(text) or text
+    if select("#", ...) > 0 then
+        local ok, formatted = FarmPilotCall(string.format, shown, ...)
+        if ok then
+            shown = formatted
+        end
+    end
+    local now = g_time or 0
+    local last = ADAutonomousManager.journalLastMessageTime
+    if shown == ADAutonomousManager.journalLastMessage and last ~= nil and now >= last and now - last < ADAutonomousManager.JOURNAL_MESSAGE_REPEAT then
+        return
+    end
+    ADAutonomousManager.journalLastMessage = shown
+    ADAutonomousManager.journalLastMessageTime = now
+    log("message affiché (%s) : %s", kind, shown)
+end
+
+-- branché sur les deux envois du serveur (AutoDriveMessageEvent, MessageEvent.lua ; sendMessageOrNotification passe
+-- par sendNotification)
+local function journalMessages(name)
+    local original = AutoDriveMessageEvent ~= nil and AutoDriveMessageEvent[name] or nil
+    if original == nil then
+        return
+    end
+    AutoDriveMessageEvent[name] = function(vehicle, messageType, text, duration, ...)
+        if g_server ~= nil then
+            FarmPilotCall(ADAutonomousManager.journalMessage, messageType, text, ...)
+        end
+        return original(vehicle, messageType, text, duration, ...)
+    end
+end
+journalMessages("sendMessage")
+journalMessages("sendNotification")
+
+-- (11/11) Chaque arrêt d'un chauffeur va au journal, avec qui l'a demandé (un bouton : Marche/Arrêt, parking ; ou le
+-- chauffeur lui-même : fin de tâche, erreur) et ce qu'il faisait : après un essai, on voit pourquoi un trajet lancé
+-- s'est arrêté quelques secondes plus tard. Appelé au début d'AutoDrive:stopAutoDrive (Specialization.lua).
+function ADAutonomousManager.journalStop(vehicle)
+    local ad = vehicle ~= nil and vehicle.ad or nil
+    if g_server == nil or ad == nil or ad.stateModule == nil then
+        return
+    end
+    local doing = nil
+    local task = ad.taskModule ~= nil and ad.taskModule.activeTask or nil
+    if task ~= nil and task.getI18nInfo ~= nil then
+        local ok, info = FarmPilotCall(task.getI18nInfo, task)
+        if ok and type(info) == "string" and info ~= "" then
+            doing = AutoDrive.localize ~= nil and AutoDrive.localize(info) or info
+        end
+    end
+    log("%s : chauffeur arrêté (%s)%s", tostring(ad.stateModule:getName()), ad.fpStopButtonTime ~= nil and ad.fpStopButtonTime == (g_time or 0) and "au bouton" or "de lui-même",
+        doing ~= nil and string.format(", il faisait : %s", tostring(doing)) or "")
+end
+
+-- l'arrêt demandé par le bouton Marche/Arrêt (le bouton parking passe par lui quand le chauffeur roule) : noté avec
+-- l'heure du jeu, journalStop le reconnaît dans la même image
+if ADInputManager ~= nil and ADInputManager.input_start_stop ~= nil then
+    local originalStartStop = ADInputManager.input_start_stop
+    function ADInputManager:input_start_stop(vehicle, ...)
+        if vehicle ~= nil and vehicle.ad ~= nil then
+            vehicle.ad.fpStopButtonTime = g_time or 0
+        end
+        return originalStartStop(self, vehicle, ...)
+    end
+end
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Courseplay : ses globales (il tourne dans son propre environnement Lua)
@@ -52,7 +211,7 @@ local cpModName = nil
 local function modGlobal(modName, name)
     local env = _G[modName]
     if type(env) == "table" then
-        local ok, value = pcall(function() return env[name] end)
+        local ok, value = FarmPilotCall(function() return env[name] end)
         if ok and value ~= nil then
             return value
         end
@@ -70,7 +229,7 @@ function ADAutonomousManager.cpGlobal(name)
         return found
     end
     if g_modManager ~= nil and g_modManager.getActiveMods ~= nil then
-        local ok, mods = pcall(g_modManager.getActiveMods, g_modManager)
+        local ok, mods = FarmPilotCall(g_modManager.getActiveMods, g_modManager)
         if ok and type(mods) == "table" then
             for _, m in ipairs(mods) do
                 local n = m.modName
@@ -116,7 +275,7 @@ local function aimGlobal(name)
         if type(_G["FS25_attachImplementsManually"]) == "table" then
             aimModName = "FS25_attachImplementsManually"
         elseif g_modManager ~= nil and g_modManager.getActiveMods ~= nil then
-            local ok, mods = pcall(g_modManager.getActiveMods, g_modManager)
+            local ok, mods = FarmPilotCall(g_modManager.getActiveMods, g_modManager)
             if ok and type(mods) == "table" then
                 for _, m in ipairs(mods) do
                     local n = m.modName
@@ -155,7 +314,7 @@ end
 local function aimSendToClients(eventName, vehicle, tool)
     local E = aimGlobal(eventName)
     if g_server ~= nil and type(E) == "table" and E.new ~= nil then
-        pcall(function() g_server:broadcastEvent(E.new(vehicle, tool), false, nil, vehicle) end)
+        FarmPilotCall(function() g_server:broadcastEvent(E.new(vehicle, tool), false, nil, vehicle) end)
     end
 end
 
@@ -175,7 +334,7 @@ function ADAutonomousManager.setManualConnections(vehicle, tool, connect)
         local util = aimGlobal("PowerTakeOffUtil")
         local has = false
         if util ~= nil and util.getHasInputPTO ~= nil and util.getHasOutputPTO ~= nil then
-            local ok, r = pcall(function() return util.getHasInputPTO(tool, inputJ) and util.getHasOutputPTO(vehicle, j) end)
+            local ok, r = FarmPilotCall(function() return util.getHasInputPTO(tool, inputJ) and util.getHasOutputPTO(vehicle, j) end)
             has = ok and r == true
         end
         if has and (ps.attachedPTOs[j] ~= nil) ~= connect then
@@ -191,7 +350,7 @@ function ADAutonomousManager.setManualConnections(vehicle, tool, connect)
         local util = aimGlobal("ConnectionHoseUtil")
         local has = false
         if util ~= nil and util.getHasInputConnectionHoses ~= nil then
-            local ok, r = pcall(util.getHasInputConnectionHoses, tool, inputJ)
+            local ok, r = FarmPilotCall(util.getHasInputConnectionHoses, tool, inputJ)
             has = ok and r == true
         end
         if has and (hs.attachedHoses[j] ~= nil) ~= connect then
@@ -416,19 +575,19 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- charge le parcours puis lance Courseplay au premier point
 function ADAutonomousManager:startCourse(vehicle, e)
-    local ok, res = pcall(vehicle.appendLoadedCpCourse, vehicle, e.file)
+    local ok, res = FarmPilotCall(vehicle.appendLoadedCpCourse, vehicle, e.file)
     if not ok or res == false then
         log("ERREUR chargement « %s » : %s", ADAutonomousManager.courseLabel(e), tostring(res))
         return false
     end
     if vehicle.setCpCourseName ~= nil then
-        pcall(vehicle.setCpCourseName, vehicle, e.fname)
+        FarmPilotCall(vehicle.setCpCourseName, vehicle, e.fname)
     end
     local isControlled = vehicle.spec_enterable ~= nil and vehicle:getIsControlled()
     if vehicle.spec_enterable ~= nil then
         vehicle.spec_enterable.isControlled = false
     end
-    local okS, started = pcall(vehicle.startCpAtFirstWp, vehicle)
+    local okS, started = FarmPilotCall(vehicle.startCpAtFirstWp, vehicle)
     if vehicle.spec_enterable ~= nil then
         vehicle.spec_enterable.isControlled = isControlled
     end
@@ -450,7 +609,7 @@ function ADAutonomousManager:restartCourse(vehicle)
     if vehicle.spec_enterable ~= nil then
         vehicle.spec_enterable.isControlled = false
     end
-    local okS, started = pcall(vehicle.startCpAtLastWp, vehicle)
+    local okS, started = FarmPilotCall(vehicle.startCpAtLastWp, vehicle)
     if vehicle.spec_enterable ~= nil then
         vehicle.spec_enterable.isControlled = isControlled
     end

@@ -46,7 +46,9 @@ function CombineUnloaderMode:logLeaveToUnload(reason)
     local percent = capacity ~= nil and capacity > 0 and level / capacity * 100 or -1
     local threshold = (AutoDrive.getSetting("unloadFillLevel", self.vehicle) or 0) * 100
     print(string.format("[AD-Vider] %s: part vider (%s), remplie a %.0f %% (seuil AutoDrive %.0f %%, atteint %s), etat %s", tostring(self.vehicle:getName()), tostring(reason), percent, threshold, tostring(filled), tostring(self:getStateName())))
-    if not filled or string.find(tostring(reason), "continue", 1, true) ~= nil then
+    -- la pile d'appels n'est écrite qu'avec un canal debug, comme la ligne au-dessus (filtre du log) : sans elle,
+    -- une pile seule dans log.txt ressemblait à une erreur
+    if (AutoDrive.currentDebugChannelMask or 0) > 0 and (not filled or string.find(tostring(reason), "continue", 1, true) ~= nil) then
         printCallstack()
     end
 end

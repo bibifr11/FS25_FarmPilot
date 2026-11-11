@@ -92,7 +92,7 @@ end
 -- more, which left the field at every row end)
 function HandleHarvesterTurnTask:getTurnRadius()
     if self.endRow then
-        local ok, own = pcall(AutoDrive.getDriverRadius, self.vehicle, true)
+        local ok, own = FarmPilotCall(AutoDrive.getDriverRadius, self.vehicle, true)
         if ok and type(own) == "number" and own > 0 then
             return math.max(HandleHarvesterTurnTask.OWN_RADIUS_MIN, own * HandleHarvesterTurnTask.OWN_RADIUS_FACTOR)
         end

@@ -125,6 +125,14 @@ function WaitForCallTask:leaveRoadside()
     end
 end
 
+-- farther than ENTRANCE_NEAR from the field point of its route (backed off along the route, see startRouteBackOff)
+function WaitForCallTask:isAwayFromEntrance()
+    local x, _, z = ADTrafficYieldModule.getPosition(self.vehicle)
+    local marker = self.vehicle.ad.stateModule ~= nil and self.vehicle.ad.stateModule:getFirstMarker() or nil
+    local wp = marker ~= nil and ADGraphManager:getWayPointById(marker.id) or nil
+    return wp ~= nil and MathUtil.vector2Length(wp.x - x, wp.z - z) > WaitForCallTask.ENTRANCE_NEAR
+end
+
 -- waiting beside the road: the first one in the line goes into the field as soon as a place is free there; the
 -- others move to a free place closer to the entrance
 function WaitForCallTask:moveUpRoadside()

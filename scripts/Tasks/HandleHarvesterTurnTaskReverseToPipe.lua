@@ -257,7 +257,7 @@ function HandleHarvesterTurnTask:getTrainHalfWidth()
     end
     local pfm = self.vehicle.ad.pathFinderModule
     if pfm ~= nil and pfm.getWheelHalfWidth ~= nil then
-        local ok, wheelHalf = pcall(pfm.getWheelHalfWidth, pfm)
+        local ok, wheelHalf = FarmPilotCall(pfm.getWheelHalfWidth, pfm)
         if ok and wheelHalf ~= nil and wheelHalf < 5 then
             half = math.max(half, wheelHalf)
         end
@@ -283,7 +283,7 @@ function HandleHarvesterTurnTask:getReverseNodeBehind()
     if sdm == nil or sdm.getReverseNode == nil then
         return nil
     end
-    local ok, node = pcall(sdm.getReverseNode, sdm)
+    local ok, node = FarmPilotCall(sdm.getReverseNode, sdm)
     if not ok or node == nil then
         return nil
     end
@@ -295,7 +295,7 @@ end
 -- line of the straight course part matching the row heading, read on the Courseplay course of the harvester. With
 -- fromIx, from its current waypoint on; otherwise the whole course, the part the harvester stands on
 function HandleHarvesterTurnTask:readCpRowLine(refX, refZ, fromIx, maxOff)
-    local ok, line = pcall(function()
+    local ok, line = FarmPilotCall(function()
         local strategy = self.combine.getCpDriveStrategy ~= nil and self.combine:getCpDriveStrategy() or nil
         if strategy == nil or strategy.getCurrentCourse == nil or strategy.ppc == nil then
             return nil

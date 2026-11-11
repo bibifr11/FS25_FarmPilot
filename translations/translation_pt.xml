@@ -441,6 +441,8 @@
 		<text name="AD_obstacleDetour_start" text="is blocked by an obstacle, reversing to drive around it" />
 		<text name="AD_obstacleDetour_found" text="drives around the obstacle" />
 		<text name="AD_obstacleDetour_failed" text="found no way around the obstacle: help needed" />
+		<text name="AD_obstacleDetour_creep" text="creeps forward to get past the obstacle" />
+		<text name="AD_obstacleDetour_reroute" text="remembers this passage as blocked and takes another route" />
 		<text name="AD_trafficYield_giveWay" text="is reversing to let an oncoming vehicle pass" />
 		<text name="AD_ty_waitFor" text="Waiting for" />
 		<text name="AD_ty_toPass" text="to pass" />
@@ -491,6 +493,7 @@
 		<text name="AD_task_waiting_call_short" text="waiting for a call" />
 		<text name="AD_task_wait_roadside" text="Waiting beside the road" />
 		<text name="AD_task_no_spot_retry" text="No place, next try in" />
+		<text name="AD_task_no_harvester_retry" text="No harvester in this field, next try in" />
 		<text name="AD_task_loaded_wait" text="Loaded, waiting for a call" />
 		<text name="AD_task_plan_to" text="Planning the way to" />
 		<text name="AD_task_no_path_retry" text="No way found, next try in" />
@@ -562,6 +565,7 @@
 		<text name="AD_autonomous_nextField" text="Next field: %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Next field: none" />
 		<text name="AD_autonomous_nextFieldGo" text="field finished, driving to the next field « %s »" />
+		<text name="AD_autonomous_skipNoNext" text="no next field set, keeps driving to « %s »" />
 		<text name="AD_task_autonomous_detach" text="Detach the implement" />
 		<text name="AD_task_autonomous_fetch" text="Attach the implement" />
 		<text name="AD_autonomous_dropGo" text="field finished, the implement goes to its place « %s »" />
@@ -577,6 +581,21 @@
 		<text name="AD_autonomous_nextTool" text="Next implement: %s" />
 		<text name="AD_autonomous_nextToolNone" text="Next implement: the same" />
 		<text name="AD_autonomous_nextToolListNone" text="The same" />
+		<text name="AD_fpFn_mass" text="Contrapeso" />
+		<text name="AD_autonomous_frontTool" text="Frontal: %s" />
+		<text name="AD_autonomous_frontToolNone" text="Frontal: o engatado" />
+		<text name="AD_autonomous_nextFrontTool" text="Próximo frontal: %s" />
+		<text name="AD_autonomous_nextFrontToolNone" text="Próximo frontal: o mesmo" />
+		<text name="AD_autonomous_frontNoJoint" text="&quot;%s&quot; não engata à frente deste trator (ou o engate dianteiro está ocupado)" />
+		<text name="AD_autonomous_frontNoPark" text="&quot;%s&quot; (frontal) não tem estacionamento nem nada ao lado onde o deixar: fica engatado" />
+		<text name="AD_autonomous_massBlocked" text="&quot;%s&quot; (frontal) não tem estacionamento nem nada ao lado onde o deixar: &quot;%s&quot; não pode ser recolhido, o trator fica aqui (não estaciona em cima do peso)" />
+		<text name="AD_autonomous_massNoPark" text="o trator não tem estacionamento para deixar &quot;%s&quot;: defina-o (botão estacionar, nada selecionado)" />
+		<text name="AD_autonomous_frontBeside" text="deixa &quot;%s&quot; ao lado de &quot;%s&quot;" />
+		<text name="AD_autonomous_frontDropAt" text="deixa &quot;%s&quot; no fundo do lugar &quot;%s&quot;, entrando de frente" />
+		<text name="AD_autonomous_frontDropAhead" text="deixa &quot;%s&quot; no lugar &quot;%s&quot;, à frente de &quot;%s&quot;" />
+		<text name="AD_autonomous_frontPlaceFailed" text="&quot;%s&quot; não deixado (sem espaço ao lado ou sem caminho): paragem" />
+		<text name="AD_task_autonomous_frontPlace" text="Deixar a alfaia frontal" />
+		<text name="AD_task_autonomous_backOff" text="Saída do lugar" />
 		<text name="AD_autonomous_swapGo" text="field finished: the implement goes to its place « %s », then « %s » is attached for the next field « %s »" />
 		<text name="AD_autonomous_swapSeveral" text="next implement « %s »: several implements attached, no implement change, stopping and waiting" />
 		<text name="AD_autonomous_swapNoToolPark" text="next implement « %s »: the attached implement has no park position, stopping and waiting" />
@@ -700,6 +719,9 @@
 		<text name="AD_autonomous_dumpFailed" text="rest of the tank not unloaded at « %s » (no space or refused): kept in the tank" />
 		<text name="AD_autonomous_dumpParkGo" text="parking: first unloading the rest of the tank into big bags at « %s »" />
 		<text name="AD_autonomous_dumpKept" text="%s left in the tank: cannot be unloaded into big bags or no place found (see log)" />
+		<text name="AD_autonomous_parkUnloadGo" text="parking: trailer not empty, first unloading at « %s »" />
+		<text name="AD_autonomous_parkUnloadNone" text="parking: trailer not empty (%s L of %s), but no unload destination set: it stays loaded" />
+		<text name="AD_autonomous_parkUnloadFailed" text="parking: nothing is unloading at « %s » (%s L left): parking without unloading" />
 		<text name="AD_task_autonomous_dump" text="Unloads the rest into big bags" />
 		<text name="gui_ad_baleLoader_title" text="Bale loader settings" />
 		<text name="gui_ad_baleLoader_head" text="Loader: %s · Field: %s · Takes %s" />

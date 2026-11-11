@@ -567,7 +567,7 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- une balle du champ juste devant le tracteur (FRONT_LENGTH m devant son avant, FRONT_HALF_WIDTH m de chaque côté)
 function ADBaleCollectTask:baleInFront()
-    local okL, list = pcall(ADBaleLoaderManager.findBales, self.loader, self.ctx.fieldNums, ADBaleLoaderManager.WRAP_ALL, {})
+    local okL, list = FarmPilotCall(ADBaleLoaderManager.findBales, self.loader, self.ctx.fieldNums, ADBaleLoaderManager.WRAP_ALL, {})
     if not okL or type(list) ~= "table" then
         return false
     end

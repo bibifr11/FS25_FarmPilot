@@ -319,7 +319,7 @@ function PathFinderModule.getFieldIdAt(x, z)
     if g_fieldManager == nil or g_fieldManager.getFieldAtWorldPosition == nil then
         return nil
     end
-    local ok, field = pcall(g_fieldManager.getFieldAtWorldPosition, g_fieldManager, x, z)
+    local ok, field = FarmPilotCall(g_fieldManager.getFieldAtWorldPosition, g_fieldManager, x, z)
     if ok and type(field) == "table" then
         return field.fieldId or field.id
     end

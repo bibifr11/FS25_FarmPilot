@@ -3,6 +3,16 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.5.7
+
+🇫🇷 FR
+- Bennes d'ensileuse et de moissonneuse : la bâche reste ouverte tant que la benne suit la machine, même hors de la limite du champ (1re tournière sur la bande d'herbe) ; elle se ferme seulement au départ vers le déchargement. Un champ traversé en route vers le déchargement n'ouvre plus la bâche.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Forage harvester and combine trailers: the cover stays open while the trailer follows the machine, even outside the field boundary (first headland on the grass strip); it only closes when leaving to unload. Crossing a field on the way to unload no longer opens the cover.
+
 ## 1.0.5.5 → 1.0.5.6
 
 🇫🇷 FR

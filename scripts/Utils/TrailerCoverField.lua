@@ -21,6 +21,17 @@
 -- - hors du champ, comme avant (ouverte au silo pour vider, fermée sur la route) ;
 -- - réglage « bâche automatique » à Non : rien ne change (comme avant, personne ne touche la bâche).
 --
+-- 14/11 soir (1.0.5.7) : en 1re tournière, la benne suit l'ensileuse sur la bande d'herbe hors de la limite du
+-- champ ; la bâche se fermait au bout de 5 s hors du champ, en plein remplissage (captures du 14/11 20 h 09).
+-- Fermeture seulement au vrai départ vers le déchargement :
+-- - hors du champ depuis STABLE_OUT ET étape de départ (sortie du champ, route vers le déchargement, retour au champ,
+--   parking de fin de chantier, plein, réparation) ;
+-- - pendant le suivi, le remplissage, l'attente : jamais, même hors du champ (log une fois : « bâche gardée ouverte ») ;
+-- - remplissage hors du champ sans être entrée dans le champ (rejoindre la goulotte, suivre) : ouverte, puis plus
+--   aucune tâche n'y touche, comme dans le champ ;
+-- - en route vers le déchargement, un champ traversé n'ouvre plus la bâche ;
+-- - déjà au déchargement (silo tout près du champ) : on laisse AutoDrive l'ouvrir pour vider, comme avant.
+--
 -- Enveloppes posées au chargement : AutoDrive.setTrailerCoverOpen, ADTaskModule:update. Chargé par register.lua
 -- après RootHarvester.lua.
 -- ============================================================================================================
@@ -46,6 +57,31 @@ end
 function ADCoverField.isHarvestUnloader(vehicle)
     local sm = vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule or nil
     return sm ~= nil and sm:isActive() and sm:getMode() == AutoDrive.MODE_UNLOAD
+end
+
+-- étape de la benne : "depart" (vers le déchargement, retour, parking, plein, réparation), "work" (rejoindre la
+-- machine, la goulotte, suivre : remplissage), nil sinon (attente, file derrière la 1re benne...)
+function ADCoverField.getStep(vehicle)
+    local task = vehicle.ad.taskModule ~= nil and vehicle.ad.taskModule.activeTask or nil
+    if task ~= nil and task.class ~= nil then
+        local c = task:class()
+        if c ~= nil and (c == UnloadAtDestinationTask or c == ParkTask or c == RefuelTask or c == RepairTask) then
+            return "depart"
+        end
+    end
+    local mode = vehicle.ad.modes ~= nil and vehicle.ad.modes[AutoDrive.MODE_UNLOAD] or nil
+    local state = mode ~= nil and mode.state or nil
+    local M = CombineUnloaderMode
+    if state == nil or M == nil then
+        return nil
+    end
+    if state == M.STATE_EXIT_FIELD or state == M.STATE_DRIVE_TO_UNLOAD or state == M.STATE_DRIVE_TO_START or (M.STATE_PARK ~= nil and state == M.STATE_PARK) then
+        return "depart"
+    end
+    if state == M.STATE_DRIVE_TO_COMBINE or state == M.STATE_DRIVE_TO_PIPE or state == M.STATE_ACTIVE_UNLOAD_COMBINE or state == M.STATE_FOLLOW_COMBINE then
+        return "work"
+    end
+    return nil
 end
 
 function ADCoverField.isOnField(vehicle)
@@ -74,6 +110,7 @@ function ADCoverField.update(vehicle, dt)
     if not ADCoverField.isHarvestUnloader(vehicle) then
         ad.fpCoverIn = nil
         ad.fpCoverTime = nil
+        ad.fpCoverKeptLog = nil
         return
     end
     ad.fpCoverCheck = (ad.fpCoverCheck or 0) + dt
@@ -83,26 +120,64 @@ function ADCoverField.update(vehicle, dt)
     local step = ad.fpCoverCheck
     ad.fpCoverCheck = 0
     local onField = ADCoverField.isOnField(vehicle)
+    local work = ADCoverField.getStep(vehicle)
     if ad.fpCoverIn == nil then
         -- début du mode (ou reprise) : l'état du moment, appliqué une fois
-        ad.fpCoverIn = onField
+        local open = (onField and work ~= "depart") or work == "work"
+        ad.fpCoverIn = open
         ad.fpCoverTime = 0
-        ADCoverField.apply(vehicle, onField, onField and "dans le champ au départ" or "hors du champ au départ")
+        ad.fpCoverKeptLog = nil
+        ADCoverField.apply(vehicle, open, open and (onField and "dans le champ au départ" or "remplissage hors du champ au départ") or (onField and "en route vers le déchargement au départ" or "hors du champ au départ"))
         return
     end
-    if onField == ad.fpCoverIn then
+    if ad.fpCoverIn == true then
+        -- ouverte : fermée seulement hors du champ ET au vrai départ vers le déchargement
+        if onField then
+            ad.fpCoverTime = 0
+            ad.fpCoverKeptLog = nil
+            return
+        end
+        ad.fpCoverTime = (ad.fpCoverTime or 0) + step
+        if ad.fpCoverTime < ADCoverField.STABLE_OUT then
+            return
+        end
+        if work ~= "depart" then
+            -- hors du champ en suivant la machine (bande d'herbe de la 1re tournière...) : gardée ouverte
+            if ad.fpCoverKeptLog == nil and AutoDrive.getSetting("autoTrailerCover", vehicle) == true then
+                ad.fpCoverKeptLog = true
+                if ADCoverField.DEBUG then print(string.format("[FarmPilot Bâche] %s : hors du champ mais pas au départ (suit la machine ou attend), bâche gardée ouverte", vehicleName(vehicle))) end
+            end
+            return
+        end
+        ad.fpCoverIn = false
+        ad.fpCoverTime = 0
+        ad.fpCoverKeptLog = nil
+        if AutoDrive.isInRangeToLoadUnloadTarget ~= nil and AutoDrive.isInRangeToLoadUnloadTarget(vehicle) == true then
+            -- déjà au déchargement (silo tout près du champ) : AutoDrive l'ouvre pour vider, comme avant
+            if AutoDrive.getSetting("autoTrailerCover", vehicle) == true then
+                if ADCoverField.DEBUG then print(string.format("[FarmPilot Bâche] %s : sortie du champ déjà au déchargement, bâche laissée à AutoDrive", vehicleName(vehicle))) end
+            end
+            return
+        end
+        ADCoverField.apply(vehicle, false, "sortie du champ, départ vers le déchargement")
+        return
+    end
+    -- fermée : ouverte à l'entrée du champ (sauf en route vers le déchargement) ou au remplissage hors du champ
+    local want = (onField and work ~= "depart") or work == "work"
+    if not want then
         ad.fpCoverTime = 0
         return
     end
     ad.fpCoverTime = (ad.fpCoverTime or 0) + step
-    if ad.fpCoverTime >= (onField and ADCoverField.STABLE_IN or ADCoverField.STABLE_OUT) then
-        ad.fpCoverIn = onField
+    if ad.fpCoverTime >= ADCoverField.STABLE_IN then
+        ad.fpCoverIn = true
         ad.fpCoverTime = 0
-        ADCoverField.apply(vehicle, onField, onField and "entrée dans le champ" or "sortie du champ")
+        ad.fpCoverKeptLog = nil
+        ADCoverField.apply(vehicle, true, onField and "entrée dans le champ" or "remplissage hors du champ")
     end
 end
 
--- les tâches : dans le champ, leur demande est ignorée ; dehors, comme avant
+-- les tâches : bâche ouverte par FarmPilot (champ, remplissage), leur demande est ignorée ; sinon, comme avant
 function AutoDrive.setTrailerCoverOpen(vehicle, trailers, open)
     if vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.fpCoverIn == true and ADCoverField.isHarvestUnloader(vehicle) then
         return

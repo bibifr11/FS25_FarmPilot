@@ -11,6 +11,14 @@
     <Profile name="fp_dialogBgBottom" extends="fs25_dialogBgBottom">
         <imageColor value="0.004 0.006 0.010 0.95"/>
     </Profile>
+    <!-- FarmPilot : roue dentée dans une ligne de réglage, à gauche du choix (types de véhicules des routes, RoadTypesGUI.lua) -->
+    <Profile name="fp_settingsGearButton" extends="fs25_settingsMultiTextOptionLocked">
+        <size value="30px 30px"/>
+        <iconSize value="30px 30px"/>
+        <iconSliceId value="ad_gui.input_openGUI_1"/>
+        <iconColor value="1 1 1 1"/>
+        <iconDisabledColor value="1 1 1 0.3"/>
+    </Profile>
 
     <Profile name="ad_common_dialogContentContainer" extends="fs25_dialogContentContainer">
         <flowDirection value="vertical" />

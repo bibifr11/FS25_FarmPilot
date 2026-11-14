@@ -109,6 +109,10 @@ function ADFieldPark.hasGrowingCrop(x, z)
     if fruitTypeIndex == FruitType.MEADOW or fruitTypeIndex == FruitType.GRASS then
         return false
     end
+    -- (14/11) luzerne, trèfle, prairie temporaire : sol de prairie, comme l'herbe (PathFinderModuleCropMap.lua)
+    if PathFinderModule ~= nil and PathFinderModule.isMeadowGround ~= nil and PathFinderModule.isMeadowGround(x, z) then
+        return false
+    end
     local fruit = g_fruitTypeManager:getFruitTypeByIndex(fruitTypeIndex)
     if fruit == nil then
         return false

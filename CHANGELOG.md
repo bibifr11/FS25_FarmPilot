@@ -3,6 +3,28 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.3.4 → 1.0.5.4
+
+🇫🇷 FR
+- Moissonneuse / ensileuse équipée seule en mode Autonome : la barre de coupe est prise sur sa remorque, amenée au champ puis rangée à la fin.
+- Routes secondaires, tertiaires et nouvelle « route d'accès » : roue dentée pour choisir les types de véhicules autorisés ; réglages des routes dans les réglages généraux.
+- ATH : titre « Conduire - <but> » qui dit ce que fait le véhicule, plus de « AD » dans les textes, bas fixe, message rouge sur 2 lignes, fenêtre « Rappel éditeur ».
+- Changement automatique des pneus (avec AutoSwitch) : seuil réglable par véhicule, passage à l'atelier comme pour la réparation.
+- Épandeurs : le reste est rendu ou revendu ; point de chargement et remorque adaptés. « Collecter et livrer » reprend après un chargement partiel.
+- Conduite : virages plus justes, clignotant aux intersections du réseau (Oui/Non), gyrophares, rampe du Patriot 4450.
+- Aide en jeu (F1) complète ; ligne « Champ » remise à « aucun » une fois garé ; andains / replier à l'achat.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Equipped combine / forage harvester alone in Autonomous mode: the header is taken from its trailer, brought to the field and stored at the end.
+- Secondary, tertiary and new "access road" types: gear wheel to choose which vehicle types may use them; road settings in the general settings.
+- HUD: "Drive - <goal>" title telling what the vehicle is doing, no more "AD" in texts, fixed bottom, red message on 2 lines, "Editor reminder" window.
+- Automatic tyre change (with AutoSwitch): threshold per vehicle, goes to the workshop like for repairs.
+- Spreaders: the leftover is returned or sold; adapted loading point and trailer. "Collect and deliver" resumes after a partial load.
+- Driving: more accurate turns, indicator at network intersections (Yes/No), beacon lights, Patriot 4450 ramp.
+- Complete in-game help (F1); "Field" line reset to "none" once parked; swaths / fold on purchase.
+
 ## 1.0.1.40 → 1.0.3.3
 
 🇫🇷 FR

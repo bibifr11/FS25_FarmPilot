@@ -128,6 +128,8 @@ function AutoDrive.readFromXML(xmlFile)
 		end
 	end
 
+	if ADReglages ~= nil then FarmPilotCall(ADReglages.fixIndexes) end -- FarmPilot (14/11) : index hors liste remis au défaut (Utils/AutoDriveReglages.lua)
+
 	for feature, _ in pairs(AutoDrive.experimentalFeatures) do
 		AutoDrive.experimentalFeatures[feature] = Utils.getNoNil(getXMLBool(xmlFile, "AutoDrive.experimentalFeatures." .. feature .. "#enabled"), AutoDrive.experimentalFeatures[feature])
 	end
@@ -574,6 +576,7 @@ function AutoDrive.readLocalSettingsFromXML()
             -- gardées dans le fichier ne remplacent pas les nouvelles couleurs du HUD
             local oldDefault = (color == "ad_color_header" and math.abs((red or 0) - 0.171) < 0.002 and math.abs((green or 0) - 0.323) < 0.002 and (blue or 0) < 0.002)
                 or (color == "ad_color_background" and (red or 0) == 0 and (green or 0) == 0 and (blue or 0) == 0 and math.abs((alpha or 0) - 0.67) < 0.01)
+            if ADAccessRoads ~= nil and ADAccessRoads.isOldDefaultColor(color, red, green, blue) then oldDefault = true end -- route d'accès : l'ancien jaune ne remplace pas les oranges (AccessRoadManager.lua)
             if not oldDefault then
                 AutoDrive:setColorAssignment(color, red, green, blue, alpha)
             end

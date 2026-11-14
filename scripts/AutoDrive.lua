@@ -82,6 +82,7 @@ AutoDrive.FLAG_TRAFFIC_SYSTEM_CONNECTION = 4
 AutoDrive.FLAG_FIELD_POINT = 8
 AutoDrive.FLAG_INTERSECTION = 16 -- portion qui coupe ou rejoint une route : regarder avant de traverser
 AutoDrive.FLAG_DIRT_ROAD = 32 -- chemin de terre (DirtRoadManager.lua)
+AutoDrive.FLAG_ACCESS_ROAD = 64 -- (12/11) route d'accès : seulement pour accéder au point (AccessRoadManager.lua)
 
 -- add this to measured size of vehicles
 AutoDrive.DIMENSION_ADDITION = 0.2
@@ -258,6 +259,7 @@ function AutoDrive:loadMap(name)
 	if g_server ~= nil then
 		ADUserDataManager:loadFromXml()
 	end
+	if ADSavegameResume ~= nil then ADSavegameResume.hideNetwork() end -- réseau toujours caché au chargement, voir SavegameResume.lua
 
 	-- FarmPilot mode Autonome : choix champ/outil relus depuis la nouvelle partie
 	ADAutonomousManager.loaded = false

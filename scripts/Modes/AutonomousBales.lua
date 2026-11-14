@@ -128,6 +128,7 @@ function ADBaleCollect.goDeposit(mode, back, msgKey)
     mode.baleBack = back == true
     mode.baleStage = "toDeposit"
     mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, deposit.id)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_bales", deposit.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
     vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     log("%s : %d balle(s) sur la remorque, dépôt à « %s »%s", nameOf(vehicle), loaded, tostring(deposit.name), back and ", puis retour au champ" or "")
     message(vehicle, "INFO", msgKey or (back and "AD_autonomous_balesFull" or "AD_autonomous_balesLast"), loaded, tostring(deposit.name))
@@ -256,6 +257,7 @@ function ADBaleCollect.handleStage(mode)
         if mode.baleBack and ctx.fieldMarker ~= nil then
             mode.baleStage = "toField"
             mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, ctx.fieldMarker.id)
+            if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_back", ctx.fieldMarker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
             vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
             message(vehicle, "INFO", "AD_autonomous_balesBack", tostring(ctx.fieldMarker.name))
         else

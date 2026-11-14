@@ -32,6 +32,9 @@
 -- - 08/11 : le virage n'est touché que si c'est nécessaire : l'attelage passe la route dessinée = virage gardé tel
 --   quel ;
 -- - 08/11 : le plus grand rayon qui passe d'abord (virage plus doux et plus rapide), le vrai rayon en dernier ;
+-- - 11/11 : tous les outils attelés comptent, avec ou sans cuve ; dans la simulation le tracteur braque au rayon de
+--   ses roues ; quand il peut tourner le virage dessiné, il suit la ligne et seul l'outil ou la remorque derrière est
+--   contrôlé sur la route dessinée ;
 -- - 07/11 et 08/11 : fin de route trop serrée : manœuvre avant d'arriver ou autre chemin d'arrivée, le plus rapide.
 --
 -- Ce fichier : la table, les réglages communs, les outils partagés, la géométrie de l'attelage, les contrôles du
@@ -53,7 +56,7 @@ ADCornerModule = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages communs
 -- ------------------------------------------------------------------------------------------------------------
-ADCornerModule.DEBUG = true -- temporary diagnostic logs for the tests
+ADCornerModule.DEBUG = false
 ADCornerModule.TRACE = false -- (09/11) chaque essai de virage dans le journal (bestPath, CornerModuleBends.lua) : coupé
 
 local atan2 = math.atan2 or math.atan
@@ -70,6 +73,7 @@ ADCornerModule.REVERSE_TIMEOUT = 40000         -- ms
 ADCornerModule.REAR_BLOCKED_TIME = 1500        -- ms the rear sensor must stay blocked to stop backing
 ADCornerModule.ROAD_RAY_HEIGHT = 3             -- m above the terrain for the road mesh raycast
 ADCornerModule.TYPES = {{1, 1}, {-1, -1}, {1, -1}, {-1, 1}} -- arc, straight, arc: turning sides (+1 = increasing angle)
+ADCornerModule.FOLLOW_LINE = true               -- (11/11) tracteur qui peut tourner le virage : il suit la ligne dessinée
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils partagés (angles, distances, points du réseau)
@@ -155,10 +159,29 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Géométrie de l'attelage (rayon de braquage, attelage, caisses)
 -- ------------------------------------------------------------------------------------------------------------
+-- (11/11) tous les véhicules de l'attelage, le tracteur en premier, avec ou sans cuve : AutoDrive.getAllUnits ne
+-- garde que les outils qui ont une cuve (un déchaumeur, une faucheuse, une charrue, une masse étaient invisibles et
+-- l'attelage vu comme « tracteur seul »)
+function ADCornerModule.trainUnits(vehicle)
+    local root = vehicle.getRootVehicle ~= nil and vehicle:getRootVehicle() or vehicle
+    local units, seen = { root }, { [root] = true }
+    local function add(list)
+        for _, unit in pairs(list or {}) do
+            if unit ~= nil and not seen[unit] then
+                seen[unit] = true
+                units[#units + 1] = unit
+            end
+        end
+    end
+    add(AutoDrive.getAllUnits ~= nil and AutoDrive.getAllUnits(root) or nil)
+    add(AutoDrive.getAllImplements ~= nil and AutoDrive.getAllImplements(root, false) or nil)
+    return units
+end
+
 function ADCornerModule:readTrain()
     local width = self.vehicle.size ~= nil and self.vehicle.size.width or 3
     local trailerLength = 0
-    local units = AutoDrive.getAllUnits(self.vehicle)
+    local units = ADCornerModule.trainUnits(self.vehicle)
     if units ~= nil then
         for _, unit in pairs(units) do
             if unit.size ~= nil then
@@ -182,6 +205,15 @@ function ADCornerModule:readTrain()
         self.radius = 6
     end
     self.radius = math.min(self.radius, ADCornerModule.RADIUS_MAX)
+    -- (11/11) dans la simulation, le tracteur braque au rayon de ses roues quand on le connaît (son vrai braquage) :
+    -- la valeur du fichier (6,0 m pour un tracteur qui tourne à 4,0 m) l'empêchait de suivre un virage dessiné à
+    -- 5,8 m, il sortait de la ligne et le virage était redessiné sans besoin. Le rayon de l'attelage (self.radius)
+    -- reste celui qui choisit les virages à examiner et les rayons des virages redessinés ; la remorque est toujours
+    -- simulée derrière.
+    self.steerRadius = self.radius
+    if self.wheelRadius ~= nil and self.wheelRadius >= 3 then
+        self.steerRadius = math.min(self.wheelRadius, ADCornerModule.RADIUS_MAX)
+    end
     self.height = PathFinderModule.getTrainHeight ~= nil and PathFinderModule.getTrainHeight(self.vehicle) or 3
     local dpm = self.vehicle.ad ~= nil and self.vehicle.ad.drivePathModule or nil
     self.lookAhead = dpm ~= nil and dpm.min_lookAhead or nil
@@ -214,7 +246,12 @@ function ADCornerModule:readGeometry()
         local dx, _, dz = localDirectionToWorld(node, 0, 0, 1)
         local box = bodyBox(self.vehicle, x, z, headingOf(dx, dz))
         self.geo = {hitch = 0, trailer = 0, tractorBox = box}
-        if self.trailerLength > 0 then
+        if self.trailerLength > 0 and self.geoWhy == "pas de remorque a roues" then
+            -- (11/11) outils portés (sans roues au sol) : ils tournent avec le tracteur, une seule caisse qui les
+            -- englobe (comme la manœuvre de fin de route), au lieu d'une remorque estimée
+            self.geo.tractorBox = self:mountedBox(x, z, headingOf(dx, dz), box)
+            self.geoSource = "mounted tools"
+        elseif self.trailerLength > 0 then
             -- trailer seen but not measured: usual proportions (hitch behind the axle, axle at 60 % of the length)
             local L = self.trailerLength
             self.geo.hitch = math.max(0.5, -box.rear - 0.3)
@@ -223,6 +260,18 @@ function ADCornerModule:readGeometry()
             self.geoSource = "estimated"
         end
     end
+end
+
+-- tractor body and every tool of the train in one box (tools rigidly mounted on the tractor), seen from x, z, a
+function ADCornerModule:mountedBox(x, z, a, tractorBox)
+    local box = {front = tractorBox.front, rear = tractorBox.rear, half = tractorBox.half}
+    for _, unit in ipairs(ADCornerModule.trainUnits(self.vehicle)) do
+        if unit ~= self.vehicle and unit.components ~= nil and unit.components[1] ~= nil then
+            local b = bodyBox(unit, x, z, a)
+            box.front, box.rear, box.half = math.max(box.front, b.front), math.min(box.rear, b.rear), math.max(box.half, b.half)
+        end
+    end
+    return box
 end
 
 -- turning radius from the wheels: wheelbase / tan(max steering angle) + half track (bicycle model),
@@ -413,7 +462,9 @@ end
 -- checks one simulated pose: bodies against obstacles, axles on the ground allowed
 function ADCornerModule:checkPose(pose, reference, ground)
     local geo = self.geo
-    if not self:isBodyClear(pose.x, pose.z, pose.a, geo.tractorBox) then
+    -- (11/11) route dessinée qu'il peut tourner : le tracteur suit la ligne, pas contrôlé (reference.tractorFollowsLine)
+    local follows = reference.tractorFollowsLine == true
+    if not follows and not self:isBodyClear(pose.x, pose.z, pose.a, geo.tractorBox) then
         return false, "obstacle '" .. tostring(self.hitName) .. "' (tractor)"
     end
     local b = nil
@@ -424,7 +475,10 @@ function ADCornerModule:checkPose(pose, reference, ground)
         end
     end
     if ground then
-        local ok, reason = self:isAxleGroundOk(pose.x, pose.z, pose.a, geo.tractorBox.half, reference)
+        local ok, reason = true, nil
+        if not follows then
+            ok, reason = self:isAxleGroundOk(pose.x, pose.z, pose.a, geo.tractorBox.half, reference)
+        end
         if not ok then
             return false, reason .. " (tractor)"
         end
@@ -442,7 +496,7 @@ end
 -- to the turning radius) and checks it every CHECK_STEP metres. Returns clear, reason
 function ADCornerModule:simulate(points, start, reference)
     local pose = start
-    local kMax = 1 / self.radius
+    local kMax = 1 / (self.steerRadius or self.radius) -- (11/11) vrai braquage du tracteur, voir readTrain
     local index = 1 -- segment points[index] -> points[index + 1] the tractor is on
     local total = 0
     for n = 2, #points do

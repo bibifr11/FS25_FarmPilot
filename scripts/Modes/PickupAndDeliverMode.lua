@@ -97,6 +97,7 @@ function PickupAndDeliverMode:getNextTask(forced)
     local fillLevel, _, filledToUnload = AutoDrive.getAllFillLevels(self.trailers)
     AutoDrive.debugPrint(self.vehicle, AutoDrive.DC_PATHINFO, "PickupAndDeliverMode:getNextTask filledToUnload %s isCpFull %s", tostring(filledToUnload), tostring(self.vehicle.ad.isCpFull))
     filledToUnload = filledToUnload or self.vehicle.ad.isCpFull
+    if ADSavegameResume ~= nil and self.state == PickupAndDeliverMode.STATE_INIT then filledToUnload = ADSavegameResume.pickupStart(self, filledToUnload) end -- reprise après le chargement de la partie, voir SavegameResume.lua
 
     local setPickupTarget = function()
         AutoDrive.debugPrint(self.vehicle, AutoDrive.DC_PATHINFO, "PickupAndDeliverMode:setPickupTarget")

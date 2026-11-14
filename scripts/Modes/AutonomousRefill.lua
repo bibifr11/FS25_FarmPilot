@@ -584,6 +584,12 @@ function AutonomousMode:startRefillLoad()
     if task ~= nil then
         task.fpKeepLoading = true
         task.fpStartLevel = ADSeederRefill.planLevel(self.refillPlan)
+        if ADDriveGoal ~= nil and self.refillPlan ~= nil and self.refillPlan.marker ~= nil then -- but affiché dans l'ATH, voir DriveGoal.lua
+            local products = ADDriveGoal.productNames(self.refillPlan.fillTypes)
+            if products ~= nil then
+                ADDriveGoal.set(task, "AD_fpGoal_refill", products, self.refillPlan.marker.name)
+            end
+        end
     end
 end
 

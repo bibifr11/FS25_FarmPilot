@@ -79,6 +79,8 @@ function AutoDrive:loadGUI()
 	if ADSprayerSettingsGui ~= nil then ADSprayerSettingsGui.load() end -- fenêtre « Réglages de l'épandeur », voir SprayerSettingsGUI.lua
 	if ADBaleLoaderSettingsGui ~= nil then ADBaleLoaderSettingsGui.load() end -- fenêtre « Réglages de la remorque à balles », voir BaleLoaderSettingsGUI.lua
 	if ADTrailerSwapGui ~= nil then ADTrailerSwapGui.load() end -- fenêtre « Échange de bennes », voir TrailerSwapGUI.lua
+	if ADHeaderTractorGui ~= nil then ADHeaderTractorGui.load() end -- fenêtre « Transport de la barre », voir HeaderTractorGUI.lua
+	if ADRoadTypesGui ~= nil then ADRoadTypesGui.load() end -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua
 
 	AutoDrive.gui.ADGlobalSettingsPage = ADSettingsPage.new()
 	AutoDrive.gui.ADUserSettingsPage = ADSettingsPage.new()

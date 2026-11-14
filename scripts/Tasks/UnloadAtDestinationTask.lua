@@ -131,6 +131,7 @@ function UnloadAtDestinationTask:update(dt)
 
                     self.vehicle.ad.specialDrivingModule:stopVehicle()
                     self.vehicle.ad.specialDrivingModule:update(dt)
+                    if ADUnloadRetry ~= nil then FarmPilotCall(ADUnloadRetry.waiting, self, dt) end -- rien ne coule depuis 15 s : relance, voir UnloadAtDestinationRetry.lua
                     if self.vehicle.ad.trailerModule:getHasAL() == true then
                     	-- AutoLoad
                         AutoDrive.debugPrint(self.vehicle, AutoDrive.DC_PATHINFO, "UnloadAtDestinationTask:update unloadALAll start")

@@ -164,6 +164,7 @@ function ADFuelRun.handleStage(mode)
         if mode.fuelThen == "back" and fieldMarker ~= nil then
             mode.fuelStage = "back"
             mode.fuelTask = DriveToDestinationTask:new(vehicle, fieldMarker.id)
+            if ADDriveGoal ~= nil then ADDriveGoal.set(mode.fuelTask, "AD_fpGoal_back", fieldMarker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
             vehicle.ad.taskModule:addTask(mode.fuelTask)
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_seederBack", tostring(fieldMarker.name))
         else

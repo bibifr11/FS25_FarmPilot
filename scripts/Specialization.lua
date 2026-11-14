@@ -150,8 +150,11 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpFrontTool", "FarmPilot Autonome: front tool or weight to attach (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpNextFrontTool", "FarmPilot Autonome: front tool for the next field (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpMassReturn", "FarmPilot Autonome: weight left at its place, taken back at the end (unique id)")
+    schemaSavegame:register(XMLValueType.BOOL, "vehicles.vehicle(?).AutoDrive#fpFieldCleared", "FarmPilot Autonome: field line cleared once parked (StateModuleFieldClear.lua)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpTrailer", "FarmPilot: trailer to attach in the modes with a trailer (unique id)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSwapFolder", "FarmPilot: folder of the places for the trailer swap")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpHeaderTractor", "FarmPilot Autonome: vehicle moving the header trailer of a combine (unique id)")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpPickupPhase", "FarmPilot: pickup and deliver phase when saved (load / unload)")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#selectedFillTypes", "selectedFillTypes")
     schemaSavegame:register(XMLValueType.BOOL, "vehicles.vehicle(?).AutoDrive#loadByFillLevel", "loadByFillLevel")
@@ -936,6 +939,7 @@ function AutoDrive:onDrawEditorMode()
         local isSubPrio = ADGraphManager:getIsPointSubPrio(point.id)
         local isIntersection = ADGraphManager:getIsPointIntersection(point.id)
         local isDirt = ADDirtRoads ~= nil and ADDirtRoads.isDirt(point) -- chemin de terre (DirtRoadManager.lua)
+        if ADAccessRoads ~= nil then isDirt = ADAccessRoads.isTyped(point) end -- (12/11) ou route d'accès, sa couleur (AccessRoadManager.lua)
 
         if isInExtendedEditorMode then
             arrowPosition = DrawingManager.arrows.position.middle
@@ -952,7 +956,7 @@ function AutoDrive:onDrawEditorMode()
                             if isIntersection then
                                 DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_intersectionNode))
                             elseif isDirt then
-                                DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_dirtNode))
+                                DrawingManager:addSphereTask(x, y, z, 3, unpack(ADAccessRoads ~= nil and ADAccessRoads.nodeColor(point) or AutoDrive.currentColors.ad_color_dirtNode))
                             elseif isSubPrio then
                                 DrawingManager:addSphereTask(x, y, z, 3, unpack(AutoDrive.currentColors.ad_color_subPrioNode))
                             else
@@ -983,7 +987,7 @@ function AutoDrive:onDrawEditorMode()
                                 if isIntersection then
                                     DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_intersectionNode))
                                 elseif isDirt then
-                                    DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_dirtNode))
+                                    DrawingManager:addSphereTask(x, gy, z, 3, unpack(ADAccessRoads ~= nil and ADAccessRoads.nodeColor(point) or AutoDrive.currentColors.ad_color_dirtNode))
                                 elseif isSubPrio then
                                     DrawingManager:addSphereTask(x, gy, z, 3, unpack(AutoDrive.currentColors.ad_color_subPrioNode))
                                 else
@@ -1033,6 +1037,13 @@ function AutoDrive:onDrawEditorMode()
                 local target = ADGraphManager:getWayPointById(neighbor)
                 local targetIsSubPrio = ADGraphManager:getIsPointSubPrio(neighbor)
                 local redLine = isIntersection and ADGraphManager:getIsPointIntersection(neighbor)
+                -- (12/11) tertiaire ou route d'accès : ses couleurs (AccessRoadManager.lua)
+                local typedSingle, typedDual = nil, nil
+                if ADAccessRoads ~= nil then
+                    typedSingle, typedDual = ADAccessRoads.lineColors(point, target)
+                elseif isDirt or (ADDirtRoads ~= nil and ADDirtRoads.isDirt(target)) then
+                    typedSingle, typedDual = AutoDrive.currentColors.ad_color_dirtSingleConnection, AutoDrive.currentColors.ad_color_dirtDualConnection
+                end
                 if target ~= nil and not skipSectionDraw then
                     --check if outgoing connection is a dual way connection
                     local nWp = ADGraphManager:getWayPointById(neighbor)
@@ -1041,8 +1052,8 @@ function AutoDrive:onDrawEditorMode()
                         if point.id > nWp.id then
                             if redLine then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_intersectionConnection))
-                            elseif isDirt or (ADDirtRoads ~= nil and ADDirtRoads.isDirt(nWp)) then
-                                DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtDualConnection))
+                            elseif typedDual ~= nil then
+                                DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(typedDual))
                             elseif isSubPrio or targetIsSubPrio then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_subPrioDualConnection))
                             else
@@ -1056,9 +1067,9 @@ function AutoDrive:onDrawEditorMode()
                             if redLine then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_intersectionConnection))
                                 DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_intersectionConnection))
-                            elseif isDirt or (ADDirtRoads ~= nil and ADDirtRoads.isDirt(nWp)) then
-                                DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
-                                DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
+                            elseif typedSingle ~= nil then
+                                DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(typedSingle))
+                                DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(typedSingle))
                             elseif isSubPrio or targetIsSubPrio then
                                 DrawingManager:addLineTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, unpack(AutoDrive.currentColors.ad_color_subPrioSingleConnection))
                                 DrawingManager:addArrowTask(x, y, z, nWp.x, nWp.y, nWp.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_subPrioSingleConnection))
@@ -1098,6 +1109,11 @@ function AutoDrive:onDrawEditorMode()
         -- avec les chemins de terre, le type suivant change (DirtRoadManager.lua)
         if ADDirtRoads ~= nil then nextSingleColor, nextDualColor = ADDirtRoads.previewColors(ADGraphManager:getWayPointById(self.ad.sectionWayPoints[2]), nextSingleColor, nextDualColor) end
         local sectionDirt = ADDirtRoads ~= nil and ADDirtRoads.isDirtId(self.ad.sectionWayPoints[2]) -- chemin de terre : sens en rose / violet
+        local sectionSingle, sectionDual = AutoDrive.currentColors.ad_color_dirtSingleConnection, AutoDrive.currentColors.ad_color_dirtDualConnection
+        if ADAccessRoads ~= nil then -- (12/11) ou route d'accès : orange foncé / orange clair (AccessRoadManager.lua)
+            local sectionWp = ADGraphManager:getWayPointById(self.ad.sectionWayPoints[2])
+            if ADAccessRoads.isAccess(sectionWp) then sectionDirt = true; sectionSingle, sectionDual = ADAccessRoads.lineColors(sectionWp, sectionWp) end
+        end
         local wayPointsDirection = ADGraphManager:getIsWayPointJunction(self.ad.sectionWayPoints[1], self.ad.sectionWayPoints[2])
         for i = 1, #self.ad.sectionWayPoints - 1 do
             local start = ADGraphManager:getWayPointById(self.ad.sectionWayPoints[i])
@@ -1110,8 +1126,8 @@ function AutoDrive:onDrawEditorMode()
                 elseif previewDirection then
                     -- new direction backward
                     if sectionDirt then
-                        DrawingManager:addLineTask(target.x, target.y, target.z, start.x, start.y, start.z, 1,  unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))      -- rose
-                        DrawingManager:addArrowTask(target.x, target.y, target.z, start.x, start.y, start.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
+                        DrawingManager:addLineTask(target.x, target.y, target.z, start.x, start.y, start.z, 1,  unpack(sectionSingle))      -- rose
+                        DrawingManager:addArrowTask(target.x, target.y, target.z, start.x, start.y, start.z, 1, arrowPosition, unpack(sectionSingle))
                     elseif not sectionPrio then
                         DrawingManager:addLineTask(target.x, target.y, target.z, start.x, start.y, start.z, 1,  unpack(AutoDrive.currentColors.ad_color_singleConnection))       -- green
                         DrawingManager:addArrowTask(target.x, target.y, target.z, start.x, start.y, start.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_singleConnection))
@@ -1128,7 +1144,7 @@ function AutoDrive:onDrawEditorMode()
                 elseif previewDirection then
                     -- new direction dual
                     if sectionDirt then
-                        DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtDualConnection))  -- violet
+                        DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(sectionDual))  -- violet
                     elseif not sectionPrio then
                         DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_dualConnection))  -- blue
                     else
@@ -1142,8 +1158,8 @@ function AutoDrive:onDrawEditorMode()
                 elseif previewDirection then
                     -- new direction forward
                     if sectionDirt then
-                        DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))        -- rose
-                        DrawingManager:addArrowTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_dirtSingleConnection))
+                        DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(sectionSingle))        -- rose
+                        DrawingManager:addArrowTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, arrowPosition, unpack(sectionSingle))
                     elseif not sectionPrio then
                         DrawingManager:addLineTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, unpack(AutoDrive.currentColors.ad_color_singleConnection))        -- green
                         DrawingManager:addArrowTask(start.x, start.y, start.z, target.x, target.y, target.z, 1, arrowPosition, unpack(AutoDrive.currentColors.ad_color_singleConnection))

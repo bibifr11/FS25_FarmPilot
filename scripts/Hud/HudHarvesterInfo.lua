@@ -34,7 +34,7 @@ function HudHarvesterInfo:onDraw(vehicle, uiScale)
             
             local posX = self.position.x --+ (self.size.width / 2)
             local posY = self.position.y + (self.size.height / 2)
-            renderText(posX, posY, adFontSize, text)
+            ADHudTextWrap.render(posX, posY, adFontSize, text) -- trop large : 2 lignes, voir HudTextWrap.lua
         end
     end
 end

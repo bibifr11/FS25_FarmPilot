@@ -362,9 +362,9 @@ function ADCornerModule:smoothRoute(wayPoints, firstIndex)
         end
     end
     if changed > 0 or kept > 0 or manoeuvres > 0 then
-        self:log("route of %d points: %d bend(s) redrawn, %d manoeuvre(s), %d kept, radius %.1f m (vehicle file %.1f, wheels %s), train %.1f m wide, trailer %.1f m (%s: hitch %.1f, axle %.1f), look ahead %.1f m",
+        self:log("route of %d points: %d bend(s) redrawn, %d manoeuvre(s), %d kept, radius %.1f m (vehicle file %.1f, wheels %s, steering %.1f), train %.1f m wide, trailer %.1f m (%s: hitch %.1f, axle %.1f), look ahead %.1f m",
             #wayPoints, changed, manoeuvres, kept, self.radius, self.fileRadius or -1, self.wheelRadius ~= nil and string.format("%.1f", self.wheelRadius) or "?",
-            self.width, self.trailerLength, self.geoSource, self.geo.hitch, self.geo.trailer, self.lookAhead)
+            self.steerRadius or self.radius, self.width, self.trailerLength, self.geoSource, self.geo.hitch, self.geo.trailer, self.lookAhead)
     end
     return out
 end
@@ -400,7 +400,11 @@ function ADCornerModule:handleBend(wayPoints, out, first, last, angle, drawnRadi
         original[#original + 1] = wayPoints[k]
     end
     append(original, tail(wayPoints, exits[1]))
+    -- (11/11) le tracteur peut tourner le virage dessiné (rayon dessiné >= son braquage) : il suit la ligne comme
+    -- AutoDrive l'a toujours fait, seul l'outil ou la remorque derrière est contrôlé (voir checkPose)
+    reference.tractorFollowsLine = ADCornerModule.FOLLOW_LINE and drawnRadius >= (self.steerRadius or self.radius)
     local originalClear, originalReason = self:simulate(original, self:straightPose(prev.x, prev.z, a0), reference)
+    reference.tractorFollowsLine = nil
     -- (08/11 10:13) seulement quand c'est nécessaire, pas partout ; virage gardé si son angle est bon :
     -- l'attelage passe la route dessinée = virage gardé tel quel, pas de route coupée
     if originalClear then

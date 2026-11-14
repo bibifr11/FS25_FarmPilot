@@ -113,6 +113,7 @@ function ADParkButton.clearChoices(vehicle)
     clear("Outil AV suivant", sm.getFpNextFrontTool, sm.setFpNextFrontTool, frontName)
     clear("Outil AR suivant", sm.getFpNextTool, sm.setFpNextTool, rearName)
     clear("Champ suivant", sm.getFpNextField, sm.setFpNextField, function(marker) return marker.name end)
+    if ADStateModule ~= nil and ADStateModule.clearFieldOnParked ~= nil then local f = ADStateModule.clearFieldOnParked(sm) if f ~= nil then cleared[#cleared + 1] = f end end -- (14/11) ligne « Champ » : « Champ : aucun », voir StateModuleFieldClear.lua
     local name = tostring(sm:getName())
     if #cleared > 0 then
         ADAutonomousManager.log("%s : tracteur garé, choix d'outils effacés (%s)", name, table.concat(cleared, ", "))
@@ -170,7 +171,9 @@ function ADParkButton.toolToDrop(vehicle)
         return nil, "pas de mode Autonome"
     end
     -- (08/11, sur tous les modes) : tout outil ou remorque attelé directement au tracteur qui a
-    -- sa propre place de parking (outil de travail, benne, plateau… ; les masses n'ont pas de place)
+    -- sa propre place de parking (outil de travail, benne, plateau…)
+    -- (12/11) une masse, ou un outil rangé à la place du tracteur, rentre avec lui : pas compté
+    local tractorPlace = vehicle.advd ~= nil and vehicle.advd.parkDestination or -1
     local attached = {}
     if vehicle.getAttachedImplements ~= nil then
         local okA, implements = FarmPilotCall(vehicle.getAttachedImplements, vehicle)
@@ -178,7 +181,8 @@ function ADParkButton.toolToDrop(vehicle)
             for _, impl in ipairs(implements) do
                 local o = impl.object
                 local park = o ~= nil and o.advd ~= nil and o.advd.parkDestination or -1
-                if park ~= nil and park >= 1 and ADGraphManager:getMapMarkerById(park) ~= nil then
+                if park ~= nil and park >= 1 and park ~= tractorPlace and ADGraphManager:getMapMarkerById(park) ~= nil
+                    and not (ADAutonomousManager.isMass ~= nil and ADAutonomousManager.isMass(o)) then
                     attached[#attached + 1] = o
                 end
             end
@@ -224,6 +228,7 @@ function ADInputManager:input_parkVehicle(vehicle, farmId, ...)
         end
         ADAutonomousManager.log("%s : bouton parking : dépose de l'outil pas lancée (%s), parking comme avant", name, ok and "refusée" or tostring(started))
         ADParkButton.restoreMode(vehicle)
+    elseif ADHeaderFlow ~= nil and ADHeaderFlow.onParkButton ~= nil and ADHeaderFlow.onParkButton(self, vehicle, farmId) then return -- moissonneuse avec sa barre : la barre d'abord sur sa remorque, voir AutonomousHeaderParkButton.lua
     elseif ADFrontFlow ~= nil and ADFrontFlow.onParkButton(self, vehicle, farmId) then return -- masse à reprendre à la place du tracteur, voir AutonomousFront.lua
     elseif vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil then
         ADAutonomousManager.log("%s : bouton parking : parking comme avant (%s)", tostring(vehicle.ad.stateModule:getName()), tostring(why))

@@ -107,7 +107,9 @@ function CombineUnloaderMode:getParkAfterJobTask(reason)
     self.state = self.STATE_PARK
     self.vehicle.ad.onRouteToPark = true
     self.parkAfterJobName = marker.name
-    return DriveToDestinationTask:new(self.vehicle, marker.id)
+    local task = DriveToDestinationTask:new(self.vehicle, marker.id)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(task, "AD_fpGoal_park", marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
+    return task
 end
 
 -- ------------------------------------------------------------------------------------------------------------

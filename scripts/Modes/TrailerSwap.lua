@@ -399,6 +399,7 @@ function ADTrailerSwap.handleFinishedTask(mode)
     if s.stage == "pending" then
         s.stage = "place"
         s.task = DriveToDestinationTask:new(vehicle, s.place.marker.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(s.task, "AD_fpGoal_swap", s.place.marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
         vehicle.ad.taskModule:addTask(s.task)
         return true
     end

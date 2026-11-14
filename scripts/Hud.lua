@@ -159,10 +159,10 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	self.listItemWidth, self.listItemHeight = getNormalizedScreenValues(uiScale * listItemSize, uiScale * listItemSize)
 
 	self.posX = math.clamp(hudX, 0, 1 - self.width)
-	self.posY = math.clamp(hudY, 2 * self.gapHeight, 1 - (self.height + 3 * self.gapHeight + self.headerHeight))
+	self.posY = ADHudAnchor.place(self, hudY, pullDownRows) -- bas fixe, grandit vers le haut, voir HudAnchor.lua
 
 	AutoDrive.HudX = self.posX
-	AutoDrive.HudY = self.posY
+	AutoDrive.HudY = self.fpAnchorY -- bas voulu, pas le bas affiché (HudAnchor.lua)
 	AutoDrive.HudChanged = true
 
 	self.hudElements = {}
@@ -219,9 +219,10 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	-- Champ / Outil / Champ suivant / Outil suivant. Rang (order) = place depuis le haut, pour les listes ouvertes
 	local rowUnload, rowFill, rowNextTool = self.row3, self.row2, self.rowFpNextTool
 	local orderUnload, orderFill = nil, nil
-	if self.fpRowKind == "next" then
+	if self.fpRowKind == "next" or self.fpRowKind == "harvester" then
 		rowFill, rowUnload, rowNextTool = self.row3, self.rowFpNextTool, self.row2
 		orderFill, orderUnload = 3, 4 -- (10/11) Outil avant au rang 2, Outil avant suivant au rang 5
+		if self.fpRowKind == "harvester" then orderUnload = 3 end -- moissonneuse : Champ / Barre / Champ suivant / Barre suivante, voir HudHarvester.lua
 	elseif self.fpRowKind == "trailer" then
 		-- modes avec benne : 1re destination / 2e destination / produit / Remorque (dernière ligne, rang 4)
 		rowFill, rowNextTool = self.rowFpNextTool, self.row2
@@ -258,7 +259,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		1
 	)
 	fillList.order = orderFill
-	table.insert(self.hudElements, fillList)
+	if self.fpRowKind ~= "harvester" then table.insert(self.hudElements, fillList) end -- moissonneuse : pas de ligne « Outil », voir HudHarvester.lua
 	table.insert(self.hudElements, HudHarvesterInfo:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowFill, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight))
 	if self.fpRowKind == "trailer" then
 		-- remorque à aller atteler au départ (liste des remorques dételées), voir TrailerHitch.lua
@@ -270,6 +271,8 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		local swapGear = ADHudButton:new(self.posX + self.gapWidth, rowNextTool, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_trailerSwap_tooltip", 1, false)
 		swapGear.fpTrailer = true
 		table.insert(self.hudElements, swapGear)
+	elseif self.fpRowKind == "harvester" and ADHarvesterHud ~= nil then
+		ADHarvesterHud.addRows(self, rowFill, rowNextTool) -- moissonneuse / ensileuse : lignes « Barre », voir HudHarvester.lua
 	elseif self.fpNextToolRow then
 		-- liste d'outils comme la ligne « Outil » (même type), pour le champ suivant ; dernière ligne, rang 4
 		local nextTool = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, rowNextTool, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
@@ -381,6 +384,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		end
 	end
 
+	if ADEditorReminder ~= nil then ADEditorReminder.addTo(self, uiScale) end -- fenêtre « Rappel éditeur » (bouton « ? »), voir HudEditorReminder.lua
 	-- Refreshing layer sequence must be called, after all elements have been added
 	self:refreshHudElementsLayerSequence()
 end
@@ -473,11 +477,11 @@ function AutoDriveHud:drawHud(vehicle)
 		end
 
 		if self.lastUIScale ~= uiScale then
-			self:createHudAt(self.posX, self.posY)
+			self:createHudAt(self.posX, ADHudAnchor.wanted(self))
 		elseif self.hudElements ~= nil and AutoDrive.pullDownListExpanded == 0 and (self.fpRowKind or false) ~= (AutoDriveHud.fpRowKind(vehicle) or false) then
 			-- passage en mode Autonome, dans un mode avec benne, ou retour : une ligne de plus ou de moins
 			self.fpForceRowKind = AutoDriveHud.fpRowKind(vehicle) or false
-			self:createHudAt(self.posX, self.posY)
+			self:createHudAt(self.posX, ADHudAnchor.wanted(self))
 		end
 		self.lastUIScale = uiScale
 
@@ -499,8 +503,9 @@ function AutoDriveHud:update(dt)
 end
 
 function AutoDriveHud:toggleHudExtension(vehicle)
+	if ADEditorReminder ~= nil then ADEditorReminder.toggle() return end -- « ? » : fenêtre « Rappel éditeur » au lieu des astuces dans le bandeau, voir HudEditorReminder.lua
 	self.isShowingTips = not self.isShowingTips	
-	self:createHudAt(self.posX, self.posY)
+	self:createHudAt(self.posX, ADHudAnchor.wanted(self))
 end
 
 function AutoDriveHud:toggleHud(vehicle)

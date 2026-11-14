@@ -5,6 +5,8 @@
 -- (08/11) Retourner vider le trop à la fin du champ (si pas de suivant ou si pas de changement de
 -- produit).
 -- Choix retenu : garder le reste, sinon le vider en big bags / IBC.
+-- (13/11) Plus jamais de big bags ni d'IBC : le reste est rendu là où il a été pris (stock, ou revendu au prix
+-- d'achat au point d'achat), sinon vendu à un point de vente qui le prend, sinon gardé. Voir SprayerRestReturn.lua.
 --
 -- Règle :
 -- - Champ fini (Courseplay ou ouvrier du jeu), avec un épandeur / pulvé réglé (SprayerManager.lua) qui a encore du
@@ -12,9 +14,9 @@
 --   - champ suivant avec la même machine et le même produit réglé : le reste est gardé (il servira là-bas, le plein
 --     suivant ne prend que ce qui manque) ;
 --   - sinon (pas de champ suivant, autre produit, autre outil) : le chauffeur va à la zone de plein de ce champ et y
---     vide la cuve en big bags / IBC, comme la touche « Décharger » du jeu (FillUnit:unloadFillUnits) ;
---   - la machine ne sait pas vider en big bags (pas de section <unloading> dans son xml, ou produit sans palette :
---     lisier, fumier, digestat), ou pas de zone de plein : le reste est gardé, le log dit pourquoi.
+--     rend le reste (stock, point d'achat, big bags déjà posés), ou va le vendre à un point de vente qui le prend
+--     (SprayerRestReturn.lua) ;
+--   - rien de tout ça : le reste est gardé, le log dit pourquoi.
 -- - Ensuite, la suite habituelle : champ suivant, sinon outil posé et tracteur garé (AutoDrive:onCpFinished).
 --
 -- Bouton « Envoyer au parking » (08/11 : sur un épandeur, le parking ne vidait pas ; s'il a du produit, il
@@ -24,7 +26,7 @@
 --   réglée pour cette machine, sinon le marqueur le plus proche d'une zone qui a ce produit (RefillSources.lua).
 -- - Vidange (mêmes étapes qu'en fin de champ), puis le bouton parking comme avant (outil posé à sa place si elle
 --   existe, puis tracteur garé), même si la vidange n'a pas pu se faire.
--- - La machine ne sait pas vider en big bags, ou aucune zone : message, parking comme avant.
+-- - Ni zone pour le reprendre, ni point de vente : message, parking comme avant.
 --
 -- Branché par une ligne dans : ExternalInterface.lua (2 fins de champ), AutonomousMode.lua (reset,
 -- handleFinishedTask), Specialization.lua (stopAutoDrive), AutonomousParkButton.lua (bouton parking).
@@ -51,8 +53,9 @@ local function nameOf(vehicle)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- La machine sait-elle vider en big bags / IBC ?
+-- (Mis de côté 13/11) La machine sait-elle vider en big bags / IBC ?
 -- ------------------------------------------------------------------------------------------------------------
+--[==[ Mis de côté (13/11) : vidange en big bags / IBC, remplacée par SprayerRestReturn.lua
 -- true, ou false et la raison (pour le log)
 function ADSprayerDump.canUnload(tool, fillUnitIndex)
     local spec = tool ~= nil and tool.spec_fillUnit or nil
@@ -72,6 +75,7 @@ function ADSprayerDump.canUnload(tool, fillUnitIndex)
     end
     return true
 end
+]==]
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Décision en fin de champ
@@ -117,6 +121,7 @@ function ADSprayerDump.decide(vehicle)
     else
         d.why = "pas de champ suivant"
     end
+    --[==[ Mis de côté (13/11) : vidange en big bags / IBC, remplacée par SprayerRestReturn.lua
     local unit = ADSprayerManager.fillUnit(tool)
     local ok, why = ADSprayerDump.canUnload(tool, unit)
     if not ok then
@@ -130,6 +135,17 @@ function ADSprayerDump.decide(vehicle)
         return d
     end
     d.action, d.marker = "dump", marker
+    return d
+    ]==]
+    -- rendu à la zone de plein, sinon vendu, sinon gardé (SprayerRestReturn.lua)
+    local s = ADSprayerManager:get(ctx.field, ctx.toolKey)
+    local marker = s ~= nil and s.refill ~= nil and ADGraphManager:getMapMarkerByName(s.refill) or nil
+    local place, whyNo = ADRestReturn.plan(vehicle, tool, ft, marker)
+    if place == nil then
+        d.action, d.why = "keep", d.why .. ", mais " .. tostring(whyNo) .. " : reste gardé"
+        return d
+    end
+    d.action, d.marker, d.place = "dump", place.marker, place
     return d
 end
 
@@ -154,7 +170,16 @@ function ADSprayerDump.start(vehicle, d, after)
     mode.dumpStage = "drive"
     mode.dumpTool = d.tool
     mode.dumpMarker = d.marker
+    mode.dumpPlace = d.place
     mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, d.marker.id)
+    if ADDriveGoal ~= nil then -- but affiché dans l'ATH, voir DriveGoal.lua
+        local product = ADDriveGoal.productOf(d.tool)
+        if product ~= nil then
+            ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_dump", product, d.marker.name)
+        else
+            ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_dumpAny", d.marker.name)
+        end
+    end
     vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     return true
 end
@@ -192,9 +217,9 @@ function ADSprayerDump.onFieldFinished(vehicle)
     if not ADSprayerDump.start(vehicle, d, nil) then
         return false
     end
-    log("%s : « %s » fini, %.0f L de %s dans la cuve (%s) : va les vider en big bags à « %s »", name, tostring(d.field), d.level, tostring(title),
-        tostring(d.why), tostring(d.marker.name))
-    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dumpGo", tostring(d.marker.name))
+    log("%s : « %s » fini, %.0f L de %s dans la cuve (%s) : va à « %s », reste %s là-bas", name, tostring(d.field), d.level, tostring(title),
+        tostring(d.why), tostring(d.marker.name), ADRestReturn.logText(d.place.kind))
+    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dumpGo", ADRestReturn.howText(d.place.kind), tostring(d.marker.name))
     return true
 end
 
@@ -286,6 +311,7 @@ function ADSprayerDump.decideForPark(vehicle)
         return nil
     end
     local d = { tool = tool, level = level, fillType = ft }
+    --[==[ Mis de côté (13/11) : vidange en big bags / IBC, remplacée par SprayerRestReturn.lua
     local ok, why = ADSprayerDump.canUnload(tool, ADSprayerManager.fillUnit(tool))
     if not ok then
         d.action, d.why = "keep", tostring(why)
@@ -297,6 +323,17 @@ function ADSprayerDump.decideForPark(vehicle)
         return d
     end
     d.action, d.marker, d.why = "dump", marker, from
+    return d
+    ]==]
+    -- rendu à la zone de plein, sinon vendu, sinon gardé (SprayerRestReturn.lua)
+    local marker, from = ADSprayerDump.parkMarker(vehicle, tool, ft)
+    local place, whyNo = ADRestReturn.plan(vehicle, tool, ft, marker)
+    if place == nil then
+        d.action, d.why = "keep", tostring(whyNo)
+        return d
+    end
+    d.action, d.marker, d.place = "dump", place.marker, place
+    d.why = place.kind == "sell" and "point de vente qui prend ce produit" or from
     return d
 end
 
@@ -334,9 +371,9 @@ function ADSprayerDump.onParkButton(input, vehicle, farmId)
         if ADParkButton ~= nil then ADParkButton.restoreMode(vehicle) end
         return false
     end
-    log("%s : bouton parking, %.0f L de %s dans la cuve : va les vider en big bags à « %s » (%s), puis au parking", name, d.level, tostring(title),
-        tostring(d.marker.name), tostring(d.why))
-    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dumpParkGo", tostring(d.marker.name))
+    log("%s : bouton parking, %.0f L de %s dans la cuve : va à « %s » (%s), reste %s là-bas, puis au parking", name, d.level, tostring(title),
+        tostring(d.marker.name), tostring(d.why), ADRestReturn.logText(d.place.kind))
+    AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dumpParkGo", ADRestReturn.howText(d.place.kind), tostring(d.marker.name))
     return true
 end
 
@@ -355,7 +392,7 @@ function ADSprayerDump.handleStage(mode)
     if mode.dumpStage == "drive" then
         mode.driveToDestinationTask = nil
         mode.dumpStage = "unload"
-        mode.dumpTask = ADDumpRestTask:new(vehicle, mode.dumpTool)
+        mode.dumpTask = ADDumpRestTask:new(vehicle, mode.dumpTool, mode.dumpPlace)
         vehicle.ad.taskModule:addTask(mode.dumpTask)
         return
     end
@@ -363,14 +400,18 @@ function ADSprayerDump.handleStage(mode)
     local task = mode.dumpTask
     local result = task ~= nil and task.result or "?"
     local marker = mode.dumpMarker
+    local place = mode.dumpPlace
     mode.dumpStage = nil
     mode.dumpTask = nil
     mode.dumpTool = nil
     mode.dumpMarker = nil
+    mode.dumpPlace = nil
     if result == "ok" then
-        log("%s : reste vidé en big bags à « %s » (%.0f L)", name, tostring(marker ~= nil and marker.name), task.unloaded or 0)
+        local money = task.money ~= nil and string.format(", %.0f €", task.money) or ""
+        log("%s : reste %s à « %s » (%.0f L%s)", name, ADRestReturn.logText(place ~= nil and place.kind or "?"), tostring(marker ~= nil and marker.name),
+            task.unloaded or 0, money)
     else
-        log("%s : vidange en big bags pas faite (%s), reste gardé", name, tostring(result))
+        log("%s : reste pas rendu (%s), gardé dans la cuve", name, tostring(result))
         AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 12000, "AD_autonomous_dumpFailed", tostring(marker ~= nil and marker.name or "?"))
     end
     -- la suite (champ suivant / parking) une fois FarmPilot arrêté : afterStop
@@ -429,14 +470,15 @@ function ADSprayerDump.afterStop(vehicle)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- Tâche : arrêt, outil coupé, puis « Décharger » du jeu (big bags / IBC posés à côté de la machine)
+-- Tâche : arrêt, outil coupé, puis le reste rendu ou vendu (SprayerRestReturn.lua ; plus de « Décharger » du jeu)
 -- ------------------------------------------------------------------------------------------------------------
 ADDumpRestTask = ADInheritsFrom(AbstractTask)
 
-function ADDumpRestTask:new(vehicle, tool)
+function ADDumpRestTask:new(vehicle, tool, place)
     local o = ADDumpRestTask:create()
     o.vehicle = vehicle
     o.tool = tool
+    o.place = place
     o.result = nil
     return o
 end
@@ -469,9 +511,21 @@ function ADDumpRestTask:update(dt)
             self.lastLevel = self.startLevel
             self.lastChange = self.timer
             self.requested = true
+            --[==[ Mis de côté (13/11) : « Décharger » du jeu, créait des big bags / IBC
             local ok, err = FarmPilotCall(self.tool.unloadFillUnits, self.tool, true)
             if not ok then
                 self:finish("erreur du jeu : " .. tostring(err))
+            end
+            ]==]
+            local ok, moved, extra = FarmPilotCall(ADRestReturn.apply, self.vehicle, self.tool, self.place)
+            if not ok then
+                self:finish("erreur : " .. tostring(moved))
+            elseif moved == nil then
+                self:finish(tostring(extra))
+            else
+                self.unloaded = moved
+                self.money = extra
+                self:finish(moved > ADRestReturn.MIN_LITERS and "ok" or "rien à rendre")
             end
         elseif self.timer >= ADSprayerDump.STOP_TIMEOUT then
             self:finish("pas arrêté")

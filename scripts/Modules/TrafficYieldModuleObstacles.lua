@@ -160,6 +160,17 @@ function ADTrafficYieldModule:overlapHit(x, y, z, ry, halfX, halfY, halfZ)
     return self.overlapHitCount > 0
 end
 
+-- obstacles fixes seulement (arbres, bâtiments, clôtures) : les véhicules et les objets posés ne comptent pas
+-- (route de la barre de coupe, Modes/AutonomousHeaderEntry.lua)
+function ADTrafficYieldModule:overlapHitStatic(x, y, z, ry, halfX, halfY, halfZ)
+    self.overlapHitCount = 0
+    self.overlapHitName = nil
+    self.overlapHitVehicle = nil
+    local mask = CollisionFlag.STATIC_OBJECT + CollisionFlag.TREE + CollisionFlag.BUILDING
+    overlapBox(x, y, z, 0, ry, 0, halfX, halfY, halfZ, "overlapCallback", self, mask, true, true, true, true)
+    return self.overlapHitCount > 0
+end
+
 function ADTrafficYieldModule:overlapCallback(transformId)
     if transformId == nil or transformId == 0 or transformId == g_currentMission.terrainRootNode then
         return true

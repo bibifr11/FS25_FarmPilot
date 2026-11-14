@@ -237,6 +237,7 @@ function CombineUnloaderMode:getNextTask()
         else
             if not AutoDrive.checkIsOnField(x, y, z) then
                 nextTask = DriveToDestinationTask:new(self.vehicle, self.vehicle.ad.stateModule:getFirstMarker().id)
+                if ADDriveGoal ~= nil then ADDriveGoal.set(nextTask, "AD_fpGoal_back", self.vehicle.ad.stateModule:getFirstMarker().name) end -- but affiché dans l'ATH, voir DriveGoal.lua
                 self.state = self.STATE_DRIVE_TO_START
             else
                 self:setToWaitForCall()
@@ -270,6 +271,7 @@ function CombineUnloaderMode:getNextTask()
         CombineUnloaderMode.debugMsg(self.vehicle, "CombineUnloaderMode:getNextTask - STATE_DRIVE_TO_UNLOAD")
         self:forgetJobDoneWithoutPark() -- chantier terminé sans parking (ensileuse, moissonneuse) : retour au champ, voir CombineUnloaderModeJobDone.lua
         nextTask = DriveToDestinationTask:new(self.vehicle, self.vehicle.ad.stateModule:getFirstMarker().id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(nextTask, "AD_fpGoal_back", self.vehicle.ad.stateModule:getFirstMarker().name) end -- but affiché dans l'ATH, voir DriveGoal.lua
         if (AutoDrive.getSetting("rotateTargets", self.vehicle) == AutoDrive.RT_ONLYDELIVER or AutoDrive.getSetting("rotateTargets", self.vehicle) == AutoDrive.RT_PICKUPANDDELIVER) and AutoDrive.getSetting("useFolders") then
             local nextTarget = ADMultipleTargetsManager:getNextTarget(self.vehicle, true)
             if nextTarget ~= nil then
@@ -453,6 +455,7 @@ function CombineUnloaderMode:getTaskAfterUnload(filledToUnload)
         else
             ADHarvestManager:unregisterAsUnloader(self.vehicle)
             nextTask = DriveToDestinationTask:new(self.vehicle, self.vehicle.ad.stateModule:getFirstMarker().id)
+            if ADDriveGoal ~= nil then ADDriveGoal.set(nextTask, "AD_fpGoal_back", self.vehicle.ad.stateModule:getFirstMarker().name) end -- but affiché dans l'ATH, voir DriveGoal.lua
             self.state = self.STATE_DRIVE_TO_START
         end
     end

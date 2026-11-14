@@ -64,8 +64,8 @@
 		<text name="input_ADCopySettings"								text="FP - Copy settings" />
 		<text name="input_ADPasteSettings"								text="FP - Paste settings" />
 		<text name="input_ADCreateFieldPoints"							text="FP - Create Field Points" />
-		<text name="hud_avoidFruit"									text="AD: Evitar cultura" />
-		<text name="hud_startHelper"									text="AD: Iniciar o AI/CP no destino" />
+		<text name="hud_avoidFruit"									text="FP - Evitar cultura" />
+		<text name="hud_startHelper"									text="FP - Iniciar o AI/CP no destino" />
 		<text name="AD_parkVehicle_noPosSet"							text="Nenhum destino de estacionamento atribuído. Atribua o destino atualmente selecionado com o botão direito do mouse." />
 		<text name="AD_parkVehicle_selected"							text="Escolher destino de estacionamento: " />
 		<text name="AD_parkVehicle_deleted"							text="parking destination deleted!" />
@@ -80,7 +80,7 @@
 		<text name="AD_No_Shovel"										text="não encontra pá conectada" />
 		<text name="AD_No_Refuel_Station"								text="could not find refuel station" />
 		<text name="AD_No_Repair_Station"								text="could not find repair station for:" />
-		<text name="AD_Wrong_Mode_takeover_from_CP"					text="Wrong AD Mode to work together with CP" />
+		<text name="AD_Wrong_Mode_takeover_from_CP"					text="Wrong FarmPilot Mode to work together with CP" />
 		<text name="AD_Unable_to_start_AIJob"							text="Not able to start AI Helper" />
 		<text name="AD_AIJob_active"									text="AI Helper still active!" />
 		<text name="AD_MODE_DRIVETO"									text="Conduzir" />
@@ -101,7 +101,7 @@
 		<text name="gui_ad_collisionHeigth"							text="Altura da colisão sobre o chão" />
 		<text name="gui_ad_collisionHeigth_tooltip"					text="Configuração para deteção de colisão na frente do veículo. Se outros veículos não forem detetados durante a condução, reduzir passo a passo. (Predefinição 2m)" />
 		<text name="gui_ad_blinkValue"									text="Piscas automáticos" />
-		<text name="gui_ad_blinkValue_tooltip"							text="Ângulo de direção para permitir que os piscas liguem automaticamente. (0 = pisca automático desativado)" />
+		<text name="gui_ad_blinkValue_tooltip"							text="Yes: the turn light comes on before bends and junctions (at the « Turnlight Distance »). No: no automatic turn light." />
 		<text name="gui_ad_pipe_offset"								text="Offset do tubo" />
 		<text name="gui_ad_pipe_offset_tooltip"						text="Additional offset applied to the detected pipe position" />
 		<text name="gui_ad_followDistance"								text="Distância da ceifeira" />
@@ -221,6 +221,8 @@
 		<text name="gui_ad_autoRefuel_tooltip"							text="Dirija até o destino de reabastecimento (próximo ao gatilho de reabastecimento) quando o nível de combustível estiver baixo." />
 		<text name="gui_ad_autoRepair"									text="Automatic Repairing" />
 		<text name="gui_ad_autoRepair_tooltip"							text="Drive to workshop destination (close to repair trigger) when wear level is too high." />
+		<text name="gui_ad_fpTireChange" text="Change tires at" />
+		<text name="gui_ad_fpTireChange_tooltip" text="With AutoSwitch: when a tire of the tractor or of an attached implement has only this % left, the tractor goes to the workshop to replace the worn tires (like the « New tires » button), after its current job (at once below 5 %). No: never." />
 		<text name="gui_ad_filter"										text="Filtro" />
 		<text name="gui_ad_enterDestinationFilterTitle"				text="Alterar texto do filtro de destino" />
 		<text name="gui_ad_enterDestinationFilterText"					text="Inserir texto do filtro:" />
@@ -230,7 +232,7 @@
 		<text name="gui_ad_showMarkersOnMap_tooltip"					text="Mostrar marcadores / destinos no mapa do jogo" />
 		<text name="gui_ad_mainMenuMap"								text="Main menu map" />
 		<text name="gui_ad_ingameMap"									text="Ingame map" />
-		<text name="gui_ad_both"										text="Both" />
+		<text name="gui_ad_both"										text="Ambos" />
 		<text name="gui_ad_switchToMarkersOnMap"						text="Mudar para marcadores" />
 		<text name="gui_ad_switchToMarkersOnMap_tooltip"				text="Definir destino / descarregar destino ao clicar nos pontos ativos do mapa" />
 		<text name="gui_ad_cornerSpeed"								text="Velocidade de canto" />
@@ -264,7 +266,7 @@
 		<text name="gui_ad_useForwardTurningManoeuvre"					text="Forwards turning manoeuvre" />
 		<text name="gui_ad_useForwardTurningManoeuvre_tooltip"			text="Yes - FarmPilot unloaders try to plan a path forwards to adapt to 90° turns of the combine. / No - Unloaders will reverse before turn" />
 		<text name="gui_ad_ALUnload"									text="AutoLoad: Unload Position" />
-		<text name="gui_ad_ALUnload_tooltip"							text="Off-no automatic unload, center-unload on loading platform, left / right vehicle unload position (Position depend on vehicle setup, not AD!)" />
+		<text name="gui_ad_ALUnload_tooltip"							text="Off-no automatic unload, center-unload on loading platform, left / right vehicle unload position (Position depend on vehicle setup, not FarmPilot!)" />
 		<text name="gui_ad_Text_all"									text="All" />
 		<text name="gui_ad_AL_off"										text="Unload Off" />
 		<text name="gui_ad_AL_center"									text="Unload center" />
@@ -280,7 +282,7 @@
 		<text name="gui_ad_remainingDriveTimeInterval"					text="Remaining Drive time" />
 		<text name="gui_ad_remainingDriveTimeInterval_tooltip"			text="For external mods: Interval to calculate the remaining drive time. In case of issues with performance increase or deactivate." />
 		<text name="gui_ad_adpd_showError"								text="FarmPilot: The Network is inconsistent and could not be imported, error code" />
-		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot: Would you like to import the AD Network from the Placeable?" />
+		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot: Would you like to import the Network from the Placeable?" />
 		<text name="gui_ad_pathfinder"									text="Pathfinder algorithm" />
 		<text name="gui_ad_pathfinder_tooltip"							text="Choose which pathfinder algorithm is used (when not on network)" />
 		<text name="gui_ad_pathfinder_astar"							text="A-Star + Dubbins" />
@@ -290,11 +292,11 @@
 		<text name="gui_ad_autostartHelpers"							text="Autostart helpers" />
 		<text name="gui_ad_autostartHelpers_tooltip"					text="Automatically restart active helpers after loading a savegame" />
 		<text name="gui_ad_detectSwath"								text="Swath detection" />
-		<text name="gui_ad_detectSwath_tooltip"						text="Decides if swaths are detected as fruit on field" />
+		<text name="gui_ad_detectSwath_tooltip"						text="Decides if swaths are detected as fruit on field. No when the vehicle is bought." />
 		<text name="gui_ad_colorAssignmentMode"						text="Custom colors" />
 		<text name="gui_ad_colorAssignmentMode_tooltip"				text="Enables selection of custom colors for FarmPilot" />
 		<text name="gui_ad_FoldImplements"								text="Fold implements" />
-		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot will wait for implements to fold up before starting" />
+		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot will wait for implements to fold up before starting. Yes when the vehicle is bought." />
 		<text name="gui_ad_RecordWhileNotInVehicle"					text="Record without driver" />
 		<text name="gui_ad_RecordWhileNotInVehicle_tooltip"			text="FarmPilot will keep recording if driver leaves the vehicle" />
 		<text name="gui_ad_RecordDriveDirectionOffset"					text="Record offset in driving direction" />
@@ -311,7 +313,7 @@
 		<text name="gui_ad_combineUnloadSettingsPage_title"			text="Configurações de descarga da ceifeira - FarmPilot" />
 		<text name="gui_ad_debugSettingsPage_title"					text="Configurações de depuração - FarmPilot" />
 		<text name="gui_ad_eFeaturesSettingsPage_title"				text="Configurações de recursos experimentais - FarmPilot" />
-		<text name="gui_ad_environmentSettingsPage_title"				text="Non-functional Settings - FarmPilot" />
+		<text name="gui_ad_environmentSettingsPage_title"				text="Environment Settings - FarmPilot" />
 		<text name="gui_ad_restoreButtonText"							text="Restaurar" />
 		<text name="gui_ad_settingsClosingDialog_title"				text="Todas as alterações serão perdidas" />
 		<text name="gui_ad_settingsClosingDialog_text"					text="Tem certeza de que deseja fechar as configurações sem guardar?" />
@@ -375,12 +377,57 @@
 		<text name="ad_color_dirtSingleConnection" text="32 tertiary road line, one way" />
 		<text name="ad_color_dirtDualConnection" text="33 tertiary road line, two way" />
 		<text name="ad_color_dirtNode" text="34 tertiary road waypoint" />
+		<text name="ad_color_accessSingleConnection" text="35 access road line, one way" />
+		<text name="ad_color_accessDualConnection" text="36 access road line, two way" />
+		<text name="ad_color_accessNode" text="37 access road waypoint" />
 		<text name="button_delete_all"									text="Eliminar tudo" />
 		<text name="button_reset_selected"								text="Reset selected" />
 		<text name="AD_task_pathfinding"								text="Caminho de planejamento" />
 		<text name="AD_task_catch_up_with_combine"						text="Atualizando com ceifeira" />
 		<text name="AD_task_clearcrop"									text="Limpeza de colheita" />
 		<text name="AD_task_drive_to_destination"						text="Condução para o destino" />
+		<text name="AD_fpGoal_drive" text="Driving" />
+		<text name="AD_fpGoal_to" text="to %s" />
+		<text name="AD_fpGoal_to_short" text="to destination" />
+		<text name="AD_fpGoal_load" text="loading at %s" />
+		<text name="AD_fpGoal_load_short" text="loading" />
+		<text name="AD_fpGoal_refill" text="refilling %s at %s" />
+		<text name="AD_fpGoal_refill_short" text="refilling %s" />
+		<text name="AD_fpGoal_refill_tiny" text="refilling" />
+		<text name="AD_fpGoal_unload" text="unloading at %s" />
+		<text name="AD_fpGoal_unload_short" text="unloading" />
+		<text name="AD_fpGoal_refuel" text="refuelling at %s" />
+		<text name="AD_fpGoal_refuel_short" text="refuelling" />
+		<text name="AD_fpGoal_repair" text="repair at %s" />
+		<text name="AD_fpGoal_repair_short" text="repair" />
+		<text name="AD_fpGoal_work" text="work at %s" />
+		<text name="AD_fpGoal_work_short" text="work at the field" />
+		<text name="AD_fpGoal_work_tiny" text="field work" />
+		<text name="AD_fpGoal_back" text="back to %s" />
+		<text name="AD_fpGoal_back_short" text="back to the field" />
+		<text name="AD_fpGoal_back_tiny" text="back to field" />
+		<text name="AD_fpGoal_toolPark" text="parking the tool at %s" />
+		<text name="AD_fpGoal_toolPark_short" text="parking the tool" />
+		<text name="AD_fpGoal_park" text="parking at %s" />
+		<text name="AD_fpGoal_park_short" text="parking" />
+		<text name="AD_fpGoal_fetch" text="fetching %s" />
+		<text name="AD_fpGoal_fetch_short" text="fetching the tool" />
+		<text name="AD_fpGoal_fetch_tiny" text="fetching tool" />
+		<text name="AD_fpGoal_dump" text="emptying the rest of %s at %s" />
+		<text name="AD_fpGoal_dump_short" text="emptying the rest of %s" />
+		<text name="AD_fpGoal_dump_tiny" text="emptying the rest" />
+		<text name="AD_fpGoal_dump_min" text="emptying" />
+		<text name="AD_fpGoal_dumpAny" text="emptying the rest at %s" />
+		<text name="AD_fpGoal_dumpAny_short" text="emptying the rest" />
+		<text name="AD_fpGoal_dumpAny_tiny" text="emptying" />
+		<text name="AD_fpGoal_bales" text="dropping the bales at %s" />
+		<text name="AD_fpGoal_bales_short" text="dropping the bales" />
+		<text name="AD_fpGoal_bales_tiny" text="dropping bales" />
+		<text name="AD_fpGoal_swap" text="trailer swap at %s" />
+		<text name="AD_fpGoal_swap_short" text="trailer swap" />
+		<text name="AD_fpGoal_hitch" text="hitching %s" />
+		<text name="AD_fpGoal_hitch_short" text="hitching the trailer" />
+		<text name="AD_fpGoal_hitch_tiny" text="hitching" />
 		<text name="AD_task_drive_to_vehicle"							text="Dirigindo para o veículo alvo" />
 		<text name="AD_task_step_aside"							text="Stepping aside for the harvester" />
 		<text name="AD_task_drive_to_combine_pipe"						text="Dirija para o tubo ceifeira" />
@@ -409,19 +456,19 @@
 		<text name="gui_CPAD_off"										text="off" />
 		<text name="gui_CPAD_simple"									text="simple" />
 		<text name="gui_CPAD_full"										text="full" />
-		<text name="gui_ad_combineCPADHudMouse"						text="combine CP/AD Buttons" />
-		<text name="gui_ad_combineCPADHudMouse_tooltip"				text="off: default / simple: CP: sec mouse action > mouse on + off, AD: Toggle Hud > both huds on + off / full: as simple but huds toggle in single steps / Required: Disable right click HUD at CP settings" />
+		<text name="gui_ad_combineCPADHudMouse"						text="combine CP/FarmPilot Buttons" />
+		<text name="gui_ad_combineCPADHudMouse_tooltip"				text="off: default / simple: CP: sec mouse action > mouse on + off, FarmPilot: Toggle Hud > both huds on + off / full: as simple but huds toggle in single steps / Required: Disable right click HUD at CP settings" />
 		<text name="gui_ad_editorTip_1"								text="Simple left mouse click:" />
 		<text name="gui_ad_editorTip_2"								text="Mouse only: Select 1. point" />
 		<text name="gui_ad_editorTip_3"								text="LCTRL = Create node" />
 		<text name="gui_ad_editorTip_4"								text="LALT = Delete node" />
-		<text name="gui_ad_editorTip_5"								text="LSHIFT = Point type (main, secondary, tertiary, intersection)" />
+		<text name="gui_ad_editorTip_5"								text="LSHIFT = Point type (main, secondary, tertiary, access, intersection)" />
 		<text name="gui_ad_editorTip_6"								text="Clicking on second node:" />
 		<text name="gui_ad_editorTip_7"								text="Toggle connection" />
 		<text name="gui_ad_editorTip_8"								text="RSHIFT = Create reverse road" />
 		<text name="gui_ad_editorTip_9"								text="1. node is intersection, second it's neighbor:" />
 		<text name="gui_ad_editorTip_10"								text="LCTRL: Toggle segment type (normal/dual)" />
-		<text name="gui_ad_editorTip_11"								text="LSHIFT = Section type (main, secondary, tertiary, intersection)" />
+		<text name="gui_ad_editorTip_11"								text="LSHIFT = Section type (main, secondary, tertiary, access, intersection)" />
 		<text name="gui_ad_trafficYieldEnabled" text="Head-on passing" />
 		<text name="gui_ad_trafficYieldEnabled_tooltip" text="When two FarmPilot vehicles block each other head-on on a two-way road, one reverses while the other parks on the roadside, then both continue" />
 		<text name="gui_ad_trafficYieldDelay" text="Delay before passing manoeuvre" />
@@ -469,17 +516,28 @@
 		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
 		<text name="gui_ad_dirtRoads" text="Tertiary roads" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Tertiary road points of the network (pink and purple lines in the editor). Only to reach a destination on them or at their end (or to leave from there), never as a shortcut. Allowed: at limited speed. Never: only when there is no other route. Auto: never for trucks and semis, allowed for tractors and other vehicles" />
-		<text name="gui_ad_dirtRoads_auto" text="Auto (truck: never)" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Tertiary road points of the network (pink and purple lines in the editor). Only to reach a destination on them or at their end (or to leave from there), never as a shortcut. Allowed: at limited speed. Never: only when there is no other route. Auto: by vehicle type (gear on the left: Yes / No per type, for all vehicles)" />
+		<text name="gui_ad_dirtRoads_auto" text="Auto (by type)" />
 		<text name="gui_ad_dirtRoads_never" text="Never" />
 		<text name="gui_ad_dirtRoads_allowed" text="Allowed" />
 		<text name="gui_ad_secondaryRoads" text="Secondary roads" />
-		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Auto: shortcuts taken whenever they save time for tractors; trucks and semis like original AutoDrive (only when the main road is much longer). Allowed: taken whenever they save time. Never: only when there is no other route" />
-		<text name="gui_ad_secondaryRoads_auto" text="Auto (truck: original)" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Secondary points of the network. Allowed: taken whenever they save time. Never: only when there is no other route. Auto: by vehicle type (gear on the left: Yes / No per type, for all vehicles)" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (by type)" />
 		<text name="AD_cropStuck" text="%s %s: stuck in the crop (%s), no clean way out: please clear it by hand" />
 		<text name="AD_foldWait" text="%s %s: waiting for %s to fold (%d %%)%s, not leaving" />
 		<text name="gui_ad_dirtRoadSpeed" text="Max speed on tertiary roads" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on tertiary road points. The route search uses it: a tertiary road is taken only when it saves time" />
+		<text name="gui_ad_roadTypes_title_secondary" text="Secondary roads: vehicle types" />
+		<text name="gui_ad_roadTypes_title_tertiary" text="Tertiary roads: vehicle types" />
+		<text name="gui_ad_roadTypes_info_secondary" text="When « Secondary roads » is set to Auto, for all vehicles. Yes: secondary roads taken whenever they save time. No: only when there is no other route." />
+		<text name="gui_ad_roadTypes_info_tertiary" text="When « Tertiary roads » is set to Auto, for all vehicles. Yes: tertiary roads allowed to reach a destination (limited speed), never as a shortcut. No: only when there is no other route." />
+		<text name="gui_ad_roadTypes_todo" text="Changed: press « Validate » to save." />
+		<text name="gui_ad_roadTypes_thisVehicle" text="(this vehicle)" />
+		<text name="gui_ad_roadTypes_tractor" text="Tractors" />
+		<text name="gui_ad_roadTypes_truck" text="Trucks and semis" />
+		<text name="gui_ad_roadTypes_car" text="Cars and pickups" />
+		<text name="gui_ad_roadTypes_loader" text="Loaders and telehandlers" />
+		<text name="gui_ad_roadTypes_selfPropelled" text="Self-propelled (combines, forage harvesters, sprayers…)" />
 		<text name="AD_task_park_in_field" text="Parking in the field" />
 		<text name="AD_task_hv_chopper" text="the forage harvester" />
 		<text name="AD_task_hv_combine" text="the combine" />
@@ -564,6 +622,11 @@
 		<text name="AD_autonomous_cpFailed" text='Courseplay could not start with "%s", waiting' />
 		<text name="AD_autonomous_nextField" text="Next field: %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Next field: none" />
+		<text name="AD_autonomous_fieldNone" text="Field: none" />
+		<text name="AD_autonomous_fieldNoneStart" text="choose a field on the 1st line before starting" />
+		<text name="AD_fpTires_noMoney" text="worn tires, not enough money to replace them (%s): new try tomorrow" />
+		<text name="AD_fpTires_done" text="%d new tires fitted at the workshop (%s)" />
+		<text name="AD_fpTires_noWorkshop" text="worn tires but no workshop on the network: new try tomorrow" />
 		<text name="AD_autonomous_nextFieldGo" text="field finished, driving to the next field « %s »" />
 		<text name="AD_autonomous_skipNoNext" text="no next field set, keeps driving to « %s »" />
 		<text name="AD_task_autonomous_detach" text="Detach the implement" />
@@ -589,6 +652,61 @@
 		<text name="AD_autonomous_frontNoJoint" text="&quot;%s&quot; não engata à frente deste trator (ou o engate dianteiro está ocupado)" />
 		<text name="AD_autonomous_frontNoPark" text="&quot;%s&quot; (frontal) não tem estacionamento nem nada ao lado onde o deixar: fica engatado" />
 		<text name="AD_autonomous_massBlocked" text="&quot;%s&quot; (frontal) não tem estacionamento nem nada ao lado onde o deixar: &quot;%s&quot; não pode ser recolhido, o trator fica aqui (não estaciona em cima do peso)" />
+		<text name="AD_task_autonomous_headerWait" text="Wait for the other machine" />
+		<text name="AD_task_autonomous_headerDrop" text="Put the header down" />
+		<text name="AD_fpGoal_headerTrailer" text="taking the header to %s" />
+		<text name="AD_fpGoal_headerDrop" text="putting the header down" />
+		<text name="AD_autonomous_headerWaitTrailer" text="waiting for the header trailer (%s)" />
+		<text name="AD_autonomous_headerNoTractor" text="no free tractor to move the header trailer « %s »" />
+		<text name="AD_autonomous_headerBusy" text="the header trailer « %s » is in use" />
+		<text name="AD_autonomous_headerTrailerGo" text="taking the header trailer to « %s »" />
+		<text name="AD_autonomous_headerHome" text="header taken, going back to « %s »" />
+		<text name="AD_autonomous_headerCall" text="field done, calling %s to put the header back" />
+		<text name="AD_autonomous_headerDropFailed" text="header not put on the trailer (%s), stopping" />
+		<text name="AD_autonomous_headerTimeout" text="the other machine did not come, stopping" />
+		<text name="AD_autonomous_headerNoTrailer" text="no empty header trailer to put the header on" />
+		<text name="AD_task_autonomous_headerPlace" text="Park the trailer near the combine" />
+		<text name="AD_task_autonomous_headerTurn" text="U-turn to free the header side" />
+		<text name="AD_autonomous_headerTurn" text="header side blocked, U-turn through the network" />
+		<text name="AD_autonomous_headerMove" text="header side blocked, going to a clear spot farther away" />
+		<text name="AD_autonomous_headerSideBlocked" text="no clear spot found, waiting at the end of the route" />
+		<text name="AD_autonomous_headerNoWay" text="no way through the field to the harvester, trying again" />
+		<text name="AD_task_autonomous_headerBackIn" text="Back the trailer into the field entrance" />
+		<text name="AD_autonomous_headerBackIn" text="backing the header trailer into the field entrance" />
+		<text name="AD_task_autonomous_headerRoadBack" text="Back the trailer up to the road" />
+		<text name="AD_autonomous_headerRoadBack" text="backing the header trailer straight back to the road" />
+		<text name="AD_task_autonomous_headerGateBack" text="Line up opposite the field entrance" />
+		<text name="AD_task_autonomous_headerGateIn" text="Stop the header in front of the combine" />
+		<text name="AD_autonomous_headerGate" text="waiting for its header opposite the field entrance, %s stops it in front" />
+		<text name="AD_autonomous_headerGateIn" text="stopping the header in front of %s, opposite the field entrance" />
+		<text name="AD_autonomous_headerClearWait" text="header attached, waiting for %s to clear with the empty trailer" />
+		<text name="AD_task_autonomous_headerEntry" text="Drive up to the field edge" />
+		<text name="AD_autonomous_headerEntry" text="header attached, driving straight up to the field" />
+		<text name="AD_task_autonomous_headerHookup" text="Connect the header: locks, PTO shafts, hydraulics" />
+		<text name="AD_task_autonomous_headerLock" text="Lock the header on its trailer" />
+		<text name="AD_autonomous_headerParkFirst" text="parking requested: the header goes back on its trailer first" />
+		<text name="AD_header_listAuto" text="Auto (by crop)" />
+		<text name="AD_header_line" text="Header: %s" />
+		<text name="AD_header_lineAuto" text="Header: auto (by crop)" />
+		<text name="AD_header_nextLine" text="Next header: %s" />
+		<text name="AD_header_nextLineAuto" text="Next header: auto" />
+		<text name="AD_autonomous_headerSwap" text="changing header: « %s »" />
+		<text name="AD_autonomous_headerGroundDrop" text="puts « %s » back where it was picked up" />
+		<text name="AD_header_homePlace" text="where it was" />
+		<text name="AD_autonomous_headerChosenGone" text="chosen header not available, start refused" />
+		<text name="AD_autonomous_headerNoCrop" text="no header can cut « %s », start refused" />
+		<text name="AD_autonomous_unloadersFollow" text="%d trailer(s) follow to « %s »" />
+		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
+		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
+		<text name="AD_fpFn_cutter" text="Header" />
+		<text name="AD_fpFn_cornHeader" text="Corn header" />
+		<text name="AD_fpFn_chopperHeader" text="Forage harvester header" />
+		<text name="AD_autonomous_headerChosenBusy" text="« %s » (chosen) is not free, « %s » goes instead" />
+		<text name="gui_ad_headerTractor_title" text="Header transport" />
+		<text name="gui_ad_headerTractor_tooltip" text="Vehicle for the header trailer" />
+		<text name="gui_ad_headerTractor_auto" text="Nearest free tractor" />
+		<text name="gui_ad_headerTractor_free" text="nothing attached" />
+		<text name="gui_ad_headerTractor_info" text="Vehicle called to bring and take back the header trailer: %s. Free tractor = stopped, nothing attached (a weight does not count). Chosen vehicle: stopped, rear hitch free." />
 		<text name="AD_autonomous_massNoPark" text="o trator não tem estacionamento para deixar &quot;%s&quot;: defina-o (botão estacionar, nada selecionado)" />
 		<text name="AD_autonomous_frontBeside" text="deixa &quot;%s&quot; ao lado de &quot;%s&quot;" />
 		<text name="AD_autonomous_frontDropAt" text="deixa &quot;%s&quot; no fundo do lugar &quot;%s&quot;, entrando de frente" />
@@ -610,6 +728,10 @@
 		<text name="AD_trailer_row" text="Trailer: %s" />
 		<text name="AD_trailer_rowNone" text="Trailer: the attached one" />
 		<text name="AD_trailer_listNone" text="The attached one" />
+		<text name="AD_trailer_rowNearest" text="Trailer: %s (suitable, to hitch)" />
+		<text name="AD_trailer_rowNoFit" text="No suitable trailer" />
+		<text name="AD_trailer_noFitStart" text="no suitable trailer for %s: cannot start" />
+		<text name="AD_trailer_noFitAttached" text="the attached trailer cannot carry %s: cannot start (detach it or choose a suitable trailer)" />
 		<text name="AD_trailer_fetchGo" text="going to fetch the trailer '%s'" />
 		<text name="AD_trailer_fetchDone" text="trailer '%s' attached, starting" />
 		<text name="AD_trailer_fetchFailed" text="the trailer '%s' could not be attached, stopping" />
@@ -715,14 +837,18 @@
 		<text name="AD_autonomous_sprayerTodo" text="settings of « %s » to validate for « %s » (orange gear), start refused" />
 		<text name="AD_autonomous_sprayerFill" text="tank not filled enough: filling at « %s » before the field" />
 		<text name="AD_autonomous_sprayerEmpty" text="tank empty: filling at « %s », then back to the field" />
-		<text name="AD_autonomous_dumpGo" text="field done: unloading the rest of the tank into big bags at « %s »" />
-		<text name="AD_autonomous_dumpFailed" text="rest of the tank not unloaded at « %s » (no space or refused): kept in the tank" />
-		<text name="AD_autonomous_dumpParkGo" text="parking: first unloading the rest of the tank into big bags at « %s »" />
-		<text name="AD_autonomous_dumpKept" text="%s left in the tank: cannot be unloaded into big bags or no place found (see log)" />
+		<text name="AD_autonomous_dumpGo" text="field done: %s at « %s »" />
+		<text name="AD_autonomous_dumpFailed" text="rest of the tank not returned at « %s » (refused or no space): kept in the tank" />
+		<text name="AD_autonomous_dumpParkGo" text="parking: first, %s at « %s »" />
+		<text name="AD_autonomous_dumpKept" text="%s left in the tank: no storage, buying point or selling point to take it back (see log)" />
+		<text name="AD_rest_how_stock" text="puts the rest of the tank back into storage" />
+		<text name="AD_rest_how_buy" text="sells the rest of the tank back at purchase price" />
+		<text name="AD_rest_how_bag" text="puts the rest of the tank back into the big bags already there" />
+		<text name="AD_rest_how_sell" text="goes to sell the rest of the tank" />
 		<text name="AD_autonomous_parkUnloadGo" text="parking: trailer not empty, first unloading at « %s »" />
 		<text name="AD_autonomous_parkUnloadNone" text="parking: trailer not empty (%s L of %s), but no unload destination set: it stays loaded" />
 		<text name="AD_autonomous_parkUnloadFailed" text="parking: nothing is unloading at « %s » (%s L left): parking without unloading" />
-		<text name="AD_task_autonomous_dump" text="Unloads the rest into big bags" />
+		<text name="AD_task_autonomous_dump" text="Returns or sells the rest of the tank" />
 		<text name="gui_ad_baleLoader_title" text="Bale loader settings" />
 		<text name="gui_ad_baleLoader_head" text="Loader: %s · Field: %s · Takes %s" />
 		<text name="gui_ad_baleLoader_round" text="round bales" />
@@ -758,56 +884,380 @@
 		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
-		<text name="fp_help_category" text="FarmPilot" />
-		<text name="fp_help_start_title" text="Getting started" />
-		<text name="fp_help_start_1_title" text="The HUD" />
-		<text name="fp_help_start_1_text" text="Alt + Numpad 0 shows or hides the FarmPilot HUD. Middle mouse button: shows the cursor to click in the HUD. The 1st list is the destination; the lists below (unload, fill type) appear depending on the mode." />
-		<text name="fp_help_start_2_title" text="Main buttons" />
-		<text name="fp_help_start_2_text" text="Start/Stop starts or stops the driver. Mode button: left click = next mode, right click = previous mode. Continue: restarts a waiting driver. Park: sends the vehicle to its park position (right click: sets that position)." />
-		<text name="fp_help_start_3_title" text="Shortcuts" />
-		<text name="fp_help_start_3_text" text="Ctrl + Alt + Right / Left arrow: next / previous destination. Ctrl + Alt + Numpad 0: settings. Ctrl + Alt + M: message history. Shift + C / Shift + V: copy / paste settings from one vehicle to another. All keys can be changed in Options &gt; Controls." />
-		<text name="fp_help_driveto_title" text="Drive mode" />
-		<text name="fp_help_driveto_1_title" text="How it works" />
-		<text name="fp_help_driveto_1_text" text="Pick a destination, then Start. The vehicle follows the road network to the destination, then stops." />
-		<text name="fp_help_driveto_2_title" text="With Courseplay" />
-		<text name="fp_help_driveto_2_text" text="If the HUD button « Start AI/CP at destination » is on (right click: Courseplay, AIVE or game helper), that helper takes over on arrival, with the course already loaded in the vehicle. To let FarmPilot pick the Courseplay course itself, use the Autonomous mode." />
-		<text name="fp_help_autonomous_title" text="Autonomous mode" />
-		<text name="fp_help_autonomous_1_title" text="How it works" />
-		<text name="fp_help_autonomous_1_text" text="Like Drive: pick the field (destination) and start. On arrival, FarmPilot takes the saved Courseplay course that has exactly the width of the attached tool, loads it and starts Courseplay at the first waypoint of the course. A work tool must be attached (tillage, seeder, sprayer, spreader, mower, baler...): with only a tipper, a flatbed or a combine, the mode does not start." />
-		<text name="fp_help_autonomous_2_title" text="Course choice" />
-		<text name="fp_help_autonomous_2_text" text="Only courses saved in Courseplay (Courses menu, all folders) are used, on the arrival field or its field group (AutoSwitch merged fields when AutoSwitch is installed). The width is compared to 10 cm, like the Courseplay settings." />
-		<text name="fp_help_autonomous_3_title" text="Memory" />
-		<text name="fp_help_autonomous_3_text" text="The course used is remembered for this field and this tool, in the savegame. The next year, with the same tool and width, it is used again directly, even if several courses would fit." />
-		<text name="fp_help_autonomous_4_title" text="Stop and wait" />
-		<text name="fp_help_autonomous_4_text" text="If no course has the right width, or several fit without a remembered choice, the driver stops and waits; a message gives the reason. Pick the course in the Autonomous courses window, then start again. Without Courseplay, depending on the setting « Autonomous without Courseplay », the driver waits or the base game worker takes the field (classic mode)." />
-		<text name="fp_help_autonomous_5_title" text="Autonomous courses window" />
-		<text name="fp_help_autonomous_5_text" text="HUD button (in Autonomous mode, in place of the Courseplay button) or Ctrl + Alt + Numpad 5, in the vehicle with the tool attached. One line per field or field group. Change: goes to the next course, then back to Automatic. Automatic: clears the choice. Double click = Change." />
-		<text name="fp_help_autonomous_6_title" text="Next field" />
-		<text name="fp_help_autonomous_6_text" text="In Autonomous mode, the 3rd HUD line is the next field (empty by default). Pick a field in the list, or right-click it on the map; right-click the line to clear it. When the current field is finished, the next field moves to the 1st line, the « Next field » line is cleared and the driver goes to work it. If it is empty, the driver goes to park as before." />
-		<text name="fp_help_autonomous_7_title" text="Implement parked at its place, implement to fetch" />
-		<text name="fp_help_autonomous_7_text" text="End of the work without a next field: if the implement has its park position and the tractor its own, the driver drops the implement at its place, disconnects hoses and PTO (manual attach mod), detaches it, then parks the tractor. Park positions are set as usual (Ctrl + click on P in editor mode: implement selected for the implement's place, no implement selected for the tractor's). Weights are ignored; with several implements attached, it parks as before. The 2nd HUD line (« Implement ») is the implement to fetch before the field, shown by its function and width (farm implements, detached, that fit the tractor's rear hitch). At start, the driver follows your routes to the implement's place (or to the network point in front of it), reverses, attaches it, connects hoses and PTO, lifts it and drives to the field. « The attached one » (or right-click the line): nothing to fetch." />
-		<text name="fp_help_autonomous_8_title" text="Next implement" />
-		<text name="fp_help_autonomous_8_text" text="In Autonomous mode, the 4th HUD line is the implement for the next field (« The same » by default; right-click the line to go back to it). It is only used with a next field. When the current field is finished, the driver drops the attached implement at its park position (as at the end of the work), fetches the next implement (by your roads, reversing, attaching, hoses and PTO), then drives to the next field. The next implement then moves to the « Implement » line and the « Next implement » line goes back to « The same ». If the next implement is used by another vehicle or does not fit this tractor, the attached implement is dropped at its place anyway, then the driver stops there and a message gives the reason: restart when the next implement is free. If the attached implement has no park position or several implements are attached, nothing changes: the driver stops at the end of the field with a message." />
-		<text name="fp_help_deliverto_title" text="Deliver mode" />
-		<text name="fp_help_deliverto_1_title" text="How it works" />
-		<text name="fp_help_deliverto_1_text" text="Pick the unload destination, then Start. The vehicle drives there, unloads its trailer, parks if a park position is set, otherwise stops." />
-		<text name="fp_help_pickupdeliver_title" text="Pick up and deliver mode" />
-		<text name="fp_help_pickupdeliver_1_title" text="How it works" />
-		<text name="fp_help_pickupdeliver_1_text" text="1st list: loading point; 2nd list: unloading point; 3rd list: fill type to load. The vehicle loads, delivers, then starts again." />
-		<text name="fp_help_pickupdeliver_2_title" text="Loops" />
-		<text name="fp_help_pickupdeliver_2_text" text="HUD loop counter: 0 = endless, otherwise number of rounds before stopping. The buttons left of the lists pick the best loading or selling point automatically." />
-		<text name="fp_help_load_title" text="Load mode" />
-		<text name="fp_help_load_1_title" text="How it works" />
-		<text name="fp_help_load_1_text" text="The vehicle loads at the point of the 2nd list (fill type of the 3rd list), then drives to the point of the 1st list and stops. Handy to fill a seeder or sprayer before going to the field." />
-		<text name="fp_help_unloader_title" text="Combine unloader mode" />
-		<text name="fp_help_unloader_1_title" text="How it works" />
-		<text name="fp_help_unloader_1_text" text="The vehicle waits near the field (1st list), comes under the pipe when the combine or forage harvester calls, follows the machine while unloading, then delivers to the point of the 2nd list and comes back." />
-		<text name="fp_help_unloader_2_title" text="Settings" />
-		<text name="fp_help_unloader_2_text" text="Ctrl + Alt + Numpad 0 &gt; Combine unloading: fill level before leaving, side, distances and several trailers per machine." />
-		<text name="fp_help_editor_title" text="Routes and destinations" />
-		<text name="fp_help_editor_1_title" text="Editor" />
-		<text name="fp_help_editor_1_text" text="HUD editor button: record a route while driving, connect points, create, rename or delete a destination." />
-		<text name="fp_help_editor_2_title" text="Tools" />
-		<text name="fp_help_editor_2_text" text="Ctrl + Alt + Numpad 1: routes manager (export or import the road network). Ctrl + Shift + F: create field points." />
+		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
+		<text name="fp_reminder_title" text="Editor reminder" />
+		<text name="fp_reminder_single" text="One-way" />
+		<text name="fp_reminder_dual" text="Two-way" />
+		<text name="fp_reminder_road_primary" text="Primary" />
+		<text name="fp_reminder_road_secondary" text="Secondary" />
+		<text name="fp_reminder_road_tertiary" text="Tertiary" />
+		<text name="fp_reminder_road_access" text="Access" />
+		<text name="fp_reminder_road_intersection" text="Intersection" />
+		<text name="fp_reminder_road_reverse" text="Reverse" />
+		<text name="fp_reminder_point_secondary" text="Secondary: used when it saves time, depending on the vehicle type (gear in the vehicle settings)." />
+		<text name="fp_reminder_point_tertiary" text="Tertiary: special road (dirt track). Limited speed, and only for the vehicle types allowed in the gear." />
+		<text name="fp_reminder_point_access" text="Access: only used to reach its point." />
+		<text name="fp_reminder_point_intersection" text="Intersection: the vehicle slows down and looks before crossing." />
+		<text name="fp_reminder_point_places" text="Tool spot: drawn in reverse. Header spot: drawn forward, marker 5 m before the header." />
+		<text name="fp_reminder_point_parking" text="Ctrl + click on the parking button: gives the selected tool its spot." />
+		<text name="fp_reminder_point_keys" text="Left Ctrl: create a point. Left Alt: delete. Left Shift: road type. Right Shift: reverse line." />
+		<text name="fp_reminder_point_keys2" text="On the 2nd point, Left Ctrl: one-way or two-way." />
+		<text name="fp_unloadImpossible" text="can't unload here (unloading restarted 3 times). See log.txt" />
+		<text name="fp_help_cat_A" text="FarmPilot - Getting started" />
+		<text name="fp_help_a1_title" text="Welcome" />
+		<text name="fp_help_a1_1_title" text="What is FarmPilot?" />
+		<text name="fp_help_a1_1_text" text="FarmPilot drives your vehicles on a road network that you draw on the map. It goes to a destination, loads, delivers, unloads combines and forage harvesters, and in Autonomous mode it chains the fields by itself with Courseplay: fetch the implement, refill, work the field, move on to the next one, put the implement away and park the tractor." />
+		<text name="fp_help_a1_2_title" text="Based on AutoDrive" />
+		<text name="fp_help_a1_2_text" text="FarmPilot is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence). If you already play with AutoDrive, just replace the mod: FarmPilot takes over your road network (AutoDrive_config.xml), your saved routes, your colours and your vehicle settings. Nothing to copy. If AutoDrive is also active, FarmPilot switches it off and shows a message: remove it from your mods. The former AutoDrive Addon is built in: deactivate FS25_AutoDriveAddon." />
+		<text name="fp_help_a1_3_title" text="3 steps to get started" />
+		<text name="fp_help_a1_3_text" text="1. Draw your roads (category « Route editor ») or load an existing network.&#10;2. Create destinations: fields, silos, selling points, parking places.&#10;3. Get into a vehicle, open the HUD, choose the mode and the destination, then Start." />
+		<text name="fp_help_a2_title" text="The HUD" />
+		<text name="fp_help_a2_1_title" text="Open the HUD and the mouse" />
+		<text name="fp_help_a2_1_text" text="Alt + 0 (numpad) shows or hides the HUD. Middle click: the mouse appears so you can click in the HUD (middle click again to hide it). Move the HUD by dragging its top bar. Its size is set in Settings &gt; User &gt; « Gui scale for FarmPilot HUD »." />
+		<text name="fp_help_a2_2_title" text="The HUD areas" />
+		<text name="fp_help_a2_2_text" text="1. Top bar: vehicle name, close, extended info.&#10;2. List rows: destination, unloading, product, and depending on the mode the rows Trailer, Implement, Next field, Next implement.&#10;3. Buttons left of the rows: automatic choice, settings cogs.&#10;4. Button row: Start/Stop, Mode, Continue (&gt;&gt;), Park (P), loop counter, speed, editor.&#10;5. 2nd row (depending on settings): start Courseplay/helper at the destination, quick settings, settings.&#10;6. Status line: what the driver is doing and for how long." />
+		<text name="fp_help_a2_3_title" text="Tooltips" />
+		<text name="fp_help_a2_3_text" text="Hover a button with the mouse: its tooltip appears at the very top of the HUD, above the mode (example: « Park vehicle - GT_4 » on the P button). Turn them off in Settings &gt; User &gt; « Show tooltips »." />
+		<text name="fp_help_a3_title" text="The HUD buttons" />
+		<text name="fp_help_a3_1_title" text="Start / Stop" />
+		<text name="fp_help_a3_1_text" text="Starts or stops the FarmPilot driver of the vehicle. A started vehicle carries on without you: you can get out or switch vehicles." />
+		<text name="fp_help_a3_2_title" text="Mode" />
+		<text name="fp_help_a3_2_text" text="Left click: next mode. Right click: previous mode. The modes: Drive, Deliver, Pickup and Deliver, Load, Unload Combine, Unload bunker silo, Autonomous. The HUD rows change with the mode." />
+		<text name="fp_help_a3_3_title" text="Continue (&gt;&gt;)" />
+		<text name="fp_help_a3_3_text" text="Makes a waiting driver move on (at loading, at refilling, in front of a machine). In Autonomous mode it has extra roles: see « The &gt;&gt; button in Autonomous »." />
+		<text name="fp_help_a3_4_title" text="Park (P)" />
+		<text name="fp_help_a3_4_text" text="Left click: sends the vehicle to its parking place. If it has an implement or a trailer with its own place, the implement is put at its place first, then the tractor goes to its own. Right click: the destination of the 1st row becomes the parking place (of the tractor, or of the selected implement). See « Parking »." />
+		<text name="fp_help_a3_5_title" text="Loop counter" />
+		<text name="fp_help_a3_5_text" text="Number of rounds in Pickup and Deliver: 0 = endless. Left click +1, right click -1." />
+		<text name="fp_help_a3_6_title" text="Speed" />
+		<text name="fp_help_a3_6_text" text="Maximum road speed of the vehicle. Mouse wheel on the counter, or the « Increase / Decrease speed » keys." />
+		<text name="fp_help_a3_7_title" text="Editor" />
+		<text name="fp_help_a3_7_text" text="Left click: turns the route editor on. Right click: only shows the roads and the points. See the category « Route editor »." />
+		<text name="fp_help_a3_8_title" text="Start at destination (2nd row)" />
+		<text name="fp_help_a3_8_text" text="On: on arrival, the helper takes over with the course already loaded in the vehicle. Right click: chooses the helper (Courseplay, AIVE or the game worker). In Autonomous mode this button becomes « Autonomous courses »." />
+		<text name="fp_help_a4_title" text="Lists, automatic choice and cogs" />
+		<text name="fp_help_a4_1_title" text="Choose in a list" />
+		<text name="fp_help_a4_1_text" text="Click a row: the list opens, with the destination folders. Click a folder to open it, click a destination to take it. Right click on an Autonomous row (Implement, Next field, Next implement) or on the Trailer row: back to the default value. On the map (M), right click on a FarmPilot marker: it becomes the destination (setting « Switch to markers »)." />
+		<text name="fp_help_a4_2_title" text="Automatic choice" />
+		<text name="fp_help_a4_2_text" text="The buttons left of the loading and unloading rows make FarmPilot pick the best loading or selling point for the product. The button left of the product: « Load by fill level »." />
+		<text name="fp_help_a4_3_title" text="Cogs" />
+		<text name="fp_help_a4_3_text" text="A cog appears left of a row when the implement or the trailer has settings: seeder, spreader or sprayer, bale loader, trailer swap. Orange = to be set (start refused with a message). Green = validated. One click opens the settings window." />
+		<text name="fp_help_a5_title" text="Keyboard shortcuts" />
+		<text name="fp_help_a5_1_title" text="Main keys" />
+		<text name="fp_help_a5_1_text" text="- Alt + 0 (numpad): show / hide the HUD&#10;- Middle click: show / hide the mouse&#10;- Ctrl + Alt + 0 (numpad): FarmPilot settings&#10;- Ctrl + Alt + right / left arrow: next / previous destination&#10;- Ctrl + Alt + O / Ctrl + Alt + 4 (numpad): next / previous product&#10;- Ctrl + Alt + 5 (numpad): Autonomous courses window&#10;- Ctrl + Alt + 1 (numpad): routes manager&#10;- Ctrl + Alt + M: message history&#10;- Shift + C / Shift + V: copy / paste the settings from one vehicle to another&#10;- Ctrl + Shift + F: create the field points" />
+		<text name="fp_help_a5_2_title" text="All other actions" />
+		<text name="fp_help_a5_2_text" text="All FarmPilot actions are in Options &gt; Controls, named « FP - … »: activate, change mode, continue, park, set the parking place, refuel, repair, call a driver, enter the arrived vehicle, name the driver, destination filter, swap destinations, road and field speed, repetitions, all the editor keys. Many have no default key: assign them yourself." />
+		<text name="fp_help_a6_title" text="Messages and history" />
+		<text name="fp_help_a6_1_title" text="On-screen messages" />
+		<text name="fp_help_a6_1_text" text="Each stop, wait or refused start shows a message with the reason (« seeder settings to validate », « no next field set », « the implement is attached to another vehicle »…). Their duration is set in Settings &gt; User &gt; « Notifications »." />
+		<text name="fp_help_a6_2_title" text="History" />
+		<text name="fp_help_a6_2_text" text="Ctrl + Alt + M opens the « Notifications » window: find what happened while you were elsewhere. Backspace deletes the selected message, Space deletes all, Esc closes." />
+		<text name="fp_help_a6_3_title" text="Status text" />
+		<text name="fp_help_a6_3_text" text="Under the HUD and on the map, each driver says what it is doing and for how long: « Parking in the field », « Following the forage harvester from behind », « Calculating the path (12 s) », « Letting pass »…" />
+		<text name="fp_help_cat_B" text="FarmPilot - Work modes" />
+		<text name="fp_help_b1_title" text="Drive" />
+		<text name="fp_help_b1_1_title" text="How it works" />
+		<text name="fp_help_b1_1_text" text="Choose a destination, then Start. The vehicle follows the network to the destination, then stops." />
+		<text name="fp_help_b1_2_title" text="With a helper on arrival" />
+		<text name="fp_help_b1_2_text" text="Turn on « Start at destination » (2nd row): on arrival, Courseplay, AIVE or the game worker takes over with the course already loaded in the vehicle. To let FarmPilot choose the Courseplay course itself and chain the fields, use Autonomous mode." />
+		<text name="fp_help_b2_title" text="Deliver" />
+		<text name="fp_help_b2_1_title" text="How it works" />
+		<text name="fp_help_b2_1_text" text="Choose the unloading point, then Start. The vehicle goes there, empties its trailer (tipping side chosen by itself, cover opened then closed), then parks if « Park at Job finished » is on Yes and a place is set, otherwise it stops.&#10;(Screen Update coming)" />
+		<text name="fp_help_b3_title" text="Pickup and Deliver" />
+		<text name="fp_help_b3_1_title" text="How it works" />
+		<text name="fp_help_b3_1_text" text="1st row: loading point. 2nd row: unloading point. 3rd row: product. The vehicle loads, delivers, then starts again.&#10;(Screen Update coming)" />
+		<text name="fp_help_b3_2_title" text="Loops and automatic choice" />
+		<text name="fp_help_b3_2_text" text="Loop counter: 0 = endless, otherwise number of rounds before stopping (then it parks if that is set). The buttons left of the rows automatically pick the best loading or selling point." />
+		<text name="fp_help_b3_3_title" text="Cycle in a folder" />
+		<text name="fp_help_b3_3_text" text="Vehicle setting « Cycle Pickup and Deliver »: FarmPilot takes in turn the pickup and/or delivery points of the same folder." />
+		<text name="fp_help_b3_4_title" text="Leave without being full" />
+		<text name="fp_help_b3_4_text" text="Vehicle setting « Loading stopped: leave after »: if the trailer already holds something and nothing more comes in, it leaves after 15 s, 30 s (default), 1, 2 or 5 min. « No »: it waits to be full up to the « Unload fill level » (the right choice for a truck at the field edge). A rest under 1 % counts as an empty trailer." />
+		<text name="fp_help_b4_title" text="Load" />
+		<text name="fp_help_b4_1_title" text="How it works" />
+		<text name="fp_help_b4_1_text" text="The vehicle loads at the point of the 2nd row (product of the 3rd row), then drives to the point of the 1st row and stops. Handy to fill a machine before going to the field. Seeders, spreaders and sprayers in Autonomous mode refill by themselves (see category C)." />
+		<text name="fp_help_b5_title" text="Unload Combine" />
+		<text name="fp_help_b5_1_title" text="How it works" />
+		<text name="fp_help_b5_1_text" text="1st row: the field. 2nd row: where to deliver. The tractor waits near the field, comes under the pipe when the combine calls it, follows it while it unloads, then delivers and comes back.&#10;(Screen Update coming)" />
+		<text name="fp_help_b5_2_title" text="It stays under the pipe" />
+		<text name="fp_help_b5_2_text" text="As long as the combine unloads into its trailer and the trailer is not full, the tractor does not reverse and does not leave: it stays stopped if the combine stops, moves with it, and only reverses if the combine reverses. It leaves when the trailer is full, the pipe is folded, or nothing has come in for 3 s." />
+		<text name="fp_help_b5_3_title" text="Waiting inside the field" />
+		<text name="fp_help_b5_3_text" text="While waiting for the call, the trailer enters the field and parks along the edge, on already harvested ground, flat, at least 40 m from the entrance, on the side where the machine is working. The next trailers park in a queue behind it. The place is kept for the field. Field full: the trailer waits at the roadside before the entrance. Setting « Wait inside the field » (Yes by default)." />
+		<text name="fp_help_b5_4_title" text="Not in the crop" />
+		<text name="fp_help_b5_4_text" text="The trailer refuses a line that would take it into the standing crop (crop block between 2 and 10 m ahead). The path to the place never goes through the crop." />
+		<text name="fp_help_b5_5_title" text="The combine's field is finished" />
+		<text name="fp_help_b5_5_text" text="When the combine has finished its field, its trailers go and unload what they carry, then return to their parking place." />
+		<text name="fp_help_b5_6_title" text="Settings" />
+		<text name="fp_help_b5_6_text" text="Settings &gt; Unload combine: early call (fill level that calls the driver), call the 2nd driver, unloading on the move, forage harvester unloading side. Vehicle settings: pipe offset, distance behind the combine, unload fill level, park in field." />
+		<text name="fp_help_b6_title" text="Forage harvester" />
+		<text name="fp_help_b6_1_title" text="The trailer follows from behind" />
+		<text name="fp_help_b6_1_text" text="With a forage harvester, the trailer aims for the place behind the machine, on its cut track, then takes the free side. It reads the Courseplay course ahead of the forage harvester (end of row, U-turn) and keeps its place while the harvester turns." />
+		<text name="fp_help_b6_2_title" text="U-turns at the end of the row" />
+		<text name="fp_help_b6_2_text" text="The trailer chooses its manoeuvre depending on the space: forward U-turn, reverse then U-turn, offset U-turn, Y-turn when the headland is narrow, square turn, or U-turn in the cut strip. Each manoeuvre is checked beforehand (field ground, crop, obstacles), at the tractor's turning radius." />
+		<text name="fp_help_b6_3_title" text="Second trailer" />
+		<text name="fp_help_b6_3_text" text="The 2nd trailer follows the tracks of the 1st and waits behind it. It moves aside when the harvester or the 1st trailer comes towards it, then comes back into place." />
+		<text name="fp_help_b6_4_title" text="Full trailer and end of the job" />
+		<text name="fp_help_b6_4_text" text="Full trailer: it leaves through the field entrance; otherwise it reverses in its tracks, pulls aside to let the next one pass, or turns in the strip. End of the job (also seen by Courseplay): each trailer unloads what it carries, then goes to its parking. A short stop of the harvester does not release the trailers." />
+		<text name="fp_help_b7_title" text="Unload bunker silo" />
+		<text name="fp_help_b7_1_title" text="How it works" />
+		<text name="fp_help_b7_1_text" text="For a bucket loader: it takes from the bunker silo and fills the trailers that come. Vehicle settings: bucket width and height if the detection is not right. The button next to the counter chooses to unload into a trailer or into the biogas plant." />
+		<text name="fp_help_b8_title" text="Chosen trailer (« Trailer » row)" />
+		<text name="fp_help_b8_1_title" text="A trailer for the job" />
+		<text name="fp_help_b8_1_text" text="In the modes with a trailer (Pickup and Deliver, Load, Deliver, Unload Combine), the 4th row is « Trailer ». Default: « the attached one », nothing changes. Choose a trailer in the list: tippers, flatbeds, tankers and overloaders of the farm, detached, that hitch behind this tractor, the closest first (« name · capacity »). Right click: back to « the attached one ».&#10;(Screen Update coming)" />
+		<text name="fp_help_b8_2_title" text="At the start" />
+		<text name="fp_help_b8_2_text" text="If the chosen trailer is not attached, the tractor fetches it along your roads up to the front of it, reverses to the drawbar, hitches it (hoses connected with the manual attach mod), then the mode starts. Start refused, with a message, if it is attached to another vehicle, if something else is already attached behind, or if it does not hitch to this tractor." />
+		<text name="fp_help_b8_3_title" text="At the end of the job" />
+		<text name="fp_help_b8_3_text" text="Loop counter finished, or end of the forage harvester job: if the trailer has its parking place and the tractor its own, the trailer is put at its place, then the tractor goes to its own." />
+		<text name="fp_help_b9_title" text="Trailer swap" />
+		<text name="fp_help_b9_1_title" text="How it works" />
+		<text name="fp_help_b9_1_text" text="At delivery, instead of going to unload, the tractor drops the full trailer on a free place and leaves straight away with an empty trailer. Available in Pickup and Deliver and in Unload Combine: cog left of the « Trailer » row." />
+		<text name="fp_help_b9_2_title" text="Prepare the places" />
+		<text name="fp_help_b9_2_text" text="Create a destination folder and put one marker per place in it (at least 4.5 m between two places side by side). The tractor drives to the marker and stops on it, the trailer stays behind it. A place is free when nothing is on the road leading to the marker (22 m on the trailer side, 10 m on the other). Leave room in front of the empty trailers so it can get in front of the drawbar and reverse. Put at least one empty trailer and leave at least one place free.&#10;(Screen Update coming)" />
+		<text name="fp_help_b9_3_title" text="Set it" />
+		<text name="fp_help_b9_3_text" text="Click the cog: « Trailer swap » window. 1st row « No (normal delivery) », then each folder with its number of places, free places and empty trailers. Choose or double click. Orange = no swap, green = swap set." />
+		<text name="fp_help_b9_4_title" text="At delivery" />
+		<text name="fp_help_b9_4_text" text="Full trailer: it goes to the 1st free place, detaches (support leg, hoses), goes and hitches the closest empty trailer (under 1 % filled, that takes the same product), then gets back to work. The empty trailer becomes the trailer of the « Trailer » row. The full trailers stay on the places: empty them yourself or with another vehicle. Two tractors on the same folder never aim for the same place or the same trailer." />
+		<text name="fp_help_b9_5_title" text="Normal delivery instead" />
+		<text name="fp_help_b9_5_text" text="No free place, no suitable empty trailer, or a train of several trailers: it delivers normally, with a message." />
+		<text name="fp_help_cat_C" text="FarmPilot - Autonomous mode" />
+		<text name="fp_help_c1_title" text="How it works" />
+		<text name="fp_help_c1_1_title" text="The field from A to Z" />
+		<text name="fp_help_c1_1_text" text="Autonomous mode does all the work of a field: fetch the implement, refill, drive to the field, start Courseplay with the right course, refill along the way, then chain the next field or put the implement away and park the tractor." />
+		<text name="fp_help_c1_2_title" text="What you need" />
+		<text name="fp_help_c1_2_text" text="Courseplay installed, with saved courses for your fields. A working implement: soil cultivation, seeder, planter, sprayer, spreader, mower, tedder, windrower, baler, bale loader… With only a tipper, a flatbed or a combine, the start is refused." />
+		<text name="fp_help_c1_3_title" text="Without Courseplay" />
+		<text name="fp_help_c1_3_text" text="General setting « Autonomous without Courseplay »: Wait (default: the driver stops at the field) or Game worker (the game worker takes the field). With Courseplay installed, the game worker is never used." />
+		<text name="fp_help_c2_title" text="The HUD in Autonomous" />
+		<text name="fp_help_c2_1_title" text="The 6 rows" />
+		<text name="fp_help_c2_1_text" text="1. Field: the field to work.&#10;2. Front: the implement or weight to attach at the front (« the attached one » by default).&#10;3. Rear: the implement to attach at the rear (« the attached one » by default).&#10;4. Next field: the field to do next (empty by default).&#10;5. Next front: the front implement of the next field.&#10;6. Next rear: the rear implement of the next field (« the same » by default).&#10;Right click on an implement row or on Next field: back to the default value. The implement cogs are left of their row." />
+		<text name="fp_help_c2_2_title" text="The implements in the list" />
+		<text name="fp_help_c2_2_text" text="The Rear list shows the farm's detached implements that hitch behind this tractor, by function and width: « The attached one » first, then « Cultivator (8 m) », « Planter (8.4 m) »…, sorted by function then width (no width for a bale loader). Two identical implements: the distance is added (« Mower (3.4 m) · 230 m »). The Front list shows « The attached one », the front implements (« Mower (3.4 m) »), then the weights by mass; two identical weights are told apart by their distance (« Weight (1,000 kg) · 72 m »). A front implement is never offered at the rear, and the other way round." />
+		<text name="fp_help_c2_3_title" text="The right field" />
+		<text name="fp_help_c2_3_text" text="The field is the one of the marker number (« Field 56 » = field 56) if it is less than 100 m away; otherwise the one under the tractor on arrival, otherwise the closest. « Field 52 - 53 »: the closest of the two. Fields merged by AutoSwitch count as one." />
+		<text name="fp_help_c3_title" text="The Courseplay course" />
+		<text name="fp_help_c3_1_title" text="Automatic choice" />
+		<text name="fp_help_c3_1_text" text="On arrival, FarmPilot takes the saved Courseplay course (all folders) that covers this field and has exactly the implement's width, within 10 cm. It loads it and starts Courseplay at the first waypoint." />
+		<text name="fp_help_c3_2_title" text="Memory" />
+		<text name="fp_help_c3_2_text" text="The chosen course is kept for this field and this implement, whatever the tractor, in the savegame. Weights do not count. The next year, it is reused directly." />
+		<text name="fp_help_c3_3_title" text="No course or several" />
+		<text name="fp_help_c3_3_text" text="No course of the right width, or several without a kept choice: the driver stops at the field and a message gives the reason. Choose the course in the Autonomous courses window, then start again." />
+		<text name="fp_help_c3_4_title" text="Autonomous courses window" />
+		<text name="fp_help_c3_4_text" text="HUD button (in Autonomous, in place of the Courseplay button) or Ctrl + Alt + 5 (numpad), in the vehicle with the implement attached. At the top: the implement and its width. One row per field or group of fields (« Fields 52 + 53 + 54 + 55 »). On the right, the course used: « Automatic: course name » when only one Courseplay course fits, or « Automatic (2 courses: stop) » when there are several: the driver then stops, you have to pick one. Enter (or double click): moves to the next course. Space: back to Automatic. Esc: back." />
+		<text name="fp_help_c4_title" text="Fetch the implement, put it back at its place" />
+		<text name="fp_help_c4_1_title" text="Go and hitch" />
+		<text name="fp_help_c4_1_text" text="If the Rear row is not « the attached one », the driver takes your roads to the implement's place (or to the network point in front of the implement), lines up in front of it, reverses, hitches it, connects hoses and PTO (manual attach mod), lifts it and leaves for the field. The road of the place is only used if the implement is parked in line with it; otherwise it goes to the network point in front of the drawbar." />
+		<text name="fp_help_c4_2_title" text="Front implement and weight" />
+		<text name="fp_help_c4_2_text" text="With an implement on the Front row: if there is a weight at the front, the tractor first drops it at the back of its own parking place (the tractor's), driving in nose first. Another front implement is put at its place, or next to the rear implement. Then it goes in front of the front implement, nose towards it, moves up to the attach point (missed: it reverses and tries again, 2 times at most), then hitches the rear implement as usual. Front + rear mower is not refused." />
+		<text name="fp_help_c4_3_title" text="End of the job with a front implement" />
+		<text name="fp_help_c4_3_text" text="In order: rear implement put at its place, front implement put at its place (or next to the rear implement, parallel, 1 m between them), weight taken back at the tractor's place, tractor parked. After each detach at the front, it reverses 8 m straight." />
+		<text name="fp_help_c4_4_title" text="Implement hard to reach" />
+		<text name="fp_help_c4_4_text" text="No path up to the front of the implement: it moves forward (or reverses) 10 m straight then recalculates, 2 times at most, before stopping with a message. Leave room in front of parked implements." />
+		<text name="fp_help_c4_5_title" text="Put back at its place" />
+		<text name="fp_help_c4_5_text" text="End of the job with no next field: if the implement has its parking place and the tractor its own (different), the driver puts the implement at its place, turns it off, disconnects PTO and hoses, detaches it, then goes and parks the tractor. Weights ignored. Several implements attached, or implement without a place: it parks as before, with the implement." />
+		<text name="fp_help_c4_6_title" text="Implements folded before leaving" />
+		<text name="fp_help_c4_6_text" text="At the start, FarmPilot waits until folding, attaching or a game order is finished. A blocked fold is restarted towards the transport position (implement lifted first). A message shows every minute while it waits." />
+		<text name="fp_help_c5_title" text="Next field and next implement" />
+		<text name="fp_help_c5_1_title" text="Next field" />
+		<text name="fp_help_c5_1_text" text="Next field row. Choose a field in the list, or right click on the map. When the current field is finished, the next field moves to the 1st row, the row empties, and the driver leaves to work it. Empty: it puts the implement away and parks.&#10;(Screen Update coming)" />
+		<text name="fp_help_c5_2_title" text="Next implements" />
+		<text name="fp_help_c5_2_text" text="Next front and Next rear rows, only useful with a next field. At the end of the field: it puts the attached implements at their place, fetches the next implements, then leaves for the next field. The next implements then move to the Front and Rear rows." />
+		<text name="fp_help_c5_3_title" text="When it cannot be done" />
+		<text name="fp_help_c5_3_text" text="Next implement attached to another vehicle, or that does not hitch to this tractor: the attached implement is still put at its place, then the driver stops with a message. Start again when the implement is free. Attached implement without a parking place, or several implements: stop at the end of the field with a message." />
+		<text name="fp_help_c5_4_title" text="The &gt;&gt; button on the road" />
+		<text name="fp_help_c5_4_text" text="On the road to the field, &gt;&gt; skips this field and leaves for the next field, with the same steps as a finished field (next implement, refill). At the field, &gt;&gt; does nothing: Courseplay finishes the field. Without a next field: message « no next field set ». During a refill, a hitching or a drop: no skip." />
+		<text name="fp_help_c6_title" text="Seeder and planter" />
+		<text name="fp_help_c6_1_title" text="Seeder settings" />
+		<text name="fp_help_c6_1_text" text="With a seeder on the Rear row (or Next rear), a cog appears. Orange: start refused (« seeder settings to validate »). It opens the « Seeder settings » window:&#10;- Crop to sow: only those this seeder can sow this season (game calendar); a crop saved out of season shows « (out of season) ».&#10;- Load: Seeds, Load: Solid fertilizer… Yes or No for each (Enter changes the value).&#10;- Refill point: your markers less than 50 m from a place that has the product (station, silo, shop, big bags, pallets). None: all are shown.&#10;- Validate (Space key). Then the window shows « Settings validated: start allowed. » and the cog turns green. Esc closes without validating.&#10;The setting is kept per field and per seeder; on a new field, the window takes the seeder's last settings." />
+		<text name="fp_help_c6_2_title" text="Refilling" />
+		<text name="fp_help_c6_2_text" text="At the start, once the seeder is attached, the crop is set on the seeder. If the chosen tanks are not full, it goes to refill at the point, then leaves for the field. Empty seeder at the field: Courseplay stops, the driver leaves the field, refills, comes back, and Courseplay restarts at the last waypoint. It waits until the tanks are full; &gt;&gt; makes it leave without waiting." />
+		<text name="fp_help_c6_3_title" text="Courseplay settings" />
+		<text name="fp_help_c6_3_text" text="FarmPilot sets Courseplay for you: « refill in the field » off, seeder fertilizer on only if you load fertilizer." />
+		<text name="fp_help_c7_title" text="Spreaders and sprayers" />
+		<text name="fp_help_c7_1_title" text="Spreader settings" />
+		<text name="fp_help_c7_1_text" text="Trailed or self-propelled. Cog on the machine's row, « Spreader settings » window:&#10;- Product to load (those the tank accepts).&#10;- Quantity to take: Full, or Just enough for the field (rate x area + 10 %, the estimate is shown).&#10;- Refill point (markers near a place that has the product).&#10;- Validate (Space key). Start refused until it is validated." />
+		<text name="fp_help_c7_2_title" text="Refill and rest" />
+		<text name="fp_help_c7_2_text" text="Refilling works like for the seeder, at the start and when the tank is empty at the field. At the end of the field: same product on the next field with the same machine, the rest is kept. Otherwise the rest is given back to the stock or sold, then the usual steps. Slurry, manure, digestate or a machine that cannot unload: the rest is kept." />
+		<text name="fp_help_c7_3_title" text="P button with product left" />
+		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
+		<text name="fp_help_c8_title" text="Baler" />
+		<text name="fp_help_c8_1_title" text="The course that follows the windrows" />
+		<text name="fp_help_c8_1_text" text="With a baler, FarmPilot does not look for the implement width: it reads the windrows on the ground and takes the field's Courseplay course, whatever its width, that runs best over them (usually the combine's or the windrower's). Courseplay handles the baler as usual (bales, wrapping)." />
+		<text name="fp_help_c8_2_title" text="No course on the windrows" />
+		<text name="fp_help_c8_2_text" text="If no course has at least 25 % of its waypoints on a windrow: message « baler: no Courseplay course of field X lies on the windrows, waiting ». This happens if the field is already baled, if the straw was chopped, or if the harvest did not follow a saved course. The choice is made again on each arrival." />
+		<text name="fp_help_c9_title" text="Bale loader" />
+		<text name="fp_help_c9_1_title" text="Settings" />
+		<text name="fp_help_c9_1_text" text="Cog on the loader's row, « Bale loader settings » window:&#10;- Bales to collect: All, Wrapped only, Unwrapped only.&#10;- Drop-off point: at the top, the markers less than 60 m from a selling point that takes bales (« sale · name »); then all the other markers for storage.&#10;- Validate (Space key; refused until a point is chosen)." />
+		<text name="fp_help_c9_2_title" text="Collecting" />
+		<text name="fp_help_c9_2_text" text="On arrival at the field, FarmPilot looks for the bales the loader can take: round or square, right size, from your farm, on the ground on this field, not stacked, one product at a time. The arm goes to work position, it drives to the closest bale, lines up so the arm passes over it (12 km/h far away, 6 km/h when close) and the game arm picks it up. Missed bale: a 2nd try, then it is left. Bale right in front of the tractor: it reverses 10 m first.&#10;(Screen Update coming)" />
+		<text name="fp_help_c9_3_title" text="Drop-off and end" />
+		<text name="fp_help_c9_3_text" text="Full loader: arm in, road to the drop-off point, automatic unloading, back to the field if bales are left. At a selling point the bales are sold; at a storage point they are put down at the marker. No more bales: last drop-off, then next field or parking." />
+		<text name="fp_help_c9_4_title" text="The &gt;&gt; button with the bale loader" />
+		<text name="fp_help_c9_4_text" text="With bales loaded: drop-off straight away, then back to the field. Empty loader: the field is left, steps of a finished field." />
+		<text name="fp_help_c10_title" text="Combine and forage harvester in Autonomous (header)" />
+		<text name="fp_help_c10_1_title" text="The combine HUD" />
+		<text name="fp_help_c10_1_text" text="In Autonomous mode, a combine or a forage harvester has 4 rows instead of the implement rows:&#10;1. Field: it is also the field of its trailers. The trailers in « Unload Combine » that have this field serve it, and they change field with it at the next field (unless another combine is still harvesting the old one).&#10;2. Header: « auto » chooses, depending on the field's crop, a farm header that can cut it (grain header, corn header, forage harvester header). You can also choose a specific header. No header for this crop: start refused, with a message.&#10;3. Next field.&#10;4. Next header: « auto » by default; it becomes the Header row on the next field." />
+		<text name="fp_help_c10_2_title" text="The tractor of the header trailer" />
+		<text name="fp_help_c10_2_text" text="The cog of the Header row opens the « Header transport » window. Orange: the nearest free tractor (stopped, nothing attached behind; a weight or a front implement do not matter). Green: the tractor you chose. A tractor already attached to the trailer is always taken first." />
+		<text name="fp_help_c10_3_title" text="How it goes" />
+		<text name="fp_help_c10_3_text" text="1. You start the combine without a header.&#10;2. The tractor hitches the header trailer and brings it towards the field. It stops it at a clear spot on the side where the combine arrives (no standing crop, ditch, water or obstacle); otherwise it looks for another clear spot within 1 km.&#10;3. The combine follows at a distance, stops before the field track and waits until the trailer is in place. The status bar then says « Wait for the other machine ».&#10;4. It attaches the header driving forward, reverses and starts its Courseplay course. The tractor puts the empty trailer at its place, then parks: it is free.&#10;5. Field finished: a tractor brings the trailer back to the field, the combine puts the header on it, then goes to its place. The tractor puts the trailer away." />
+		<text name="fp_help_c10_4_title" text="Header without a trailer (corn header on the ground)" />
+		<text name="fp_help_c10_4_text" text="The combine fetches it alone, without a tractor. To put it back, it goes to the header's parking place if it has one, otherwise where it took it (same spot, same direction). Give a parking place to your headers left on the ground: the remembered spot is lost when the game is reloaded." />
+		<text name="fp_help_c10_5_title" text="Header change on the next field" />
+		<text name="fp_help_c10_5_text" text="Wheat then corn: the grain header goes back on its trailer, then the combine takes the corn header. Corn then wheat: the corn header is put down, then the tractor brings the grain header to the next field." />
+		<text name="fp_help_c10_6_title" text="If it gets stuck" />
+		<text name="fp_help_c10_6_text" text="No path to the header: the combine asks the tractor to move the trailer (3 times at most), then both stop with the message « no path to the front of the implement »." />
+		<text name="fp_help_c11_title" text="Fuel, messages, tips" />
+		<text name="fp_help_c11_1_title" text="Refuelling" />
+		<text name="fp_help_c11_1_text" text="Courseplay stops for lack of fuel: FarmPilot leaves the field (if the entrance is more than 30 m away), refuels at the closest pump, comes back, and Courseplay restarts where it stopped. Set « wait for refuel » to No in Courseplay. Field finished with a next field and a tank (diesel or DEF) under 20 %: refuel first." />
+		<text name="fp_help_c11_2_title" text="The &gt;&gt; button in Autonomous (summary)" />
+		<text name="fp_help_c11_2_text" text="During a refill: leave without waiting. On the road: next field. Bale loader: drop-off or field left. At the field with Courseplay: nothing." />
+		<text name="fp_help_c11_3_title" text="Tips" />
+		<text name="fp_help_c11_3_text" text="- Set a parking place for each implement and each tractor.&#10;- Save your Courseplay courses at the exact width of your implements.&#10;- Leave room in front of parked implements and trailers.&#10;- Check the cogs: orange = start refused." />
+		<text name="fp_help_cat_D" text="FarmPilot - On the road" />
+		<text name="fp_help_d1_title" text="Parking" />
+		<text name="fp_help_d1_1_title" text="Parking places" />
+		<text name="fp_help_d1_1_text" text="Each vehicle and each implement can have its place. Put the place in the 1st row, then Ctrl + click on the parking button (P): with an implement selected, it is the implement's place; with no implement selected, the tractor's. The tractor's place must be different from the implement's.&#10;(Screen Update coming)" />
+		<text name="fp_help_d1_2_title" text="Drawing the places" />
+		<text name="fp_help_d1_2_text" text="- Implement place: the road leading to it is drawn in reverse (the tractor reverses the implement into it).&#10;- Header place: drawn forward, the marker 5 m before the header." />
+		<text name="fp_help_d1_3_title" text="Park button (P)" />
+		<text name="fp_help_d1_3_text" text="Every implement or trailer attached directly to the tractor that has its place is put at its place first, then the tractor goes to its own. Weights ignored. The button switches to Autonomous for the drop, then the previous mode comes back by itself (tractor parked, stop or error)." />
+		<text name="fp_help_d1_4_title" text="Park at the end of the job" />
+		<text name="fp_help_d1_4_text" text="Vehicle setting « Park at Job finished » (Deliver, Pickup and Deliver): at the end, vehicle and implement go to their place." />
+		<text name="fp_help_d2_title" text="The smart driver" />
+		<text name="fp_help_d2_1_title" text="Braking and distance" />
+		<text name="fp_help_d2_1_text" text="It watches the road ahead and slows down gradually before an obstacle. It follows a slower vehicle at its speed and keeps 3 m behind another FarmPilot vehicle. Behind a vehicle on the weighbridge, with a driver or in a queue, it waits without going around." />
+		<text name="fp_help_d2_2_title" text="Small sidestep" />
+		<text name="fp_help_d2_2_text" text="An obstacle on one side only (post, cone, bale, parked car) is avoided by a slight offset, without stopping, then it comes back onto its line. Posts that are on your road are seen at calculation time: the road passes beside them with the width of the vehicle combination plus 30 cm (except ditch, bank, bridge or walls)." />
+		<text name="fp_help_d2_3_title" text="Going around" />
+		<text name="fp_help_d2_3_text" text="Blocked by a fixed object (fallen object, low wall, tree, vehicle stopped for a long time): it reverses then calculates a path to rejoin its road further on. In front of a gate, it waits. Settings: obstacle detour yes/no, delay, reverse before detour." />
+		<text name="fp_help_d2_4_title" text="Pushing without moving" />
+		<text name="fp_help_d2_4_text" text="If it should drive but does not move 50 cm in 3 s, it reverses 3 to 5 m and passes beside it, on the free side. If it still pushes, it reverses and calculates a detour." />
+		<text name="fp_help_d2_5_title" text="Blocked passage" />
+		<text name="fp_help_d2_5_text" text="After two failed detours in front of the same fixed object, it creeps forward (2.5 km/h). If it stays stuck, the passage is remembered as blocked for this combination width and wider ones (saved in the game) and it turns back by another road. The next starts avoid this passage. A passage whose points were moved in the editor is forgotten. To forget everything: delete FarmPilot_PassagesBouches.xml from the savegame folder, game closed." />
+		<text name="fp_help_d3_title" text="Head-on passing" />
+		<text name="fp_help_d3_1_title" text="On two-way roads" />
+		<text name="fp_help_d3_1_text" text="Two FarmPilot vehicles about to meet nose to nose are seen from far away (250 m): they slow down and stop at a good distance. One pulls over to the side (place calculated with the size of both combinations, the slope, water and fields), the other passes, or one reverses. The empty vehicle gives way first, then the one without a trailer. A header trailer never reverses." />
+		<text name="fp_help_d3_2_title" text="Single-lane tracks" />
+		<text name="fp_help_d3_2_text" text="Priority to the one already engaged. The one giving way stops 15 m before the track entrance and waits until the other has passed (plus 10 m). The one that cannot reverse takes another road and comes back later." />
+		<text name="fp_help_d3_3_title" text="If it fails" />
+		<text name="fp_help_d3_3_text" text="After two failures, red message and 5-minute pause for the pair. Settings: head-on passing yes/no, delay before passing, max reverse distance, clearance between combinations, driving side (right or left)." />
+		<text name="fp_help_d4_title" text="Intersections" />
+		<text name="fp_help_d4_1_title" text="The red points" />
+		<text name="fp_help_d4_1_text" text="Mark dangerous crossings as Intersection in the editor (see « Road types »). Before crossing or merging, the vehicle slows down (20 then 8 km/h), checks the lanes over 120 m and stops just before the first red point if a vehicle is coming (traffic, tractor, player). Then it crosses without stopping." />
+		<text name="fp_help_d4_2_title" text="The gap in the traffic" />
+		<text name="fp_help_d4_2_text" text="The gap it waits for depends on the time the combination needs to cross. After 30 s of waiting, it becomes less demanding. It does not go if the exit is busy. Stopped in the middle: it reverses back to its line." />
+		<text name="fp_help_d5_title" text="Bends" />
+		<text name="fp_help_d5_1_title" text="Corner speed" />
+		<text name="fp_help_d5_1_text" text="The speed depends on the real radius of the bend, and the tractor brakes before entering it. Example: radius 12 m = 16 km/h, radius 40 m = 30 km/h. Vehicle setting « Corner speed » (50 to 200 %)." />
+		<text name="fp_help_d5_2_title" text="Bends too tight" />
+		<text name="fp_help_d5_2_text" text="A bend is first simulated as you drew it: if the combination gets through, it is left alone. Otherwise it is redrawn at the widest line that gets through, at most 3 m from your road, without obstacle and without a wheel off the tarmac." />
+		<text name="fp_help_d5_3_title" text="Road end too tight" />
+		<text name="fp_help_d5_3_text" text="If the last bend before the destination is too tight, FarmPilot plans before leaving a manoeuvre (forward, reverse, forward again), or another arrival through a detour, and keeps the fastest. With a trailed implement, it only reverses straight, 8 m at most." />
+		<text name="fp_help_d5_4_title" text="Turn lights" />
+		<text name="fp_help_d5_4_text" text="With « Turnlight Automatic », the indicator comes on at the set distance (« Turnlight Distance », 20 to 100 m) before a bend or a junction, and stays on until the tractor is straight again. No indicator for a sidestep. Engine off: it goes off." />
+		<text name="fp_help_d6_title" text="Road types" />
+		<text name="fp_help_d6_1_title" text="The road types" />
+		<text name="fp_help_d6_1_text" text="- Main: the normal road.&#10;- Secondary: taken if it saves time, depending on the vehicle type (cog in the general settings).&#10;- Tertiary (dirt track): special road, only for the vehicle types allowed in that cog, and never as a shortcut. Limited speed (« Max speed on tertiary roads », 30 km/h by default): the vehicle slows down 30 m before.&#10;- Access: only taken to reach the point it leads to (a place, a silo…), never to pass through.&#10;- Intersection: the vehicle slows down and looks before crossing." />
+		<text name="fp_help_d6_2_title" text="Settings (General tab)" />
+		<text name="fp_help_d6_2_text" text="- « Secondary roads »: Auto = by vehicle type (cog: Yes / No per type); Allowed = taken whenever they save time; Never.&#10;- « Tertiary roads »: Auto = by vehicle type (cog); Allowed; Never.&#10;One choice for all vehicles. Never = taken only if no other road exists, or if the other one is too narrow." />
+		<text name="fp_help_d6_3_title" text="Narrow passages" />
+		<text name="fp_help_d6_3_text" text="The route calculation avoids sections too narrow for the combination (dual wheels, wide implement) when another way exists. The width is measured at the tyres; a folding implement counts as 2.4 m." />
+		<text name="fp_help_d7_title" text="Entering and leaving the field" />
+		<text name="fp_help_d7_1_title" text="Leaving the field" />
+		<text name="fp_help_d7_1_text" text="To leave the field, the vehicle first aims for the entrance of the field it is in, instead of the closest network point (which can be behind the crop or on the neighbouring field). Otherwise it tries up to 6 other points, without crossing the crop or another field. Gates are passed in line: it lines up 12 to 20 m before." />
+		<text name="fp_help_d7_2_title" text="Strict mode" />
+		<text name="fp_help_d7_2_text" text="« Restrict pathfinder to field » and « Avoid fruit » have a Strict value: the calculation never lifts the restriction, and the trailer never drives on the neighbouring field. Small forgotten crop islands are ignored." />
+		<text name="fp_help_d7_3_title" text="Stuck" />
+		<text name="fp_help_d7_3_text" text="A stuck combination (crop around, bend too tight) frees itself with small forward curves. A spot that keeps blocking becomes a no-go zone for 5 minutes." />
+		<text name="fp_help_cat_E" text="FarmPilot - Route editor" />
+		<text name="fp_help_e1_title" text="Turn the editor on" />
+		<text name="fp_help_e1_1_title" text="Open the editor" />
+		<text name="fp_help_e1_1_text" text="Editor button of the HUD (or key « FP - Activate edit mode »). The roads and points appear around the vehicle and the editing buttons are added to the HUD. Middle click to get the mouse. Right click on the editor button: shows only the roads. Setting « Line height »: lines on the ground or above the tractor.&#10;(Screen Update coming)" />
+		<text name="fp_help_e1_2_title" text="The editing buttons" />
+		<text name="fp_help_e1_2_text" text="Record, Routes manager, Create destination, Delete a point (right click: delete a destination), Rename the destination." />
+		<text name="fp_help_e2_title" text="Record a road while driving" />
+		<text name="fp_help_e2_1_title" text="Record button" />
+		<text name="fp_help_e2_1_text" text="Drive: a point is set regularly behind you. Click again: end of the recording. The type depends on the click:&#10;- Left click: one-way.&#10;- Right click: two-way.&#10;- Shift + left / right click: secondary, one-way / two-way.&#10;- Ctrl + left / right click: 2 roads at once (one on each side), one-way / two-way.&#10;- Ctrl + Shift + click: 2 roads at once, secondary.&#10;Reversing while recording creates a reverse road (to park by reversing).&#10;(Screen Update coming)" />
+		<text name="fp_help_e2_2_title" text="Auto connect" />
+		<text name="fp_help_e2_2_text" text="General settings « Auto connect (start) » and « Auto connect (end) »: the start and the end of the recording are linked to the nearby point. User setting « Record without driver »: the recording goes on if you get out." />
+		<text name="fp_help_e3_title" text="Points with the mouse" />
+		<text name="fp_help_e3_1_title" text="Commands" />
+		<text name="fp_help_e3_1_text" text="In the editor, mouse active (a reminder shows next to the HUD):&#10;- Left click on a point: select it. Left click on a 2nd point: link them, or undo the link.&#10;- At the 2nd point, Ctrl + left click: one-way or two-way.&#10;- Shift + right click on the 2nd point: reverse line.&#10;- Ctrl + left click in empty space: create a point (linked to the selected point).&#10;- Alt + left click on a point: delete it.&#10;- Shift + left click on a point: change its type (see « Road types and colours »).&#10;- Right click (or wheel) held on a point: move it." />
+		<text name="fp_help_e3_2_title" text="Curves" />
+		<text name="fp_help_e3_2_text" text="Point selected then hovering another one: a curve preview appears (green = gets through, red = collision). The click links with the curve." />
+		<text name="fp_help_e4_title" text="Sections" />
+		<text name="fp_help_e4_1_title" text="Act on a whole section" />
+		<text name="fp_help_e4_1_text" text="A section = the chain of points between two junctions. Select the 1st point, hover the last one: the section lights up.&#10;- Ctrl + click: changes the direction of the whole section (one-way, reversed, two-way).&#10;- Shift + click: changes the type of the whole section.&#10;- Ctrl + Shift + Alt + click: deletes the whole section." />
+		<text name="fp_help_e4_2_title" text="Area selection" />
+		<text name="fp_help_e4_2_text" text="Alt held on a selected point + mouse wheel: enlarges or shrinks the selection area; click: deletes all points in the area." />
+		<text name="fp_help_e5_title" text="Road types and colours" />
+		<text name="fp_help_e5_1_title" text="Change the type" />
+		<text name="fp_help_e5_1_text" text="Shift + left click on a point or a section cycles its type (main, secondary, tertiary, access, intersection…).&#10;(Screen Update coming)" />
+		<text name="fp_help_e5_2_title" text="Colours" />
+		<text name="fp_help_e5_2_text" text="In edit mode, an « Editor reminder » shows next to the HUD with these colours and the commands.&#10;- Main: green (one-way), blue (two-way).&#10;- Secondary: light orange (one-way), brown (two-way).&#10;- Tertiary: pink (one-way), purple (two-way).&#10;- Access: orange (one-way), beige (two-way).&#10;- Intersection: red.&#10;- Reverse: light blue.&#10;Colours are changed in Settings &gt; User &gt; « Custom colors »." />
+		<text name="fp_help_e6_title" text="Destinations and folders" />
+		<text name="fp_help_e6_1_title" text="Create a destination" />
+		<text name="fp_help_e6_1_text" text="Put the vehicle where you want it (on a point), « Create destination » button, type the name. Rename: Rename button. Delete: right click on the Delete button. Tip: one clear name per use (« Field 56 », « Farm silo », « G_Seeder 1 » for a parking place).&#10;(Screen Update coming)" />
+		<text name="fp_help_e6_2_title" text="Folders" />
+		<text name="fp_help_e6_2_text" text="Setting « Use folders »: destinations are sorted into folders (drag and drop in the open list, or via the settings). Folders are also used for the pickup and delivery cycle and for trailer swap. Destination filter: key « FP - Destination filter »." />
+		<text name="fp_help_e6_3_title" text="On the map" />
+		<text name="fp_help_e6_3_text" text="Setting « Show markers »: FarmPilot markers on the menu map and/or the in-game map." />
+		<text name="fp_help_e7_title" text="Field points and routes manager" />
+		<text name="fp_help_e7_1_title" text="Create the field points" />
+		<text name="fp_help_e7_1_text" text="Ctrl + Shift + F: creates points along the edge of the fields. Settings: offset (inside or outside the edge) and distance between the points." />
+		<text name="fp_help_e7_2_title" text="Routes manager" />
+		<text name="fp_help_e7_2_text" text="Ctrl + Alt + 1 (numpad): export your network under a name, or import a saved network (share with a friend, keep a backup before big changes).&#10;(Screen Update coming)" />
+		<text name="fp_help_cat_F" text="FarmPilot - Settings and functions" />
+		<text name="fp_help_f1_title" text="Open the settings" />
+		<text name="fp_help_f1_1_title" text="Settings window" />
+		<text name="fp_help_f1_1_text" text="Ctrl + Alt + 0 (numpad) or HUD button. Tabs: Vehicle (for the vehicle you are in), Unload combine, General (the whole game), User (your display), Environment (lights), Colours, Debug. Each row has a tooltip. Shift + C / Shift + V copy the settings from one vehicle to another." />
+		<text name="fp_help_f2_title" text="Vehicle settings" />
+		<text name="fp_help_f2_1_title" text="Driving" />
+		<text name="fp_help_f2_1_text" text="Corner speed, Restrict pathfinder to field (No / Yes / Strict), Avoid fruit (No / Yes / Strict), Maximum trigger distance." />
+		<text name="fp_help_f2_2_title" text="Loading" />
+		<text name="fp_help_f2_2_text" text="Unload fill level (start level), Loading stopped: leave after, Cycle Pickup and Deliver, Automatic Tip Side, Automatic Trailer Covers, Fold implements (Yes when bought), Change tires at (with AutoSwitch, 20 % when bought), Autoload: Unload Position and wait time, Swath detection (No when bought)." />
+		<text name="fp_help_f2_3_title" text="Combine" />
+		<text name="fp_help_f2_3_text" text="Pipe Offset, Distance combine, Park in field, Restrict unloader to field." />
+		<text name="fp_help_f2_4_title" text="End of job and upkeep" />
+		<text name="fp_help_f2_4_text" text="Park at Job finished, Automatic Refueling, Automatic Repairing." />
+		<text name="fp_help_f3_title" text="General settings" />
+		<text name="fp_help_f3_1_title" text="Traffic" />
+		<text name="fp_help_f3_1_text" text="Collision detection, Head-on passing (+ delay, max reverse distance, clearance, driving side), Obstacle detour (+ delay, reverse), Maximum detour, Secondary roads and Tertiary roads (+ cog per vehicle type), Max speed on tertiary roads." />
+		<text name="fp_help_f3_2_title" text="Work" />
+		<text name="fp_help_f3_2_text" text="Wait inside the field, Autonomous without Courseplay, Driver wages, Autostart helpers (at loading), Bunker Silo / Unload Manager Range (vehicles go one at a time)." />
+		<text name="fp_help_f3_3_title" text="Calculation and editor" />
+		<text name="fp_help_f3_3_text" text="Pathfinder algorithm, Pathfinder factor, Collisionheigth over ground, Use folders, Auto connect (start) and (end), Record offset in driving direction / in opposite driving direction, Fieldpoint Offset, field point max. distance, Maximum trigger distance, Routemanager on Server." />
+		<text name="fp_help_f4_title" text="User and environment settings" />
+		<text name="fp_help_f4_1_title" text="Display" />
+		<text name="fp_help_f4_1_text" text="Gui scale for FarmPilot HUD, Notifications, Display help (keys in F1), Show next path, Line height, Show tooltips, Show markers (on the map), Switch to markers, Add settings to HUD, Logo personalization, Wide HUD, Sound, Scale Lines, Scale Destination Name, Custom colors, Record without driver." />
+		<text name="fp_help_f4_2_title" text="Environment (lights)" />
+		<text name="fp_help_f4_2_text" text="Turnlight Automatic (Yes/No), Turnlight Distance, Engine Stop Delay (Never, 10 s, 30 s, 1, 2 or 5 min), Beacon lights (outside fields), Worklight when Loading / Unloading, Worklight when in a Silo Bunker, Hazard Lights (when reversing), Remaining Drive time (calculation for other mods; increase or turn off if the game slows down)." />
+		<text name="fp_help_f5_title" text="Built-in functions (former Addon)" />
+		<text name="fp_help_f5_1_title" text="Weighbridge" />
+		<text name="fp_help_f5_1_text" text="The vehicle centres the whole combination on the bridge, stops 5 s and shows product, load and total weight, then drives on. Stopping by hand 3 s on the bridge: the weight is shown too. With AutoSwitch, each weighing goes into its register.&#10;(Screen Update coming)" />
+		<text name="fp_help_f5_2_title" text="Engine and lights" />
+		<text name="fp_help_f5_2_text" text="Engine stop after the set delay. Engine off: only the basic lights stay on, everything comes back on restart." />
+		<text name="fp_help_f5_3_title" text="Empty silo" />
+		<text name="fp_help_f5_3_text" text="At loading, if the trailer already holds something and nothing more comes in, it leaves with what it has, according to « Loading stopped: leave after »." />
+		<text name="fp_help_f5_4_title" text="Rear implement" />
+		<text name="fp_help_f5_4_text" text="When the game starts, each tractor selects the implement attached behind it." />
+		<text name="fp_help_f6_title" text="Automatic refuelling and repair" />
+		<text name="fp_help_f6_1_title" text="How it works" />
+		<text name="fp_help_f6_1_text" text="With « Automatic Refueling / Repairing », the vehicle goes to the closest pump or workshop linked to the network, but only after the current job (trailer emptied, combine served). Never postponed: your request, Courseplay's request, a tank under 5 % or 90 % damage." />
+		<text name="fp_help_f7_title" text="Compatible mods and multiplayer" />
+		<text name="fp_help_f7_1_title" text="Compatibility" />
+		<text name="fp_help_f7_1_text" text="- Courseplay: Autonomous mode courses, forage harvester, right click left to the FarmPilot HUD and editor.&#10;- AIVE and game worker: helper at the destination.&#10;- AutoSwitch: merged fields, weighbridge register.&#10;- Manual attach (attachImplementsManually): hoses and PTO connected and disconnected.&#10;- autoTurnOffTurnLights: no effect while FarmPilot drives.&#10;- Mods that look for AutoDrive find FarmPilot." />
+		<text name="fp_help_f7_2_title" text="Multiplayer" />
+		<text name="fp_help_f7_2_text" text="All choices (implement, next field, trailer, trailer swap, implement settings) are sent to the other players and kept in the savegame." />
+		<text name="fp_help_f7_3_title" text="Savegame files" />
+		<text name="fp_help_f7_3_text" text="FarmPilot_config.xml (network), FarmPilot_Autonome.xml (kept courses), FarmPilot_RemorquesBalles.xml, FarmPilot_PassagesBouches.xml. Folder modSettings/FS25_FarmPilot: exported routes, colours." />
+		<text name="fp_help_f8_title" text="It does not work?" />
+		<text name="fp_help_f8_1_title" text="It does not start" />
+		<text name="fp_help_f8_1_text" text="- Orange cog: validate the implement settings.&#10;- Message « implement or combination moving »: it waits until folding is done.&#10;- Autonomous mode with only a tipper: a working implement is needed.&#10;- No road to the destination: check the links in the editor." />
+		<text name="fp_help_f8_2_title" text="It stops at the field" />
+		<text name="fp_help_f8_2_text" text="No Courseplay course at the implement width, or several: see the Autonomous courses window." />
+		<text name="fp_help_f8_3_title" text="Destination changed when loading the game" />
+		<text name="fp_help_f8_3_text" text="Destinations are now kept by their name. A game already shifted: choose the destination again once." />
+		<text name="fp_help_f8_4_title" text="Send a report" />
+		<text name="fp_help_f8_4_text" text="Attach the log.txt file (Documents/My Games/FarmingSimulator2025): the lines [FarmPilot …] and [AD-…] say what each driver is doing." />
 	</texts>
 </l10n>

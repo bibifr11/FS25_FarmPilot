@@ -44,6 +44,8 @@ function ADSettingsPage:onGuiSetupFinished()
                 else
                     labels[i] = text
                 end
+            elseif string.sub(tostring(setting.texts[i]), 1, 7) == "gui_ad_" then
+                labels[i] = g_i18n:getText(setting.texts[i]) -- réglage non traduit avec un libellé traduit (« Par défaut » de la taille de l'ATH)
             else
                 labels[i] = setting.texts[i]
             end

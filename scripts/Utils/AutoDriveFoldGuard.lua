@@ -259,6 +259,7 @@ function ADFoldGuard.update(vehicle, dt, allowTaskUpdate, shouldStopVehicle)
             end
         end
     end
+    if ADFoldGround ~= nil then local okG, holdG = FarmPilotCall(ADFoldGround.step, vehicle, objects, dt); moving = moving or (okG and holdG == true) end -- rampe : points collés au sol recalés même de loin (AutoDriveFoldGround.lua)
     guard.pendingWhy = nil
     if now - guard.armedAt < ADFoldGuard.PENDING_MAX then
         if ADFoldGuard.isJointMoving(objects, guard, now) then

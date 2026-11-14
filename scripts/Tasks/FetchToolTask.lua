@@ -11,6 +11,9 @@
 -- - (09/11) Pas de chemin jusque devant l'outil (hangar, machines autour) : il avance tout droit de ROOM_DISTANCE m
 --   (recule si l'avant est bloqué) et recalcule, au plus ROOM_MOVES fois, avant d'abandonner.
 -- - (07/11) mod d'attelage manuel : flexibles et prise de force branchés après l'attelage, comme le joueur.
+-- - (14/11) Outil posé sur un porteur (barre de coupe sur sa remorque) : la machine sautait à l'attelage. Elle
+--   s'approche jusqu'à CARRIED_RANGE m (au lieu d'ATTACH_RANGE) et l'outil est attelé relevé : il est soulevé du
+--   porteur au lieu d'être tiré vers le bas contre lui (isCarried, attachRange, attachRaised).
 -- - Le résultat (self.result = "ok" ou la raison de l'échec) est lu par AutonomousMode:handleFinishedTask.
 --
 -- Branché par : AutonomousMode.lua (startFetchAttach : ADFetchToolTask:new ; fetchRoutePoint et monitorFetchRoute :
@@ -43,6 +46,7 @@ ADFetchToolTask.DIRECT_ANGLE = 40         -- ° entre le tracteur et l'outil au 
 ADFetchToolTask.DIRECT_MAX = 15           -- m entre les points d'attelage au plus pour la marche arrière directe
 ADFetchToolTask.DIRECT_SIDE = 0.6         -- m de côté toujours acceptés (tout près, l'angle ne veut plus rien dire)
 ADFetchToolTask.ATTACH_RANGE = 0.8        -- m entre les points d'attelage pour essayer d'atteler
+ADFetchToolTask.CARRIED_RANGE = 0.3       -- m : pareil pour un outil posé sur un porteur (le jeu rattrape l'écart d'un coup)
 ADFetchToolTask.MISS_MARGIN = 0.6         -- m : la distance remonte de ça après le plus près = raté
 ADFetchToolTask.STALL_STEP = 0.03         -- m : se rapprocher de moins que ça du point d'attelage ne compte pas
 ADFetchToolTask.STALL_TIME = 1200         -- ms sans se rapprocher : le tracteur bute contre l'outil, on attelle si le jeu le permet (il attelle de plus loin qu'ATTACH_RANGE)
@@ -77,12 +81,65 @@ function ADFetchToolTask:new(vehicle, tool, direct)
 end
 
 function ADFetchToolTask:setUp()
+    self.carried = nil
     self.state = ADFetchToolTask.STATE_PLAN
     self.timer = 0
     self.minDistance = math.huge
     self.retries = 0
     self.roomMoves = 0
     self.vehicle.ad.specialDrivingModule:stopVehicle()
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Outil posé sur un porteur
+-- ------------------------------------------------------------------------------------------------------------
+-- (14/11) l'outil est posé sur un porteur (barre de coupe sur sa remorque porte-barre), pas au sol ; regardé une
+-- fois, avant l'attelage (attelé, il n'est plus sur le porteur)
+function ADFetchToolTask:isCarried()
+    if self.carried == nil then
+        self.carried = false
+        if ADHeaderFlow ~= nil and ADHeaderFlow.trailerOf ~= nil then
+            local ok, trailer = FarmPilotCall(ADHeaderFlow.trailerOf, self.tool)
+            self.carried = ok and trailer ~= nil
+        end
+    end
+    return self.carried
+end
+
+-- m entre les points d'attelage pour essayer d'atteler
+function ADFetchToolTask:attachRange()
+    return self:isCarried() and ADFetchToolTask.CARRIED_RANGE or ADFetchToolTask.ATTACH_RANGE
+end
+
+-- attelage relevé (le jeu attelle baissé quand rien n'est dit : l'outil posé à 1 m du sol était tiré vers le bas
+-- contre son porteur). Mêmes contrôles que l'attelage du jeu ; true = attelé
+function ADFetchToolTask:attachRaised(info)
+    local vehicle, tool = info.attacherVehicle, info.attachable
+    local joints = vehicle.spec_attacherJoints ~= nil and vehicle.spec_attacherJoints.attacherJoints or nil
+    local joint = joints ~= nil and joints[info.attacherVehicleJointDescIndex] or nil
+    if vehicle.attachImplement == nil or joint == nil or joint.jointIndex ~= 0 then
+        return false
+    end
+    if tool.getActiveInputAttacherJointDescIndex == nil or tool:getActiveInputAttacherJointDescIndex() ~= nil then
+        return false
+    end
+    local ok, err = FarmPilotCall(vehicle.attachImplement, vehicle, tool, info.attachableJointDescIndex, info.attacherVehicleJointDescIndex, nil, nil, false)
+    if not ok then
+        ADAutonomousManager.log("ERREUR attelage relevé : %s", tostring(err))
+    end
+    return tool.getAttacherVehicle ~= nil and tool:getAttacherVehicle() == vehicle
+end
+
+-- outil relevé tout de suite (attelé par le jeu de la façon habituelle)
+function ADFetchToolTask:raiseNow()
+    local tool = self.tool
+    local attacher = tool.getAttacherVehicle ~= nil and tool:getAttacherVehicle() or nil
+    if attacher ~= nil and attacher.getAttacherJointIndexFromObject ~= nil and attacher.setJointMoveDown ~= nil then
+        local jointIndex = attacher:getAttacherJointIndexFromObject(tool)
+        if jointIndex ~= nil then
+            attacher:setJointMoveDown(jointIndex, false)
+        end
+    end
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -207,6 +264,22 @@ function ADFetchToolTask:update(dt)
             ADAutonomousManager.log("%s : déjà devant l'outil, %s", tostring(self.vehicle.ad.stateModule:getName()), self.APPROACH_TEXT)
             self:setState(ADFetchToolTask.STATE_STOPPING)
             return
+        end
+        -- (12/11) chemin tout prêt donné par celui qui a créé la tâche (barre sur une remorque reculée dans l'entrée
+        -- du champ : la courbe du chemin jusqu'au cadre, Modes/AutonomousHeaderBackIn.lua) ; une seule fois, sinon
+        -- la suite habituelle
+        if self.presetPath ~= nil then
+            local preset = self.presetPath
+            self.presetPath = nil
+            local ok, path = FarmPilotCall(preset, self.vehicle, hitch)
+            if ok and path ~= nil and #path > 0 then
+                self.direct = false
+                self.vehicle.ad.drivePathModule:setWayPoints(path)
+                self.onCurve = true
+                self.curveStuck = 0
+                self:setState(ADFetchToolTask.STATE_DRIVING)
+                return
+            end
         end
         -- (10/11) outil avant au fond d'une place prise en marche arrière : une courbe calculée depuis la route qui
         -- passe devant, pas de recherche de chemin ; une seule fois, voir Modes/AutonomousNoseIn.lua
@@ -357,8 +430,9 @@ function ADFetchToolTask:updateReverse(dt)
         self.minDistance = distance
     end
     local stalled, blocked = self:updateStall(dt, distance)
-    if distance <= ADFetchToolTask.ATTACH_RANGE or stalled then
-        if distance <= ADFetchToolTask.ATTACH_RANGE then
+    local range = self:attachRange()
+    if distance <= range or stalled then
+        if distance <= range then
             self:holdVehicle(dt)
         end
         if self:tryAttach(distance) then
@@ -393,7 +467,7 @@ function ADFetchToolTask:updateReverse(dt)
         self:finish("timeout")
         return
     end
-    if distance <= ADFetchToolTask.ATTACH_RANGE then
+    if distance <= range then
         -- à portée mais le jeu n'attelle pas encore : tout doucement
         self:reverseTo(dt, hitch, 1, distance)
     else
@@ -613,11 +687,19 @@ function ADFetchToolTask:tryAttach(distance)
             return false
         end
     end
-    if not self.vehicle:attachImplementFromInfo(info) then
-        self.attachWhy = "attelage refusé par le jeu"
-        return false
+    local carried = self:isCarried()
+    if not (carried and self:attachRaised(info)) then
+        local accepted = self.vehicle:attachImplementFromInfo(info)
+        local attacher = self.tool.getAttacherVehicle ~= nil and self.tool:getAttacherVehicle() or nil
+        if not accepted and attacher ~= self.vehicle then
+            self.attachWhy = "attelage refusé par le jeu"
+            return false
+        end
+        if carried then
+            self:raiseNow()
+        end
     end
-    if distance ~= nil and distance > ADFetchToolTask.ATTACH_RANGE then
+    if distance ~= nil and distance > self:attachRange() then
         ADAutonomousManager.log("%s : outil « %s » attelé, le tracteur ne se rapprochait plus (points d'attelage à %.2f m)", tostring(self.vehicle.ad.stateModule:getName()), ADAutonomousManager.toolLabel(self.tool), distance)
     else
         ADAutonomousManager.log("%s : outil « %s » attelé", tostring(self.vehicle.ad.stateModule:getName()), ADAutonomousManager.toolLabel(self.tool))

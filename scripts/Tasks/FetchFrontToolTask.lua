@@ -12,6 +12,8 @@
 -- - Attelage raté : il recule tout droit et recommence, au plus RETRIES fois (puis la règle d'avant, comme
 --   l'attelage arrière).
 -- - Pas de chemin, mod d'attelage manuel, outil relevé pour la route : comme FetchToolTask.lua.
+-- - (14/11) Outil posé sur un porteur (barre de coupe sur sa remorque) : approche jusqu'au cadre, attelé relevé
+--   (FetchToolTask.lua : attachRange, attachRaised).
 --
 -- Branché par : Modes/AutonomousFront.lua (startFetch avec le côté « front » : ADFetchFrontToolTask:new ; route vers
 -- l'outil : readyFor).
@@ -137,8 +139,10 @@ function ADFetchFrontToolTask:updateReverse(dt)
     end
     -- (11/11) comme à l'arrière : le tracteur bute contre l'outil avant ATTACH_RANGE, on attelle si le jeu le permet
     local stalled, blocked = self:updateStall(dt, distance)
-    if distance <= ADFetchToolTask.ATTACH_RANGE or stalled then
-        if distance <= ADFetchToolTask.ATTACH_RANGE then
+    -- (14/11) outil posé sur un porteur (barre sur sa remorque) : jusqu'au cadre (FetchToolTask.lua : attachRange)
+    local range = self:attachRange()
+    if distance <= range or stalled then
+        if distance <= range then
             self:holdVehicle(dt)
         end
         if self:tryAttach(distance) then
@@ -172,10 +176,10 @@ function ADFetchFrontToolTask:updateReverse(dt)
         self:finish("timeout")
         return
     end
-    if distance <= ADFetchToolTask.ATTACH_RANGE then
+    if distance <= range then
         self:approach(dt, hitch, joint, 1, distance)
     else
-        self:approach(dt, hitch, joint, math.min(5, math.max(1.5, distance * 0.6)), distance)
+        self:approach(dt, hitch, joint, math.min(5, math.max(self:isCarried() and 1 or 1.5, distance * 0.6)), distance)
     end
 end
 

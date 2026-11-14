@@ -432,7 +432,7 @@ function AutoDrive:onCpFinished()
     AutoDrive.debugPrint(self, AutoDrive.DC_EXTERNALINTERFACEINFO, "AutoDrive:onCpFinished start... enableParkAtJobFinished %s", AutoDrive.getSetting("enableParkAtJobFinished", self))
     if self.isServer then
         if ADHarvestManager ~= nil and ADHarvestManager.onFieldFinished ~= nil then FarmPilotCall(ADHarvestManager.onFieldFinished, ADHarvestManager, self) end -- moissonneuse : champ fini, ses bennes partent vider puis rentrent, voir HarvestManagerCombineJob.lua
-        if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : vider le reste en big bags d'abord, voir AutonomousSprayerDump.lua
+        if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : rendre ou vendre le reste d'abord, voir AutonomousSprayerDump.lua
         -- FarmPilot mode Autonome : champ fini, champ suivant s'il y en a un (sinon se garer comme avant)
         local okNext, goneNext = FarmPilotCall(AutonomousMode.goToNextField, self)
         if not okNext then
@@ -446,6 +446,14 @@ function AutoDrive:onCpFinished()
             if not okDrop then
                 ADAutonomousManager.log("ERREUR dételage au parking : %s", tostring(dropped))
             elseif dropped then
+                return
+            end
+        elseif ADHeaderFlow ~= nil and ADHeaderFlow.fieldEndAlways ~= nil then
+            -- moissonneuse en mode Autonome avec sa barre : reposée même réglage sur Non, voir AutonomousHeader.lua
+            local okEnd, started = FarmPilotCall(ADHeaderFlow.fieldEndAlways, self)
+            if not okEnd then
+                ADAutonomousManager.log("ERREUR fin de champ de la moissonneuse : %s", tostring(started))
+            elseif started then
                 return
             end
         end
@@ -1084,7 +1092,7 @@ function AutoDrive:onAIJobFinished()
             self.ad.fpAIJobFinishedOk = nil
         end
         if finishedOk and self.isServer then
-            if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : vider le reste en big bags d'abord, voir AutonomousSprayerDump.lua
+            if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : rendre ou vendre le reste d'abord, voir AutonomousSprayerDump.lua
             local okNext, goneNext = FarmPilotCall(AutonomousMode.goToNextField, self)
             if not okNext then
                 ADAutonomousManager.log("ERREUR champ suivant : %s", tostring(goneNext))
@@ -1096,6 +1104,14 @@ function AutoDrive:onAIJobFinished()
                 if not okDrop then
                     ADAutonomousManager.log("ERREUR dételage au parking : %s", tostring(dropped))
                 elseif dropped then
+                    return
+                end
+            elseif ADHeaderFlow ~= nil and ADHeaderFlow.fieldEndAlways ~= nil then
+                -- moissonneuse en mode Autonome avec sa barre : reposée même réglage sur Non, voir AutonomousHeader.lua
+                local okEnd, started = FarmPilotCall(ADHeaderFlow.fieldEndAlways, self)
+                if not okEnd then
+                    ADAutonomousManager.log("ERREUR fin de champ de la moissonneuse : %s", tostring(started))
+                elseif started then
                     return
                 end
             end

@@ -32,6 +32,15 @@
 --   elle n'est permise que si elle touche le départ ou l'arrivée (la destination est
 --   dessus ou au bout, ou le véhicule en repart). Jamais comme raccourci entre deux autres routes : ce passage coûte
 --   ACCESS_WEIGHT, donc seulement s'il n'existe vraiment aucune autre route (le log le dit).
+-- - (12/11) Auto des réglages véhicule « Routes secondaires » et « Routes tertiaires » : selon le type de véhicule
+--   (roue dentée de chaque ligne : tracteurs, camions et semis, voitures et pick-up, chargeurs et télescopiques,
+--   automoteurs ; Oui / Non pour tous les véhicules), voir RoadTypesVehicles.lua. Non = seulement s'il n'y a pas
+--   d'autre route (x100) ; le « x20 d'origine » des secondaires n'existe plus en Auto.
+-- - (14/11) « Routes secondaires » et « Routes tertiaires » passent des réglages véhicule aux réglages généraux
+--   (onglet Général, gui/globalSettingsPage.xml), avec leur roue dentée : un seul choix pour tous les véhicules ;
+--   en Auto, la roue dentée décide par type de véhicule comme avant.
+-- - (12/11) 4e type « route d'accès » (AccessRoadManager.lua) : dans le cycle de l'éditeur après la tertiaire, dans
+--   la zone d'accès, le coût et le journal.
 -- ============================================================================================================
 
 ADDirtRoads = {}
@@ -57,7 +66,7 @@ AutoDrive.colors.ad_color_dirtSingleConnection = { 1, 0.41, 0.71, 1 }
 AutoDrive.colors.ad_color_dirtDualConnection = { 0.6, 0.2, 1, 1 }
 AutoDrive.colors.ad_color_dirtNode = { 1, 0.41, 0.71, 0.3 }
 
--- réglage véhicule : menu véhicule FP
+-- réglage général (14/11, avant : réglage véhicule) : onglet Général, avec la roue dentée par type de véhicule
 AutoDrive.settings.dirtRoads = {
     values = { ADDirtRoads.MODE_AUTO, ADDirtRoads.MODE_NEVER, ADDirtRoads.MODE_ALLOWED },
     texts = { "gui_ad_dirtRoads_auto", "gui_ad_dirtRoads_never", "gui_ad_dirtRoads_allowed" },
@@ -66,12 +75,11 @@ AutoDrive.settings.dirtRoads = {
     text = "gui_ad_dirtRoads",
     tooltip = "gui_ad_dirtRoads_tooltip",
     translate = true,
-    isVehicleSpecific = true,
-    isUserSpecific = false,
-    isCopyPaste = true
+    isVehicleSpecific = false, -- (14/11) réglage général, un seul choix pour tous les véhicules
+    isUserSpecific = false
 }
 
--- réglage véhicule : routes secondaires (08/11)
+-- réglage général (14/11, avant : réglage véhicule) : routes secondaires (08/11)
 AutoDrive.settings.secondaryRoads = {
     values = { ADDirtRoads.MODE_AUTO, ADDirtRoads.MODE_NEVER, ADDirtRoads.MODE_ALLOWED },
     texts = { "gui_ad_secondaryRoads_auto", "gui_ad_dirtRoads_never", "gui_ad_dirtRoads_allowed" },
@@ -80,9 +88,8 @@ AutoDrive.settings.secondaryRoads = {
     text = "gui_ad_secondaryRoads",
     tooltip = "gui_ad_secondaryRoads_tooltip",
     translate = true,
-    isVehicleSpecific = true,
-    isUserSpecific = false,
-    isCopyPaste = true
+    isVehicleSpecific = false, -- (14/11) réglage général, un seul choix pour tous les véhicules
+    isUserSpecific = false
 }
 
 -- réglage général : menu général FP
@@ -115,22 +122,30 @@ function ADDirtRoads.isDirtId(wayPointId)
     return wayPointId ~= nil and ADDirtRoads.isDirt(ADGraphManager:getWayPointById(wayPointId))
 end
 
--- type suivant (Maj gauche + clic) : primaire -> secondaire -> chemin de terre -> primaire + intersection ->
--- secondaire + intersection -> primaire ; les autres drapeaux (point de champ…) sont gardés
+-- type suivant (Maj gauche + clic) : primaire -> secondaire -> chemin de terre -> route d'accès (12/11) ->
+-- primaire + intersection -> secondaire + intersection -> primaire ; les autres drapeaux (point de champ…) sont gardés
 function ADDirtRoads.nextFlags(flags)
     flags = flags or 0
     local SUB, INTER, DIRT = AutoDrive.FLAG_SUBPRIO, AutoDrive.FLAG_INTERSECTION, AutoDrive.FLAG_DIRT_ROAD
-    local others = bit32.band(flags, bit32.bnot(SUB + INTER + DIRT))
+    local ACCESS = AutoDrive.FLAG_ACCESS_ROAD or 0 -- route d'accès (AccessRoadManager.lua)
+    local others = bit32.band(flags, bit32.bnot(SUB + INTER + DIRT + ACCESS))
     local subPrio = bit32.band(flags, SUB) > 0
     local intersection = bit32.band(flags, INTER) > 0
     local dirt = bit32.band(flags, DIRT) > 0
+    local access = ACCESS > 0 and bit32.band(flags, ACCESS) > 0
     if intersection then
-        if subPrio or dirt then
+        if subPrio or dirt or access then
             return others                       -- secondaire + intersection -> primaire
         end
         return others + SUB + INTER             -- primaire + intersection -> secondaire + intersection
     end
+    if access then
+        return others + INTER                   -- route d'accès -> primaire + intersection
+    end
     if dirt then
+        if ACCESS > 0 then
+            return others + ACCESS              -- chemin de terre -> route d'accès
+        end
         return others + INTER                   -- chemin de terre -> primaire + intersection
     end
     if subPrio then
@@ -143,6 +158,7 @@ end
 -- (sauf si la courbe est déjà secondaire)
 function ADDirtRoads.inheritFlags(flags, startId, targetId)
     flags = flags or 0
+    if ADAccessRoads ~= nil then local accessFlags = ADAccessRoads.inheritFlags(flags, startId, targetId) if accessFlags ~= nil then return accessFlags end end -- route d'accès d'abord (AccessRoadManager.lua)
     if bit32.band(flags, AutoDrive.FLAG_SUBPRIO) > 0 or bit32.band(flags, AutoDrive.FLAG_DIRT_ROAD) > 0 then
         return flags
     end
@@ -189,6 +205,7 @@ function ADDirtRoads.isAllowed(vehicle)
     elseif mode == ADDirtRoads.MODE_ALLOWED then
         return true, "réglage Autorisés"
     end
+    if ADRoadTypes ~= nil then return ADRoadTypes.allowed("tertiary", vehicle) end -- (12/11) Auto : selon le type de véhicule (RoadTypesVehicles.lua)
     if ADDirtRoads.isTruck(vehicle) then
         return false, "Auto : camion"
     end
@@ -229,28 +246,31 @@ function ADDirtRoads.accessPoints(startID, targetID)
         return access
     end
     local queue = {}
-    local function push(id)
+    local function push(id, from)
         local p = id ~= nil and network[id] or nil
-        if p ~= nil and not access[id] and ADDirtRoads.isDirt(p) then
+        local typed = p ~= nil and ADDirtRoads.isDirt(p)
+        if ADAccessRoads ~= nil and p ~= nil then typed = ADAccessRoads.canSpread(from, p) end -- (12/11) routes d'accès aussi (AccessRoadManager.lua)
+        if p ~= nil and not access[id] and typed then
             access[id] = true
             queue[#queue + 1] = p
         end
     end
     -- départ : seulement s'il est lui-même sur la tertiaire (un départ à côté d'une tertiaire n'en fait pas un raccourci)
-    push(startID)
+    push(startID, nil)
     -- destination : dessus, ou au bout (point voisin)
     local target = targetID ~= nil and network[targetID] or nil
     if target ~= nil then
-        push(targetID)
-        for _, n in pairs(target.out or {}) do push(n) end
-        for _, n in pairs(target.incoming or {}) do push(n) end
+        push(targetID, nil)
+        local from = access[targetID] and target or nil
+        for _, n in pairs(target.out or {}) do push(n, from) end
+        for _, n in pairs(target.incoming or {}) do push(n, from) end
     end
     local i = 1
     while queue[i] ~= nil do
         local p = queue[i]
         i = i + 1
-        for _, n in pairs(p.out or {}) do push(n) end
-        for _, n in pairs(p.incoming or {}) do push(n) end
+        for _, n in pairs(p.out or {}) do push(n, p) end
+        for _, n in pairs(p.incoming or {}) do push(n, p) end
     end
     return access
 end
@@ -264,12 +284,17 @@ function ADDirtRoads.wrapDriveTime(baseFunc, vehicle, startID, targetID)
     local cap = ADDirtRoads.SEARCH_SPEED * dirtSpeed / routeSpeed
     local factor = allowed and 1 or ADDirtRoads.NEVER_FACTOR
     local isDirt = ADDirtRoads.isDirt
+    local accessRoads = ADAccessRoads -- (12/11) route d'accès traversée : THROUGH_WEIGHT (AccessRoadManager.lua)
     return function(a, b, c)
+        local cost
         if isDirt(a) or isDirt(b) then
             local through = (isDirt(a) and not access[a.id]) or (isDirt(b) and not access[b.id])
-            return ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) * factor + (through and accessWeight or 0)
+            cost = ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) * factor + (through and accessWeight or 0)
+        else
+            cost = baseFunc(a, b, c)
         end
-        return baseFunc(a, b, c)
+        if accessRoads ~= nil then cost = cost + accessRoads.extraCost(a, b, access) end
+        return cost
     end
 end
 
@@ -287,6 +312,7 @@ function ADDirtRoads.secondaryFactor(vehicle)
     -- Auto : raccourcis permis sur les secondaires :
     -- tracteurs = raccourci pris dès qu'il fait gagner du temps ; camions et semis = comme AutoDrive d'origine (x20)
     -- (calcul sans véhicule : comme AutoDrive d'origine)
+    if vehicle ~= nil and ADRoadTypes ~= nil then return ADRoadTypes.allowed("secondary", vehicle) and 1 or ADDirtRoads.NEVER_FACTOR end -- (12/11) Auto : selon le type de véhicule, Non = x100 (RoadTypesVehicles.lua)
     if vehicle == nil or ADDirtRoads.isTruck(vehicle) then
         return ADDirtRoads.SECONDARY_FACTOR_AUTO
     end
@@ -334,6 +360,7 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     if vehicle == nil or wayPoints == nil then
         return
     end
+    if ADAccessRoads ~= nil then FarmPilotCall(ADDirtRoads.logAccessRoute, vehicle, wayPoints) end -- (12/11) route d'accès : sa ligne (AccessRoadManager.lua)
     local count = 0
     for _, wp in ipairs(wayPoints) do
         if ADDirtRoads.isDirt(wp) then
@@ -370,6 +397,25 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     end
 end
 
+-- route d'accès : même zone d'accès que les tertiaires, ligne écrite par AccessRoadManager.lua
+function ADDirtRoads.logAccessRoute(vehicle, wayPoints)
+    local firstWp, lastWp = wayPoints[1], wayPoints[#wayPoints]
+    local hasAccess = false
+    for _, wp in ipairs(wayPoints) do
+        if ADAccessRoads.isAccess(wp) then
+            hasAccess = true
+            break
+        end
+    end
+    if not hasAccess then
+        vehicle.fpAccessRouteLog = nil
+        return
+    end
+    local access = ADDirtRoads.accessPoints(firstWp ~= nil and firstWp.id or nil, lastWp ~= nil and lastWp.id or nil)
+    local name = (vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil) and vehicle.ad.stateModule:getName() or tostring(vehicle.getName ~= nil and vehicle:getName() or "?")
+    ADAccessRoads.logRoute(vehicle, wayPoints, access, name)
+end
+
 -- ------------------------------------------------------------------------------------------------------------
 -- Dessin de l'éditeur (Specialization.lua, AutoDrive.lua)
 -- ------------------------------------------------------------------------------------------------------------
@@ -379,6 +425,8 @@ function ADDirtRoads.previewColors(sectionWayPoint, single, dual)
     local c = AutoDrive.currentColors
     if bit32.band(nextFlags, AutoDrive.FLAG_INTERSECTION) > 0 then
         return c.ad_color_intersectionConnection, c.ad_color_intersectionConnection
+    elseif AutoDrive.FLAG_ACCESS_ROAD ~= nil and bit32.band(nextFlags, AutoDrive.FLAG_ACCESS_ROAD) > 0 then
+        return c.ad_color_accessSingleConnection, c.ad_color_accessDualConnection -- route d'accès (AccessRoadManager.lua)
     elseif bit32.band(nextFlags, AutoDrive.FLAG_DIRT_ROAD) > 0 then
         return c.ad_color_dirtSingleConnection, c.ad_color_dirtDualConnection
     elseif bit32.band(nextFlags, AutoDrive.FLAG_SUBPRIO) > 0 then
@@ -392,6 +440,11 @@ function ADDirtRoads.splinePreviewColor(startWp, endWp, isDual, collisionFree, c
     if not collisionFree or startWp == nil or endWp == nil then
         return color
     end
+    if ADAccessRoads ~= nil then -- (12/11) route d'accès : orange foncé / orange clair (AccessRoadManager.lua)
+        local single, dual = ADAccessRoads.lineColors(ADGraphManager:getWayPointById(startWp.id), ADGraphManager:getWayPointById(endWp.id))
+        if single ~= nil then return isDual and dual or single end
+        return color
+    end
     if ADDirtRoads.isDirtId(startWp.id) or ADDirtRoads.isDirtId(endWp.id) then
         return isDual and AutoDrive.currentColors.ad_color_dirtDualConnection or AutoDrive.currentColors.ad_color_dirtSingleConnection
     end
@@ -400,6 +453,11 @@ end
 
 -- carte du menu : ligne rose (sens unique) ou violette (double sens)
 function ADDirtRoads.mapColor(node, outNode, r, g, b, a)
+    if ADAccessRoads ~= nil and not ADGraphManager:isReverseRoad(node, outNode) then -- (12/11) route d'accès : orange foncé / orange clair (AccessRoadManager.lua)
+        local single, dual = ADAccessRoads.lineColors(node, outNode)
+        if single == nil then return r, g, b, a end
+        return unpack(ADGraphManager:isDualRoad(node, outNode) and dual or single)
+    end
     if not (ADDirtRoads.isDirt(node) or ADDirtRoads.isDirt(outNode)) or ADGraphManager:isReverseRoad(node, outNode) then
         return r, g, b, a
     end

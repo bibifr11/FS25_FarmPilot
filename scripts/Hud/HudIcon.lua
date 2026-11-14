@@ -94,6 +94,10 @@ function ADHudIcon.drawRounded(ov, uiScale, roundTop, roundBottom, color, topLim
     end
     local cw, ch = getNormalizedScreenValues(ADHudIcon.CORNER_PX * (uiScale or 1), ADHudIcon.CORNER_PX * (uiScale or 1))
     cw, ch = math.min(sx(cw), (right - left) / 2), math.min(sy(ch), (top - bottom) / 2)
+    -- (12/11) coins en pixels entiers : un bandeau d'un nombre impair de pixels donnait une demi-hauteur à cheval sur un
+    -- pixel ; le jeu arrondit position et taille chacune de son côté, la bande du haut et le rectangle du bas ne se
+    -- touchaient plus et laissaient passer une ligne de l'image du jeu au milieu du bandeau
+    cw, ch = math.floor(cw * sw) / sw, math.floor(ch * sh) / sh
     local b2, t2 = bottom, top
     if roundBottom then
         drawFilledRect(left + cw, bottom, right - left - 2 * cw, ch, r, g, b, a)
@@ -143,6 +147,10 @@ function ADHudIcon:renderDefaultText(vehicle, fontSize, posX, posY)
     textToShow = self:addTooltipString(vehicle, textToShow)    
 
     local taskInfo = vehicle.ad.stateModule:getCurrentLocalizedTaskInfo()
+    local hudInfo = vehicle.ad.stateModule.fpHudTaskInfo -- « Conduire - <but> » long ou court, voir DriveGoal.lua
+    if hudInfo ~= nil and ADDriveGoal ~= nil and ADDriveGoal.plain(hudInfo) == taskInfo then
+        taskInfo = hudInfo
+    end
     if taskInfo ~= "" then
         textToShow = textToShow .. " - " .. taskInfo
     end
@@ -254,15 +262,37 @@ function ADHudIcon:splitTextByLength(text, fontSize, maxLength)
         table.insert(textParts, text:sub(start, i - 1))
         start = i + 3
     end
+    -- (11/11) « Conduire - <but> » (DriveGoal.lua) : la forme la plus longue qui tient sur la ligne (avec le lieu,
+    -- sans le lieu, sans le produit...) ; les autres parties sont inchangées
+    local shown = ADDriveGoal ~= nil and ADDriveGoal.shown or function(part) return part end
+    local levels = ADDriveGoal ~= nil and ADDriveGoal.LEVELS or 1
+    local function fits(text)
+        return getTextWidth(fontSize, text) <= maxLength
+    end
+    -- forme de la partie qui tient derrière before (nil si aucune), ou seule sur sa ligne (before nil)
+    local function bestFit(part, before)
+        for level = 1, levels do
+            local text = shown(part, level)
+            local candidate = before ~= nil and (before .. " - " .. text) or text
+            if fits(candidate) then
+                return candidate
+            end
+        end
+        if before == nil then
+            return shown(part, levels)
+        end
+        return nil
+    end
     local lines = {}
-    local line = textParts[1]
+    local line = bestFit(textParts[1], nil)
     local index = 2
     while index <= #textParts do
-        if getTextWidth(fontSize, line .. " - " .. textParts[index]) > maxLength then
-            table.insert(lines, line)
-            line = textParts[index]
+        local joined = bestFit(textParts[index], line)
+        if joined ~= nil then
+            line = joined
         else
-            line = line .. " - " .. textParts[index]
+            table.insert(lines, line)
+            line = bestFit(textParts[index], nil)
         end
         index = index + 1
     end

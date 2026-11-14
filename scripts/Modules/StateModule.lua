@@ -120,6 +120,7 @@ function ADStateModule:readFromXMLFile(xmlFile, key)
     end
 
     self:loadAutonomousState(xmlFile, key) -- FarmPilot mode Autonome, voir StateModuleAutonomous.lua
+    if ADSavegameResume ~= nil then ADSavegameResume.load(self, xmlFile, key) end -- « Collecter et livrer » : phase avant la sauvegarde, voir SavegameResume.lua
 
     local fillType = xmlFile:getValue(key .. "#fillType")
     if fillType ~= nil then
@@ -213,6 +214,7 @@ function ADStateModule:saveToXMLFile(xmlFile, key)
         xmlFile:setValue(key .. "#secondMarkerName", self.secondMarker.name or "")
     end
     self:saveAutonomousState(xmlFile, key) -- FarmPilot mode Autonome, voir StateModuleAutonomous.lua
+    if ADSavegameResume ~= nil then ADSavegameResume.save(self, xmlFile, key) end -- « Collecter et livrer » : phase en cours, voir SavegameResume.lua
     xmlFile:setValue(key .. "#fillType", self.fillType)
     xmlFile:setValue(key .. "#selectedFillTypes", table.concat(self.selectedFillTypes, ','))
     xmlFile:setValue(key .. "#loadByFillLevel", self.loadByFillLevel)
@@ -295,6 +297,7 @@ function ADStateModule:doReadStream(streamId)
     self:readAutonomousState(streamId) -- FarmPilot mode Autonome (même ordre qu'à l'écriture), voir StateModuleAutonomous.lua
 
     self.currentLocalizedTaskInfo = AutoDrive.localize(self.currentTaskInfo)
+    if ADDriveGoal ~= nil then self.fpHudTaskInfo = self.currentLocalizedTaskInfo; self.currentLocalizedTaskInfo = ADDriveGoal.plain(self.fpHudTaskInfo) end -- titre de l'ATH, voir DriveGoal.lua
 end
 
 function ADStateModule:writeStream(streamId)
@@ -605,6 +608,7 @@ function ADStateModule:setCurrentTaskInfo(text)
     if text ~= nil and text ~= self.currentTaskInfo then
         self.currentTaskInfo = text
         self.currentLocalizedTaskInfo = AutoDrive.localize(text)
+        if ADDriveGoal ~= nil then self.fpHudTaskInfo = self.currentLocalizedTaskInfo; self.currentLocalizedTaskInfo = ADDriveGoal.plain(self.fpHudTaskInfo) end -- titre de l'ATH, voir DriveGoal.lua
         self:raiseDirtyFlag()
     end
 end
@@ -942,6 +946,7 @@ end
 function ADStateModule:setSelectedFillTypes(selectedFillTypes)
     if selectedFillTypes and #selectedFillTypes > 0 then
         local supportedFillTypes, _ = AutoDrive.getValidSupportedFillTypesALfirst(self.vehicle)
+        if ADLoadPoint ~= nil and not _ then supportedFillTypes = ADLoadPoint.allowedFillTypes(self.vehicle, supportedFillTypes) end -- produits du point de chargement, voir HudLoadPoint.lua
         if supportedFillTypes and #supportedFillTypes > 0 then
             for _, selectedFillType in pairs(selectedFillTypes) do
                 -- remove not supported fillType
@@ -965,6 +970,7 @@ end
 function ADStateModule:setFillType(fillTypeID)
     if fillTypeID > 0 and self.fillType ~= fillTypeID then
         local supportedFillTypes, hasAL = AutoDrive.getValidSupportedFillTypesALfirst(self.vehicle)
+        if ADLoadPoint ~= nil and not hasAL then supportedFillTypes = ADLoadPoint.allowedFillTypes(self.vehicle, supportedFillTypes) end -- produits du point de chargement, voir HudLoadPoint.lua
         if hasAL then
             if fillTypeID == AutoDrive.UAL_FILLTYPE_ALL then
                 self.fillType = fillTypeID

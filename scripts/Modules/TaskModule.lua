@@ -93,6 +93,7 @@ end
 function ADTaskModule:update(dt)
     if self.activeTask ~= nil and self.activeTask.update ~= nil then
         local taskInfo = self.activeTask:getI18nInfo()
+        if ADDriveGoal ~= nil then taskInfo = ADDriveGoal.apply(self.vehicle, self.activeTask, taskInfo) end -- « Conduire - <but> », voir DriveGoal.lua
         self.activeTask:update(dt)
         self.vehicle.ad.stateModule:getCurrentMode():monitorTasks(dt)
         -- 28/10 18:28: while it waits (two-way track, red points, queue) or manoeuvres for another vehicle, the HUD says
@@ -259,6 +260,7 @@ function ADTaskModule:onTaskChange()
     local taskInfo = ""
     if self.activeTask ~= nil then
         taskInfo = self.activeTask:getI18nInfo()
+        if ADDriveGoal ~= nil then taskInfo = ADDriveGoal.apply(self.vehicle, self.activeTask, taskInfo) end -- « Conduire - <but> », voir DriveGoal.lua
     end
     if self.lastTaskInfo ~= taskInfo then
         self:onTaskInfoChange(taskInfo)

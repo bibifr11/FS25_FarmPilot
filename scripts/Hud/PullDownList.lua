@@ -135,6 +135,7 @@ function ADPullDownList:createSelection_FpTool(vehicle)
     local ok, list
     if self.fpTrailer then
         ok, list = FarmPilotCall(ADTrailerHitch.fetchableTrailers, vehicle)
+        if ok and ADLoadPoint ~= nil then local okF, fit = FarmPilotCall(ADLoadPoint.trailerOptions, vehicle); if okF and fit ~= nil then list = fit end end -- remorques adaptées seulement, voir HudLoadPoint.lua
     elseif self.fpFront then
         ok, list = FarmPilotCall(ADAutonomousManager.fetchableFrontTools, vehicle)
     else
@@ -146,7 +147,7 @@ function ADPullDownList:createSelection_FpTool(vehicle)
     self.fpToolList = {}
     self.options = {}
     self.options[1] = {}
-    self.options[1][1] = {displayName = g_i18n:getText(self.fpTrailer and "AD_trailer_listNone" or (self.fpNext and "AD_autonomous_nextToolListNone" or "AD_autonomous_toolListNone")), returnValue = 0}
+    self.options[1][1] = {displayName = g_i18n:getText(self.fpHeader and "AD_header_listAuto" or (self.fpTrailer and "AD_trailer_listNone" or (self.fpNext and "AD_autonomous_nextToolListNone" or "AD_autonomous_toolListNone"))), returnValue = 0} -- fpHeader : lignes « Barre », voir HudHarvester.lua
     for i, e in ipairs(list) do
         self.fpToolList[i] = e
         self.options[1][i + 1] = {displayName = e.name, returnValue = i}
@@ -589,6 +590,7 @@ function ADPullDownList:createSelection_FillType()
         end
         if self.autoLoadFillTypes == nil then
             supportedFillTypes = AutoDrive.getValidSupportedFillTypes(vehicle)
+            if ADLoadPoint ~= nil then supportedFillTypes = ADLoadPoint.fillTypeOptions(vehicle) or supportedFillTypes end -- produits du point de chargement, voir HudLoadPoint.lua
         end
     end
 
@@ -647,6 +649,7 @@ function ADPullDownList:getNewState_Target(vehicle)
         else
             self.text = ""
         end
+        if ADStateModule ~= nil and ADStateModule.fieldLineText ~= nil then self.text = ADStateModule.fieldLineText(vehicle) or self.text end -- (14/11) garé après son dernier champ : « Champ : aucun », voir StateModuleFieldClear.lua
     end
     return newState, newSelection
 end
@@ -679,6 +682,9 @@ function ADPullDownList:getNewState_FillType(vehicle)
         if self.state == ADPullDownList.STATE_COLLAPSED and self.fpTrailer then
             local trailer = self:fpGetTool(vehicle)
             self.text = trailer ~= nil and string.format(g_i18n:getText("AD_trailer_row"), ADTrailerHitch.label(trailer)) or g_i18n:getText("AD_trailer_rowNone")
+            if ADLoadPoint ~= nil then self.text = ADLoadPoint.trailerRowText(vehicle) or self.text end -- remorque adaptée aux produits choisis, voir HudLoadPoint.lua
+        elseif self.state == ADPullDownList.STATE_COLLAPSED and self.fpHeader and ADHarvesterHud ~= nil then
+            self.text = ADHarvesterHud.collapsedText(self, vehicle) -- lignes « Barre » (moissonneuse, ensileuse), voir HudHarvester.lua
         elseif self.state == ADPullDownList.STATE_COLLAPSED and self.fpFront then
             local tool = self:fpGetTool(vehicle)
             if tool ~= nil then
@@ -868,6 +874,7 @@ function ADPullDownList:expand(vehicle)
         self:createSelection_FpTool(vehicle)
     elseif self.type == ADPullDownList.TYPE_FILLTYPE then
         self:restoreFillTypeOptions()
+        if ADLoadPoint ~= nil and vehicle ~= nil and ADLoadPoint.MODES[vehicle.ad.stateModule:getMode()] then self:createSelection_FillType(); self:sortFillTypes() end -- produits du point de chargement, voir HudLoadPoint.lua
     end
     local itemCount = self:getItemCount()
     if itemCount > 0 then

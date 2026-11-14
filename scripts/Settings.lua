@@ -14,6 +14,20 @@ isCopyPaste - this setting could be copy and paste from one vehicle to another
 
 AutoDrive.settings = {}
 
+-- FarmPilot (14/11) : « Clignotant automatique » devient un simple Oui/Non (Oui = 70°, la valeur validée en jeu).
+-- L'angle reste utilisé par TurnLights.lua / TurnLightsBends.lua. Ancien index enregistré (3 à 17) : remis à
+-- Oui par AutoDrive.getSetting (index hors liste = défaut), voir aussi scripts/Utils/AutoDriveReglages.lua.
+AutoDrive.settings.blinkValue = {
+    values = {0, 70},
+    texts = {"gui_ad_no", "gui_ad_yes"},
+    default = 2,
+    current = 2,
+    text = "gui_ad_blinkValue",
+    tooltip = "gui_ad_blinkValue_tooltip",
+    translate = true,
+    isVehicleSpecific = false
+}
+--[==[ Mis de côté (14/11) : angle réglable de 0 à 160° (0 = clignotants désactivés)
 AutoDrive.settings.blinkValue = {
     values = {
         0,
@@ -60,6 +74,7 @@ AutoDrive.settings.blinkValue = {
     translate = false,
     isVehicleSpecific = false
 }
+]==]
 
 AutoDrive.settings.collisionHeigth = {
     values = {
@@ -453,7 +468,7 @@ AutoDrive.settings.findDriver = {
 AutoDrive.settings.guiScale = {
     values = {0, 0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5,1.55,1.6,1.65,1.7,1.75,1.8,1.85,1.9,1.95,2},
     texts = {
-        "Default",
+        "gui_ad_default", -- traduit (« Par défaut »), voir SettingsPage.lua
         "40%",
         "45%",
         "50%",
@@ -938,8 +953,8 @@ AutoDrive.settings.maxTriggerDistanceVehicle = {
 AutoDrive.settings.useBeaconLights = {
     values = {false, true},
     texts = {"gui_ad_no", "gui_ad_yes"},
-    default = 1,
-    current = 1,
+    default = 2, -- (11/11) gyrophares à Oui par défaut (avant : Non)
+    current = 2,
     text = "gui_ad_useBeaconLights",
     tooltip = "gui_ad_useBeaconLights_tooltip",
     translate = true,
@@ -1313,8 +1328,8 @@ AutoDrive.settings.autostartHelpers = {
 AutoDrive.settings.detectSwath = {
     values = {false, true},
     texts = {"gui_ad_no", "gui_ad_yes"},
-    default = 2,
-    current = 2,
+    default = 1, -- (14/11) Non à l'achat (avant : Oui), modifiable ensuite véhicule par véhicule
+    current = 1,
     text = "gui_ad_detectSwath",
     tooltip = "gui_ad_detectSwath_tooltip",
     translate = true,
@@ -1338,8 +1353,8 @@ AutoDrive.settings.colorAssignmentMode = {
 AutoDrive.settings.FoldImplements = {
     values = {false, true},
     texts = {"gui_ad_no", "gui_ad_yes"},
-    default = 1,
-    current = 1,
+    default = 2, -- (14/11) Oui à l'achat (avant : Non), modifiable ensuite véhicule par véhicule
+    current = 2,
     text = "gui_ad_FoldImplements",
     tooltip = "gui_ad_FoldImplements_tooltip",
     translate = true,

@@ -41,7 +41,7 @@ ADPathCalculator.SHIFT_RUN_MAX = 120           -- m, a longer run is a narrow ro
 ADPathCalculator.SHIFT_FRONT_MARGIN = 2        -- m moved before the nose reaches the obstacle
 ADPathCalculator.SHIFT_REAR_MARGIN = 2         -- m moved after the end of the train passed it
 
-ADPathCalculator.SHIFT_DEBUG = true
+ADPathCalculator.SHIFT_DEBUG = false
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils

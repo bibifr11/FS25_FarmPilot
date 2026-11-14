@@ -22,6 +22,12 @@
 -- repartir, le mode en calcule plusieurs pour choisir par où reprendre un outil (AutonomousNoseIn.lua), et la
 -- première de ces routes d'essai prenait le point pour elle seule (essai du 11/11 12:47).
 --
+-- (13/11) Route lâchée en chemin puis recalculée (la moissonneuse qui suit la remorque de sa barre) : dans une
+-- courbe à un embranchement, le point le mieux placé devant le nez était celui de l'autre branche, et la nouvelle
+-- route faisait le tour par là (essai du 13/11 21:44 : 502 m au lieu de 190, arrivée par l'autre bout de la route).
+-- Le mode note le point de la route lâchée qui est devant le véhicule (setJoinedWayPoint avec sa portée) : la
+-- route suivante repart de là.
+--
 -- Branché par : ADGraphManager:getPathTo (GraphManager.lua) ; ADFrontBackOffTask (FrontPlaceTask.lua) ;
 -- register.lua (chargé après GraphManager.lua).
 -- ============================================================================================================
@@ -161,14 +167,16 @@ end
 -- Point de route rejoint par une courbe calculée : départ de la route qui suit
 -- ------------------------------------------------------------------------------------------------------------
 -- à appeler quand le véhicule arrive au point id par une courbe (pas par le réseau)
-function ADGraphManager.setJoinedWayPoint(vehicle, id)
+-- (13/11) aussi quand une route est lâchée en chemin puis recalculée : le point qu'elle suivait, devant le véhicule
+-- (range : m au plus entre le véhicule et ce point, JOINED_RANGE sinon ; why : la fin de la ligne du journal)
+function ADGraphManager.setJoinedWayPoint(vehicle, id, range, why)
     if vehicle ~= nil and vehicle.ad ~= nil and id ~= nil then
         local x, z = nil, nil
         if vehicle.components ~= nil and vehicle.components[1] ~= nil then
             local px, _, pz = getWorldTranslation(vehicle.components[1].node)
             x, z = px, pz
         end
-        vehicle.ad.fpJoinedWayPoint = { id = id, time = g_time or 0, x = x, z = z }
+        vehicle.ad.fpJoinedWayPoint = { id = id, time = g_time or 0, x = x, z = z, range = range, why = why }
     end
 end
 
@@ -183,8 +191,8 @@ function ADGraphManager:joinedStart(vehicle, x, z)
     local now = g_time or 0
     local distance = wp ~= nil and wp.x ~= nil and MathUtil.vector2Length(wp.x - x, wp.z - z) or nil
     local moved = joined.x ~= nil and MathUtil.vector2Length(joined.x - x, joined.z - z) or 0
-    if distance == nil or now < joined.time or now - joined.time > ADGraphManager.JOINED_TIME or distance > ADGraphManager.JOINED_RANGE
-        or moved > ADGraphManager.JOINED_MOVED then
+    if distance == nil or now < joined.time or now - joined.time > ADGraphManager.JOINED_TIME
+        or distance > (joined.range or ADGraphManager.JOINED_RANGE) or moved > ADGraphManager.JOINED_MOVED then
         vehicle.ad.fpJoinedWayPoint = nil
         if ADTraces ~= nil then -- traces privées
             ADTraces.log("[AD-Route] point %s rejoint par la courbe : ne vaut plus comme départ (à %s m, véhicule déplacé de %.1f m, noté depuis %d ms)",
@@ -195,7 +203,8 @@ function ADGraphManager:joinedStart(vehicle, x, z)
     if not joined.logged and ADAutonomousManager ~= nil and ADAutonomousManager.log ~= nil then
         joined.logged = true -- une ligne au journal, pas une par route
         local name = vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule.getName ~= nil and vehicle.ad.stateModule:getName() or "?"
-        ADAutonomousManager.log("%s : la route repart du point %s, rejoint par la courbe (à %.1f m)", tostring(name), tostring(joined.id), distance)
+        ADAutonomousManager.log("%s : la route repart du point %s, %s (à %.1f m)", tostring(name), tostring(joined.id),
+            joined.why or "rejoint par la courbe", distance)
     end
     return joined.id
 end

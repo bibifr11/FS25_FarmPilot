@@ -64,8 +64,8 @@
 		<text name="input_ADCopySettings"								text="FP - Copier les réglages" />
 		<text name="input_ADPasteSettings"								text="FP - Coller les réglages" />
 		<text name="input_ADCreateFieldPoints"							text="FP - Créer les points de champ" />
-		<text name="hud_avoidFruit"									text="AD: Éviter les cultures" />
-		<text name="hud_startHelper"									text="AD: Démarrer AI/CP à la destination" />
+		<text name="hud_avoidFruit"									text="FP - Éviter les cultures" />
+		<text name="hud_startHelper"									text="FP - Démarrer AI/CP à la destination" />
 		<text name="AD_parkVehicle_noPosSet"							text="Pas de parking attribué. Veuillez sélectionner la (Destination actuelle) et corriger avec le clic droit de souris sur le 'P' HUD." />
 		<text name="AD_parkVehicle_selected"							text="Parking assigné: " />
 		<text name="AD_parkVehicle_deleted"							text="Le parking en destination a été supprimé !" />
@@ -80,7 +80,7 @@
 		<text name="AD_No_Shovel"										text="Ne trouve pas de godet" />
 		<text name="AD_No_Refuel_Station"								text="n'a pas pu trouver une station essence pour:" />
 		<text name="AD_No_Repair_Station"								text="n'a pas pu trouver un atelier pour:" />
-		<text name="AD_Wrong_Mode_takeover_from_CP"					text="Ce mode AD ne fonctionne en conbinaison avec le CP" />
+		<text name="AD_Wrong_Mode_takeover_from_CP"					text="Ce mode FarmPilot ne fonctionne pas en combinaison avec Courseplay" />
 		<text name="AD_Unable_to_start_AIJob"							text="Impossible de démarrer l'ouvrier" />
 		<text name="AD_AIJob_active"									text="Ouvrier encore actif !" />
 		<text name="AD_MODE_DRIVETO"									text="Conduite" />
@@ -101,7 +101,7 @@
 		<text name="gui_ad_collisionHeigth"							text="Hauteur de collision au sol" />
 		<text name="gui_ad_collisionHeigth_tooltip"					text="Réglage de la détection de collision devant le véhicule. Si d'autres véhicules ne sont pas détectés pendant la conduite, réduisez progressivement.(Par défaut 2m)" />
 		<text name="gui_ad_blinkValue"									text="Clignotant automatique" />
-		<text name="gui_ad_blinkValue_tooltip"							text="Angle de braquage pour activer automatiquement les clignotants. (0 = clignotants désactivés)" />
+		<text name="gui_ad_blinkValue_tooltip"							text="Oui : le clignotant s'allume avant les virages et les croisements (à la « Distance clignotant »). Non : pas de clignotant automatique." />
 		<text name="gui_ad_pipe_offset"								text="Décalage de la goulotte" />
 		<text name="gui_ad_pipe_offset_tooltip"						text="Décalage ajouté à la position détectée de la goulotte" />
 		<text name="gui_ad_followDistance"								text="Distance de moissonneuse" />
@@ -221,16 +221,18 @@
 		<text name="gui_ad_autoRefuel_tooltip"							text="Se dirige automatiquement vers la station essence la plus proche lorsque l'indicateur de maintenance est bas. Doit être connectée au réseau." />
 		<text name="gui_ad_autoRepair"									text="Réparer automatiquement" />
 		<text name="gui_ad_autoRepair_tooltip"							text="Se dirige automatiquement vers l'atelier le plus proche lorsque l'indicateur de maintenance est bas. Doit être connecté au réseau." />
+		<text name="gui_ad_fpTireChange" text="Changer les pneus à" />
+		<text name="gui_ad_fpTireChange_tooltip" text="Avec AutoSwitch : quand un pneu du tracteur ou d'un outil attelé n'a plus que ce % restant, le tracteur va à l'atelier changer les pneus usés (comme le bouton « Pneus neufs »), après son travail en cours (tout de suite sous 5 %). Non : jamais." />
 		<text name="gui_ad_filter"										text="Filtrer" />
 		<text name="gui_ad_enterDestinationFilterTitle"				text="Changer le filtre de destination" />
 		<text name="gui_ad_enterDestinationFilterText"					text="Entrez le filtre de destination:" />
 		<text name="gui_ad_shovelHeight"								text="Hauteur du godet" />
 		<text name="gui_ad_shovelHeight_tooltip"						text="Ajuster la hauteur du godet si la détection automatique n'est pas correcte." />
-		<text name="gui_ad_showMarkersOnMap"							text="Afficher les destinations AD" />
+		<text name="gui_ad_showMarkersOnMap"							text="Afficher les destinations sur la carte" />
 		<text name="gui_ad_showMarkersOnMap_tooltip"					text="Afficher les destinations/marqueurs FarmPilot sur la carte." />
 		<text name="gui_ad_mainMenuMap"								text="Carte du menu principal" />
 		<text name="gui_ad_ingameMap"									text="Carte en jeu" />
-		<text name="gui_ad_both"										text="Both" />
+		<text name="gui_ad_both"										text="Les deux" />
 		<text name="gui_ad_switchToMarkersOnMap"						text="Clic sur destinations" />
 		<text name="gui_ad_switchToMarkersOnMap_tooltip"				text="Définissez la destination en cliquant sur son marqueur depuis la carte." />
 		<text name="gui_ad_cornerSpeed"								text="Vitesse dans les virages" />
@@ -264,7 +266,7 @@
 		<text name="gui_ad_useForwardTurningManoeuvre"					text="Manoeuvres anticipées" />
 		<text name="gui_ad_useForwardTurningManoeuvre_tooltip"			text="Oui - Les chauffeurs tenteront d'établir une trajectoire pour s'adapter aux virages à 90° de la moissonneuse. / Non - Les chauffeurs feront une marche arrière avant le virage." />
 		<text name="gui_ad_ALUnload"									text="AutoLoad: Position de déchargement" />
-		<text name="gui_ad_ALUnload_tooltip"							text="Off-pas de déchargement automatique / déchargement au centre de la plateforme, gauche, droite du véhicule.La position dépend de la configuration du véhicule et non de l'AD." />
+		<text name="gui_ad_ALUnload_tooltip"							text="Off-pas de déchargement automatique / déchargement au centre de la plateforme, gauche, droite du véhicule.La position dépend de la configuration du véhicule et non de FarmPilot." />
 		<text name="gui_ad_Text_all"									text="All" />
 		<text name="gui_ad_AL_off"										text="Déchargement désactivé" />
 		<text name="gui_ad_AL_center"									text="Déchargement centre" />
@@ -280,7 +282,7 @@
 		<text name="gui_ad_remainingDriveTimeInterval"					text="Temps de trajet restant" />
 		<text name="gui_ad_remainingDriveTimeInterval_tooltip"			text="Pour les autres mods : intervalle de calcul du temps de trajet restant. En cas de ralentissements, augmentez-le ou désactivez-le." />
 		<text name="gui_ad_adpd_showError"								text="FarmPilot : le réseau est incohérent et n'a pas pu être importé, code d'erreur" />
-		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot : voulez-vous importer le réseau AD de ce bâtiment ?" />
+		<text name="gui_ad_adpd_showConfirmation"						text="FarmPilot : voulez-vous importer le réseau de ce bâtiment ?" />
 		<text name="gui_ad_pathfinder"									text="Algorithme de recherche de chemin" />
 		<text name="gui_ad_pathfinder_tooltip"							text="Algorithme utilisé pour trouver un chemin (hors réseau)" />
 		<text name="gui_ad_pathfinder_astar"							text="A-Star + Dubins" />
@@ -290,11 +292,11 @@
 		<text name="gui_ad_autostartHelpers"							text="Relancer les ouvriers" />
 		<text name="gui_ad_autostartHelpers_tooltip"					text="Relance automatiquement les ouvriers actifs après le chargement d'une sauvegarde" />
 		<text name="gui_ad_detectSwath"								text="Détection des andains" />
-		<text name="gui_ad_detectSwath_tooltip"						text="Indique si les andains sont détectés comme culture dans le champ" />
+		<text name="gui_ad_detectSwath_tooltip"						text="Indique si les andains sont détectés comme culture dans le champ. Non à l'achat du véhicule." />
 		<text name="gui_ad_colorAssignmentMode"						text="Couleurs personnalisées" />
 		<text name="gui_ad_colorAssignmentMode_tooltip"				text="Permet de choisir des couleurs personnalisées pour FarmPilot" />
 		<text name="gui_ad_FoldImplements"								text="Replier les outils" />
-		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot attend que les outils soient repliés avant de partir" />
+		<text name="gui_ad_FoldImplements_tooltip"						text="FarmPilot attend que les outils soient repliés avant de partir. Oui à l'achat du véhicule." />
 		<text name="gui_ad_RecordWhileNotInVehicle"					text="Enregistrer sans conducteur" />
 		<text name="gui_ad_RecordWhileNotInVehicle_tooltip"			text="FarmPilot will keep recording if driver leaves the vehicle" />
 		<text name="gui_ad_RecordDriveDirectionOffset"					text="Décalage d'enregistrement dans le sens de marche" />
@@ -308,10 +310,10 @@
 		<text name="gui_ad_settingsPage_title"							text="Paramètres - FarmPilot" />
 		<text name="gui_ad_userSettingsPage_title"						text="Paramètres utilisateur - FarmPilot" />
 		<text name="gui_ad_vehicleSettingsPage_title"					text="Paramètres de véhicules - FarmPilot" />
-		<text name="gui_ad_combineUnloadSettingsPage_title"			text="Paramètres de déchargements moissonneuses - FarmPilot" />
+		<text name="gui_ad_combineUnloadSettingsPage_title"			text="Déchargement des moissonneuses - FarmPilot" />
 		<text name="gui_ad_debugSettingsPage_title"					text="Paramètres de débogage - FarmPilot" />
-		<text name="gui_ad_eFeaturesSettingsPage_title"				text="Paramètres des fonctionnalités expérimentales - FarmPilot" />
-		<text name="gui_ad_environmentSettingsPage_title"				text="Paramètres des fonctionnalités désactivées - FarmPilot" />
+		<text name="gui_ad_eFeaturesSettingsPage_title"				text="Fonctionnalités expérimentales - FarmPilot" />
+		<text name="gui_ad_environmentSettingsPage_title"				text="Paramètres d'environnement - FarmPilot" />
 		<text name="gui_ad_restoreButtonText"							text="Restaurer" />
 		<text name="gui_ad_settingsClosingDialog_title"				text="Tous les changements seront perdus" />
 		<text name="gui_ad_settingsClosingDialog_text"					text="Êtes-vous sûr de vouloir fermer les paramètres sans enregistrer ?" />
@@ -375,12 +377,55 @@
 		<text name="ad_color_dirtSingleConnection" text="32 ligne route tertiaire à sens unique" />
 		<text name="ad_color_dirtDualConnection" text="33 ligne route tertiaire à double sens" />
 		<text name="ad_color_dirtNode" text="34 point de passage route tertiaire" />
+		<text name="ad_color_accessSingleConnection" text="35 ligne route d'accès à sens unique" />
+		<text name="ad_color_accessDualConnection" text="36 ligne route d'accès à double sens" />
+		<text name="ad_color_accessNode" text="37 point de passage route d'accès" />
 		<text name="button_delete_all"									text="Effacer tout" />
 		<text name="button_reset_selected"								text="Effacer la sélection" />
 		<text name="AD_task_pathfinding"								text="Planifier le parcours" />
 		<text name="AD_task_catch_up_with_combine"						text="Rattraper la moissonneuse-batteuse" />
 		<text name="AD_task_clearcrop"									text="Destruction de la culture" />
 		<text name="AD_task_drive_to_destination"						text="Conduire jusqu'à destination" />
+		<text name="AD_fpGoal_drive" text="Conduire" />
+		<text name="AD_fpGoal_to" text="vers %s" />
+		<text name="AD_fpGoal_to_short" text="à destination" />
+		<text name="AD_fpGoal_load" text="recharge à %s" />
+		<text name="AD_fpGoal_load_short" text="recharge au point" />
+		<text name="AD_fpGoal_load_tiny" text="recharge" />
+		<text name="AD_fpGoal_refill" text="recharge en %s à %s" />
+		<text name="AD_fpGoal_refill_short" text="recharge en %s" />
+		<text name="AD_fpGoal_refill_tiny" text="recharge au point" />
+		<text name="AD_fpGoal_refill_min" text="recharge" />
+		<text name="AD_fpGoal_unload" text="déchargement à %s" />
+		<text name="AD_fpGoal_unload_short" text="déchargement" />
+		<text name="AD_fpGoal_refuel" text="plein de carburant à %s" />
+		<text name="AD_fpGoal_refuel_short" text="plein de carburant" />
+		<text name="AD_fpGoal_refuel_tiny" text="carburant" />
+		<text name="AD_fpGoal_repair" text="réparation à %s" />
+		<text name="AD_fpGoal_repair_short" text="réparation" />
+		<text name="AD_fpGoal_work" text="travail au %s" />
+		<text name="AD_fpGoal_work_short" text="travail au champ" />
+		<text name="AD_fpGoal_back" text="retour au %s" />
+		<text name="AD_fpGoal_back_short" text="retour au champ" />
+		<text name="AD_fpGoal_toolPark" text="ranger l'outil à %s" />
+		<text name="AD_fpGoal_toolPark_short" text="ranger l'outil" />
+		<text name="AD_fpGoal_park" text="se garer à %s" />
+		<text name="AD_fpGoal_park_short" text="se garer" />
+		<text name="AD_fpGoal_fetch" text="chercher %s" />
+		<text name="AD_fpGoal_fetch_short" text="chercher l'outil" />
+		<text name="AD_fpGoal_dump" text="vider le reste de %s à %s" />
+		<text name="AD_fpGoal_dump_short" text="vider le reste de %s" />
+		<text name="AD_fpGoal_dump_tiny" text="vider le reste" />
+		<text name="AD_fpGoal_dumpAny" text="vider le reste à %s" />
+		<text name="AD_fpGoal_dumpAny_short" text="vider le reste" />
+		<text name="AD_fpGoal_bales" text="déposer les balles à %s" />
+		<text name="AD_fpGoal_bales_short" text="déposer les balles" />
+		<text name="AD_fpGoal_bales_tiny" text="dépôt des balles" />
+		<text name="AD_fpGoal_swap" text="échange de benne à %s" />
+		<text name="AD_fpGoal_swap_short" text="échange de benne" />
+		<text name="AD_fpGoal_hitch" text="atteler %s" />
+		<text name="AD_fpGoal_hitch_short" text="atteler la remorque" />
+		<text name="AD_fpGoal_hitch_tiny" text="atteler" />
 		<text name="AD_task_drive_to_vehicle"							text="Conduire vers le véhicule cible" />
 		<text name="AD_task_step_aside"							text="S'écarte pour laisser passer l'ensileuse" />
 		<text name="AD_task_drive_to_combine_pipe"						text="Conduire vers la buse de la moissonneuse" />
@@ -409,19 +454,19 @@
 		<text name="gui_CPAD_off"										text="off" />
 		<text name="gui_CPAD_simple"									text="simple" />
 		<text name="gui_CPAD_full"										text="full" />
-		<text name="gui_ad_combineCPADHudMouse"						text="Boutons CP/AD combinés" />
-		<text name="gui_ad_combineCPADHudMouse_tooltip"				text="off: par défaut / simple: Courseplay en action secondaire souris > mouse on + off, AD: Affichage ATH > deux ATH actifs on + off / full: identique à simple mais affichage en une étape / Prérequis: désactiver le clic droit du Coursplay pour l'affichage ATH" />
+		<text name="gui_ad_combineCPADHudMouse"						text="Boutons CP/FarmPilot combinés" />
+		<text name="gui_ad_combineCPADHudMouse_tooltip"				text="off: par défaut / simple: Courseplay en action secondaire souris > mouse on + off, FarmPilot: Affichage ATH > deux ATH actifs on + off / full: identique à simple mais affichage en une étape / Prérequis: désactiver le clic droit du Coursplay pour l'affichage ATH" />
 		<text name="gui_ad_editorTip_1"								text="Clic simple gauche:" />
 		<text name="gui_ad_editorTip_2"								text="Souris uniquement: sélection 1. point" />
 		<text name="gui_ad_editorTip_3"								text="CTRLG = Créer un point" />
 		<text name="gui_ad_editorTip_4"								text="ALTG = Supprimer un point" />
-		<text name="gui_ad_editorTip_5"								text="MAJG = Type du point (principale, secondaire, tertiaire, intersection)" />
+		<text name="gui_ad_editorTip_5"								text="MAJG = Type du point (principale, secondaire, tertiaire, accès, intersection)" />
 		<text name="gui_ad_editorTip_6"								text="Clic au second point:" />
 		<text name="gui_ad_editorTip_7"								text="Etablir connexion" />
 		<text name="gui_ad_editorTip_8"								text="MAJD = Créer ligne marche AR" />
 		<text name="gui_ad_editorTip_9"								text="1. point est une intersection, 2. point est voisin:" />
 		<text name="gui_ad_editorTip_10"								text="CTRLG: Choix du segment (unique/double sens)" />
-		<text name="gui_ad_editorTip_11"								text="MAJG = Type de la section (principale, secondaire, tertiaire, intersection)" />
+		<text name="gui_ad_editorTip_11"								text="MAJG = Type de la section (principale, secondaire, tertiaire, accès, intersection)" />
 		<text name="gui_ad_trafficYieldEnabled" text="Croisement face à face" />
 		<text name="gui_ad_trafficYieldEnabled_tooltip" text="Quand deux véhicules FarmPilot se bloquent face à face sur une route à double sens, l'un recule pendant que l'autre se gare sur le bas-côté, puis chacun reprend sa route" />
 		<text name="gui_ad_trafficYieldDelay" text="Délai avant croisement" />
@@ -469,17 +514,28 @@
 		<text name="gui_ad_autonomousNoCp_wait" text="Attendre" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Ouvrier du jeu" />
 		<text name="gui_ad_dirtRoads" text="Routes tertiaires" />
-		<text name="gui_ad_dirtRoads_tooltip" text="Points « route tertiaire » du réseau (lignes roses et violettes de l'éditeur). Seulement pour accéder à une destination qui est dessus ou au bout (ou pour en repartir), jamais en raccourci. Autorisées : à vitesse limitée. Jamais : seulement s'il n'y a pas d'autre route. Auto : Jamais pour les camions et les semis, Autorisées pour les tracteurs et les autres véhicules" />
-		<text name="gui_ad_dirtRoads_auto" text="Auto (camion : jamais)" />
+		<text name="gui_ad_dirtRoads_tooltip" text="Points « route tertiaire » du réseau (lignes roses et violettes de l'éditeur). Seulement pour accéder à une destination qui est dessus ou au bout (ou pour en repartir), jamais en raccourci. Autorisées : à vitesse limitée. Jamais : seulement s'il n'y a pas d'autre route. Auto : selon le type de véhicule (roue dentée à gauche : Oui / Non par type, pour tous les véhicules)" />
+		<text name="gui_ad_dirtRoads_auto" text="Auto (selon le type)" />
 		<text name="gui_ad_dirtRoads_never" text="Jamais" />
 		<text name="gui_ad_dirtRoads_allowed" text="Autorisées" />
 		<text name="gui_ad_secondaryRoads" text="Routes secondaires" />
-		<text name="gui_ad_secondaryRoads_tooltip" text="Points « secondaire » du réseau. Auto : raccourcis pris dès qu'ils font gagner du temps pour les tracteurs ; camions et semis comme AutoDrive d'origine (seulement si la principale est bien plus longue). Autorisées : prises dès qu'elles font gagner du temps. Jamais : seulement s'il n'y a pas d'autre route" />
-		<text name="gui_ad_secondaryRoads_auto" text="Auto (camion : d'origine)" />
+		<text name="gui_ad_secondaryRoads_tooltip" text="Points « secondaire » du réseau. Autorisées : prises dès qu'elles font gagner du temps. Jamais : seulement s'il n'y a pas d'autre route. Auto : selon le type de véhicule (roue dentée à gauche : Oui / Non par type, pour tous les véhicules)" />
+		<text name="gui_ad_secondaryRoads_auto" text="Auto (selon le type)" />
 		<text name="AD_cropStuck" text="%s %s : bloqué dans la culture (%s), aucun trajet propre pour en sortir : à dégager à la main" />
 		<text name="AD_foldWait" text="%s %s : j'attends que %s soit replié (%d %%)%s, je ne pars pas" />
 		<text name="gui_ad_dirtRoadSpeed" text="Vitesse maxi sur route tertiaire" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Vitesse maximale sur les points « route tertiaire ». Le calcul de route en tient compte : une route tertiaire n'est prise que si elle fait gagner du temps" />
+		<text name="gui_ad_roadTypes_title_secondary" text="Routes secondaires : types de véhicules" />
+		<text name="gui_ad_roadTypes_title_tertiary" text="Routes tertiaires : types de véhicules" />
+		<text name="gui_ad_roadTypes_info_secondary" text="Quand « Routes secondaires » est sur Auto, pour tous les véhicules. Oui : routes secondaires prises dès qu'elles font gagner du temps. Non : seulement s'il n'y a pas d'autre route." />
+		<text name="gui_ad_roadTypes_info_tertiary" text="Quand « Routes tertiaires » est sur Auto, pour tous les véhicules. Oui : routes tertiaires permises pour accéder à une destination (vitesse limitée), jamais en raccourci. Non : seulement s'il n'y a pas d'autre route." />
+		<text name="gui_ad_roadTypes_todo" text="Modifié : « Valider » pour enregistrer." />
+		<text name="gui_ad_roadTypes_thisVehicle" text="(ce véhicule)" />
+		<text name="gui_ad_roadTypes_tractor" text="Tracteurs" />
+		<text name="gui_ad_roadTypes_truck" text="Camions et semis" />
+		<text name="gui_ad_roadTypes_car" text="Voitures et pick-up" />
+		<text name="gui_ad_roadTypes_loader" text="Chargeurs et télescopiques" />
+		<text name="gui_ad_roadTypes_selfPropelled" text="Automoteurs (moissonneuses, ensileuses, pulvérisateurs…)" />
 		<text name="AD_task_park_in_field" text="Se gare dans le champ" />
 		<text name="AD_task_hv_chopper" text="l'ensileuse" />
 		<text name="AD_task_hv_combine" text="la moissonneuse" />
@@ -564,6 +620,11 @@
 		<text name="AD_autonomous_cpFailed" text="Courseplay n'a pas pu démarrer avec « %s », en attente" />
 		<text name="AD_autonomous_nextField" text="Champ suivant : %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Champ suivant : aucun" />
+		<text name="AD_autonomous_fieldNone" text="Champ : aucun" />
+		<text name="AD_autonomous_fieldNoneStart" text="choisissez un champ sur la 1re ligne avant le départ" />
+		<text name="AD_fpTires_noMoney" text="pneus usés, pas assez d'argent pour les changer (%s) : nouvel essai demain" />
+		<text name="AD_fpTires_done" text="%d pneus neufs montés à l'atelier (%s)" />
+		<text name="AD_fpTires_noWorkshop" text="pneus usés mais pas d'atelier sur le réseau : nouvel essai demain" />
 		<text name="AD_autonomous_nextFieldGo" text="champ fini, départ vers le champ suivant « %s »" />
 		<text name="AD_autonomous_skipNoNext" text="pas de champ suivant réglé, la route vers « %s » continue" />
 		<text name="AD_task_autonomous_detach" text="Dételer l'outil" />
@@ -589,6 +650,61 @@
 		<text name="AD_autonomous_frontNoJoint" text="« %s » ne s'attelle pas à l'avant de ce tracteur (ou l'attelage avant est déjà pris)" />
 		<text name="AD_autonomous_frontNoPark" text="« %s » (avant) n'a pas de place de parking et rien à côté de quoi le poser : il reste attelé" />
 		<text name="AD_autonomous_massBlocked" text="« %s » (avant) n'a pas de place de parking ni rien à côté de quoi le poser : « %s » ne peut pas être reprise, le tracteur reste ici (pas garé sur la masse)" />
+		<text name="AD_task_autonomous_headerWait" text="Attendre l'autre machine" />
+		<text name="AD_task_autonomous_headerDrop" text="Poser la barre" />
+		<text name="AD_fpGoal_headerTrailer" text="amener la barre à %s" />
+		<text name="AD_fpGoal_headerDrop" text="poser la barre" />
+		<text name="AD_autonomous_headerWaitTrailer" text="attend la remorque porte-barre (%s)" />
+		<text name="AD_autonomous_headerNoTractor" text="aucun tracteur libre pour déplacer la remorque porte-barre « %s »" />
+		<text name="AD_autonomous_headerBusy" text="la remorque porte-barre « %s » est prise" />
+		<text name="AD_autonomous_headerTrailerGo" text="amène la remorque porte-barre à « %s »" />
+		<text name="AD_autonomous_headerHome" text="barre prise, rentre à « %s »" />
+		<text name="AD_autonomous_headerCall" text="champ fini, appelle %s pour reposer la barre" />
+		<text name="AD_autonomous_headerDropFailed" text="barre pas posée sur la remorque (%s), arrêt" />
+		<text name="AD_autonomous_headerTimeout" text="l'autre machine n'est pas venue, arrêt" />
+		<text name="AD_autonomous_headerNoTrailer" text="aucune remorque porte-barre vide pour reposer la barre" />
+		<text name="AD_task_autonomous_headerPlace" text="Garer la remorque près de la moissonneuse" />
+		<text name="AD_task_autonomous_headerTurn" text="Demi-tour pour dégager le côté de la barre" />
+		<text name="AD_autonomous_headerTurn" text="côté de la barre encombré, demi-tour par le réseau" />
+		<text name="AD_autonomous_headerMove" text="côté de la barre encombré, va à un endroit dégagé plus loin" />
+		<text name="AD_autonomous_headerSideBlocked" text="aucun endroit dégagé trouvé, attente au bout de la route" />
+		<text name="AD_autonomous_headerNoWay" text="pas de chemin dans le champ jusqu'à la moissonneuse, nouvel essai" />
+		<text name="AD_task_autonomous_headerBackIn" text="Reculer la remorque dans l'entrée du champ" />
+		<text name="AD_autonomous_headerBackIn" text="recule la remorque porte-barre dans l'entrée du champ" />
+		<text name="AD_task_autonomous_headerRoadBack" text="Reculer la remorque jusqu'à la route" />
+		<text name="AD_autonomous_headerRoadBack" text="recule la remorque porte-barre tout droit jusqu'à la route" />
+		<text name="AD_task_autonomous_headerGateBack" text="Se ranger en face de l'entrée du champ" />
+		<text name="AD_task_autonomous_headerGateIn" text="Arrêter la barre devant la moissonneuse" />
+		<text name="AD_autonomous_headerGate" text="attend sa barre en face de l'entrée du champ, %s l'arrête devant elle" />
+		<text name="AD_autonomous_headerGateIn" text="arrête la barre devant %s, en face de l'entrée du champ" />
+		<text name="AD_autonomous_headerClearWait" text="barre prise, attend que %s ait dégagé avec la remorque vide" />
+		<text name="AD_task_autonomous_headerEntry" text="Avancer jusqu'au bord du champ" />
+		<text name="AD_autonomous_headerEntry" text="barre prise, avance tout droit jusqu'au champ" />
+		<text name="AD_task_autonomous_headerHookup" text="Brancher la barre : verrouillage, cardans, hydraulique" />
+		<text name="AD_task_autonomous_headerLock" text="Verrouiller la barre sur sa remorque" />
+		<text name="AD_autonomous_headerParkFirst" text="parking demandé : la barre d'abord sur sa remorque" />
+		<text name="AD_header_listAuto" text="Auto (selon la culture)" />
+		<text name="AD_header_line" text="Barre : %s" />
+		<text name="AD_header_lineAuto" text="Barre : auto (culture)" />
+		<text name="AD_header_nextLine" text="Barre suivante : %s" />
+		<text name="AD_header_nextLineAuto" text="Barre suivante : auto" />
+		<text name="AD_autonomous_headerSwap" text="change de barre : « %s »" />
+		<text name="AD_autonomous_headerGroundDrop" text="repose « %s » là où elle l'a prise" />
+		<text name="AD_header_homePlace" text="là où elle était" />
+		<text name="AD_autonomous_headerChosenGone" text="barre choisie pas disponible, départ refusé" />
+		<text name="AD_autonomous_headerNoCrop" text="aucune barre pour couper « %s », départ refusé" />
+		<text name="AD_autonomous_unloadersFollow" text="%d benne(s) suivent vers « %s »" />
+		<text name="AD_autonomous_unloadersWait" text="%d benne(s) suivront vers « %s » quand la moissonneuse aura repris le travail" />
+		<text name="AD_autonomous_unloadersStay" text="les bennes restent à « %s » (autre machine)" />
+		<text name="AD_fpFn_cutter" text="Coupe" />
+		<text name="AD_fpFn_cornHeader" text="Coupe à maïs" />
+		<text name="AD_fpFn_chopperHeader" text="Bec d'ensileuse" />
+		<text name="AD_autonomous_headerChosenBusy" text="« %s » (choisi) n'est pas libre, « %s » y va à sa place" />
+		<text name="gui_ad_headerTractor_title" text="Transport de la barre" />
+		<text name="gui_ad_headerTractor_tooltip" text="Véhicule de la remorque porte-barre" />
+		<text name="gui_ad_headerTractor_auto" text="Tracteur libre le plus proche" />
+		<text name="gui_ad_headerTractor_free" text="rien d'attelé" />
+		<text name="gui_ad_headerTractor_info" text="Véhicule appelé pour amener et reprendre la remorque porte-barre : %s. Tracteur libre = à l'arrêt, rien d'attelé (une masse ne compte pas). Véhicule choisi : à l'arrêt, arrière libre." />
 		<text name="AD_autonomous_massNoPark" text="le tracteur n'a pas de place de parking pour y poser « %s » : réglez-la (bouton parking, rien de sélectionné)" />
 		<text name="AD_autonomous_frontBeside" text="pose « %s » à côté de « %s »" />
 		<text name="AD_autonomous_frontDropAt" text="pose « %s » au fond de la place « %s », le nez en avant" />
@@ -610,6 +726,10 @@
 		<text name="AD_trailer_row" text="Remorque : %s" />
 		<text name="AD_trailer_rowNone" text="Remorque : celle attelée" />
 		<text name="AD_trailer_listNone" text="Celle attelée" />
+		<text name="AD_trailer_rowNearest" text="Remorque : %s (adaptée, à atteler)" />
+		<text name="AD_trailer_rowNoFit" text="Pas de remorque adaptée" />
+		<text name="AD_trailer_noFitStart" text="pas de remorque adaptée pour %s : départ impossible" />
+		<text name="AD_trailer_noFitAttached" text="la remorque attelée ne prend pas %s : départ impossible (dételez-la ou choisissez une remorque adaptée)" />
 		<text name="AD_trailer_fetchGo" text="va chercher la remorque « %s »" />
 		<text name="AD_trailer_fetchDone" text="remorque « %s » attelée, départ" />
 		<text name="AD_trailer_fetchFailed" text="la remorque « %s » n'a pas pu être attelée, arrêt" />
@@ -715,14 +835,18 @@
 		<text name="AD_autonomous_sprayerTodo" text="réglages de « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
 		<text name="AD_autonomous_sprayerFill" text="cuve pas assez remplie : plein à « %s » avant le champ" />
 		<text name="AD_autonomous_sprayerEmpty" text="cuve vide : plein à « %s », puis retour au champ" />
-		<text name="AD_autonomous_dumpGo" text="champ fini : vide le reste de la cuve en big bags à « %s »" />
-		<text name="AD_autonomous_dumpFailed" text="reste de la cuve pas vidé à « %s » (pas de place ou refusé) : gardé dans la cuve" />
-		<text name="AD_autonomous_dumpParkGo" text="parking : vide d'abord le reste de la cuve en big bags à « %s »" />
-		<text name="AD_autonomous_dumpKept" text="reste de %s gardé dans la cuve : pas de vidange en big bags possible ou aucune zone (voir le log)" />
+		<text name="AD_autonomous_dumpGo" text="champ fini : %s à « %s »" />
+		<text name="AD_autonomous_dumpFailed" text="reste de la cuve pas rendu à « %s » (refusé ou plus de place) : gardé dans la cuve" />
+		<text name="AD_autonomous_dumpParkGo" text="parking : d'abord, %s à « %s »" />
+		<text name="AD_autonomous_dumpKept" text="reste de %s gardé dans la cuve : ni stock, ni point d'achat, ni point de vente pour le reprendre (voir le log)" />
+		<text name="AD_rest_how_stock" text="remet le reste de la cuve au stock" />
+		<text name="AD_rest_how_buy" text="revend le reste de la cuve au prix d'achat" />
+		<text name="AD_rest_how_bag" text="remet le reste de la cuve dans les big bags déjà posés" />
+		<text name="AD_rest_how_sell" text="va vendre le reste de la cuve" />
 		<text name="AD_autonomous_parkUnloadGo" text="parking : benne pas vide, va d'abord vider à « %s »" />
 		<text name="AD_autonomous_parkUnloadNone" text="parking : benne pas vide (%s L de %s), mais pas de destination de déchargement réglée : elle reste chargée" />
 		<text name="AD_autonomous_parkUnloadFailed" text="parking : rien ne se vide à « %s » (reste %s L) : parking sans vider" />
-		<text name="AD_task_autonomous_dump" text="Vide le reste en big bags" />
+		<text name="AD_task_autonomous_dump" text="Rend ou vend le reste de la cuve" />
 		<text name="gui_ad_baleLoader_title" text="Réglages de la remorque à balles" />
 		<text name="gui_ad_baleLoader_head" text="Remorque : %s · Champ : %s · Prend les %s" />
 		<text name="gui_ad_baleLoader_round" text="balles rondes" />
@@ -758,56 +882,380 @@
 		<text name="AD_autonomous_sprayerOtherProduct" text="la cuve contient encore %s (%.0f L) et le produit choisi est %s : videz la cuve, départ refusé" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay n'a pas pu repartir au dernier point, en attente" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
-		<text name="fp_help_category" text="FarmPilot" />
-		<text name="fp_help_start_title" text="Prise en main" />
-		<text name="fp_help_start_1_title" text="Le HUD" />
-		<text name="fp_help_start_1_text" text="Alt + 0 (pavé numérique) affiche ou masque le HUD FarmPilot. Clic molette : la souris apparaît pour cliquer dans le HUD. La 1re liste est la destination ; les listes en dessous (déchargement, produit) s'affichent selon le mode." />
-		<text name="fp_help_start_2_title" text="Boutons principaux" />
-		<text name="fp_help_start_2_text" text="Marche/Arrêt lance ou arrête le chauffeur. Bouton mode : clic gauche = mode suivant, clic droit = mode précédent. Continuer : relance un chauffeur qui attend. Garer : envoie le véhicule à son point de stationnement (clic droit : choisit ce point)." />
-		<text name="fp_help_start_3_title" text="Raccourcis" />
-		<text name="fp_help_start_3_text" text="Ctrl + Alt + flèche droite / gauche : destination suivante / précédente. Ctrl + Alt + 0 : réglages. Ctrl + Alt + M : historique des messages. Maj + C / Maj + V : copier / coller les réglages d'un véhicule à l'autre. Toutes les touches se changent dans Options &gt; Commandes." />
-		<text name="fp_help_driveto_title" text="Mode Conduite" />
-		<text name="fp_help_driveto_1_title" text="Principe" />
-		<text name="fp_help_driveto_1_text" text="Choisissez une destination puis Marche. Le véhicule suit le réseau de routes jusqu'à la destination, puis s'arrête." />
-		<text name="fp_help_driveto_2_title" text="Avec Courseplay" />
-		<text name="fp_help_driveto_2_text" text="Si le bouton « Démarrer AI/CP à la destination » du HUD est allumé (clic droit : Courseplay, AIVE ou ouvrier du jeu), cet assistant prend la suite à l'arrivée, avec le parcours déjà chargé dans le véhicule. Pour que FarmPilot choisisse lui-même le parcours Courseplay, utilisez le mode Autonome." />
-		<text name="fp_help_autonomous_title" text="Mode Autonome" />
-		<text name="fp_help_autonomous_1_title" text="Principe" />
-		<text name="fp_help_autonomous_1_text" text="Comme Conduite : choisissez le champ (destination) et lancez. À l'arrivée, FarmPilot prend le parcours Courseplay enregistré qui a exactement la largeur de l'outil attelé, le charge et lance Courseplay au premier point du parcours. Il faut un outil de travail attelé (travail du sol, semoir, pulvé, épandeur, faucheuse, presse...) : avec une benne, un plateau ou une moissonneuse seuls, le mode refuse de démarrer." />
-		<text name="fp_help_autonomous_2_title" text="Choix du parcours" />
-		<text name="fp_help_autonomous_2_text" text="Seuls les parcours enregistrés dans Courseplay (menu Parcours, tous les dossiers) comptent, sur le champ d'arrivée ou son groupe de champs (champs réunis d'AutoSwitch quand il est installé). La largeur est comparée à 10 cm près, comme les réglages de Courseplay." />
-		<text name="fp_help_autonomous_3_title" text="Mémoire" />
-		<text name="fp_help_autonomous_3_text" text="Le parcours utilisé est retenu pour ce champ et cet outil, dans la sauvegarde. L'année suivante, avec le même outil et la même largeur, il est repris directement, même s'il existe plusieurs parcours possibles." />
-		<text name="fp_help_autonomous_4_title" text="Arrêt et attente" />
-		<text name="fp_help_autonomous_4_text" text="S'il n'y a aucun parcours à la bonne largeur, ou plusieurs sans choix retenu, le chauffeur s'arrête et attend ; un message en donne la raison. Choisissez le parcours dans la fenêtre Parcours Autonome puis relancez. Sans Courseplay, selon le réglage « Autonome sans Courseplay », le chauffeur attend ou l'ouvrier du jeu prend le champ (mode Classique)." />
-		<text name="fp_help_autonomous_5_title" text="Fenêtre Parcours Autonome" />
-		<text name="fp_help_autonomous_5_text" text="Bouton du HUD (en mode Autonome, à la place du bouton Courseplay) ou Ctrl + Alt + 5 (pavé numérique), dans le véhicule avec l'outil attelé. Une ligne par champ ou groupe de champs. Changer : passe au parcours suivant, puis revient sur Automatique. Automatique : efface le choix. Double-clic = Changer." />
-		<text name="fp_help_autonomous_6_title" text="Champ suivant" />
-		<text name="fp_help_autonomous_6_text" text="En mode Autonome, la 3e ligne du HUD est le champ suivant (vide par défaut). Choisissez-y un champ dans la liste, ou clic droit sur la carte ; clic droit sur la ligne pour la vider. Quand le champ en cours est fini, le champ suivant passe en 1re ligne, la ligne « Champ suivant » se vide et le chauffeur part le travailler. Si elle est vide, il va se garer comme avant." />
-		<text name="fp_help_autonomous_7_title" text="Outil posé à sa place, outil à aller atteler" />
-		<text name="fp_help_autonomous_7_text" text="Fin du travail sans champ suivant : si l'outil a sa place de parking et le tracteur la sienne, le chauffeur pose l'outil à sa place, débranche flexibles et prise de force (mod d'attelage manuel), le dételle, puis va garer le tracteur. Les places se règlent comme d'habitude (Ctrl + clic sur P en mode éditeur : outil sélectionné pour la place de l'outil, aucun outil sélectionné pour celle du tracteur). Les masses sont ignorées ; avec plusieurs outils attelés, il se gare comme avant. La 2e ligne du HUD (« Outil ») est l'outil à aller chercher avant le champ, par sa fonction et sa largeur (outils de la ferme dételés qui s'attellent à l'arrière du tracteur). Au départ, le chauffeur prend vos routes jusqu'à la place de l'outil (ou jusqu'au point du réseau devant l'outil), recule, l'attelle, branche flexibles et prise de force, le relève et part au champ. « Celui attelé » (ou clic droit sur la ligne) : rien à aller chercher." />
-		<text name="fp_help_autonomous_8_title" text="Outil suivant" />
-		<text name="fp_help_autonomous_8_text" text="En mode Autonome, la 4e ligne du HUD est l'outil du champ suivant (« Le même » par défaut ; clic droit sur la ligne pour y revenir). Elle ne sert qu'avec un champ suivant. Quand le champ en cours est fini, le chauffeur pose l'outil attelé à sa place de parking (comme en fin de travail), va chercher l'outil suivant (par vos routes, marche arrière, attelage, flexibles et prise de force), puis part au champ suivant. L'outil suivant passe alors sur la ligne « Outil » et la ligne « Outil suivant » revient sur « Le même ». Si l'outil suivant est pris par un autre engin ou ne s'attelle pas à ce tracteur, l'outil attelé est quand même posé à sa place, puis le chauffeur s'arrête là et un message en donne la raison : relancez quand l'outil suivant est libre. Si l'outil attelé n'a pas de place de parking ou si plusieurs outils sont attelés, rien ne change : le chauffeur s'arrête au bout du champ avec un message." />
-		<text name="fp_help_deliverto_title" text="Mode Livraison" />
-		<text name="fp_help_deliverto_1_title" text="Principe" />
-		<text name="fp_help_deliverto_1_text" text="Choisissez la destination de déchargement puis Marche. Le véhicule y va, décharge sa remorque ou sa benne, se gare si un point de stationnement est réglé, sinon s'arrête." />
-		<text name="fp_help_pickupdeliver_title" text="Mode Chargement et livraison" />
-		<text name="fp_help_pickupdeliver_1_title" text="Principe" />
-		<text name="fp_help_pickupdeliver_1_text" text="1re liste : point de chargement ; 2e liste : point de déchargement ; 3e liste : produit à charger. Le véhicule charge, livre, puis recommence." />
-		<text name="fp_help_pickupdeliver_2_title" text="Boucles" />
-		<text name="fp_help_pickupdeliver_2_text" text="Compteur de boucles du HUD : 0 = sans fin, sinon nombre de tours avant de s'arrêter. Les boutons à gauche des listes choisissent automatiquement le meilleur point de chargement ou de vente." />
-		<text name="fp_help_load_title" text="Mode Chargement" />
-		<text name="fp_help_load_1_title" text="Principe" />
-		<text name="fp_help_load_1_text" text="Le véhicule va charger au point de la 2e liste (produit de la 3e liste), puis conduit jusqu'au point de la 1re liste et s'arrête. Pratique pour remplir un semoir ou un pulvérisateur avant d'aller au champ." />
-		<text name="fp_help_unloader_title" text="Mode Décharger moissonneuse" />
-		<text name="fp_help_unloader_1_title" text="Principe" />
-		<text name="fp_help_unloader_1_text" text="Le véhicule attend près du champ (1re liste), vient sous la goulotte quand la moissonneuse ou l'ensileuse l'appelle, suit la machine pendant le déchargement, puis livre au point de la 2e liste et revient." />
-		<text name="fp_help_unloader_2_title" text="Réglages" />
-		<text name="fp_help_unloader_2_text" text="Ctrl + Alt + 0 &gt; Déchargement moissonneuse : remplissage avant départ, côté, distances et plusieurs remorques par machine." />
-		<text name="fp_help_editor_title" text="Routes et destinations" />
-		<text name="fp_help_editor_1_title" text="Éditeur" />
-		<text name="fp_help_editor_1_text" text="Bouton éditeur du HUD : enregistrer une route en roulant, relier des points, créer, renommer ou supprimer une destination." />
-		<text name="fp_help_editor_2_title" text="Outils" />
-		<text name="fp_help_editor_2_text" text="Ctrl + Alt + 1 (pavé numérique) : gestionnaire d'itinéraires (exporter ou importer le réseau de routes). Ctrl + Maj + F : créer les points de champ." />
+		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
+		<text name="fp_reminder_title" text="Rappel éditeur" />
+		<text name="fp_reminder_single" text="Sens unique" />
+		<text name="fp_reminder_dual" text="Double sens" />
+		<text name="fp_reminder_road_primary" text="Principale" />
+		<text name="fp_reminder_road_secondary" text="Secondaire" />
+		<text name="fp_reminder_road_tertiary" text="Tertiaire" />
+		<text name="fp_reminder_road_access" text="Accès" />
+		<text name="fp_reminder_road_intersection" text="Intersection" />
+		<text name="fp_reminder_road_reverse" text="Marche arrière" />
+		<text name="fp_reminder_point_secondary" text="Secondaire : prise si elle fait gagner du temps, selon le type de véhicule (roue dentée des réglages véhicule)." />
+		<text name="fp_reminder_point_tertiary" text="Tertiaire : route spéciale (chemin de terre). Vitesse limitée, et seulement pour les types de véhicule autorisés dans la roue dentée." />
+		<text name="fp_reminder_point_access" text="Accès : prise seulement pour rejoindre son point." />
+		<text name="fp_reminder_point_intersection" text="Intersection : le véhicule ralentit et regarde avant de traverser." />
+		<text name="fp_reminder_point_places" text="Place d'outil : dessinée en marche arrière. Place de coupe : en marche avant, marqueur 5 m avant la coupe." />
+		<text name="fp_reminder_point_parking" text="Ctrl + clic sur le bouton parking : donne sa place à l'outil sélectionné." />
+		<text name="fp_reminder_point_keys" text="Ctrl G : créer un point. Alt G : supprimer. Maj G : type de route. Maj D : ligne en marche arrière." />
+		<text name="fp_reminder_point_keys2" text="Au 2e point, Ctrl G : sens unique ou double sens." />
+		<text name="fp_unloadImpossible" text="ne peut pas vider ici (déchargement relancé 3 fois). Voir log.txt" />
+		<text name="fp_help_cat_A" text="FarmPilot - Prise en main" />
+		<text name="fp_help_a1_title" text="Bienvenue" />
+		<text name="fp_help_a1_1_title" text="Qu'est-ce que FarmPilot ?" />
+		<text name="fp_help_a1_1_text" text="FarmPilot conduit vos véhicules sur un réseau de routes que vous dessinez sur la carte. Il va à une destination, charge, livre, vide les moissonneuses et les ensileuses, et en mode Autonome il enchaîne lui-même les champs avec Courseplay : aller chercher l'outil, faire le plein, travailler le champ, passer au suivant, ranger l'outil et garer le tracteur." />
+		<text name="fp_help_a1_2_title" text="Basé sur AutoDrive" />
+		<text name="fp_help_a1_2_text" text="FarmPilot est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT). Si vous jouez déjà avec AutoDrive, remplacez simplement le mod : FarmPilot reprend votre réseau de routes (AutoDrive_config.xml), vos routes enregistrées, vos couleurs et les réglages de vos véhicules. Rien à copier. Si AutoDrive est aussi activé, FarmPilot le coupe et affiche un message : retirez-le de vos mods. L'ancien AutoDrive Addon est intégré : désactivez FS25_AutoDriveAddon." />
+		<text name="fp_help_a1_3_title" text="Les 3 étapes pour démarrer" />
+		<text name="fp_help_a1_3_text" text="1. Dessinez vos routes (catégorie « Éditeur de routes ») ou chargez un réseau existant.&#10;2. Créez des destinations : champs, silos, points de vente, places de parking.&#10;3. Montez dans un véhicule, ouvrez le HUD, choisissez le mode et la destination, puis Marche." />
+		<text name="fp_help_a2_title" text="Le HUD" />
+		<text name="fp_help_a2_1_title" text="Ouvrir le HUD et la souris" />
+		<text name="fp_help_a2_1_text" text="Alt + 0 (pavé numérique) affiche ou masque le HUD. Clic molette : la souris apparaît pour cliquer dans le HUD (re-clic molette pour la cacher). Le HUD se déplace en tirant son bandeau du haut. Sa taille se règle dans Réglages &gt; Utilisateur &gt; « Taille de l'ATH »." />
+		<text name="fp_help_a2_2_title" text="Les zones du HUD" />
+		<text name="fp_help_a2_2_text" text="1. Bandeau : nom du véhicule, fermer, infos étendues.&#10;2. Lignes de listes : destination, déchargement, produit, et selon le mode les lignes Remorque, Outil, Champ suivant, Outil suivant.&#10;3. Boutons à gauche des lignes : choix automatique, roues dentées de réglage.&#10;4. Rangée de boutons : Marche/Arrêt, Mode, Continuer (&gt;&gt;), Garer (P), compteur de boucles, vitesse, éditeur.&#10;5. 2e rangée (selon réglages) : démarrer Courseplay/ouvrier à la destination, réglages rapides, réglages.&#10;6. Ligne d'état : ce que fait le chauffeur et depuis combien de temps." />
+		<text name="fp_help_a2_3_title" text="Infobulles" />
+		<text name="fp_help_a2_3_text" text="Passez la souris sur un bouton : son infobulle s'affiche tout en haut du HUD, au-dessus du mode (exemple : « Garer le véhicule - GT_4 » sur le bouton P). Elles se coupent dans Réglages &gt; Utilisateur &gt; « Afficher les info-bulles »." />
+		<text name="fp_help_a3_title" text="Les boutons du HUD" />
+		<text name="fp_help_a3_1_title" text="Marche / Arrêt" />
+		<text name="fp_help_a3_1_text" text="Lance ou arrête le chauffeur FarmPilot du véhicule. Un véhicule lancé continue sans vous : vous pouvez descendre ou changer de véhicule." />
+		<text name="fp_help_a3_2_title" text="Mode" />
+		<text name="fp_help_a3_2_text" text="Clic gauche : mode suivant. Clic droit : mode précédent. Les modes : Conduite, Livraison, Chargement et livraison, Chargement, Décharger moissonneuse, Vider silo (bunker), Autonome. Les lignes du HUD changent avec le mode." />
+		<text name="fp_help_a3_3_title" text="Continuer (&gt;&gt;)" />
+		<text name="fp_help_a3_3_text" text="Fait repartir un chauffeur qui attend (au chargement, au plein, devant une machine). En mode Autonome il a des rôles en plus : voir « Bouton &gt;&gt; en Autonome »." />
+		<text name="fp_help_a3_4_title" text="Garer (P)" />
+		<text name="fp_help_a3_4_text" text="Clic gauche : envoie le véhicule à sa place de parking. S'il a un outil ou une remorque qui a sa propre place, l'outil est d'abord posé à sa place, puis le tracteur va à la sienne. Clic droit : la destination de la 1re ligne devient la place de parking (du tracteur, ou de l'outil sélectionné). Voir « Parking »." />
+		<text name="fp_help_a3_5_title" text="Compteur de boucles" />
+		<text name="fp_help_a3_5_text" text="Nombre de tours en Chargement et livraison : 0 = sans fin. Clic gauche +1, clic droit -1." />
+		<text name="fp_help_a3_6_title" text="Vitesse" />
+		<text name="fp_help_a3_6_text" text="Vitesse maxi sur route du véhicule. Molette sur le compteur, ou touches « Augmenter / Diminuer la vitesse »." />
+		<text name="fp_help_a3_7_title" text="Éditeur" />
+		<text name="fp_help_a3_7_text" text="Clic gauche : active l'éditeur de routes. Clic droit : affiche seulement les routes et les points. Voir la catégorie « Éditeur de routes »." />
+		<text name="fp_help_a3_8_title" text="Démarrer à la destination (2e rangée)" />
+		<text name="fp_help_a3_8_text" text="Allumé : à l'arrivée, l'assistant prend la suite avec le parcours déjà chargé dans le véhicule. Clic droit : choisit l'assistant (Courseplay, AIVE ou ouvrier du jeu). En mode Autonome ce bouton devient « Parcours Autonome »." />
+		<text name="fp_help_a4_title" text="Listes, choix automatique et roues dentées" />
+		<text name="fp_help_a4_1_title" text="Choisir dans une liste" />
+		<text name="fp_help_a4_1_text" text="Cliquez sur une ligne : la liste s'ouvre, avec les dossiers de destinations. Clic sur un dossier pour l'ouvrir, clic sur une destination pour la prendre. Clic droit sur une ligne de l'Autonome (Outil, Champ suivant, Outil suivant) ou sur la ligne Remorque : revient à la valeur par défaut. Sur la carte (M), clic droit sur un marqueur FarmPilot : il devient la destination (réglage « Clic sur destinations »)." />
+		<text name="fp_help_a4_2_title" text="Choix automatique" />
+		<text name="fp_help_a4_2_text" text="Les boutons à gauche des lignes de chargement et de déchargement font choisir à FarmPilot le meilleur point de chargement ou de vente pour le produit. Le bouton à gauche du produit : « Chargement selon le niveau de remplissage »." />
+		<text name="fp_help_a4_3_title" text="Roues dentées" />
+		<text name="fp_help_a4_3_text" text="Une roue dentée apparaît à gauche d'une ligne quand l'outil ou la remorque a des réglages : semoir, épandeur ou pulvé, remorque à balles, échange de bennes. Orange = à régler (le départ est refusé avec un message). Verte = validé. Un clic ouvre la fenêtre de réglages." />
+		<text name="fp_help_a5_title" text="Raccourcis clavier" />
+		<text name="fp_help_a5_1_title" text="Touches principales" />
+		<text name="fp_help_a5_1_text" text="- Alt + 0 (pavé num.) : afficher / masquer le HUD&#10;- Clic molette : afficher / masquer la souris&#10;- Ctrl + Alt + 0 (pavé num.) : réglages FarmPilot&#10;- Ctrl + Alt + flèche droite / gauche : destination suivante / précédente&#10;- Ctrl + Alt + O / Ctrl + Alt + 4 (pavé num.) : produit suivant / précédent&#10;- Ctrl + Alt + 5 (pavé num.) : fenêtre Parcours Autonome&#10;- Ctrl + Alt + 1 (pavé num.) : gestionnaire d'itinéraires&#10;- Ctrl + Alt + M : historique des messages&#10;- Maj + C / Maj + V : copier / coller les réglages d'un véhicule à l'autre&#10;- Ctrl + Maj + F : créer les points de champ" />
+		<text name="fp_help_a5_2_title" text="Toutes les autres actions" />
+		<text name="fp_help_a5_2_text" text="Toutes les actions FarmPilot sont dans Options &gt; Commandes, sous le nom « FP - … » : activer, changer de mode, continuer, garer, régler la place de parking, faire le plein, réparer, appeler un chauffeur, entrer dans le véhicule arrivé, nommer le chauffeur, filtre des destinations, échanger les destinations, vitesse route et champ, répétitions, toutes les touches de l'éditeur. Beaucoup n'ont pas de touche par défaut : à vous de les attribuer." />
+		<text name="fp_help_a6_title" text="Messages et historique" />
+		<text name="fp_help_a6_1_title" text="Messages à l'écran" />
+		<text name="fp_help_a6_1_text" text="Chaque arrêt, attente ou refus de départ affiche un message qui en donne la raison (« réglages du semoir à valider », « pas de champ suivant réglé », « l'outil est attelé à un autre engin »…). Leur durée se règle dans Réglages &gt; Utilisateur &gt; « Notifications »." />
+		<text name="fp_help_a6_2_title" text="Historique" />
+		<text name="fp_help_a6_2_text" text="Ctrl + Alt + M ouvre la fenêtre « Notifications » : retrouvez ce qui s'est passé pendant que vous étiez ailleurs. Retour arrière supprime le message sélectionné, Espace efface tout, Échap ferme." />
+		<text name="fp_help_a6_3_title" text="Texte d'état" />
+		<text name="fp_help_a6_3_text" text="Sous le HUD et sur la carte, chaque chauffeur dit ce qu'il fait et depuis combien de temps : « Se gare dans le champ », « Poursuit l'ensileuse par derrière », « Calcul du trajet (12 s) », « Laisse passer »…" />
+		<text name="fp_help_cat_B" text="FarmPilot - Modes de travail" />
+		<text name="fp_help_b1_title" text="Conduite" />
+		<text name="fp_help_b1_1_title" text="Principe" />
+		<text name="fp_help_b1_1_text" text="Choisissez une destination puis Marche. Le véhicule suit le réseau jusqu'à la destination, puis s'arrête." />
+		<text name="fp_help_b1_2_title" text="Avec un assistant à l'arrivée" />
+		<text name="fp_help_b1_2_text" text="Allumez « Démarrer à la destination » (2e rangée) : à l'arrivée, Courseplay, AIVE ou l'ouvrier du jeu prend la suite avec le parcours déjà chargé dans le véhicule. Pour que FarmPilot choisisse lui-même le parcours Courseplay et enchaîne les champs, utilisez le mode Autonome." />
+		<text name="fp_help_b2_title" text="Livraison" />
+		<text name="fp_help_b2_1_title" text="Principe" />
+		<text name="fp_help_b2_1_text" text="Choisissez le point de déchargement puis Marche. Le véhicule y va, vide sa benne ou sa remorque (côté de vidage choisi tout seul, bâche ouverte puis refermée), puis se gare si le réglage « Se garer à la fin du travail » est sur Oui et qu'une place est réglée, sinon il s'arrête.&#10;(Screen Update coming)" />
+		<text name="fp_help_b3_title" text="Chargement et livraison" />
+		<text name="fp_help_b3_1_title" text="Principe" />
+		<text name="fp_help_b3_1_text" text="1re ligne : point de chargement. 2e ligne : point de déchargement. 3e ligne : produit. Le véhicule charge, livre, puis recommence.&#10;(Screen Update coming)" />
+		<text name="fp_help_b3_2_title" text="Boucles et choix automatique" />
+		<text name="fp_help_b3_2_text" text="Compteur de boucles : 0 = sans fin, sinon nombre de tours avant de s'arrêter (puis il se gare si c'est réglé). Les boutons à gauche des lignes font choisir automatiquement le meilleur point de chargement ou de vente." />
+		<text name="fp_help_b3_3_title" text="Cycle dans un dossier" />
+		<text name="fp_help_b3_3_text" text="Réglage véhicule « Cycle de collecte et livraison » : FarmPilot prend tour à tour les points de collecte et/ou de livraison d'un même dossier." />
+		<text name="fp_help_b3_4_title" text="Partir sans être plein" />
+		<text name="fp_help_b3_4_text" text="Réglage véhicule « Chargement arrêté : partir après » : si la benne contient déjà quelque chose et que plus rien n'entre, il part après 15 s, 30 s (par défaut), 1, 2 ou 5 min. « Non » : il attend d'être plein au niveau « Décharger le contenu » (le bon choix pour un camion en bord de champ). Un reste de moins de 1 % compte comme une benne vide." />
+		<text name="fp_help_b4_title" text="Chargement" />
+		<text name="fp_help_b4_1_title" text="Principe" />
+		<text name="fp_help_b4_1_text" text="Le véhicule va charger au point de la 2e ligne (produit de la 3e ligne), puis va jusqu'au point de la 1re ligne et s'arrête. Pratique pour remplir une machine avant d'aller au champ. Les semoirs, épandeurs et pulvés en mode Autonome font leur plein tout seuls (voir catégorie C)." />
+		<text name="fp_help_b5_title" text="Décharger moissonneuse" />
+		<text name="fp_help_b5_1_title" text="Principe" />
+		<text name="fp_help_b5_1_text" text="1re ligne : le champ. 2e ligne : où livrer. Le tracteur attend près du champ, vient sous la goulotte quand la moissonneuse l'appelle, la suit pendant qu'elle vide, puis livre et revient.&#10;(Screen Update coming)" />
+		<text name="fp_help_b5_2_title" text="Il reste sous la goulotte" />
+		<text name="fp_help_b5_2_text" text="Tant que la moissonneuse vide dans sa remorque et que la remorque n'est pas pleine, le tracteur ne recule pas et ne part pas : il reste arrêté si elle s'arrête, avance avec elle, et ne recule que si elle recule. Il part quand la remorque est pleine, la goulotte rentrée, ou plus rien n'entre depuis 3 s." />
+		<text name="fp_help_b5_3_title" text="Attente dans le champ" />
+		<text name="fp_help_b5_3_text" text="En attendant l'appel, la benne entre dans le champ et se gare le long de la bordure, sur du sol déjà récolté, à plat, à 40 m au moins de l'entrée, du côté où travaille la machine. Les bennes suivantes se garent en file derrière. La place est retenue pour le champ. Champ plein : la benne attend au bord de la route avant l'entrée. Réglage « Attente dans le champ » (Oui par défaut)." />
+		<text name="fp_help_b5_4_title" text="Pas dans la culture" />
+		<text name="fp_help_b5_4_text" text="La benne refuse une ligne qui la ferait entrer dans la culture debout (bloc de culture entre 2 et 10 m devant). Le trajet jusqu'à la place ne passe jamais dans la culture." />
+		<text name="fp_help_b5_5_title" text="Fin du champ de la moissonneuse" />
+		<text name="fp_help_b5_5_text" text="Quand la moissonneuse a fini son champ, ses bennes partent vider ce qu'elles portent, puis rentrent à leur place de parking." />
+		<text name="fp_help_b5_6_title" text="Réglages" />
+		<text name="fp_help_b5_6_text" text="Réglages &gt; Déchargement moissonneuse : appel anticipé (niveau de remplissage qui appelle le chauffeur), appeler le 2e chauffeur, déchargement en roulant, côté de déchargement de l'ensileuse. Réglages véhicule : décalage de goulotte, distance derrière la moissonneuse, décharger le contenu, garer au champ." />
+		<text name="fp_help_b6_title" text="Ensileuse" />
+		<text name="fp_help_b6_1_title" text="La benne suit par derrière" />
+		<text name="fp_help_b6_1_text" text="Avec une ensileuse, la benne vise la place derrière la machine, sur sa trace coupée, puis prend le côté libre. Elle lit le parcours Courseplay devant l'ensileuse (bout de rang, demi-tour) et garde sa place pendant que l'ensileuse tourne." />
+		<text name="fp_help_b6_2_title" text="Demi-tours en bout de rang" />
+		<text name="fp_help_b6_2_text" text="La benne choisit sa manœuvre selon la place : demi-tour en avant, recul puis demi-tour, demi-tour décalé, manœuvre en Y quand la fourrière est étroite, manœuvre en équerre, ou demi-tour dans la bande coupée. Chaque manœuvre est vérifiée avant (sol de champ, culture, obstacles), au rayon de braquage du tracteur." />
+		<text name="fp_help_b6_3_title" text="Deuxième benne" />
+		<text name="fp_help_b6_3_text" text="La 2e benne suit les traces de la 1re et attend derrière elle. Elle s'écarte quand l'ensileuse ou la 1re benne revient vers elle, puis revient se placer." />
+		<text name="fp_help_b6_4_title" text="Benne pleine et fin de chantier" />
+		<text name="fp_help_b6_4_text" text="Benne pleine : elle sort par l'entrée du champ ; sinon elle recule dans ses traces, se range pour laisser passer la suivante, ou fait demi-tour dans la bande. Fin du chantier (vue aussi par Courseplay) : chaque benne vide ce qu'elle porte, puis va à son parking. Un court arrêt de l'ensileuse ne libère pas les bennes." />
+		<text name="fp_help_b7_title" text="Vider silo (bunker)" />
+		<text name="fp_help_b7_1_title" text="Principe" />
+		<text name="fp_help_b7_1_text" text="Pour un chargeur à godet : il prend dans le silo-couloir et remplit les bennes qui se présentent. Réglages véhicule : largeur et hauteur du godet si la détection n'est pas juste. Le bouton à côté du compteur choisit de vider dans une benne ou dans le BGA." />
+		<text name="fp_help_b8_title" text="Remorque choisie (ligne « Remorque »)" />
+		<text name="fp_help_b8_1_title" text="Une remorque pour le travail" />
+		<text name="fp_help_b8_1_text" text="Dans les modes avec benne (Chargement et livraison, Chargement, Livraison, Décharger moissonneuse), la 4e ligne est « Remorque ». Par défaut : « celle attelée », rien ne change. Choisissez une remorque dans la liste : bennes, plateaux, citernes et transbordeurs de la ferme, dételés, qui s'attellent derrière ce tracteur, la plus proche en premier (« nom · capacité »). Clic droit : retour à « celle attelée ».&#10;(Screen Update coming)" />
+		<text name="fp_help_b8_2_title" text="Au départ" />
+		<text name="fp_help_b8_2_text" text="Si la remorque choisie n'est pas attelée, le tracteur va la chercher par vos routes jusque devant elle, recule jusqu'au timon, l'attelle (flexibles branchés avec le mod d'attelage manuel), puis le mode démarre. Départ refusé, avec un message, si elle est attelée à un autre engin, si autre chose est déjà attelé derrière, ou si elle ne s'attelle pas à ce tracteur." />
+		<text name="fp_help_b8_3_title" text="À la fin du travail" />
+		<text name="fp_help_b8_3_text" text="Compteur de boucles fini, ou fin de chantier de l'ensileuse : si la remorque a sa place de parking et le tracteur la sienne, la remorque est posée à sa place, puis le tracteur va à la sienne." />
+		<text name="fp_help_b9_title" text="Échange de bennes" />
+		<text name="fp_help_b9_1_title" text="Principe" />
+		<text name="fp_help_b9_1_text" text="À la livraison, au lieu d'aller vider, le tracteur pose la benne pleine sur une place libre et repart tout de suite avec une benne vide. Disponible en Chargement et livraison et en Décharger moissonneuse : roue dentée à gauche de la ligne « Remorque »." />
+		<text name="fp_help_b9_2_title" text="Préparer les places" />
+		<text name="fp_help_b9_2_text" text="Créez un dossier de destinations et mettez-y un marqueur par place (au moins 4,5 m entre deux places côte à côte). Le tracteur va au marqueur et s'arrête dessus, la benne reste derrière lui. Une place est libre quand rien n'est sur la route qui arrive au marqueur (22 m côté benne, 10 m de l'autre). Laissez de la place devant les bennes vides pour qu'il puisse se mettre devant le timon et reculer. Posez au moins une benne vide et laissez au moins une place libre.&#10;(Screen Update coming)" />
+		<text name="fp_help_b9_3_title" text="Régler" />
+		<text name="fp_help_b9_3_text" text="Clic sur la roue dentée : fenêtre « Échange de bennes ». 1re ligne « Non (livraison normale) », puis chaque dossier avec son nombre de places, de places libres et de bennes vides. Choisir ou double clic. Orange = pas d'échange, verte = échange réglé." />
+		<text name="fp_help_b9_4_title" text="À la livraison" />
+		<text name="fp_help_b9_4_text" text="Benne pleine : il va sur la 1re place libre, dételle (béquille, flexibles), va atteler la benne vide la plus proche (moins de 1 % de remplissage, qui prend le même produit), puis reprend le travail. La benne vide devient la remorque de la ligne « Remorque ». Les bennes pleines restent sur les places : videz-les vous-même ou avec un autre véhicule. Deux tracteurs sur le même dossier ne visent jamais la même place ni la même benne." />
+		<text name="fp_help_b9_5_title" text="Livraison normale à la place" />
+		<text name="fp_help_b9_5_text" text="Aucune place libre, aucune benne vide qui convient, ou un train de plusieurs remorques : il livre normalement, avec un message." />
+		<text name="fp_help_cat_C" text="FarmPilot - Mode Autonome" />
+		<text name="fp_help_c1_title" text="Principe" />
+		<text name="fp_help_c1_1_title" text="Le champ de A à Z" />
+		<text name="fp_help_c1_1_text" text="Le mode Autonome fait tout le travail d'un champ : aller chercher l'outil, faire le plein, rouler jusqu'au champ, lancer Courseplay avec le bon parcours, refaire le plein en cours de route, puis enchaîner le champ suivant ou ranger l'outil et garer le tracteur." />
+		<text name="fp_help_c1_2_title" text="Ce qu'il faut" />
+		<text name="fp_help_c1_2_text" text="Courseplay installé, avec des parcours enregistrés pour vos champs. Un outil de travail : travail du sol, semoir, planteuse, pulvé, épandeur, faucheuse, faneuse, andaineur, presse, remorque à balles… Avec seulement une benne, un plateau ou une moissonneuse, le départ est refusé." />
+		<text name="fp_help_c1_3_title" text="Sans Courseplay" />
+		<text name="fp_help_c1_3_text" text="Réglage général « Autonome sans Courseplay » : Attendre (par défaut : le chauffeur s'arrête au champ) ou Ouvrier du jeu (l'ouvrier du jeu prend le champ). Avec Courseplay installé, l'ouvrier du jeu n'est jamais utilisé." />
+		<text name="fp_help_c2_title" text="Le HUD en Autonome" />
+		<text name="fp_help_c2_1_title" text="Les 6 lignes" />
+		<text name="fp_help_c2_1_text" text="1. Champ : le champ à travailler (« aucun » une fois garé après son dernier champ).&#10;2. Outil AV : l'outil ou la masse à atteler à l'avant (« Celui attelé » par défaut).&#10;3. Outil AR : l'outil à atteler à l'arrière (« Celui attelé » par défaut).&#10;4. Champ suivant : le champ à faire ensuite (vide par défaut).&#10;5. Outil AV suivant : l'outil avant du champ suivant.&#10;6. Outil AR suivant : l'outil arrière du champ suivant (« Le même » par défaut).&#10;Clic droit sur une ligne d'outil ou sur Champ suivant : retour à la valeur par défaut. Les roues dentées des outils sont à gauche de leur ligne." />
+		<text name="fp_help_c2_2_title" text="Les outils dans la liste" />
+		<text name="fp_help_c2_2_text" text="La liste Outil AR montre les outils de la ferme dételés qui s'attellent derrière ce tracteur, par fonction et largeur : « Celui attelé » en tête, puis « Cultivateur (8 m) », « Semoir monograine (8,4 m) »…, triés par fonction puis largeur (sans largeur pour une remorque à balles). Deux outils identiques : la distance s'ajoute (« Faucheuse (3,4 m) · 230 m »). La liste Outil AV montre « Celui attelé », les outils frontaux (« Faucheuse (3,4 m) »), puis les masses par leur poids ; deux masses identiques sont distinguées par leur distance (« Masse (1 000 kg) · 72 m »). Un outil frontal n'est jamais proposé à l'arrière, et inversement." />
+		<text name="fp_help_c2_3_title" text="Le bon champ" />
+		<text name="fp_help_c2_3_text" text="Le champ est celui du numéro du marqueur (« Champ 56 » = champ 56) s'il est à moins de 100 m ; sinon celui sous le tracteur à l'arrivée, sinon le plus proche. « Champ 52 - 53 » : le plus proche des deux. Les champs réunis d'AutoSwitch comptent comme un seul." />
+		<text name="fp_help_c3_title" text="Le parcours Courseplay" />
+		<text name="fp_help_c3_1_title" text="Choix automatique" />
+		<text name="fp_help_c3_1_text" text="À l'arrivée, FarmPilot prend le parcours Courseplay enregistré (tous les dossiers) qui couvre ce champ et qui a exactement la largeur de l'outil, à 10 cm près. Il le charge et lance Courseplay au premier point." />
+		<text name="fp_help_c3_2_title" text="Mémoire" />
+		<text name="fp_help_c3_2_text" text="Le parcours choisi est retenu pour ce champ et cet outil, quel que soit le tracteur, dans la sauvegarde. Les masses ne comptent pas. L'année suivante, il est repris directement." />
+		<text name="fp_help_c3_3_title" text="Aucun ou plusieurs parcours" />
+		<text name="fp_help_c3_3_text" text="Aucun parcours à la bonne largeur, ou plusieurs sans choix retenu : le chauffeur s'arrête au champ et un message en donne la raison. Choisissez le parcours dans la fenêtre Parcours Autonome, puis relancez." />
+		<text name="fp_help_c3_4_title" text="Fenêtre Parcours Autonome" />
+		<text name="fp_help_c3_4_text" text="Bouton du HUD (en Autonome, à la place du bouton Courseplay) ou Ctrl + Alt + 5 (pavé num.), dans le véhicule avec l'outil attelé. En haut : l'outil et sa largeur. Une ligne par champ ou groupe de champs (« Champs 52 + 53 + 54 + 55 »). À droite, le parcours utilisé : « Automatique : nom du parcours » quand un seul parcours Courseplay convient, ou « Automatique (2 parcours : arrêt) » quand il y en a plusieurs : le chauffeur s'arrête alors, il faut en choisir un. Entrée (ou double clic) : passe au parcours suivant. Espace : revient sur Automatique. Échap : retour." />
+		<text name="fp_help_c4_title" text="Aller chercher l'outil, le reposer à sa place" />
+		<text name="fp_help_c4_1_title" text="Aller atteler" />
+		<text name="fp_help_c4_1_text" text="Si la ligne Outil AR n'est pas « Celui attelé », le chauffeur prend vos routes jusqu'à la place de l'outil (ou jusqu'au point du réseau devant l'outil), se met devant dans l'axe, recule, l'attelle, branche flexibles et prise de force (mod d'attelage manuel), le relève et part au champ. La route de la place n'est prise que si l'outil y est rangé dans l'axe ; sinon il va au point du réseau devant le timon." />
+		<text name="fp_help_c4_2_title" text="Outil avant et masse" />
+		<text name="fp_help_c4_2_text" text="Avec un outil sur la ligne Outil AV : s'il y a une masse devant, le tracteur va d'abord la poser au fond de sa propre place de parking (celle du tracteur), en y entrant le nez en avant. Un autre outil avant est posé à sa place, ou à côté de l'outil arrière. Puis il va devant l'outil frontal, le nez vers lui, avance jusqu'au point d'attelage (raté : il recule et recommence, 2 fois au plus), et attelle ensuite l'outil arrière comme d'habitude. Faucheuse avant + arrière n'est pas refusé." />
+		<text name="fp_help_c4_3_title" text="Fin du travail avec un outil avant" />
+		<text name="fp_help_c4_3_text" text="Dans l'ordre : outil arrière posé à sa place, outil avant posé à sa place (ou à côté de l'outil arrière, parallèle, 1 m entre les deux), masse reprise à la place du tracteur, tracteur garé. Après chaque dételage à l'avant, il recule de 8 m tout droit." />
+		<text name="fp_help_c4_4_title" text="Outil difficile à atteindre" />
+		<text name="fp_help_c4_4_text" text="Pas de chemin jusque devant l'outil : il avance (ou recule) de 10 m tout droit puis recalcule, 2 fois au plus, avant de s'arrêter avec un message. Laissez de la place devant les outils rangés." />
+		<text name="fp_help_c4_5_title" text="Reposer à sa place" />
+		<text name="fp_help_c4_5_text" text="Fin du travail sans champ suivant : si l'outil a sa place de parking et le tracteur la sienne (différente), le chauffeur pose l'outil à sa place, coupe l'outil, débranche prise de force et flexibles, le dételle, puis va garer le tracteur. Masses ignorées. Plusieurs outils attelés, ou outil sans place : il se gare comme avant, avec l'outil." />
+		<text name="fp_help_c4_6_title" text="Outils repliés avant de partir" />
+		<text name="fp_help_c4_6_text" text="Au départ, FarmPilot attend que le repli, l'attelage ou un ordre du jeu soit fini. Un repli bloqué est relancé vers la position transport (outil relevé d'abord). Un message s'affiche chaque minute tant qu'il attend." />
+		<text name="fp_help_c5_title" text="Champ suivant et outil suivant" />
+		<text name="fp_help_c5_1_title" text="Champ suivant" />
+		<text name="fp_help_c5_1_text" text="Ligne Champ suivant. Choisissez un champ dans la liste, ou clic droit sur la carte. Quand le champ en cours est fini, le champ suivant passe en 1re ligne, la ligne se vide, et le chauffeur part le travailler. Vide : il range l'outil et se gare.&#10;(Screen Update coming)" />
+		<text name="fp_help_c5_2_title" text="Outils suivants" />
+		<text name="fp_help_c5_2_text" text="Lignes Outil AV suivant et Outil AR suivant, utiles seulement avec un champ suivant. À la fin du champ : il pose les outils attelés à leur place, va chercher les outils suivants, puis part au champ suivant. Les outils suivants passent alors sur les lignes Outil AV et Outil AR." />
+		<text name="fp_help_c5_3_title" text="Quand ça ne peut pas se faire" />
+		<text name="fp_help_c5_3_text" text="Outil suivant attelé à un autre engin, ou qui ne s'attelle pas à ce tracteur : l'outil attelé est quand même posé à sa place, puis le chauffeur s'arrête avec un message. Relancez quand l'outil est libre. Outil attelé sans place de parking, ou plusieurs outils : arrêt au bout du champ avec un message." />
+		<text name="fp_help_c5_4_title" text="Bouton &gt;&gt; sur la route" />
+		<text name="fp_help_c5_4_text" text="Sur la route vers le champ, &gt;&gt; laisse ce champ et part au champ suivant, avec la même suite qu'un champ fini (outil suivant, plein). Au champ, &gt;&gt; ne fait rien : Courseplay finit le champ. Sans champ suivant : message « pas de champ suivant réglé ». Pendant un plein, un attelage ou une dépose : pas de saut." />
+		<text name="fp_help_c6_title" text="Semoir et planteuse" />
+		<text name="fp_help_c6_1_title" text="Réglages du semoir" />
+		<text name="fp_help_c6_1_text" text="Avec un semoir sur la ligne Outil AR (ou Outil AR suivant), une roue dentée apparaît. Orange : départ refusé (« réglages du semoir à valider »). Elle ouvre la fenêtre « Réglages du semoir » :&#10;- Culture à semer : seulement celles que ce semoir peut semer en cette saison (calendrier du jeu) ; une culture enregistrée hors saison s'affiche « (hors saison) ».&#10;- Charger : Semences, Charger : Engrais solide… Oui ou Non pour chacun (Entrée change la valeur).&#10;- Zone de ravitaillement : vos marqueurs à moins de 50 m d'un endroit qui a le produit (station, silo, magasin, big bags, palettes). Aucun : tous sont montrés.&#10;- Valider (touche Espace). Ensuite, la fenêtre affiche « Réglages validés : départ autorisé » et la roue dentée devient verte. Échap ferme sans valider.&#10;Le réglage est retenu par champ et par semoir ; sur un nouveau champ, la fenêtre reprend les derniers réglages du semoir." />
+		<text name="fp_help_c6_2_title" text="Le plein" />
+		<text name="fp_help_c6_2_text" text="Au départ, une fois le semoir attelé, la culture est mise sur le semoir. Si les cuves choisies ne sont pas pleines, il va faire le plein à la zone, puis part au champ. Semoir vide au champ : Courseplay s'arrête, le chauffeur sort du champ, fait le plein, revient, et Courseplay repart au dernier point. Il attend que les cuves soient pleines ; &gt;&gt; le fait repartir sans attendre." />
+		<text name="fp_help_c6_3_title" text="Réglages de Courseplay" />
+		<text name="fp_help_c6_3_text" text="FarmPilot règle Courseplay pour vous : « plein dans le champ » désactivé, engrais du semoir activé seulement si vous chargez de l'engrais." />
+		<text name="fp_help_c7_title" text="Épandeurs et pulvés" />
+		<text name="fp_help_c7_1_title" text="Réglages de l'épandeur" />
+		<text name="fp_help_c7_1_text" text="Traînés ou automoteurs. Roue dentée sur la ligne de la machine, fenêtre « Réglages de l'épandeur » :&#10;- Produit à charger (ceux que la cuve accepte).&#10;- Quantité à prendre : Plein, ou Juste ce qu'il faut pour le champ (dose x surface + 10 %, l'estimation est affichée).&#10;- Zone de ravitaillement (marqueurs près d'un endroit qui a le produit).&#10;- Valider (touche Espace). Départ refusé tant que ce n'est pas validé." />
+		<text name="fp_help_c7_2_title" text="Plein et reste" />
+		<text name="fp_help_c7_2_text" text="Le plein se fait comme pour le semoir, au départ et quand la cuve est vide au champ. À la fin du champ : même produit au champ suivant avec la même machine, le reste est gardé. Sinon, le reste est vidé en big bags ou IBC à la zone de plein, puis la suite habituelle. Lisier, fumier, digestat ou machine sans déchargement : le reste est gardé." />
+		<text name="fp_help_c7_3_title" text="Bouton P avec du produit" />
+		<text name="fp_help_c7_3_text" text="Bouton Garer sur un épandeur ou pulvé qui a encore plus de 20 L : il va d'abord vider le reste en big bags ou IBC, puis se gare (outil posé à sa place s'il en a une). Zone utilisée : celle du champ en cours, sinon la dernière réglée pour cette machine et ce produit, sinon le marqueur le plus proche qui a ce produit." />
+		<text name="fp_help_c8_title" text="Presse à balles" />
+		<text name="fp_help_c8_1_title" text="Le parcours qui suit les andains" />
+		<text name="fp_help_c8_1_text" text="Avec une presse, FarmPilot ne cherche pas la largeur de l'outil : il lit les andains au sol et prend le parcours Courseplay du champ, quelle que soit sa largeur, qui passe le mieux dessus (en général celui de la moissonneuse ou de l'andaineur). Courseplay gère la presse comme d'habitude (balles, enrubannage)." />
+		<text name="fp_help_c8_2_title" text="Aucun parcours sur les andains" />
+		<text name="fp_help_c8_2_text" text="Si aucun parcours n'a au moins 25 % de ses points sur un andain : message « presse : aucun parcours Courseplay du champ X ne tombe sur les andains, en attente ». Ça arrive si le champ est déjà pressé, si la paille a été broyée, ou si la récolte n'a pas suivi un parcours enregistré. Le choix est refait à chaque arrivée." />
+		<text name="fp_help_c9_title" text="Remorque à balles" />
+		<text name="fp_help_c9_1_title" text="Réglages" />
+		<text name="fp_help_c9_1_text" text="Roue dentée sur la ligne de la remorque, fenêtre « Réglages de la remorque à balles » :&#10;- Balles à ramasser : Toutes, Enrubannées seulement, Non enrubannées seulement.&#10;- Zone de dépôt : en haut, les marqueurs à moins de 60 m d'un point de vente qui prend les balles (« vente · nom ») ; puis tous les autres marqueurs pour stocker.&#10;- Valider (touche Espace ; refusé tant qu'aucune zone n'est choisie)." />
+		<text name="fp_help_c9_2_title" text="Le ramassage" />
+		<text name="fp_help_c9_2_text" text="À l'arrivée au champ, FarmPilot cherche les balles que la remorque peut charger : rondes ou carrées, bonne taille, de votre ferme, au sol sur ce champ, pas en pile, d'un seul produit à la fois. Le bras passe en travail, il va à la balle la plus proche, s'aligne pour que le bras passe dessus (12 km/h loin, 6 km/h à l'approche) et le bras du jeu la prend. Balle ratée : un 2e essai, puis elle est laissée. Balle juste devant le tracteur : il recule de 10 m d'abord.&#10;(Screen Update coming)" />
+		<text name="fp_help_c9_3_title" text="Dépôt et fin" />
+		<text name="fp_help_c9_3_text" text="Remorque pleine : bras rentré, route vers la zone de dépôt, déchargement automatique, retour au champ s'il reste des balles. En zone de vente, les balles sont vendues ; en zone de stockage, posées au marqueur. Plus de balles : dernier dépôt, puis champ suivant ou parking." />
+		<text name="fp_help_c9_4_title" text="Bouton &gt;&gt; avec la remorque à balles" />
+		<text name="fp_help_c9_4_text" text="Avec des balles chargées : dépôt tout de suite, puis retour au champ. Remorque vide : le champ est laissé, suite d'un champ fini." />
+		<text name="fp_help_c10_title" text="Moissonneuse et ensileuse en Autonome (barre de coupe)" />
+		<text name="fp_help_c10_1_title" text="Le HUD de la moissonneuse" />
+		<text name="fp_help_c10_1_text" text="En mode Autonome, une moissonneuse ou une ensileuse a 4 lignes au lieu des lignes d'outils :&#10;1. Champ : c'est aussi le champ de ses bennes. Les bennes en « Décharger moissonneuse » qui ont ce champ la servent, et elles changent de champ avec elle au champ suivant (sauf si une autre moissonneuse récolte encore l'ancien).&#10;2. Barre : « auto » choisit, selon la culture du champ, une barre de la ferme qui sait la couper (coupe à blé, coupe à maïs, bec d'ensileuse). Vous pouvez aussi choisir une barre précise. Aucune barre pour cette culture : départ refusé, avec un message.&#10;3. Champ suivant.&#10;4. Barre suivante : « auto » par défaut ; elle devient la ligne Barre au champ suivant." />
+		<text name="fp_help_c10_2_title" text="Le tracteur de la remorque porte-barre" />
+		<text name="fp_help_c10_2_text" text="La roue dentée de la ligne Barre ouvre la fenêtre « Transport de la barre ». Orange : le tracteur libre le plus proche (à l'arrêt, rien d'attelé derrière ; une masse ou un outil avant ne gênent pas). Verte : le tracteur que vous avez choisi. Un tracteur déjà attelé à la remorque est toujours pris en premier." />
+		<text name="fp_help_c10_3_title" text="Le déroulement" />
+		<text name="fp_help_c10_3_text" text="1. Vous lancez la moissonneuse sans barre.&#10;2. Le tracteur attelle la remorque porte-barre et l'amène vers le champ. Il l'arrête à un endroit dégagé du côté où la moissonneuse arrive (pas de blé debout, de fossé, d'eau ni d'obstacle) ; sinon il cherche un autre endroit dégagé à moins de 1 km.&#10;3. La moissonneuse le suit à distance, s'arrête avant le chemin du champ et attend que la remorque soit en place. Le bandeau dit alors « Attendre l'autre machine ».&#10;4. Elle attelle la barre en marche avant, recule et démarre son parcours Courseplay. Le tracteur range la remorque vide à sa place, puis se gare : il est libre.&#10;5. Champ fini : un tracteur ramène la remorque dans le champ, la moissonneuse y repose la barre, puis va à sa place. Le tracteur range la remorque." />
+		<text name="fp_help_c10_4_title" text="Barre sans remorque (coupe à maïs posée par terre)" />
+		<text name="fp_help_c10_4_text" text="La moissonneuse va la chercher seule, sans tracteur. Pour la reposer, elle va à la place de parking de la barre si elle en a une, sinon là où elle l'a prise (même endroit, même sens). Donnez une place de parking à vos barres posées par terre : l'endroit retenu est perdu au rechargement de la partie." />
+		<text name="fp_help_c10_5_title" text="Changement de barre au champ suivant" />
+		<text name="fp_help_c10_5_text" text="Blé puis maïs : la coupe à blé repart sur sa remorque, puis la moissonneuse prend la coupe à maïs. Maïs puis blé : la coupe à maïs est reposée, puis le tracteur amène la coupe à blé au champ suivant." />
+		<text name="fp_help_c10_6_title" text="Si ça bloque" />
+		<text name="fp_help_c10_6_text" text="Pas de chemin jusqu'à la barre : la moissonneuse demande au tracteur de déplacer la remorque (3 fois au plus), puis les deux s'arrêtent avec le message « pas de chemin jusqu'à l'avant de l'outil »." />
+		<text name="fp_help_c11_title" text="Carburant, messages, conseils" />
+		<text name="fp_help_c11_1_title" text="Plein de carburant" />
+		<text name="fp_help_c11_1_text" text="Courseplay s'arrête faute de carburant : FarmPilot sort du champ (si l'entrée est à plus de 30 m), fait le plein à la pompe la plus proche, revient, et Courseplay repart là où il s'était arrêté. Réglez dans Courseplay « attendre le plein » sur Non. Champ fini avec un champ suivant et réservoir (gazole ou AdBlue) sous 20 % : plein d'abord." />
+		<text name="fp_help_c11_2_title" text="Bouton &gt;&gt; en Autonome (résumé)" />
+		<text name="fp_help_c11_2_text" text="Pendant un plein : repartir sans attendre. Sur la route : champ suivant. Remorque à balles : dépôt ou champ laissé. Au champ avec Courseplay : rien." />
+		<text name="fp_help_c11_3_title" text="Conseils" />
+		<text name="fp_help_c11_3_text" text="- Réglez une place de parking pour chaque outil et pour chaque tracteur.&#10;- Enregistrez vos parcours Courseplay à la largeur exacte de vos outils.&#10;- Laissez de la place devant les outils et les bennes rangés.&#10;- Vérifiez les roues dentées : orange = départ refusé." />
+		<text name="fp_help_cat_D" text="FarmPilot - Sur la route" />
+		<text name="fp_help_d1_title" text="Parking" />
+		<text name="fp_help_d1_1_title" text="Places de parking" />
+		<text name="fp_help_d1_1_text" text="Chaque véhicule et chaque outil peut avoir sa place. Mettez la place dans la 1re ligne, puis Ctrl + clic sur le bouton parking (P) : avec un outil sélectionné, c'est la place de l'outil ; sans outil sélectionné, celle du tracteur. La place du tracteur doit être différente de celle de l'outil.&#10;(Screen Update coming)" />
+		<text name="fp_help_d1_2_title" text="Dessiner les places" />
+		<text name="fp_help_d1_2_text" text="- Place d'outil : la route qui y mène est dessinée en marche arrière (le tracteur y recule l'outil).&#10;- Place de barre de coupe : dessinée en marche avant, le marqueur 5 m avant la barre." />
+		<text name="fp_help_d1_3_title" text="Bouton Garer (P)" />
+		<text name="fp_help_d1_3_text" text="Tout outil ou remorque attelé directement au tracteur qui a sa place est d'abord posé à sa place, puis le tracteur va à la sienne. Masses ignorées. Le bouton passe en Autonome le temps de la dépose, puis le mode d'avant revient tout seul (tracteur garé, arrêt ou erreur)." />
+		<text name="fp_help_d1_4_title" text="Se garer à la fin du travail" />
+		<text name="fp_help_d1_4_text" text="Réglage véhicule « Se garer à la fin du travail » (Livraison, Chargement et livraison) : à la fin, véhicule et outil vont à leur place." />
+		<text name="fp_help_d2_title" text="Le conducteur intelligent" />
+		<text name="fp_help_d2_1_title" text="Freinage et distance" />
+		<text name="fp_help_d2_1_text" text="Il regarde la route devant et ralentit progressivement avant un obstacle. Il suit un véhicule plus lent à sa vitesse et garde 3 m derrière un autre véhicule FarmPilot. Derrière un véhicule sur le pont-bascule, avec un chauffeur ou dans une file, il attend sans contourner." />
+		<text name="fp_help_d2_2_title" text="Petit écart" />
+		<text name="fp_help_d2_2_text" text="Un obstacle d'un seul côté (poteau, cône, balle, voiture garée) est évité par un léger décalage, sans s'arrêter, puis il revient sur sa ligne. Les poteaux qui sont sur votre route sont vus dès le calcul : la route passe à côté avec la largeur de l'attelage plus 30 cm (sauf fossé, talus, pont ou murs)." />
+		<text name="fp_help_d2_3_title" text="Contournement" />
+		<text name="fp_help_d2_3_text" text="Bloqué par un objet fixe (objet tombé, muret, arbre, véhicule arrêté depuis longtemps) : il recule puis calcule un chemin pour rejoindre sa route plus loin. Devant un portail, il attend. Réglages : contournement oui/non, délai, recul avant contournement." />
+		<text name="fp_help_d2_4_title" text="Pousse sans avancer" />
+		<text name="fp_help_d2_4_text" text="S'il doit rouler mais n'avance pas de 50 cm en 3 s, il recule de 3 à 5 m et passe à côté, du côté libre. S'il pousse encore, il recule et calcule un contournement." />
+		<text name="fp_help_d2_5_title" text="Passage bouché" />
+		<text name="fp_help_d2_5_text" text="Après deux contournements ratés devant le même objet fixe, il avance au pas (2,5 km/h). S'il reste coincé, le passage est retenu comme bouché pour cette largeur d'attelage et les plus larges (sauvé dans la partie) et il fait demi-tour par une autre route. Les départs suivants évitent ce passage. Un passage dont les points ont bougé dans l'éditeur est oublié. Pour tout oublier : supprimez FarmPilot_PassagesBouches.xml du dossier de la partie, jeu fermé." />
+		<text name="fp_help_d3_title" text="Croisement face à face" />
+		<text name="fp_help_d3_1_title" text="Sur route à double sens" />
+		<text name="fp_help_d3_1_text" text="Deux véhicules FarmPilot qui vont se retrouver nez à nez sont vus de loin (250 m) : ils ralentissent et s'arrêtent à bonne distance. L'un se range sur le bas-côté (place calculée avec la taille des deux attelages, la pente, l'eau et les champs), l'autre passe, ou l'un recule. Le véhicule vide cède en premier, puis celui sans remorque. Une remorque de coupe ne recule jamais." />
+		<text name="fp_help_d3_2_title" text="Chemins à voie unique" />
+		<text name="fp_help_d3_2_text" text="Priorité à celui qui est déjà engagé. Celui qui cède s'arrête 15 m avant l'entrée du chemin et attend que l'autre soit passé (plus 10 m). Celui qui ne peut pas reculer prend une autre route et revient plus tard." />
+		<text name="fp_help_d3_3_title" text="En cas d'échec" />
+		<text name="fp_help_d3_3_text" text="Après deux échecs, message rouge et pause de 5 minutes pour la paire. Réglages : croisement oui/non, délai avant croisement, recul maximum, marge entre les attelages, côté de circulation (droite ou gauche)." />
+		<text name="fp_help_d4_title" text="Intersections" />
+		<text name="fp_help_d4_1_title" text="Les points rouges" />
+		<text name="fp_help_d4_1_text" text="Marquez les croisements dangereux comme Intersection dans l'éditeur (voir « Types de routes »). Avant de traverser ou de s'insérer, le véhicule ralentit (20 puis 8 km/h), regarde les voies sur 120 m et s'arrête juste avant le premier point rouge si un véhicule arrive (trafic, tracteur, joueur). Puis il traverse sans s'arrêter." />
+		<text name="fp_help_d4_2_title" text="Le trou dans la circulation" />
+		<text name="fp_help_d4_2_text" text="Le trou attendu dépend du temps de traversée de l'attelage. Après 30 s d'attente, il devient moins exigeant. Il ne s'engage pas si la sortie est occupée. Arrêté au milieu : il recule jusqu'à sa ligne." />
+		<text name="fp_help_d5_title" text="Virages" />
+		<text name="fp_help_d5_1_title" text="Vitesse dans les virages" />
+		<text name="fp_help_d5_1_text" text="La vitesse dépend du vrai rayon du virage, et le tracteur freine avant d'y entrer. Exemple : rayon 12 m = 16 km/h, rayon 40 m = 30 km/h. Réglage véhicule « Vitesse dans les virages » (50 à 200 %)." />
+		<text name="fp_help_d5_2_title" text="Virages trop serrés" />
+		<text name="fp_help_d5_2_text" text="Un virage est d'abord simulé tel que vous l'avez dessiné : si l'attelage passe, on n'y touche pas. Sinon, il est redessiné au plus large qui passe, à 3 m au plus de votre route, sans obstacle et sans roue hors du goudron." />
+		<text name="fp_help_d5_3_title" text="Fin de route trop serrée" />
+		<text name="fp_help_d5_3_text" text="Si le dernier virage avant la destination est trop serré, FarmPilot prévoit avant de partir une manœuvre (avancer, reculer, repartir), ou une autre arrivée par un détour, et garde la plus rapide. Avec un outil traîné, il ne recule que tout droit, 8 m au plus." />
+		<text name="fp_help_d5_4_title" text="Clignotants" />
+		<text name="fp_help_d5_4_text" text="Avec « Clignotant automatique », le clignotant s'allume à la distance réglée (« Distance clignotant », 20 à 100 m) avant un virage ou un carrefour, et reste allumé jusqu'à ce que le tracteur soit de nouveau droit. Pas de clignotant pour un écart. Moteur coupé : il s'éteint." />
+		<text name="fp_help_d6_title" text="Types de routes" />
+		<text name="fp_help_d6_1_title" text="Les types de routes" />
+		<text name="fp_help_d6_1_text" text="- Principale : la route normale.&#10;- Secondaire : prise si elle fait gagner du temps, selon le type de véhicule (roue dentée des réglages généraux).&#10;- Tertiaire (chemin de terre) : route spéciale, seulement pour les types de véhicule autorisés dans cette roue dentée, et jamais en raccourci. Vitesse limitée (« Vitesse maxi sur route tertiaire », 30 km/h par défaut) : le véhicule ralentit 30 m avant.&#10;- Accès : prise seulement pour rejoindre le point où elle mène (une place, un silo…), jamais pour passer.&#10;- Intersection : le véhicule ralentit et regarde avant de traverser." />
+		<text name="fp_help_d6_2_title" text="Réglages (onglet Général)" />
+		<text name="fp_help_d6_2_text" text="- « Routes secondaires » : Auto = selon le type de véhicule (roue dentée : Oui / Non par type) ; Autorisées = prises dès qu'elles font gagner du temps ; Jamais.&#10;- « Routes tertiaires » : Auto = selon le type de véhicule (roue dentée) ; Autorisées ; Jamais.&#10;Un seul choix pour tous les véhicules. Jamais = pris seulement s'il n'existe aucune autre route, ou si l'autre est trop étroite." />
+		<text name="fp_help_d6_3_title" text="Passages étroits" />
+		<text name="fp_help_d6_3_text" text="Le calcul d'itinéraire évite les tronçons trop étroits pour l'attelage (roues jumelées, outil large) quand un autre chemin existe. La largeur est mesurée aux pneus ; un outil repliable compte pour 2,4 m." />
+		<text name="fp_help_d7_title" text="Entrer et sortir du champ" />
+		<text name="fp_help_d7_1_title" text="Sortie du champ" />
+		<text name="fp_help_d7_1_text" text="Pour quitter le champ, le véhicule vise d'abord l'entrée du champ où il est, au lieu du point du réseau le plus proche (qui peut être derrière la culture ou sur le champ voisin). Sinon, il essaie jusqu'à 6 autres points, sans traverser la culture ni un autre champ. Les portails sont passés dans l'axe : il se met en ligne 12 à 20 m avant." />
+		<text name="fp_help_d7_2_title" text="Mode Strict" />
+		<text name="fp_help_d7_2_text" text="« Recherche de parcours limité au champ » et « Éviter les cultures » ont une valeur Strict : le calcul ne lève jamais la restriction, et la benne ne passe jamais sur le champ voisin. Les petits îlots de culture oubliés sont ignorés." />
+		<text name="fp_help_d7_3_title" text="Coincé" />
+		<text name="fp_help_d7_3_text" text="Un attelage coincé (culture autour, virage trop serré) se dégage par de petites courbes en avant. Un endroit qui bloque sans arrêt devient une zone interdite pendant 5 minutes." />
+		<text name="fp_help_cat_E" text="FarmPilot - Éditeur de routes" />
+		<text name="fp_help_e1_title" text="Activer l'éditeur" />
+		<text name="fp_help_e1_1_title" text="Ouvrir l'éditeur" />
+		<text name="fp_help_e1_1_text" text="Bouton éditeur du HUD (ou touche « FP - Activer mode édition »). Les routes et les points apparaissent autour du véhicule et les boutons d'édition s'ajoutent au HUD. Clic molette pour avoir la souris. Clic droit sur le bouton éditeur : affiche seulement les routes. Réglage « Hauteur de ligne » : lignes au sol ou au-dessus du tracteur.&#10;(Screen Update coming)" />
+		<text name="fp_help_e1_2_title" text="Les boutons d'édition" />
+		<text name="fp_help_e1_2_text" text="Enregistrer, Gestionnaire d'itinéraires, Créer une destination, Supprimer un point (clic droit : supprimer une destination), Renommer la destination." />
+		<text name="fp_help_e2_title" text="Enregistrer une route en roulant" />
+		<text name="fp_help_e2_1_title" text="Bouton Enregistrer" />
+		<text name="fp_help_e2_1_text" text="Roulez : un point est posé régulièrement derrière vous. Re-clic : fin de l'enregistrement. Le type dépend du clic :&#10;- Clic gauche : sens unique.&#10;- Clic droit : double sens.&#10;- Maj + clic gauche / droit : secondaire, sens unique / double sens.&#10;- Ctrl + clic gauche / droit : 2 routes à la fois (une de chaque côté), sens unique / double sens.&#10;- Ctrl + Maj + clic : 2 routes à la fois, secondaires.&#10;La marche arrière pendant l'enregistrement crée une route en marche arrière (pour se garer en reculant).&#10;(Screen Update coming)" />
+		<text name="fp_help_e2_2_title" text="Connexion automatique" />
+		<text name="fp_help_e2_2_text" text="Réglages généraux « Connexion automatique (départ) » et « Connexion automatique (fin) » : le début et la fin de l'enregistrement sont reliés au point proche. Réglage utilisateur « Enregistrer sans conducteur » : l'enregistrement continue si vous descendez." />
+		<text name="fp_help_e3_title" text="Points à la souris" />
+		<text name="fp_help_e3_1_title" text="Commandes" />
+		<text name="fp_help_e3_1_text" text="Dans l'éditeur, souris active (un rappel s'affiche à côté du HUD) :&#10;- Clic gauche sur un point : le sélectionner. Clic gauche sur un 2e point : les relier, ou défaire la liaison.&#10;- Au 2e point, Ctrl + clic gauche : sens unique ou double sens.&#10;- Maj + clic droit sur le 2e point : ligne en marche arrière.&#10;- Ctrl + clic gauche dans le vide : créer un point (relié au point sélectionné).&#10;- Alt + clic gauche sur un point : le supprimer.&#10;- Maj + clic gauche sur un point : changer son type (voir « Types de routes et couleurs »).&#10;- Clic droit (ou molette) maintenu sur un point : le déplacer." />
+		<text name="fp_help_e3_2_title" text="Courbes" />
+		<text name="fp_help_e3_2_text" text="Point sélectionné puis survol d'un autre : un aperçu de courbe apparaît (vert = passe, rouge = collision). Le clic relie avec la courbe." />
+		<text name="fp_help_e4_title" text="Sections" />
+		<text name="fp_help_e4_1_title" text="Agir sur toute une section" />
+		<text name="fp_help_e4_1_text" text="Une section = la suite de points entre deux carrefours. Sélectionnez le 1er point, survolez le dernier : la section s'allume.&#10;- Ctrl + clic : change le sens de toute la section (sens unique, inverse, double sens).&#10;- Maj + clic : change le type de toute la section.&#10;- Ctrl + Maj + Alt + clic : supprime toute la section." />
+		<text name="fp_help_e4_2_title" text="Sélection par zone" />
+		<text name="fp_help_e4_2_text" text="Alt maintenu sur un point sélectionné + molette : agrandit ou réduit la zone de sélection ; clic : supprime tous les points de la zone." />
+		<text name="fp_help_e5_title" text="Types de routes et couleurs" />
+		<text name="fp_help_e5_1_title" text="Changer le type" />
+		<text name="fp_help_e5_1_text" text="Maj + clic gauche sur un point ou une section fait tourner son type (principale, secondaire, tertiaire, accès, intersection…).&#10;(Screen Update coming)" />
+		<text name="fp_help_e5_2_title" text="Couleurs" />
+		<text name="fp_help_e5_2_text" text="En mode édition, un « Rappel éditeur » s'affiche à côté du HUD avec ces couleurs et les commandes.&#10;- Principale : vert (sens unique), bleu (double sens).&#10;- Secondaire : orange clair (sens unique), marron (double sens).&#10;- Tertiaire : rose (sens unique), violet (double sens).&#10;- Accès : orange (sens unique), beige (double sens).&#10;- Intersection : rouge.&#10;- Marche arrière : bleu clair.&#10;Les couleurs se changent dans Réglages &gt; Utilisateur &gt; « Couleurs personnalisées »." />
+		<text name="fp_help_e6_title" text="Destinations et dossiers" />
+		<text name="fp_help_e6_1_title" text="Créer une destination" />
+		<text name="fp_help_e6_1_text" text="Placez le véhicule à l'endroit voulu (sur un point), bouton « Créer une destination », tapez le nom. Renommer : bouton Renommer. Supprimer : clic droit sur le bouton Supprimer. Conseil : un nom clair par usage (« Champ 56 », « Silo Ferme », « G_Semoir 1 » pour une place de parking).&#10;(Screen Update coming)" />
+		<text name="fp_help_e6_2_title" text="Dossiers" />
+		<text name="fp_help_e6_2_text" text="Réglage « Utiliser des dossiers » : les destinations se rangent dans des dossiers (par glisser-déposer dans la liste ouverte, ou via les réglages). Les dossiers servent aussi au cycle de collecte et livraison et à l'échange de bennes. Filtre des destinations : touche « FP - Filtre des destinations »." />
+		<text name="fp_help_e6_3_title" text="Sur la carte" />
+		<text name="fp_help_e6_3_text" text="Réglage « Afficher les destinations AD » : marqueurs FarmPilot sur la carte du menu et/ou la carte en jeu." />
+		<text name="fp_help_e7_title" text="Points de champ et gestionnaire d'itinéraires" />
+		<text name="fp_help_e7_1_title" text="Créer les points de champ" />
+		<text name="fp_help_e7_1_text" text="Ctrl + Maj + F : crée des points le long du bord des champs. Réglages : décalage (à l'intérieur ou à l'extérieur du bord) et distance entre les points." />
+		<text name="fp_help_e7_2_title" text="Gestionnaire d'itinéraires" />
+		<text name="fp_help_e7_2_text" text="Ctrl + Alt + 1 (pavé num.) : exporter votre réseau sous un nom, ou importer un réseau enregistré (partager avec un ami, garder une sauvegarde avant de grosses modifications).&#10;(Screen Update coming)" />
+		<text name="fp_help_cat_F" text="FarmPilot - Réglages et fonctions" />
+		<text name="fp_help_f1_title" text="Ouvrir les réglages" />
+		<text name="fp_help_f1_1_title" text="Fenêtre des réglages" />
+		<text name="fp_help_f1_1_text" text="Ctrl + Alt + 0 (pavé num.) ou bouton du HUD. Onglets : Véhicule (pour le véhicule où vous êtes), Déchargement moissonneuse, Général (toute la partie), Utilisateur (votre affichage), Environnement (feux), Couleurs, Débogage. Chaque ligne a une infobulle. Maj + C / Maj + V copient les réglages d'un véhicule à l'autre." />
+		<text name="fp_help_f2_title" text="Réglages du véhicule" />
+		<text name="fp_help_f2_1_title" text="Conduite" />
+		<text name="fp_help_f2_1_text" text="Vitesse dans les virages, Recherche de parcours limité au champ (Non / Oui / Strict), Éviter les cultures (Non / Oui / Strict), Distance maximum du déclencheur." />
+		<text name="fp_help_f2_2_title" text="Chargement" />
+		<text name="fp_help_f2_2_text" text="Décharger le contenu (niveau de départ), Chargement arrêté : partir après, Cycle de collecte et livraison, Côté auto de déchargement, Bâches remorques automatique, Replier les outils (Oui à l'achat), Changer les pneus à (avec AutoSwitch, 20 % à l'achat), AutoLoad : Position et Temps de déchargement, Détection des andains (Non à l'achat)." />
+		<text name="fp_help_f2_3_title" text="Moissonneuse" />
+		<text name="fp_help_f2_3_text" text="Décalage de la goulotte, Distance de moissonneuse, Garer au champ, Restreindre la détection au champ." />
+		<text name="fp_help_f2_4_title" text="Fin de travail et entretien" />
+		<text name="fp_help_f2_4_text" text="Se garer à la fin du travail, Faire le plein automatiquement, Réparer automatiquement." />
+		<text name="fp_help_f3_title" text="Réglages généraux" />
+		<text name="fp_help_f3_1_title" text="Circulation" />
+		<text name="fp_help_f3_1_text" text="Détection de collision, Croisement face à face (+ délai, recul maximum, marge, côté de circulation), Contournement d'obstacle (+ délai, recul), Détour maximum, Routes secondaires et Routes tertiaires (+ roue dentée par type de véhicule), Vitesse maxi sur route tertiaire." />
+		<text name="fp_help_f3_2_title" text="Travail" />
+		<text name="fp_help_f3_2_text" text="Attente dans le champ, Autonome sans Courseplay, Salaire du chauffeur, Relancer les ouvriers (au chargement), Portée du gestionnaire silo-couloir / déchargement (les véhicules passent un par un)." />
+		<text name="fp_help_f3_3_title" text="Calcul et éditeur" />
+		<text name="fp_help_f3_3_text" text="Algorithme de recherche de chemin, Temps de recherche (max), Hauteur de collision au sol, Utiliser des dossiers, Connexion automatique (départ) et (fin), Décalage d'enregistrement dans le sens de marche / dans le sens opposé, Décalage des points de champ, Distance max. des points de champ, Distance maximum du déclencheur, Gestionnaire de routes sur le serveur." />
+		<text name="fp_help_f4_title" text="Réglages utilisateur et environnement" />
+		<text name="fp_help_f4_1_title" text="Affichage" />
+		<text name="fp_help_f4_1_text" text="Taille de l'ATH FarmPilot, Notifications, Afficher l'aide (touches dans F1), Montrer chemin suivant, Hauteur de ligne, Afficher les info-bulles, Afficher les destinations (sur la carte), Clic sur destinations, Paramètres additionnels dans l'ATH, Personnalisation du logo, ATH étendu, Sons, Épaisseur des lignes, Taille des noms de destination, Couleurs personnalisées, Enregistrer sans conducteur." />
+		<text name="fp_help_f4_2_title" text="Environnement (feux)" />
+		<text name="fp_help_f4_2_text" text="Clignotant automatique (Oui/Non), Distance clignotant, Coupure moteur (Jamais, 10 s, 30 s, 1, 2 ou 5 min), Gyrophares (hors des champs), Feux de travail pendant le chargement/déchargement, Feux de travail lors d'opérations dans un silo bunker, Feux de détresse (en marche arrière), Temps de trajet restant (calcul pour les autres mods ; à augmenter ou désactiver en cas de ralentissements)." />
+		<text name="fp_help_f5_title" text="Fonctions intégrées (ancien Addon)" />
+		<text name="fp_help_f5_1_title" text="Pont-bascule" />
+		<text name="fp_help_f5_1_text" text="Le véhicule centre tout l'attelage sur le pont, s'arrête 5 s et affiche produit, chargement et poids total, puis repart. Arrêt à la main 3 s sur le pont : le poids s'affiche aussi. Avec AutoSwitch, chaque pesée va dans son registre.&#10;(Screen Update coming)" />
+		<text name="fp_help_f5_2_title" text="Moteur et feux" />
+		<text name="fp_help_f5_2_text" text="Coupure moteur après le délai réglé. Moteur coupé : seuls les feux de base restent, tout revient au redémarrage." />
+		<text name="fp_help_f5_3_title" text="Silo vide" />
+		<text name="fp_help_f5_3_text" text="Au chargement, si la benne contient déjà quelque chose et que plus rien n'entre, il part avec ce qu'il a, selon « Chargement arrêté : partir après »." />
+		<text name="fp_help_f5_4_title" text="Outil arrière" />
+		<text name="fp_help_f5_4_text" text="Au lancement de la partie, chaque tracteur sélectionne l'outil attelé derrière lui." />
+		<text name="fp_help_f6_title" text="Plein et réparation automatiques" />
+		<text name="fp_help_f6_1_title" text="Principe" />
+		<text name="fp_help_f6_1_text" text="Avec « Faire le plein / Réparer automatiquement », le véhicule va à la pompe ou à l'atelier le plus proche relié au réseau, mais seulement après le travail en cours (benne vidée, moissonneuse servie). Jamais repoussé : votre demande, celle de Courseplay, un réservoir sous 5 % ou des dégâts à 90 %." />
+		<text name="fp_help_f7_title" text="Mods compatibles et multijoueur" />
+		<text name="fp_help_f7_1_title" text="Compatibilité" />
+		<text name="fp_help_f7_1_text" text="- Courseplay : parcours du mode Autonome, ensileuse, clic droit laissé au HUD et à l'éditeur FarmPilot.&#10;- AIVE et ouvrier du jeu : assistant à la destination.&#10;- AutoSwitch : champs réunis, registre du pont-bascule.&#10;- Attelage manuel (attachImplementsManually) : flexibles et prise de force branchés et débranchés.&#10;- autoTurnOffTurnLights : sans effet pendant que FarmPilot conduit.&#10;- Les mods qui cherchent AutoDrive trouvent FarmPilot." />
+		<text name="fp_help_f7_2_title" text="Multijoueur" />
+		<text name="fp_help_f7_2_text" text="Tous les choix (outil, champ suivant, remorque, échange de bennes, réglages des outils) sont envoyés aux autres joueurs et gardés dans la sauvegarde." />
+		<text name="fp_help_f7_3_title" text="Fichiers de la partie" />
+		<text name="fp_help_f7_3_text" text="FarmPilot_config.xml (réseau), FarmPilot_Autonome.xml (parcours retenus), FarmPilot_RemorquesBalles.xml, FarmPilot_PassagesBouches.xml. Dossier modSettings/FS25_FarmPilot : routes exportées, couleurs." />
+		<text name="fp_help_f8_title" text="Ça ne marche pas ?" />
+		<text name="fp_help_f8_1_title" text="Il ne part pas" />
+		<text name="fp_help_f8_1_text" text="- Roue dentée orange : validez les réglages de l'outil.&#10;- Message « outil ou attelage en mouvement » : il attend la fin du repli.&#10;- Mode Autonome avec une benne seule : il faut un outil de travail.&#10;- Aucune route jusqu'à la destination : vérifiez les liaisons dans l'éditeur." />
+		<text name="fp_help_f8_2_title" text="Il s'arrête au champ" />
+		<text name="fp_help_f8_2_text" text="Aucun parcours Courseplay à la largeur de l'outil, ou plusieurs : voir la fenêtre Parcours Autonome." />
+		<text name="fp_help_f8_3_title" text="Destination changée au chargement de la partie" />
+		<text name="fp_help_f8_3_text" text="Les destinations sont maintenant gardées par leur nom. Une partie déjà décalée : rechoisissez la destination une fois." />
+		<text name="fp_help_f8_4_title" text="Envoyer un rapport" />
+		<text name="fp_help_f8_4_text" text="Joignez le fichier log.txt (Documents/My Games/FarmingSimulator2025) : les lignes [FarmPilot …] et [AD-…] disent ce que fait chaque chauffeur." />
 	</texts>
 </l10n>

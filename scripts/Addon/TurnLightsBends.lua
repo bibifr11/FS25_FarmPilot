@@ -309,7 +309,11 @@ function ADAddonTurnLightsBends.update(module, minAngle, dt)
     local direction, bend = 0, nil
     if ADAddonTurnLightsBends.isOnRoute(module) then
         -- le virage en cours finit d'abord (il en reste KEEP_ANGLE devant), puis le suivant
-        if current ~= 0 and keepCurrent(module, current) then
+        if ADAddonTurnLightsJunctions ~= nil and ADAddonTurnLightsJunctions.ACTIVE then
+            -- 14/11 : clignotant aux intersections du réseau, plus à l'angle (TurnLightsJunctions.lua)
+            bend = ADAddonTurnLightsJunctions.findTurn(module, maxDistance)
+            direction = bend ~= nil and bend.direction or 0
+        elseif current ~= 0 and keepCurrent(module, current) then
             direction = current
         else
             bend = ADAddonTurnLightsBends.findBend(module, maxDistance, minAngle)

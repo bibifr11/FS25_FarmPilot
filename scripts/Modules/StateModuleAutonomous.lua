@@ -74,7 +74,9 @@ function ADStateModule:resetAutonomousState()
     self.fpNextToolUniqueId = nil
     self.fpNextToolNetId = nil
     if self.resetTrailerState ~= nil then self:resetTrailerState() end -- remorque des modes avec benne, voir StateModuleTrailer.lua
+    if self.resetHeaderState ~= nil then self:resetHeaderState() end -- véhicule de la remorque porte-barre, voir StateModuleHeader.lua
     if self.resetFrontState ~= nil then self:resetFrontState() end -- attelage avant, voir StateModuleFront.lua
+    if self.resetFieldClearState ~= nil then self:resetFieldClearState() end -- « Champ : aucun » une fois garé, voir StateModuleFieldClear.lua
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -101,7 +103,9 @@ function ADStateModule:loadAutonomousState(xmlFile, key)
         self.fpNextToolUniqueId = nil
     end
     if self.loadTrailerState ~= nil then self:loadTrailerState(xmlFile, key) end -- remorque des modes avec benne, voir StateModuleTrailer.lua
+    if self.loadHeaderState ~= nil then self:loadHeaderState(xmlFile, key) end -- véhicule de la remorque porte-barre, voir StateModuleHeader.lua
     if self.loadFrontState ~= nil then self:loadFrontState(xmlFile, key) end -- attelage avant, voir StateModuleFront.lua
+    if self.loadFieldClearState ~= nil then self:loadFieldClearState(xmlFile, key) end -- « Champ : aucun » une fois garé, voir StateModuleFieldClear.lua
 end
 
 function ADStateModule:saveAutonomousState(xmlFile, key)
@@ -121,7 +125,9 @@ function ADStateModule:saveAutonomousState(xmlFile, key)
         xmlFile:setValue(key .. "#fpNextTool", fpNextToolUniqueId)
     end
     if self.saveTrailerState ~= nil then self:saveTrailerState(xmlFile, key) end -- remorque des modes avec benne, voir StateModuleTrailer.lua
+    if self.saveHeaderState ~= nil then self:saveHeaderState(xmlFile, key) end -- véhicule de la remorque porte-barre, voir StateModuleHeader.lua
     if self.saveFrontState ~= nil then self:saveFrontState(xmlFile, key) end -- attelage avant, voir StateModuleFront.lua
+    if self.saveFieldClearState ~= nil then self:saveFieldClearState(xmlFile, key) end -- « Champ : aucun » une fois garé, voir StateModuleFieldClear.lua
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -142,7 +148,9 @@ function ADStateModule:writeAutonomousState(streamId)
         NetworkUtil.writeNodeObjectId(streamId, fpNextToolId)
     end
     if self.writeTrailerState ~= nil then self:writeTrailerState(streamId) end -- remorque des modes avec benne (même ordre à la lecture)
+    if self.writeHeaderState ~= nil then self:writeHeaderState(streamId) end -- véhicule de la remorque porte-barre, voir StateModuleHeader.lua
     if self.writeFrontState ~= nil then self:writeFrontState(streamId) end -- attelage avant (même ordre à la lecture)
+    if self.writeFieldClearState ~= nil then self:writeFieldClearState(streamId) end -- « Champ : aucun » (même ordre à la lecture)
 end
 
 function ADStateModule:readAutonomousState(streamId)
@@ -164,7 +172,9 @@ function ADStateModule:readAutonomousState(streamId)
     end
     self.fpNextToolUniqueId = nil
     if self.readTrailerState ~= nil then self:readTrailerState(streamId) end -- remorque des modes avec benne (même ordre qu'à l'écriture)
+    if self.readHeaderState ~= nil then self:readHeaderState(streamId) end -- véhicule de la remorque porte-barre, voir StateModuleHeader.lua
     if self.readFrontState ~= nil then self:readFrontState(streamId) end -- attelage avant (même ordre qu'à l'écriture)
+    if self.readFieldClearState ~= nil then self:readFieldClearState(streamId) end -- « Champ : aucun » (même ordre qu'à l'écriture)
 end
 
 -- ------------------------------------------------------------------------------------------------------------

@@ -92,16 +92,7 @@ function ADCornerModule:manoeuvreGeometry()
     local x, _, z = getWorldTranslation(node)
     local dx, _, dz = localDirectionToWorld(node, 0, 0, 1)
     local a = ADCornerModule.headingOf(dx, dz)
-    local box = {front = self.geo.tractorBox.front, rear = self.geo.tractorBox.rear, half = self.geo.tractorBox.half}
-    local units = AutoDrive.getAllUnits(self.vehicle)
-    if units ~= nil then
-        for _, unit in pairs(units) do
-            if unit ~= self.vehicle and unit.components ~= nil and unit.components[1] ~= nil then
-                local b = ADCornerModule.bodyBox(unit, x, z, a)
-                box.front, box.rear, box.half = math.max(box.front, b.front), math.min(box.rear, b.rear), math.max(box.half, b.half)
-            end
-        end
-    end
+    local box = self:mountedBox(x, z, a, self.geo.tractorBox) -- (11/11) tous les outils, avec ou sans cuve, voir CornerModule.lua
     return {hitch = 0, trailer = 0, tractorBox = box}, string.format("mounted tool (body %.1f m ahead, %.1f m behind the axle)", box.front, -box.rear)
 end
 

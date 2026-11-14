@@ -32,7 +32,7 @@ ADAvoidModule = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADAvoidModule.DEBUG = true -- temporary diagnostic logs for the tests
+ADAvoidModule.DEBUG = false
 
 ADAvoidModule.STATE_IDLE = 0
 ADAvoidModule.STATE_SHIFTING = 1

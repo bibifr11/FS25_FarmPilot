@@ -95,7 +95,7 @@ function AutonomousMode:reset()
     self.refillThen = nil
     self.refillPlan = nil
     self.refillTask = nil
-    self.dumpStage = nil -- épandeur : vider le reste en big bags, voir AutonomousSprayerDump.lua
+    self.dumpStage = nil -- épandeur : rendre ou vendre le reste, voir AutonomousSprayerDump.lua
     if ADBaleCollect ~= nil then ADBaleCollect.reset(self) end -- remorque à balles : étapes du ramassage, voir AutonomousBales.lua
     if ADFuelRun ~= nil then ADFuelRun.reset(self) end -- plein de carburant, voir AutonomousFuel.lua
     if ADFrontFlow ~= nil then ADFrontFlow.reset(self) end -- attelage avant, voir AutonomousFront.lua
@@ -129,6 +129,7 @@ end
 -- Départ (fonction principale)
 -- ------------------------------------------------------------------------------------------------------------
 function AutonomousMode:start(user)
+    if ADStateModule ~= nil and ADStateModule.refuseStartNoField ~= nil and ADStateModule.refuseStartNoField(self, user) then return end -- (14/11) « Champ : aucun » : choisir un champ d'abord, voir StateModuleFieldClear.lua
     -- (08/11) départ refusé tant que les réglages ne sont pas validés : semoir sur la ligne
     -- Outil (ou Outil suivant) : culture, produits et zone de ravitaillement à valider (roue dentée) avant le départ
     local okB, block = FarmPilotCall(ADSeederManager.startBlock, self.vehicle)
@@ -205,6 +206,7 @@ function AutonomousMode:departToField()
     self.destinationID = self.vehicle.ad.stateModule:getFirstMarker().id
     ADAutonomousManager.log("%s : départ vers « %s »", tostring(self.vehicle.ad.stateModule:getName()), tostring(self.vehicle.ad.stateModule:getFirstMarker().name))
     self.driveToDestinationTask = DriveToDestinationTask:new(self.vehicle, self.destinationID)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(self.driveToDestinationTask, "AD_fpGoal_work", self.vehicle.ad.stateModule:getFirstMarker().name) end -- but affiché dans l'ATH, voir DriveGoal.lua
     self.vehicle.ad.taskModule:addTask(self.driveToDestinationTask)
     -- parcours Courseplay lus pendant le trajet (un par image), pas tous d'un coup à l'arrivée
     local ok, err = FarmPilotCall(ADAutonomousManager.startPrefetch)
@@ -458,6 +460,7 @@ function AutonomousMode.startToolSwap(vehicle, plan, nextTool, nextField, doneNa
     end
     mode.parkStage = "tool"
     mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, plan.marker.id)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_toolPark", plan.marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
     vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     ADAutonomousManager.log("%s : « %s » fini, l'outil va à sa place « %s », puis « %s » pour le champ suivant « %s »", name, tostring(doneName),
         tostring(plan.marker.name), nextLabel, tostring(nextField.name))
@@ -521,6 +524,7 @@ function AutonomousMode.parkWithToolDrop(vehicle, forcedTool)
     mode.parkTool = tool
     mode.tractorParkId = tractorPark
     mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, toolMarker.id)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_toolPark", toolMarker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
     vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     ADAutonomousManager.log("%s : champ fini, l'outil va à sa place « %s », puis le tracteur à « %s »", name, tostring(toolMarker.name), tostring(tractorMarker.name))
     AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dropGo", tostring(toolMarker.name))
@@ -567,6 +571,7 @@ function AutonomousMode:handleParkStage()
             ADAutonomousManager.log("%s : outil dételé, le tracteur va à « %s »", name, tostring(marker.name))
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dropDone", tostring(marker.name))
             self.driveToDestinationTask = DriveToDestinationTask:new(vehicle, marker.id)
+            if ADDriveGoal ~= nil then ADDriveGoal.set(self.driveToDestinationTask, "AD_fpGoal_park", marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
             vehicle.ad.taskModule:addTask(self.driveToDestinationTask)
         else
             ADAutonomousManager.log("%s : outil non dételé (%s), arrêt", name, tostring(result))
@@ -821,6 +826,7 @@ function AutonomousMode:startFetch(tool)
         self.fetchStage = "route"
         self.fetchPlace = kind == "marker" and wp or nil
         self.driveToDestinationTask = DriveToDestinationTask:new(vehicle, wp.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(self.driveToDestinationTask, "AD_fpGoal_fetch", ADAutonomousManager.toolLabel(tool)) end -- but affiché dans l'ATH, voir DriveGoal.lua
         vehicle.ad.taskModule:addTask(self.driveToDestinationTask)
     else
         ADAutonomousManager.log("%s : va chercher « %s »", name, ADAutonomousManager.toolLabel(tool))
@@ -995,6 +1001,7 @@ function AutonomousMode:handleRefillStage()
             local fieldMarker = vehicle.ad.stateModule:getFirstMarker()
             self.refillStage = "back"
             self.refillTask = DriveToDestinationTask:new(vehicle, fieldMarker.id)
+            if ADDriveGoal ~= nil then ADDriveGoal.set(self.refillTask, "AD_fpGoal_back", fieldMarker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
             vehicle.ad.taskModule:addTask(self.refillTask)
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_seederBack", tostring(fieldMarker.name))
         else

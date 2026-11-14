@@ -219,6 +219,7 @@ function ADTrailerHitch.beforeStart(mode, user)
     if not ADTrailerHitch.isTrailerMode(vehicle) then
         return false
     end
+    if ADLoadPoint ~= nil and ADLoadPoint.beforeStart(mode, user) then return true end -- remorque adaptée aux produits choisis, voir HudLoadPoint.lua
     local ok, trailer, err, wanted = FarmPilotCall(ADTrailerHitch.trailerToFetch, vehicle)
     if not ok then
         ADTrailerHitch.log("ERREUR remorque à atteler : %s", tostring(trailer))
@@ -260,6 +261,7 @@ function ADTrailerHitch.startFetch(mode, trailer, user, after)
         mode.fpHitch.stage = "route"
         mode.fpHitch.place = kind == "marker" and wp or nil
         mode.fpHitch.task = DriveToDestinationTask:new(vehicle, wp.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(mode.fpHitch.task, "AD_fpGoal_hitch", ADTrailerHitch.label(trailer)) end -- but affiché dans l'ATH, voir DriveGoal.lua
         vehicle.ad.taskModule:addTask(mode.fpHitch.task)
     else
         ADTrailerHitch.log("%s : va chercher « %s »", nameOf(vehicle), ADTrailerHitch.label(trailer))

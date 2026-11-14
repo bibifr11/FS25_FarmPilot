@@ -15,6 +15,8 @@
 --   champ pour le jeu, sans culture) : pendant que l'ensileuse récolte, l'herbe, la prairie ou un autre numéro de
 --   champ ne sont pas son champ.
 --
+-- - 14/11 : luzerne, trèfle et prairie temporaire (sol de prairie) comptent comme l'herbe (isMeadowGround).
+--
 -- Règle : culture coupée ou fanée, herbe et prairie comptent comme « pas de culture ».
 --
 -- Branché par PathFinderModule.lua (startPathPlanningToPipe : setHarvestField ; cases de la grille :
@@ -46,6 +48,32 @@ PathFinderModule.fineBand = {}       -- key of a 2 m cell -> true when it lies i
 PathFinderModule.fineReads = 0
 
 -- ------------------------------------------------------------------------------------------------------------
+-- Sol de prairie
+-- ------------------------------------------------------------------------------------------------------------
+-- (14/11) champ de luzerne : le tracteur de la remorque porte-barre n'y entrait pas (« culture » partout).
+-- Sol de prairie du jeu (herbe ou herbe coupée) : ce qui y pousse (herbe, luzerne, trèfle, prairie temporaire) se
+-- fauche et repousse, les roues ne l'abîment pas. Lu comme le jeu le lit sous une roue (WheelPhysics.lua).
+function PathFinderModule.isMeadowGround(x, z)
+    local mission = g_currentMission
+    local system = mission ~= nil and mission.fieldGroundSystem or nil
+    if system == nil or system.getDensityMapData == nil or FieldDensityMap == nil or FieldGroundType == nil
+        or FieldGroundType.getTypeByValue == nil or getDensityAtWorldPos == nil or bitAND == nil or bitShiftRight == nil then
+        return false
+    end
+    local mapId, firstChannel, numChannels = system:getDensityMapData(FieldDensityMap.GROUND_TYPE)
+    if mapId == nil or mapId == 0 or firstChannel == nil or numChannels == nil then
+        return false
+    end
+    local y = mission.terrainRootNode ~= nil and getTerrainHeightAtWorldPos(mission.terrainRootNode, x, 0, z) or 0
+    local bits = getDensityAtWorldPos(mapId, x, y, z)
+    if bits == nil then
+        return false
+    end
+    local groundType = FieldGroundType.getTypeByValue(bitAND(bitShiftRight(bits, firstChannel), 2 ^ numChannels - 1))
+    return groundType ~= nil and (groundType == FieldGroundType.GRASS or groundType == FieldGroundType.GRASS_CUT)
+end
+
+-- ------------------------------------------------------------------------------------------------------------
 -- Lecture d'une case
 -- ------------------------------------------------------------------------------------------------------------
 -- standing crop at one position: fruit type index, 0 if none (cut, withered, grass and meadow count as none)
@@ -54,8 +82,9 @@ function PathFinderModule.readCropAt(x, z)
     if fruitTypeIndex == nil or fruitTypeIndex == 0 or growthState == nil or growthState == 0 then
         return 0
     end
-    if fruitTypeIndex == FruitType.MEADOW or fruitTypeIndex == FruitType.GRASS then
+    if fruitTypeIndex == FruitType.MEADOW or fruitTypeIndex == FruitType.GRASS or PathFinderModule.isMeadowGround(x, z) then
         -- second value (25/10 19:14): grass ground, not the field of a harvester working another crop
+        -- (14/11) sol de prairie : luzerne, trèfle, prairie temporaire comptent comme l'herbe
         return 0, true
     end
     local fruit = g_fruitTypeManager:getFruitTypeByIndex(fruitTypeIndex)

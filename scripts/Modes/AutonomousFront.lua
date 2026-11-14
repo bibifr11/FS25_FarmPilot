@@ -293,6 +293,7 @@ function ADFrontFlow.startDrop(mode, tool, marker, beside, besideSide)
         ADAutonomousManager.log("%s : « %s » (avant) va à sa place « %s »", nameOf(vehicle), label(tool), tostring(marker.name))
         AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dropGo", tostring(marker.name))
         mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, marker.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_toolPark", marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
         vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
         return
     end
@@ -340,6 +341,7 @@ function ADFrontFlow.startDropAt(mode, tool, slot, placeName, back)
             mode.parkStage = "noseRoute"
             mode.noseDrop = { tool = tool, slot = slot, placeName = placeName }
             mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, plan.wp.id)
+            if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_toolPark", placeName) end -- but affiché dans l'ATH, voir DriveGoal.lua
             vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
             return
         elseif plan == nil then
@@ -653,6 +655,7 @@ function ADFrontFlow.nextStep(mode)
         ADAutonomousManager.log("%s : l'outil va à sa place « %s »", nameOf(vehicle), tostring(step.marker.name))
         AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dropGo", tostring(step.marker.name))
         mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, step.marker.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_toolPark", step.marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
         vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     elseif step.kind == "fetch" then
         if isAttached(step.tool) or step.tool.isDeleted then
@@ -677,6 +680,7 @@ function ADFrontFlow.nextStep(mode)
         ADAutonomousManager.log("%s : le tracteur va à « %s »", nameOf(vehicle), tostring(step.marker.name))
         AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_dropDone", tostring(step.marker.name))
         mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, step.marker.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_park", step.marker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
         vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
     end
 end

@@ -1,105 +1,754 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!-- Aide en jeu FarmPilot : Échap > Aide, 6 catégories. Textes : fp_help_* des translations, images : help/*.dds -->
 <helpLines>
-    <category title="$l10n_fp_help_category">
-        <page title="$l10n_fp_help_start_title" iconSliceId="ad_gui.input_openGUI_1">
+    <category title="$l10n_fp_help_cat_A">
+        <page title="$l10n_fp_help_a1_title" iconSliceId="ad_gui.marker">
             <paragraph>
-                <title text="$l10n_fp_help_start_1_title"/>
-                <text text="$l10n_fp_help_start_1_text"/>
+                <title text="$l10n_fp_help_a1_1_title"/>
+                <image filename="help/fp_help_c01.dds" size="1024 1024" uvs="0px 0px 1024px 539px" aspectRatio="0.526"/>
+                <text text="$l10n_fp_help_a1_1_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_start_2_title"/>
-                <text text="$l10n_fp_help_start_2_text"/>
+                <title text="$l10n_fp_help_a1_2_title"/>
+                <text text="$l10n_fp_help_a1_2_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_start_3_title"/>
-                <text text="$l10n_fp_help_start_3_text"/>
-            </paragraph>
-        </page>
-        <page title="$l10n_fp_help_driveto_title" iconSliceId="ad_gui.input_silomode_1">
-            <paragraph>
-                <title text="$l10n_fp_help_driveto_1_title"/>
-                <text text="$l10n_fp_help_driveto_1_text"/>
-            </paragraph>
-            <paragraph>
-                <title text="$l10n_fp_help_driveto_2_title"/>
-                <text text="$l10n_fp_help_driveto_2_text"/>
+                <title text="$l10n_fp_help_a1_3_title"/>
+                <text text="$l10n_fp_help_a1_3_text"/>
             </paragraph>
         </page>
-        <page title="$l10n_fp_help_autonomous_title" iconSliceId="ad_gui.input_silomode_7">
+        <page title="$l10n_fp_help_a2_title" iconSliceId="ad_gui.input_openGUI_1">
             <paragraph>
-                <title text="$l10n_fp_help_autonomous_1_title"/>
-                <text text="$l10n_fp_help_autonomous_1_text"/>
+                <title text="$l10n_fp_help_a2_1_title"/>
+                <image filename="help/fp_help_c02.dds" size="1024 1024" uvs="0px 0px 1024px 544px" aspectRatio="0.531"/>
+                <text text="$l10n_fp_help_a2_1_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_autonomous_2_title"/>
-                <text text="$l10n_fp_help_autonomous_2_text"/>
+                <title text="$l10n_fp_help_a2_2_title"/>
+                <image filename="help/fp_help_c03.dds" size="1024 1024" uvs="0px 0px 1015px 1024px" aspectRatio="1.009"/>
+                <text text="$l10n_fp_help_a2_2_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_autonomous_3_title"/>
-                <text text="$l10n_fp_help_autonomous_3_text"/>
-            </paragraph>
-            <paragraph>
-                <title text="$l10n_fp_help_autonomous_4_title"/>
-                <text text="$l10n_fp_help_autonomous_4_text"/>
-            </paragraph>
-            <paragraph>
-                <title text="$l10n_fp_help_autonomous_5_title"/>
-                <text text="$l10n_fp_help_autonomous_5_text"/>
-            </paragraph>
-            <paragraph>
-                <title text="$l10n_fp_help_autonomous_6_title"/>
-                <image filename="help/fp_help_autonome_hud.dds" size="1024 1024" uvs="0px 0px 662px 522px" aspectRatio="0.789"/>
-                <text text="$l10n_fp_help_autonomous_6_text"/>
-            </paragraph>
-            <paragraph>
-                <title text="$l10n_fp_help_autonomous_7_title"/>
-                <text text="$l10n_fp_help_autonomous_7_text"/>
-            </paragraph>
-            <paragraph>
-                <title text="$l10n_fp_help_autonomous_8_title"/>
-                <text text="$l10n_fp_help_autonomous_8_text"/>
+                <title text="$l10n_fp_help_a2_3_title"/>
+                <image filename="help/fp_help_c04.dds" size="1024 1024" uvs="0px 0px 963px 1024px" aspectRatio="1.063"/>
+                <text text="$l10n_fp_help_a2_3_text"/>
             </paragraph>
         </page>
-        <page title="$l10n_fp_help_deliverto_title" iconSliceId="ad_gui.input_silomode_2">
+        <page title="$l10n_fp_help_a3_title" iconSliceId="ad_gui.input_start_stop_2">
             <paragraph>
-                <title text="$l10n_fp_help_deliverto_1_title"/>
-                <text text="$l10n_fp_help_deliverto_1_text"/>
+                <title text="$l10n_fp_help_a3_1_title"/>
+                <text text="$l10n_fp_help_a3_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_2_title"/>
+                <text text="$l10n_fp_help_a3_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_3_title"/>
+                <text text="$l10n_fp_help_a3_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_4_title"/>
+                <text text="$l10n_fp_help_a3_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_5_title"/>
+                <text text="$l10n_fp_help_a3_5_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_6_title"/>
+                <text text="$l10n_fp_help_a3_6_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_7_title"/>
+                <text text="$l10n_fp_help_a3_7_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a3_8_title"/>
+                <text text="$l10n_fp_help_a3_8_text"/>
             </paragraph>
         </page>
-        <page title="$l10n_fp_help_pickupdeliver_title" iconSliceId="ad_gui.input_silomode_3">
+        <page title="$l10n_fp_help_a4_title" iconSliceId="ad_gui.input_openGUI_1">
             <paragraph>
-                <title text="$l10n_fp_help_pickupdeliver_1_title"/>
-                <text text="$l10n_fp_help_pickupdeliver_1_text"/>
+                <title text="$l10n_fp_help_a4_1_title"/>
+                <image filename="help/fp_help_c05.dds" size="1024 1024" uvs="0px 0px 560px 1024px" aspectRatio="1.829"/>
+                <text text="$l10n_fp_help_a4_1_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_pickupdeliver_2_title"/>
-                <text text="$l10n_fp_help_pickupdeliver_2_text"/>
-            </paragraph>
-        </page>
-        <page title="$l10n_fp_help_load_title" iconSliceId="ad_gui.input_silomode_4">
-            <paragraph>
-                <title text="$l10n_fp_help_load_1_title"/>
-                <text text="$l10n_fp_help_load_1_text"/>
-            </paragraph>
-        </page>
-        <page title="$l10n_fp_help_unloader_title" iconSliceId="ad_gui.input_silomode_5">
-            <paragraph>
-                <title text="$l10n_fp_help_unloader_1_title"/>
-                <text text="$l10n_fp_help_unloader_1_text"/>
+                <title text="$l10n_fp_help_a4_2_title"/>
+                <text text="$l10n_fp_help_a4_2_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_unloader_2_title"/>
-                <text text="$l10n_fp_help_unloader_2_text"/>
+                <title text="$l10n_fp_help_a4_3_title"/>
+                <image filename="help/fp_help_c06.dds" size="1024 1024" uvs="0px 0px 1024px 641px" aspectRatio="0.626"/>
+                <text text="$l10n_fp_help_a4_3_text"/>
             </paragraph>
         </page>
-        <page title="$l10n_fp_help_editor_title" iconSliceId="ad_gui.input_record_1">
+        <page title="$l10n_fp_help_a5_title" iconSliceId="ad_gui.input_toggleHud_1">
             <paragraph>
-                <title text="$l10n_fp_help_editor_1_title"/>
-                <text text="$l10n_fp_help_editor_1_text"/>
+                <title text="$l10n_fp_help_a5_1_title"/>
+                <text text="$l10n_fp_help_a5_1_text"/>
             </paragraph>
             <paragraph>
-                <title text="$l10n_fp_help_editor_2_title"/>
-                <text text="$l10n_fp_help_editor_2_text"/>
+                <title text="$l10n_fp_help_a5_2_title"/>
+                <text text="$l10n_fp_help_a5_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_a6_title" iconSliceId="ad_gui.info_icon">
+            <paragraph>
+                <title text="$l10n_fp_help_a6_1_title"/>
+                <text text="$l10n_fp_help_a6_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a6_2_title"/>
+                <image filename="help/fp_help_c07.dds" size="1024 1024" uvs="0px 0px 1024px 547px" aspectRatio="0.534"/>
+                <text text="$l10n_fp_help_a6_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_a6_3_title"/>
+                <text text="$l10n_fp_help_a6_3_text"/>
+            </paragraph>
+        </page>
+    </category>
+    <category title="$l10n_fp_help_cat_B">
+        <page title="$l10n_fp_help_b1_title" iconSliceId="ad_gui.input_silomode_1">
+            <paragraph>
+                <title text="$l10n_fp_help_b1_1_title"/>
+                <text text="$l10n_fp_help_b1_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b1_2_title"/>
+                <text text="$l10n_fp_help_b1_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b2_title" iconSliceId="ad_gui.input_silomode_2">
+            <paragraph>
+                <title text="$l10n_fp_help_b2_1_title"/>
+                <text text="$l10n_fp_help_b2_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b3_title" iconSliceId="ad_gui.input_silomode_3">
+            <paragraph>
+                <title text="$l10n_fp_help_b3_1_title"/>
+                <text text="$l10n_fp_help_b3_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b3_2_title"/>
+                <text text="$l10n_fp_help_b3_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b3_3_title"/>
+                <text text="$l10n_fp_help_b3_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b3_4_title"/>
+                <text text="$l10n_fp_help_b3_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b4_title" iconSliceId="ad_gui.input_silomode_4">
+            <paragraph>
+                <title text="$l10n_fp_help_b4_1_title"/>
+                <text text="$l10n_fp_help_b4_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b5_title" iconSliceId="ad_gui.input_silomode_5">
+            <paragraph>
+                <title text="$l10n_fp_help_b5_1_title"/>
+                <text text="$l10n_fp_help_b5_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b5_2_title"/>
+                <text text="$l10n_fp_help_b5_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b5_3_title"/>
+                <image filename="help/fp_help_s02.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_b5_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b5_4_title"/>
+                <text text="$l10n_fp_help_b5_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b5_5_title"/>
+                <text text="$l10n_fp_help_b5_5_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b5_6_title"/>
+                <text text="$l10n_fp_help_b5_6_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b6_title" iconSliceId="ad_gui.input_silomode_5">
+            <paragraph>
+                <title text="$l10n_fp_help_b6_1_title"/>
+                <image filename="help/fp_help_s03.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_b6_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b6_2_title"/>
+                <text text="$l10n_fp_help_b6_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b6_3_title"/>
+                <text text="$l10n_fp_help_b6_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b6_4_title"/>
+                <text text="$l10n_fp_help_b6_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b7_title" iconSliceId="ad_gui.input_bunkerUnloadType_1">
+            <paragraph>
+                <title text="$l10n_fp_help_b7_1_title"/>
+                <text text="$l10n_fp_help_b7_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b8_title" iconSliceId="ad_gui.tipper_load">
+            <paragraph>
+                <title text="$l10n_fp_help_b8_1_title"/>
+                <text text="$l10n_fp_help_b8_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b8_2_title"/>
+                <text text="$l10n_fp_help_b8_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b8_3_title"/>
+                <text text="$l10n_fp_help_b8_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_b9_title" iconSliceId="ad_gui.tipper_overlay">
+            <paragraph>
+                <title text="$l10n_fp_help_b9_1_title"/>
+                <image filename="help/fp_help_s04.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_b9_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b9_2_title"/>
+                <text text="$l10n_fp_help_b9_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b9_3_title"/>
+                <image filename="help/fp_help_c13.dds" size="1024 1024" uvs="0px 0px 1024px 605px" aspectRatio="0.591"/>
+                <text text="$l10n_fp_help_b9_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b9_4_title"/>
+                <text text="$l10n_fp_help_b9_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_b9_5_title"/>
+                <text text="$l10n_fp_help_b9_5_text"/>
+            </paragraph>
+        </page>
+    </category>
+    <category title="$l10n_fp_help_cat_C">
+        <page title="$l10n_fp_help_c1_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_c1_1_title"/>
+                <image filename="help/fp_help_s01.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_c1_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c1_2_title"/>
+                <text text="$l10n_fp_help_c1_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c1_3_title"/>
+                <text text="$l10n_fp_help_c1_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c2_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_c2_1_title"/>
+                <image filename="help/fp_help_c14.dds" size="1024 1024" uvs="0px 0px 793px 1024px" aspectRatio="1.291"/>
+                <text text="$l10n_fp_help_c2_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c2_2_title"/>
+                <image filename="help/fp_help_c15.dds" size="1024 512" uvs="0px 0px 1024px 441px" aspectRatio="0.431"/>
+                <text text="$l10n_fp_help_c2_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c2_3_title"/>
+                <text text="$l10n_fp_help_c2_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c3_title" iconSliceId="ad_gui.input_autonomousCourses_1">
+            <paragraph>
+                <title text="$l10n_fp_help_c3_1_title"/>
+                <text text="$l10n_fp_help_c3_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c3_2_title"/>
+                <text text="$l10n_fp_help_c3_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c3_3_title"/>
+                <text text="$l10n_fp_help_c3_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c3_4_title"/>
+                <image filename="help/fp_help_c16.dds" size="1024 1024" uvs="0px 0px 1024px 630px" aspectRatio="0.615"/>
+                <text text="$l10n_fp_help_c3_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c4_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_c4_1_title"/>
+                <image filename="help/fp_help_s05.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_c4_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c4_2_title"/>
+                <image filename="help/fp_help_s12.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_c4_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c4_3_title"/>
+                <text text="$l10n_fp_help_c4_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c4_4_title"/>
+                <text text="$l10n_fp_help_c4_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c4_5_title"/>
+                <image filename="help/fp_help_c17.dds" size="1024 1024" uvs="0px 0px 1024px 652px" aspectRatio="0.637"/>
+                <text text="$l10n_fp_help_c4_5_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c4_6_title"/>
+                <text text="$l10n_fp_help_c4_6_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c5_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_c5_1_title"/>
+                <text text="$l10n_fp_help_c5_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c5_2_title"/>
+                <text text="$l10n_fp_help_c5_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c5_3_title"/>
+                <text text="$l10n_fp_help_c5_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c5_4_title"/>
+                <text text="$l10n_fp_help_c5_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c6_title" iconSliceId="ad_gui.input_fpSeederSettings_2">
+            <paragraph>
+                <title text="$l10n_fp_help_c6_1_title"/>
+                <image filename="help/fp_help_c19.dds" size="1024 1024" uvs="0px 0px 1024px 634px" aspectRatio="0.619"/>
+                <text text="$l10n_fp_help_c6_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c6_2_title"/>
+                <image filename="help/fp_help_c20.dds" size="1024 1024" uvs="0px 0px 1024px 985px" aspectRatio="0.962"/>
+                <text text="$l10n_fp_help_c6_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c6_3_title"/>
+                <text text="$l10n_fp_help_c6_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c7_title" iconSliceId="ad_gui.input_fpSeederSettings_1">
+            <paragraph>
+                <title text="$l10n_fp_help_c7_1_title"/>
+                <image filename="help/fp_help_c21.dds" size="1024 1024" uvs="0px 0px 1024px 586px" aspectRatio="0.572"/>
+                <text text="$l10n_fp_help_c7_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c7_2_title"/>
+                <text text="$l10n_fp_help_c7_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c7_3_title"/>
+                <text text="$l10n_fp_help_c7_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c8_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_c8_1_title"/>
+                <image filename="help/fp_help_s06.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_c8_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c8_2_title"/>
+                <text text="$l10n_fp_help_c8_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c9_title" iconSliceId="ad_gui.input_silomode_7">
+            <paragraph>
+                <title text="$l10n_fp_help_c9_1_title"/>
+                <image filename="help/fp_help_c22.dds" size="1024 1024" uvs="0px 0px 1024px 586px" aspectRatio="0.572"/>
+                <text text="$l10n_fp_help_c9_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c9_2_title"/>
+                <text text="$l10n_fp_help_c9_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c9_3_title"/>
+                <text text="$l10n_fp_help_c9_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c9_4_title"/>
+                <text text="$l10n_fp_help_c9_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c10_title" iconSliceId="ad_gui.combine">
+            <paragraph>
+                <title text="$l10n_fp_help_c10_1_title"/>
+                <image filename="help/fp_help_c38.dds" size="1024 1024" uvs="0px 0px 1015px 1024px" aspectRatio="1.009"/>
+                <text text="$l10n_fp_help_c10_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c10_2_title"/>
+                <image filename="help/fp_help_c39.dds" size="1024 1024" uvs="0px 0px 1024px 586px" aspectRatio="0.572"/>
+                <text text="$l10n_fp_help_c10_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c10_3_title"/>
+                <image filename="help/fp_help_c40.dds" size="1024 1024" uvs="0px 0px 1024px 723px" aspectRatio="0.706"/>
+                <text text="$l10n_fp_help_c10_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c10_4_title"/>
+                <text text="$l10n_fp_help_c10_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c10_5_title"/>
+                <text text="$l10n_fp_help_c10_5_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c10_6_title"/>
+                <text text="$l10n_fp_help_c10_6_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_c11_title" iconSliceId="ad_gui.input_continue_1">
+            <paragraph>
+                <title text="$l10n_fp_help_c11_1_title"/>
+                <text text="$l10n_fp_help_c11_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c11_2_title"/>
+                <text text="$l10n_fp_help_c11_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_c11_3_title"/>
+                <text text="$l10n_fp_help_c11_3_text"/>
+            </paragraph>
+        </page>
+    </category>
+    <category title="$l10n_fp_help_cat_D">
+        <page title="$l10n_fp_help_d1_title" iconSliceId="ad_gui.input_parkVehicle_1">
+            <paragraph>
+                <title text="$l10n_fp_help_d1_1_title"/>
+                <text text="$l10n_fp_help_d1_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d1_2_title"/>
+                <image filename="help/fp_help_c32.dds" size="1024 1024" uvs="0px 0px 1024px 553px" aspectRatio="0.540"/>
+                <text text="$l10n_fp_help_d1_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d1_3_title"/>
+                <text text="$l10n_fp_help_d1_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d1_4_title"/>
+                <text text="$l10n_fp_help_d1_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_d2_title" iconSliceId="ad_gui.input_debug_1">
+            <paragraph>
+                <title text="$l10n_fp_help_d2_1_title"/>
+                <text text="$l10n_fp_help_d2_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d2_2_title"/>
+                <image filename="help/fp_help_s07.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_d2_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d2_3_title"/>
+                <text text="$l10n_fp_help_d2_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d2_4_title"/>
+                <text text="$l10n_fp_help_d2_4_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d2_5_title"/>
+                <image filename="help/fp_help_s08.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_d2_5_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_d3_title" iconSliceId="ad_gui.input_parkVehicle_1">
+            <paragraph>
+                <title text="$l10n_fp_help_d3_1_title"/>
+                <image filename="help/fp_help_s09.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_d3_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d3_2_title"/>
+                <text text="$l10n_fp_help_d3_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d3_3_title"/>
+                <text text="$l10n_fp_help_d3_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_d4_title" iconSliceId="ad_gui.input_parkVehicle_1">
+            <paragraph>
+                <title text="$l10n_fp_help_d4_1_title"/>
+                <image filename="help/fp_help_c25.dds" size="1024 1024" uvs="0px 0px 1024px 579px" aspectRatio="0.565"/>
+                <text text="$l10n_fp_help_d4_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d4_2_title"/>
+                <text text="$l10n_fp_help_d4_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_d5_title" iconSliceId="ad_gui.speedmeter">
+            <paragraph>
+                <title text="$l10n_fp_help_d5_1_title"/>
+                <text text="$l10n_fp_help_d5_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d5_2_title"/>
+                <image filename="help/fp_help_s10.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_d5_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d5_3_title"/>
+                <text text="$l10n_fp_help_d5_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d5_4_title"/>
+                <text text="$l10n_fp_help_d5_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_d6_title" iconSliceId="ad_gui.input_record_2">
+            <paragraph>
+                <title text="$l10n_fp_help_d6_1_title"/>
+                <image filename="help/fp_help_c26.dds" size="1024 1024" uvs="0px 0px 1024px 617px" aspectRatio="0.603"/>
+                <text text="$l10n_fp_help_d6_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d6_2_title"/>
+                <text text="$l10n_fp_help_d6_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d6_3_title"/>
+                <text text="$l10n_fp_help_d6_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_d7_title" iconSliceId="ad_gui.input_parkVehicle_1">
+            <paragraph>
+                <title text="$l10n_fp_help_d7_1_title"/>
+                <image filename="help/fp_help_s11.dds" size="1024 1024" uvs="0px 0px 1024px 683px" aspectRatio="0.667"/>
+                <text text="$l10n_fp_help_d7_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d7_2_title"/>
+                <text text="$l10n_fp_help_d7_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_d7_3_title"/>
+                <text text="$l10n_fp_help_d7_3_text"/>
+            </paragraph>
+        </page>
+    </category>
+    <category title="$l10n_fp_help_cat_E">
+        <page title="$l10n_fp_help_e1_title" iconSliceId="ad_gui.input_record_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e1_1_title"/>
+                <text text="$l10n_fp_help_e1_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e1_2_title"/>
+                <image filename="help/fp_help_c28.dds" size="1024 1024" uvs="0px 0px 1024px 544px" aspectRatio="0.531"/>
+                <text text="$l10n_fp_help_e1_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_e2_title" iconSliceId="ad_gui.input_record_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e2_1_title"/>
+                <text text="$l10n_fp_help_e2_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e2_2_title"/>
+                <text text="$l10n_fp_help_e2_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_e3_title" iconSliceId="ad_gui.input_record_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e3_1_title"/>
+                <image filename="help/fp_help_c30.dds" size="1024 1024" uvs="0px 0px 1024px 768px" aspectRatio="0.750"/>
+                <text text="$l10n_fp_help_e3_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e3_2_title"/>
+                <text text="$l10n_fp_help_e3_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_e4_title" iconSliceId="ad_gui.input_record_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e4_1_title"/>
+                <text text="$l10n_fp_help_e4_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e4_2_title"/>
+                <text text="$l10n_fp_help_e4_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_e5_title" iconSliceId="ad_gui.input_record_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e5_1_title"/>
+                <text text="$l10n_fp_help_e5_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e5_2_title"/>
+                <image filename="help/fp_help_c32.dds" size="1024 1024" uvs="0px 0px 1024px 553px" aspectRatio="0.540"/>
+                <text text="$l10n_fp_help_e5_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_e6_title" iconSliceId="ad_gui.input_createMapMarker_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e6_1_title"/>
+                <text text="$l10n_fp_help_e6_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e6_2_title"/>
+                <image filename="help/fp_help_c34.dds" size="1024 1024" uvs="0px 0px 560px 1024px" aspectRatio="1.829"/>
+                <text text="$l10n_fp_help_e6_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e6_3_title"/>
+                <text text="$l10n_fp_help_e6_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_e7_title" iconSliceId="ad_gui.input_routesManager_1">
+            <paragraph>
+                <title text="$l10n_fp_help_e7_1_title"/>
+                <text text="$l10n_fp_help_e7_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_e7_2_title"/>
+                <text text="$l10n_fp_help_e7_2_text"/>
+            </paragraph>
+        </page>
+    </category>
+    <category title="$l10n_fp_help_cat_F">
+        <page title="$l10n_fp_help_f1_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f1_1_title"/>
+                <image filename="help/fp_help_c36.dds" size="1024 1024" uvs="0px 0px 711px 1024px" aspectRatio="1.440"/>
+                <text text="$l10n_fp_help_f1_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f2_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f2_1_title"/>
+                <text text="$l10n_fp_help_f2_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f2_2_title"/>
+                <text text="$l10n_fp_help_f2_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f2_3_title"/>
+                <text text="$l10n_fp_help_f2_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f2_4_title"/>
+                <text text="$l10n_fp_help_f2_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f3_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f3_1_title"/>
+                <text text="$l10n_fp_help_f3_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f3_2_title"/>
+                <text text="$l10n_fp_help_f3_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f3_3_title"/>
+                <text text="$l10n_fp_help_f3_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f4_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f4_1_title"/>
+                <text text="$l10n_fp_help_f4_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f4_2_title"/>
+                <text text="$l10n_fp_help_f4_2_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f5_title" iconSliceId="ad_gui.speedmeter">
+            <paragraph>
+                <title text="$l10n_fp_help_f5_1_title"/>
+                <text text="$l10n_fp_help_f5_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f5_2_title"/>
+                <text text="$l10n_fp_help_f5_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f5_3_title"/>
+                <text text="$l10n_fp_help_f5_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f5_4_title"/>
+                <text text="$l10n_fp_help_f5_4_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f6_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f6_1_title"/>
+                <text text="$l10n_fp_help_f6_1_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f7_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f7_1_title"/>
+                <text text="$l10n_fp_help_f7_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f7_2_title"/>
+                <text text="$l10n_fp_help_f7_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f7_3_title"/>
+                <text text="$l10n_fp_help_f7_3_text"/>
+            </paragraph>
+        </page>
+        <page title="$l10n_fp_help_f8_title" iconSliceId="ad_gui.input_openGUI_1">
+            <paragraph>
+                <title text="$l10n_fp_help_f8_1_title"/>
+                <text text="$l10n_fp_help_f8_1_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f8_2_title"/>
+                <text text="$l10n_fp_help_f8_2_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f8_3_title"/>
+                <text text="$l10n_fp_help_f8_3_text"/>
+            </paragraph>
+            <paragraph>
+                <title text="$l10n_fp_help_f8_4_title"/>
+                <text text="$l10n_fp_help_f8_4_text"/>
             </paragraph>
         </page>
     </category>

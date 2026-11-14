@@ -3,14 +3,16 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
-## 1.0.5.5
+## 1.0.5.5 → 1.0.5.6
 
 🇫🇷 FR
+- Bâches des bennes : ouvertes seulement à l'entrée du champ et refermées à la sortie ; déchargement de l'ensileuse.
 - Arracheuses (betteraves, pommes de terre…) : les bennes viennent se placer sous la goulotte et vident correctement, sortie du champ vers la benne suivante plus fiable.
 
 ----------------------------------------------------------------------------
 
 🇬🇧 EN
+- Trailer tarps: opened only on entering the field and closed on leaving it; forage harvester unloading.
 - Root harvesters (beets, potatoes…): trailers line up under the pipe and unload correctly, more reliable exit from the field to the next trailer.
 
 ## 1.0.3.4 → 1.0.5.4

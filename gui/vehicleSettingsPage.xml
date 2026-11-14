@@ -35,6 +35,12 @@
 				<Text profile="fs25_settingsMultiTextOptionTitle" text="$l10n_gui_ad_unloadFillLevel"/>
 			</Bitmap>
 			<Bitmap profile="fs25_multiTextOptionContainer" onCreate="onCreateAutoDriveSettingRow">
+				<MultiTextOption profile="fs25_settingsMultiTextOption" onClick="onOptionChange" onCreate="onCreateAutoDriveSetting" name="fpExitField" id="fpExitField">
+					<Text profile="fs25_multiTextOptionTooltip" name="ignore" text="$l10n_gui_ad_exitField_tooltip"/>
+				</MultiTextOption>
+				<Text profile="fs25_settingsMultiTextOptionTitle" text="$l10n_gui_ad_exitField"/>
+			</Bitmap>
+			<Bitmap profile="fs25_multiTextOptionContainer" onCreate="onCreateAutoDriveSettingRow">
 				<MultiTextOption profile="fs25_settingsMultiTextOption" onClick="onOptionChange" onCreate="onCreateAutoDriveSetting" name="fpSiloEmptyWait" id="fpSiloEmptyWait">
 					<Text profile="fs25_multiTextOptionTooltip" name="ignore" text="$l10n_gui_ad_fpSiloEmptyWait_tooltip"/>
 				</MultiTextOption>

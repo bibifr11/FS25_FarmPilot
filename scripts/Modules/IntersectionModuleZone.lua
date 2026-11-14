@@ -105,7 +105,8 @@ function ADIntersectionModule.buildZone(wayPoints, firstIndex, lastIndex)
     local r2 = ADIntersectionModule.SEARCH_RADIUS ^ 2
 
     -- voies coupées par la portion rouge
-    for _, p in pairs(ADGraphManager:getWayPoints()) do
+    -- (14/11) seulement les cases de 100 m autour (GraphManagerGrid.lua), pas tout le réseau
+    for _, p in pairs(ADGraphManager.fpGetWayPointsNear ~= nil and ADGraphManager:fpGetWayPointsNear(cx, cz, ADIntersectionModule.SEARCH_RADIUS) or ADGraphManager:getWayPoints()) do
         if p.out ~= nil and (p.x - cx) ^ 2 + (p.z - cz) ^ 2 < r2 and not ADIntersectionModule.isIntersectionPoint(p) then
             for _, outId in pairs(p.out) do
                 local q = ADGraphManager:getWayPointById(outId)

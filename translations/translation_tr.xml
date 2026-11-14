@@ -497,6 +497,7 @@
 		<text name="AD_ty_toReverse" text="geri gitmesi" />
 		<text name="AD_ty_toClear" text="yolu açması" />
 		<text name="AD_ty_leaveTrack" text="raydan/rottan çıkması" />
+		<text name="AD_ty_toLeaveYard" text="to clear the tool area" />
 		<text name="AD_ty_reverseFor" text="Geri gitme nedeni:" />
 		<text name="AD_ty_parkFor" text="Kenara çekme nedeni:" />
 		<text name="AD_ty_crossing" text="Kavşak, bekleniyor:" />

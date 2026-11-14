@@ -14,6 +14,9 @@
 -- quand elle tient. Pas de trajet par la grille : la bande coupée. Plus aucun point : la benne s'arrête (ou, avec une
 -- ensileuse, ExitFieldTaskStuck.lua : se ranger, demi-tour, sortie directe par le moins de culture).
 --
+-- (14/11) Réglage « Sortie de champ » (fpExitField, Settings.lua) : « Le plus proche » = l'entrée n'est plus essayée
+-- d'abord, tous les points du plus proche au plus loin (routes tracées juste hors du champ, comme AutoDrive).
+--
 -- Branché par une ligne dans ExitFieldTask.lua : update (4 accroches), abort, finished, startPathPlanning, getI18nInfo.
 -- ============================================================================================================
 
@@ -74,8 +77,14 @@ function ExitFieldTask:buildCandidates()
     end
     local fieldRoute = ADGraphManager:pathFromTo(self.vehicle.ad.stateModule:getFirstWayPoint(), destination, nil, self.vehicle)
     table.insert(routes, fieldRoute)
+    -- (14/11) réglage « Sortie de champ » : « Le plus proche » = l'entrée sans priorité, du plus proche au plus loin
+    local closestFirst = AutoDrive.getSetting("fpExitField", self.vehicle) == 2
+    if closestFirst and self.fpClosestLogged == nil then
+        self.fpClosestLogged = true
+        print(string.format("[AD-Exit] %s: sortie de champ « le plus proche » : points du réseau du plus proche au plus loin, l'entree sans priorite", tostring(self.vehicle:getName())))
+    end
     -- the field's own network point (where the vehicle came in) is tried first, whatever its distance
-    if fieldRoute ~= nil and #fieldRoute > 1 then
+    if not closestFirst and fieldRoute ~= nil and #fieldRoute > 1 then
         local fieldWp, nextWp = fieldRoute[1], fieldRoute[2]
         local distance = MathUtil.vector2Length(fieldWp.x - vx, fieldWp.z - vz)
         if distance >= minDistance and distance <= ExitFieldTask.FIELD_POINT_MAX_DISTANCE then

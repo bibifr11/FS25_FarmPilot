@@ -3,6 +3,22 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.5.8
+
+🇫🇷 FR
+- Mode Autonome : zone des outils réservée. Un tracteur qui pose, prend un outil ou se gare réserve la zone autour de la place ; un autre attend sur la route qu'elle soit libérée (« Attend que X libère la zone des outils »), sans jamais bloquer sans fin.
+- Réglage « Sortie de champ : le plus proche » dans les réglages du véhicule.
+- Recherches plus rapides sur les gros réseaux.
+- Commande console fpPerf pour mesurer les performances.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Autonomous mode: reserved tool zone. A tractor dropping, picking up a tool or parking reserves the area around the spot; another one waits on the road until it is free ("Waiting for X to leave the tool zone"), never blocking forever.
+- "Field exit: nearest" setting in the vehicle settings.
+- Faster searches on large networks.
+- fpPerf console command to measure performance.
+
 ## 1.0.5.7
 
 🇫🇷 FR

@@ -806,7 +806,8 @@ function ADFrontFlow.fetchRoutePoint(vehicle, tool)
     local d = length + ADFetchToolTask.FRONT_MARGIN
     local fx, fz = hitch.x + hitch.dirX * d, hitch.z + hitch.dirZ * d
     local best, bestDistance = nil, AutonomousMode.FETCH_ROUTE_RANGE
-    for _, wp in pairs(ADGraphManager:getWayPoints()) do
+    -- (14/11) seulement les cases de 100 m autour (GraphManagerGrid.lua), pas tout le réseau
+    for _, wp in pairs(ADGraphManager.fpGetWayPointsNear ~= nil and ADGraphManager:fpGetWayPointsNear(fx, fz, bestDistance) or ADGraphManager:getWayPoints()) do
         local dist = MathUtil.vector2Length(wp.x - fx, wp.z - fz)
         local along = (wp.x - hitch.x) * hitch.dirX + (wp.z - hitch.z) * hitch.dirZ
         if dist < bestDistance and along >= AutonomousMode.FETCH_ROUTE_CLEAR then

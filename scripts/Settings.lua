@@ -538,6 +538,22 @@ AutoDrive.settings.exitField = {
 }
 ]==]
 
+-- (14/11) « Sortie de champ » remis, à la manière de FarmPilot : « Par défaut » = l'entrée du champ d'abord, puis les
+-- points de route les plus proches (ExitFieldTaskExitPoints.lua) ; « Le plus proche » = le point de route le plus
+-- proche d'abord, l'entrée sans priorité, comme AutoDrive (routes tracées juste hors du champ). Nouveau nom
+-- (fpExitField) : les valeurs d'exitField gardées par AutoDrive dans les parties (3 choix) ne sont pas reprises.
+AutoDrive.settings.fpExitField = {
+    values = {1, 2},
+    texts = {"gui_ad_default", "gui_ad_closest"},
+    default = 1,
+    current = 1,
+    text = "gui_ad_exitField",
+    tooltip = "gui_ad_exitField_tooltip",
+    translate = true,
+    isVehicleSpecific = true,
+    isCopyPaste = true
+}
+
 AutoDrive.settings.showHelp = {
     values = {false, true},
     texts = {"gui_ad_no", "gui_ad_yes"},

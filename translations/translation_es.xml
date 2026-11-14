@@ -497,6 +497,7 @@
 		<text name="AD_ty_toReverse" text="to back up" />
 		<text name="AD_ty_toClear" text="to clear the track" />
 		<text name="AD_ty_leaveTrack" text="to leave the track" />
+		<text name="AD_ty_toLeaveYard" text="to clear the tool area" />
 		<text name="AD_ty_reverseFor" text="Backing up for" />
 		<text name="AD_ty_parkFor" text="Pulling over for" />
 		<text name="AD_ty_crossing" text="Junction, waiting:" />

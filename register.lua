@@ -388,6 +388,9 @@ source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/TireChangeManager.lua", g_currentModDirectory)) -- pneus changés automatiquement (usure d'AutoSwitch)
 source(Utils.getFilename("scripts/Utils/RootHarvester.lua", g_currentModDirectory)) -- bennes des arracheuses : côté de la goulotte, sortie du champ, file du calcul
 source(Utils.getFilename("scripts/Utils/TrailerCoverField.lua", g_currentModDirectory)) -- bâche des bennes de récolte : ouverte à l'entrée du champ, fermée à la sortie
+source(Utils.getFilename("scripts/Modes/AutonomousYardZone.lua", g_currentModDirectory)) -- mode Autonome : un seul tracteur à la fois dans la zone d'une place d'outils
+source(Utils.getFilename("scripts/Manager/GraphManagerGrid.lua", g_currentModDirectory)) -- points du réseau par cases de 100 m : point le plus proche sans parcourir tout le réseau
+source(Utils.getFilename("scripts/Utils/FarmPilotPerf.lua", g_currentModDirectory)) -- commande console fpPerf : temps pris par FarmPilot dans log.txt
 source(Utils.getFilename("scripts/Gui/DebugSettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/Settings.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/RoadTypesGUI.lua", g_currentModDirectory)) -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua

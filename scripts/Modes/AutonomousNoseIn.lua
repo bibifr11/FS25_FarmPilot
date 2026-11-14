@@ -190,7 +190,8 @@ function ADNoseIn.nearSegments(x, z)
     end
     local list = {}
     local range2 = ADNoseIn.NETWORK_RANGE * ADNoseIn.NETWORK_RANGE
-    for _, w in pairs(ADGraphManager:getWayPoints()) do
+    -- (14/11) seulement les cases de 100 m autour (GraphManagerGrid.lua), pas tout le réseau
+    for _, w in pairs(ADGraphManager.fpGetWayPointsNear ~= nil and ADGraphManager:fpGetWayPointsNear(x, z, ADNoseIn.NETWORK_RANGE) or ADGraphManager:getWayPoints()) do
         if w.x ~= nil and w.z ~= nil and w.out ~= nil then
             local dx, dz = w.x - x, w.z - z
             if dx * dx + dz * dz <= range2 then
@@ -450,7 +451,8 @@ function ADNoseIn.approaches(vehicle, mwp, tool, allow, ahead, ignore)
     end
     -- 2) aucune : les autres routes en marche avant près de l'entrée
     if #found == 0 then
-        for _, wp in pairs(ADGraphManager:getWayPoints()) do
+        -- (14/11) seulement les cases de 100 m autour (GraphManagerGrid.lua), pas tout le réseau
+        for _, wp in pairs(ADGraphManager.fpGetWayPointsNear ~= nil and ADGraphManager:fpGetWayPointsNear(target.x, target.z, ADNoseIn.SEARCH_RANGE) or ADGraphManager:getWayPoints()) do
             if wp.x ~= nil and wp.z ~= nil and seen[wp.id] == nil and wp.incoming ~= nil and #wp.incoming == 1
                 and MathUtil.vector2Length(wp.x - target.x, wp.z - target.z) <= ADNoseIn.SEARCH_RANGE then
                 local p = ADGraphManager:getWayPointById(wp.incoming[1])
@@ -668,7 +670,8 @@ function ADNoseIn.exitPlan(vehicle, minBack, tool, ignore)
     -- où le tracteur est entré (une route qui continue devant lui le ramènerait vers l'outil ou le fond de la place)
     local roads = {}
     local reach = ADNoseIn.EXIT_RANGE + minBack + ADNoseIn.EXIT_EXTRA
-    for _, cur in pairs(ADGraphManager:getWayPoints()) do
+    -- (14/11) seulement les cases de 100 m autour (GraphManagerGrid.lua), pas tout le réseau
+    for _, cur in pairs(ADGraphManager.fpGetWayPointsNear ~= nil and ADGraphManager:fpGetWayPointsNear(x, z, reach) or ADGraphManager:getWayPoints()) do
         if cur.x ~= nil and cur.z ~= nil and cur.out ~= nil and cur.incoming ~= nil and #cur.incoming > 0
             and MathUtil.vector2Length(cur.x - x, cur.z - z) <= reach then
             for _, outId in pairs(cur.out) do

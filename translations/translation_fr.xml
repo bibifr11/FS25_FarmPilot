@@ -160,7 +160,7 @@
 		<text name="gui_ad_notifications_text_6"						text="Permanent" />
 		<text name="gui_ad_notifications_tooltip"						text="Temps d'affichage des notifications" />
 		<text name="gui_ad_exitField"									text="Sortie de champ" />
-		<text name="gui_ad_exitField_tooltip"							text="Stratégie de sortie du champ après le déchargement - Commencer, peu après le point de départ, le point le plus proche." />
+		<text name="gui_ad_exitField_tooltip"							text="Benne pleine qui sort du champ. Par défaut : l'entrée du champ d'abord, puis les points de route les plus proches. Le plus proche : le point de route le plus proche d'abord, comme AutoDrive (routes juste hors du champ)." />
 		<text name="gui_ad_default"									text="Par défaut" />
 		<text name="gui_ad_after_start"								text="Après le départ" />
 		<text name="gui_ad_closest"									text="Le plus proche" />
@@ -495,6 +495,7 @@
 		<text name="AD_ty_toReverse" text="recule" />
 		<text name="AD_ty_toClear" text="libère le chemin" />
 		<text name="AD_ty_leaveTrack" text="sorte du chemin" />
+		<text name="AD_ty_toLeaveYard" text="libère la zone des outils" />
 		<text name="AD_ty_reverseFor" text="Recule pour laisser passer" />
 		<text name="AD_ty_parkFor" text="Se gare pour laisser passer" />
 		<text name="AD_ty_crossing" text="Intersection, attend :" />

@@ -160,7 +160,7 @@
 		<text name="gui_ad_notifications_text_6"						text="Endless" />
 		<text name="gui_ad_notifications_tooltip"						text="Display time for notifications: no display / ca. 2,5s / 5s / 10s / 25s / Show until user close" />
 		<text name="gui_ad_exitField"									text="Field exit" />
-		<text name="gui_ad_exitField_tooltip"							text="Field exit strategy for unloader" />
+		<text name="gui_ad_exitField_tooltip"							text="Full trailer leaving the field. Default: the field entrance first, then the nearest route points. Closest point: the nearest route point first, like AutoDrive (routes just outside the field)." />
 		<text name="gui_ad_default"									text="Default" />
 		<text name="gui_ad_after_start"								text="Behind Start" />
 		<text name="gui_ad_closest"									text="Closest point" />
@@ -497,6 +497,7 @@
 		<text name="AD_ty_toReverse" text="to back up" />
 		<text name="AD_ty_toClear" text="to clear the track" />
 		<text name="AD_ty_leaveTrack" text="to leave the track" />
+		<text name="AD_ty_toLeaveYard" text="to clear the tool area" />
 		<text name="AD_ty_reverseFor" text="Backing up for" />
 		<text name="AD_ty_parkFor" text="Pulling over for" />
 		<text name="AD_ty_crossing" text="Junction, waiting:" />

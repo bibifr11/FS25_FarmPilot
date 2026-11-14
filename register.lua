@@ -386,6 +386,7 @@ source(Utils.getFilename("scripts/Gui/HeaderTractorGUI.lua", g_currentModDirecto
 source(Utils.getFilename("scripts/Gui/EnterDestinationFilterGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/TireChangeManager.lua", g_currentModDirectory)) -- pneus changés automatiquement (usure d'AutoSwitch)
+source(Utils.getFilename("scripts/Utils/RootHarvester.lua", g_currentModDirectory)) -- bennes des arracheuses : côté de la goulotte, sortie du champ, file du calcul
 source(Utils.getFilename("scripts/Gui/DebugSettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/Settings.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/RoadTypesGUI.lua", g_currentModDirectory)) -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua

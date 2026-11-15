@@ -3,6 +3,26 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.7.6 → 1.0.8.4
+
+🇫🇷 FR
+- Enrubanneuse en mode Autonome ; presse : recharge du film, de la ficelle ou du filet.
+- Remorque à balles : enlève toutes les balles, affichage « Ramasse les balles (prises/restantes) », ramassage repris au rechargement, visée des balles corrigée.
+- Reprise exacte au rechargement, aussi pour la barre de coupe et les bennes de moissonneuse ; il repart du point où il est, sans rejouer le recul.
+- Bouton On/Off : reprend toujours là où c'était ; clic droit = reprendre au début. Affichage « Démarre (5 s) » au démarrage du moteur.
+- Portails ouverts puis refermés sur la route.
+- Moissonneuse équipée : remorque de coupe posée hors de la route près du bout du champ ; bennes en fin de chantier. Routes tertiaires corrigées.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Bale wrapper in Autonomous mode; baler: refill of film, twine or net.
+- Bale trailer: picks up every bale, "Picking up bales (taken/left)" display, pickup resumed after reloading, bale aiming fixed.
+- Exact resume after reloading, also for the header and the combine trailers; it restarts from where it is, without replaying the reverse.
+- On/Off button: always resumes where it was; right click = restart from the beginning. "Starting (5 s)" display while the engine starts.
+- Gates opened then closed on the road.
+- Equipped combine: header trailer parked off the road near the field end; trailers at the end of the job. Tertiary roads fixed.
+
 ## 1.0.5.9 → 1.0.7.5
 
 🇫🇷 FR

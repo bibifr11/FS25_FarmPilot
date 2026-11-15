@@ -28,8 +28,18 @@
 -- Le mode note le point de la route lâchée qui est devant le véhicule (setJoinedWayPoint avec sa portée) : la
 -- route suivante repart de là.
 --
--- Branché par : ADGraphManager:getPathTo (GraphManager.lua) ; ADFrontBackOffTask (FrontPlaceTask.lua) ;
--- register.lua (chargé après GraphManager.lua).
+-- (15/11) Arrivé au bout d'une route (dépôt des balles pris en marche arrière à la ferme), puis reparti : le point le
+-- mieux placé devant le nez était le début de la route d'approche (7354) ; la route rejouait l'approche, avançait puis
+-- reculait de nouveau dans le dépôt avant de ressortir (essai du 15/11 18:17, Fendt 728 + Arcusin, « Betail du
+-- morvan paille »). Règle : le véhicule ne perd jamais le point où il est. Le point d'arrivée de la route précédente
+-- (noteArrival, à la fin de chaque route du réseau) sert de départ tant que le véhicule n'a pas bougé de plus de
+-- ARRIVED_MOVED depuis l'arrivée et qu'il en est à moins de ARRIVED_RANGE ; les points du début de la route qui sont
+-- encore derrière lui ou sous lui (pas devant son nez) sont sautés, il repart du premier point devant lui. Route qui
+-- commence par une marche arrière depuis ce point : gardée entière. Route qui repart en arrière plus loin que
+-- ARRIVED_RANGE, ou pas de route depuis ce point : départ habituel (point devant le véhicule).
+--
+-- Branché par : ADGraphManager:getPathTo (GraphManager.lua) ; ADDrivePathModule:reachedTarget (DrivePathModule.lua) ;
+-- ADFrontBackOffTask (FrontPlaceTask.lua) ; register.lua (chargé après GraphManager.lua).
 -- ============================================================================================================
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -44,6 +54,9 @@ ADGraphManager.START_COST_MARGIN = 20   -- m : un point moins bien placé n'est 
 ADGraphManager.JOINED_RANGE = 8         -- m : le point rejoint par une courbe sert de départ s'il est à moins que ça…
 ADGraphManager.JOINED_MOVED = 3         -- m : …tant que le véhicule n'a pas bougé de plus que ça depuis la fin de la courbe…
 ADGraphManager.JOINED_TIME = 60000      -- ms : …et s'il a été noté depuis moins que ça
+ADGraphManager.ARRIVED_MOVED = 12       -- m : le point d'arrivée sert de départ tant que le véhicule n'a pas bougé de plus que ça…
+ADGraphManager.ARRIVED_RANGE = 35       -- m : …s'il en est à moins que ça ; les points du début derrière lui sont sautés dans cette portée
+ADGraphManager.ARRIVED_NOSE = 0         -- m devant l'avant du tracteur : un point plus près est « sous lui »
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Points de départ possibles
@@ -208,6 +221,82 @@ function ADGraphManager:joinedStart(vehicle, x, z)
             joined.why or "rejoint par la courbe", distance)
     end
     return joined.id
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Point d'arrivée de la route précédente : départ de la route suivante (15/11)
+-- ------------------------------------------------------------------------------------------------------------
+-- Hook ADDrivePathModule:reachedTarget : le dernier point de la route (du réseau) et où est le véhicule
+function ADGraphManager.noteArrival(vehicle, id)
+    if vehicle == nil or vehicle.ad == nil then
+        return
+    end
+    if id == nil or ADGraphManager.wayPoints[id] == nil or vehicle.components == nil or vehicle.components[1] == nil then
+        vehicle.ad.fpArrivedWayPoint = nil -- fin de route hors réseau (recherche de chemin)
+        return
+    end
+    local x, _, z = getWorldTranslation(vehicle.components[1].node)
+    vehicle.ad.fpArrivedWayPoint = { id = id, x = x, z = z, time = g_time or 0 }
+end
+
+local function traceArrival(fmt, ...)
+    if ADTraces ~= nil then -- traces privées
+        ADTraces.log("[AD-Route] " .. fmt, ...)
+    end
+end
+
+-- Hook ADGraphManager:getPathTo : route depuis le point d'arrivée, les points du début derrière ou sous le véhicule
+-- sautés ; wp, id du point d'arrivée, texte pour les traces ; nil si ce point ne vaut pas comme départ
+function ADGraphManager:pathFromArrival(vehicle, targetId, x, z)
+    local a = vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.fpArrivedWayPoint or nil
+    if a == nil then
+        return nil
+    end
+    local name = vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule.getName ~= nil and tostring(vehicle.ad.stateModule:getName()) or "?"
+    local p0 = self.wayPoints[a.id]
+    local moved = MathUtil.vector2Length(a.x - x, a.z - z)
+    local distance = p0 ~= nil and MathUtil.vector2Length(p0.x - x, p0.z - z) or nil
+    if distance == nil or moved > ADGraphManager.ARRIVED_MOVED or distance > ADGraphManager.ARRIVED_RANGE then
+        vehicle.ad.fpArrivedWayPoint = nil
+        traceArrival("%s : point d'arrivée %s oublié (à %s m, véhicule déplacé de %.1f m depuis l'arrivée)", name, tostring(a.id),
+            distance ~= nil and string.format("%.1f", distance) or "?", moved)
+        return nil
+    end
+    if a.id == targetId then
+        return nil
+    end
+    local outCandidates = self:getBestOutPoints(vehicle, a.id)
+    local wp = self:pathFromTo(a.id, targetId, outCandidates, vehicle)
+    if not ADGraphManager.isRouteTo(wp, targetId) then
+        traceArrival("%s : pas de route vers le point %s depuis le point d'arrivée %s : départ habituel", name, tostring(targetId), tostring(a.id))
+        return nil
+    end
+    if wp[2] ~= nil and self:isReverseRoad(wp[1], wp[2]) then
+        return wp, a.id, string.format("point d'arrivée de la route précédente, à %.1f m, départ en marche arrière", distance)
+    end
+    -- premier point devant le nez du tracteur ; ceux d'avant sont derrière lui ou sous lui
+    local nose = ((vehicle.size ~= nil and vehicle.size.length) or 6) / 2 + ADGraphManager.ARRIVED_NOSE
+    local first = nil
+    for i = 1, #wp do
+        local p = wp[i]
+        local _, _, lz = AutoDrive.worldToLocal(vehicle, p.x, p.y or 0, p.z)
+        if lz >= nose then
+            first = i
+            break
+        end
+        if MathUtil.vector2Length(p.x - x, p.z - z) > ADGraphManager.ARRIVED_RANGE or (wp[i + 1] ~= nil and self:isReverseRoad(p, wp[i + 1])) then
+            break -- la route repart en arrière : pas depuis ce point
+        end
+    end
+    if first == nil then
+        traceArrival("%s : la route depuis le point d'arrivée %s repart en arrière : départ habituel", name, tostring(a.id))
+        return nil
+    end
+    local out = {}
+    for i = math.max(1, first - 1), #wp do
+        out[#out + 1] = wp[i] -- le dernier point sous lui gardé en tête : le chauffeur vise le suivant, devant lui
+    end
+    return out, a.id, string.format("point d'arrivée de la route précédente, à %.1f m, %d point(s) derrière ou sous lui sautés", distance, math.max(0, first - 2))
 end
 
 -- ------------------------------------------------------------------------------------------------------------

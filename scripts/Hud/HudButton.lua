@@ -110,7 +110,7 @@ function ADHudButton:getNewState(vehicle)
     end
 
     if self.primaryAction == "input_start_stop" then
-        if vehicle.ad.stateModule:isActive() then
+        if vehicle.ad.stateModule:isActive() or (ADResumeButton ~= nil and ADResumeButton.helperShown(vehicle)) then -- (15/11) allumé aussi quand Courseplay travaille pour le mode Autonome, voir AutonomousResumeButton.lua
             newState = 2
         else
             newState = 1
@@ -205,6 +205,7 @@ function ADHudButton:getNewState(vehicle)
         status = okS and status or "none"
         if ADSprayerManager ~= nil then status, self.toolTip = ADSprayerManager.hudGear(vehicle, self.fpNext == true, status) end -- épandeur / pulvé : même roue dentée, voir SprayerManager.lua
         if ADBaleLoaderManager ~= nil then status, self.toolTip = ADBaleLoaderManager.hudGear(vehicle, self.fpNext == true, status, self.toolTip) end -- remorque à balles : même roue dentée, voir BaleLoaderManager.lua
+        if ADBalerManager ~= nil and ADBalerManager.hudGear ~= nil then status, self.toolTip = ADBalerManager.hudGear(vehicle, self.fpNext == true, status, self.toolTip) end -- (15/11) presse : même roue dentée (zone de recharge), voir BalerManager.lua
         if self.fpTrailer and ADTrailerSwap ~= nil then status, self.toolTip = ADTrailerSwap.hudGear(vehicle) end -- ligne « Remorque » : échange de bennes, voir TrailerSwap.lua
         if not self.fpTrailer and not self.fpNext and ADHeaderFlow ~= nil then status, self.toolTip = ADHeaderFlow.hudGear(vehicle, status, self.toolTip) end -- moissonneuse : véhicule de la remorque porte-barre, voir AutonomousHeader.lua
         self.isVisible = status ~= "none"

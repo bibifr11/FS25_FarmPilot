@@ -36,6 +36,9 @@
 --   moissonneuse : la remorque est reculée tout droit jusqu'à la route (AutonomousHeaderRoadBack.lua), avant toute
 --   marche arrière en biais.
 --
+-- - (15/11) Rien de dégagé le long de la route : place hors de la route près du bout, avant le demi-tour et
+--   l'endroit plus loin (AutonomousHeaderYard.lua).
+--
 -- Branché par : Modes/AutonomousHeader.lua (monitor : checkRouteStop ; tractorStage « toField » et « turn » :
 -- onArrival ; tractorStage « wait » : moveOn). Tâche du demi-tour : Tasks/HeaderDropTask.lua (ADHeaderTurnTask).
 -- Chargé par register.lua après AutonomousHeader.lua.
@@ -387,6 +390,13 @@ function ADHeaderFlow.checkRouteStop(mode, job)
         return
     end
     if i == nil then
+        -- (15/11) rien le long de la route : place hors de la route près du bout (AutonomousHeaderYard.lua)
+        if ADHeaderFlow.yardOnRoute ~= nil then
+            log("%s : côté de la barre encombré au bout de la route (%s), rien de dégagé sur %.0f m avant", nameOf(t), tostring(endWhy), fromEnd)
+            if ADHeaderFlow.yardOnRoute(mode, job, wayPoints, current) then
+                return
+            end
+        end
         log("%s : côté de la barre encombré au bout de la route (%s), rien de dégagé sur %.0f m avant : va au bout", nameOf(t), tostring(endWhy), fromEnd)
         if job.roadWhy ~= nil then
             log("%s : des endroits dégagés avant ont été écartés (%s)", nameOf(t), tostring(job.roadWhy))

@@ -182,7 +182,8 @@ function ADHeaderPlaceTask:update(dt)
         pf.cropCombine = self.combine
         pf:startPathPlanningTo({ x = spot.x, y = 0, z = spot.z }, { x = spot.dirX, z = spot.dirZ })
         -- quiet (essais répétés toutes les minutes) : écrit seulement quand un chemin est trouvé
-        self.spotText = string.format("%s : entre dans le champ vers la moissonneuse (%.0f, %.0f)%s", name, spot.x, spot.z, which or "")
+        -- label : autre trajet que l'entrée dans le champ (place hors de la route, AutonomousHeaderYard.lua)
+        self.spotText = string.format("%s : %s (%.0f, %.0f)%s", name, self.label or "entre dans le champ vers la moissonneuse", spot.x, spot.z, which or "")
         if not self.quiet then
             ADHeaderFlow.log("%s", self.spotText)
         end
@@ -254,7 +255,7 @@ function ADHeaderPlaceTask:getI18nInfo()
     if self.state == ADHeaderPlaceTask.STATE_PLANNING then
         return self:getPlanningI18n()
     end
-    return "$l10n_AD_task_autonomous_headerPlace;"
+    return self.i18n or "$l10n_AD_task_autonomous_headerPlace;"
 end
 
 -- ------------------------------------------------------------------------------------------------------------

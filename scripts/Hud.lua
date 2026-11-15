@@ -303,7 +303,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 
 
 	-------- BASE ROW BUTTONS --------------
-	self:AddButton("input_start_stop", nil, nil, nil, nil, nil, nil, nil, "input_ADEnDisable", 1, true)
+	self:AddButton("input_start_stop", "input_restartFromStart", nil, nil, nil, nil, nil, nil, "hud_fpEnDisable", 1, true) -- (15/11) clic droit : reprendre au début, voir AutonomousResumeButton.lua
 	self:AddButton("input_silomode", "input_previousMode", nil, nil, nil, nil, nil, nil, "input_ADSilomode", 1, true)
 	self:AddButton("input_continue", nil, nil, nil, nil, nil, nil, nil, "input_AD_continue", 1, true)
 	self:AddButton("input_parkVehicle", "input_setParkDestination", nil, nil, nil, "input_setParkDestination", nil, nil, "input_ADParkVehicle", 1, true)

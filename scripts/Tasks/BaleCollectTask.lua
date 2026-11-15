@@ -55,6 +55,23 @@
 --      continue tout droit sur la ligne à GRAB_SPEED km/h, GRAB_ROLL m au plus, et s'arrête si une balle est juste
 --      devant le bras ou le tracteur, ou si le bord du champ approche.
 --   Traces : coût et sens de la balle choisie, vitesse et écart du bras quand il prend la balle (ou la rate).
+-- - (15/11) Décalage de visée (réglage de la remorque, roue dentée, 10 cm par défaut) : visée juste, la roue avant
+--   droite du tracteur percutait souvent la balle (balle de travers à côté de la roue). La ligne du tracteur passe
+--   d'autant plus loin de la balle ; le bras vise ce point (balle un peu plus loin que le bras, toujours dans
+--   pickupRange). Suivi et « déjà dans l'axe » comptent l'écart à ce point visé, pas au centre de la balle.
+-- - (15/11) Enrubanneuse (BaleWrapperManager.lua) : même tâche, même choix de la balle et même ligne d'approche (bras
+--   de l'enrubanneuse, nearestDistance du jeu, décalage de visée). Différences :
+--   1. préparation : pose automatique des balles mise (rendue comme avant à la fin), balle déjà en cours finie
+--      d'abord, bras mis dans ses limites de repli (dépliée) ;
+--   2. balles visées : celles à enrubanner seulement (getIsBaleWrappable) ; les balles enrubannées restent des
+--      obstacles (ligne qui passe dessus, balle devant le bras ou le tracteur) mais ne sont jamais visées ;
+--   3. balle prise : tout droit WRAP_ROLL m, puis arrêt jusqu'à ce que la machine soit revenue au repos (balle
+--      enrubannée puis posée derrière) ; balle finie que le jeu ne pose pas : on la fait poser (FINISH_GRACE ms),
+--      zone de pose prise : WRAP_NUDGE m en avant ; plus de WRAP_TIMEOUT ms : arrêt (« noWrap ») ;
+--   4. plus de film (avant de viser une balle, ou balle prise qui attend le film) : fin « noFilm » (recharge,
+--      AutonomousBales.lua) ;
+--   5. fin (plus de balle, >>, plus de film) : machine au repos puis repliée avant la route ;
+--   6. titre « Enrubanne les balles (faites/restantes) ».
 --
 -- Lancé par AutonomousBales.lua (étape « collect »).
 -- ============================================================================================================
@@ -114,6 +131,12 @@ ADBaleCollectTask.GRAB_CLEAR = 6            -- m devant le bras : une balle là 
 ADBaleCollectTask.GRAB_CLEAR_SIDE = 1.5     -- m de chaque côté de la trace du bras
 ADBaleCollectTask.GRAB_FIELD_AHEAD = 6      -- m devant l'avant du tracteur : hors du champ = arrêt
 ADBaleCollectTask.GRAB_CHECK_INTERVAL = 250 -- ms entre deux contrôles pendant le chargement en roulant
+-- (15/11) enrubanneuse
+ADBaleCollectTask.WRAP_ROLL = 4             -- m tout droit après la prise, puis arrêt jusqu'à la balle posée
+ADBaleCollectTask.WRAP_TIMEOUT = 90000      -- ms pour prendre, enrubanner et poser une balle
+ADBaleCollectTask.WRAP_NUDGE = 5            -- m en avant quand la zone de pose derrière la machine est prise
+ADBaleCollectTask.WRAP_NUDGE_SPEED = 3      -- km/h pour ce petit avancement
+ADBaleCollectTask.NO_FILM_WAIT = 1000       -- ms : balle prise qui attend le film depuis ça = plus de film
 
 ADBaleCollectTask.claims = {}   -- [balle] = véhicule : balle visée par une remorque (deux remorques au même champ)
 
@@ -125,12 +148,14 @@ end
 -- Création
 -- ------------------------------------------------------------------------------------------------------------
 -- ctx = { tool (remorque), settings (wrap, deposit), fieldNums (numéros du champ), fieldName }
+-- (15/11) ctx.tool peut être une enrubanneuse (o.wrapper) ; ctx.wrapped = balles enrubannées au champ (titre)
 function ADBaleCollectTask:new(vehicle, ctx)
     local o = ADBaleCollectTask:create()
     o.taskType = "ADBaleCollectTask"
     o.vehicle = vehicle
     o.loader = ctx.tool
     o.ctx = ctx
+    o.wrapper = ADBaleLoaderManager.isWrapper ~= nil and ADBaleWrapper ~= nil and ADBaleLoaderManager.isWrapper(ctx.tool) == true
     o.wrap = ctx.settings ~= nil and ctx.settings.wrap or ADBaleLoaderManager.WRAP_ALL
     o.tries = {}         -- [balle] = essais ratés
     o.left = {}          -- [balle] = true : laissée
@@ -146,6 +171,13 @@ function ADBaleCollectTask:setUp()
     self.target = nil
     self.lastRequest = nil
     self.vehicle.ad.specialDrivingModule:stopVehicle()
+    if self.wrapper and self.oldAutoDrop == nil then
+        -- (15/11) pose automatique : le jeu pose la balle enrubannée tout seul (rendue comme avant à la fin)
+        local ok, old = FarmPilotCall(ADBaleWrapper.setAutoDrop, self.loader, true)
+        if ok then
+            self.oldAutoDrop = old
+        end
+    end
 end
 
 function ADBaleCollectTask:name()
@@ -359,25 +391,46 @@ end
 ]==]
 
 -- (15/11) ligne d'approche de la balle c dans le sens d : P0 (point de la ligne au droit de la balle), côté s,
--- départ A (behind + APPROACH_RUN m avant P0 : ensemble droit quand le bras arrive) ; geo = { gx, behind, root, hand }
+-- départ A (behind + APPROACH_RUN m avant P0 : ensemble droit quand le bras arrive) ; geo = { gx, behind, root, hand, aim }
+-- (15/11) aim : décalage de visée (m), la ligne passe d'autant plus loin de la balle ; T = point visé par le bras
 function ADBaleCollectTask:lineFor(c, dx, dz, geo)
     local hand = geo.hand or handOf(geo.root)
     local sx, sz = hand * dz, -hand * dx
-    local line = { bx = c.x, bz = c.z, dx = dx, dz = dz, sx = sx, sz = sz, gx = geo.gx, behind = geo.behind }
-    line.p0x, line.p0z = c.x - sx * geo.gx, c.z - sz * geo.gx
+    local off = (geo.aim or 0) * (geo.gx >= 0 and 1 or -1)
+    local line = { bx = c.x, bz = c.z, dx = dx, dz = dz, sx = sx, sz = sz, gx = geo.gx, behind = geo.behind, aim = geo.aim or 0 }
+    line.p0x, line.p0z = c.x - sx * (geo.gx + off), c.z - sz * (geo.gx + off)
+    line.tx, line.tz = c.x - sx * off, c.z - sz * off
     line.back = math.max(ADBaleCollectTask.APPROACH_RUN * 0.5, geo.behind + ADBaleCollectTask.APPROACH_RUN)
     line.ax, line.az = line.p0x - dx * line.back, line.p0z - dz * line.back
     return line
 end
 
--- géométrie de l'ensemble pour le choix : { gx, behind, root, hand, rho } ; nil si la remorque n'a pas de bras
+-- (15/11) décalage de visée en m : réglage de la remorque relu à chaque balle (changé pendant le ramassage : pris
+-- à la balle suivante)
+function ADBaleCollectTask:aimOffset()
+    local s = self.ctx ~= nil and self.ctx.settings or nil
+    if self.ctx ~= nil and self.ctx.field ~= nil and self.ctx.toolKey ~= nil then
+        local ok, live = FarmPilotCall(ADBaleLoaderManager.get, ADBaleLoaderManager, self.ctx.field, self.ctx.toolKey)
+        if ok and live ~= nil then
+            s = live
+        end
+    end
+    return ADBaleLoaderManager.validAim(s ~= nil and s.aim or nil) / 100
+end
+
+-- géométrie de l'ensemble pour le choix : { gx, behind, root, hand, rho, aim } ; nil si la remorque n'a pas de bras
 function ADBaleCollectTask:trainGeometry()
     local gx, behind = self:grabGeometry()
     local root = rootOf(self.loader)
     if gx == nil or root == nil then
         return nil
     end
-    return { gx = gx, behind = behind, root = root, hand = handOf(root), rho = self:turnRadius() }
+    return { gx = gx, behind = behind, root = root, hand = handOf(root), rho = self:turnRadius(), aim = self:aimOffset() }
+end
+
+-- (15/11) écart du bras à la ligne du tracteur, décalage de visée compris (pour le sens d'approche)
+local function aimedGx(geo)
+    return geo.gx + (geo.aim or 0) * (geo.gx >= 0 and 1 or -1)
 end
 
 -- ligne d'approche de la cible, du tracteur vers la balle (déjà dans l'axe, ou approche directe)
@@ -386,7 +439,7 @@ function ADBaleCollectTask:makeLine(c)
     if geo == nil then
         return nil
     end
-    local dx, dz = self:approachDir(c, geo.gx)
+    local dx, dz = self:approachDir(c, aimedGx(geo))
     return self:lineFor(c, dx, dz, geo)
 end
 
@@ -416,7 +469,7 @@ function ADBaleCollectTask:isOnLine(line)
         return false
     end
     local ax, _, az = self:grabPosition()
-    local rx, rz = ax - line.bx, az - line.bz
+    local rx, rz = ax - (line.tx or line.bx), az - (line.tz or line.bz)
     local along = rx * line.dx + rz * line.dz
     local lateral = math.abs(rx * line.sx + rz * line.sz)
     return along <= -ADBaleCollectTask.ON_LINE_ARM_MIN and lateral <= ADBaleCollectTask.ON_LINE_DISTANCE + ADBaleCollectTask.ON_LINE_SLOPE * -along
@@ -465,7 +518,9 @@ end
 -- (15/11) balle suivante : celle qui coûte le moins à l'ensemble, en mètres roulés jusqu'à ce que le bras passe sur
 -- elle. Pour chaque balle : tout droit si le tracteur est déjà dans l'axe, sinon chemin (courbe au rayon de
 -- l'ensemble) jusqu'au début d'une ligne, dans HEADING_STEP sens essayés. Renvoie { c, line, cost, onLine, why }
-function ADBaleCollectTask:chooseBale(list, geo)
+-- obstacles : balles qu'une ligne ne doit pas passer sous le tracteur (par défaut list ; enrubanneuse : toutes)
+function ADBaleCollectTask:chooseBale(list, geo, obstacles)
+    obstacles = obstacles or list
     local tx, _, tz, hx, hz = self:tractorPose()
     local sx0, sz0 = tx + hx * ADBaleCollectTask.PATH_START, tz + hz * ADBaleCollectTask.PATH_START
     local fixed = ADBaleCollectTask.PATH_START + ADBaleCollectTask.PATH_END
@@ -475,7 +530,7 @@ function ADBaleCollectTask:chooseBale(list, geo)
     for _, c in ipairs(list) do
         -- 1. tout droit : ligne qui part du bras (un rang suit ainsi la trace des balles, sans zigzag), du tracteur,
         --    ou droit devant ; écarts du bras et du tracteur à la ligne comptés en plus
-        local adx, adz = self:approachDir(c, geo.gx)
+        local adx, adz = self:approachDir(c, aimedGx(geo))
         for i = 1, 3 do
             local dx, dz = normalize(c.x - armX, c.z - armZ)
             if i == 2 then
@@ -486,12 +541,12 @@ function ADBaleCollectTask:chooseBale(list, geo)
             local direct = self:lineFor(c, dx, dz, geo)
             if self:isOnLine(direct) then
                 local along = (direct.p0x - tx) * dx + (direct.p0z - tz) * dz
-                local armLateral = math.abs((armX - c.x) * direct.sx + (armZ - c.z) * direct.sz)
+                local armLateral = math.abs((armX - direct.tx) * direct.sx + (armZ - direct.tz) * direct.sz)
                 local tractorLateral = math.abs((tx - direct.p0x) * direct.sx + (tz - direct.p0z) * direct.sz)
                 local cost = along + geo.behind + ADBaleCollectTask.ON_LINE_LATERAL_COST * math.max(armLateral, tractorLateral)
                 if best == nil or cost < best.cost then
                     local why = nil
-                    if self:lineHitsBale(direct, c, list, -along) then
+                    if self:lineHitsBale(direct, c, obstacles, -along) then
                         cost = cost + ADBaleCollectTask.BODY_PENALTY
                         why = "autre balle sur la ligne"
                     end
@@ -519,7 +574,7 @@ function ADBaleCollectTask:chooseBale(list, geo)
                     cost = cost + ADBaleCollectTask.OFF_FIELD_PENALTY
                     why = "début de ligne hors du champ"
                 end
-                if (best == nil or cost < best.cost) and self:lineHitsBale(line, c, list, -line.back) then
+                if (best == nil or cost < best.cost) and self:lineHitsBale(line, c, obstacles, -line.back) then
                     cost = cost + ADBaleCollectTask.BODY_PENALTY
                     why = (why ~= nil and (why .. ", ") or "") .. "autre balle sur la ligne"
                 end
@@ -590,10 +645,18 @@ function ADBaleCollectTask:update(dt)
 
     if self.state == "prepare" then
         self:holdVehicle(dt)
-        if ADBaleLoaderManager.isInWorkPosition(loader) then
+        if self.wrapper and ADBaleLoaderManager.isBusy(loader) then
+            -- (15/11) balle déjà sur l'enrubanneuse (reprise, retour de la recharge) : finie et posée d'abord
+            log("%s : une balle est déjà sur l'enrubanneuse (%s) : finie et posée d'abord", self:name(), ADBaleWrapper.stateText(loader))
+            self:startGrab()
+        elseif self.wrapper and not ADBaleWrapper.filmAvailable(loader) then
+            -- (15/11) pas de film : pas la peine de déplier, recharge d'abord
+            log("%s : pas de film sur l'enrubanneuse (%s)", self:name(), ADBaleWrapper.filmText(loader))
+            self:finish("noFilm")
+        elseif ADBaleLoaderManager.isInWorkPosition(loader) then
             self:setState("find")
         elseif self.timer >= ADBaleCollectTask.PREPARE_TIMEOUT then
-            log("%s : le bras de la remorque ne sort pas", self:name())
+            log(self.wrapper and "%s : l'enrubanneuse ne se déplie pas (bras hors de ses limites de repli)" or "%s : le bras de la remorque ne sort pas", self:name())
             self:finish("noWork")
         elseif not ADBaleLoaderManager.isBusy(loader) and not ADBaleLoaderManager.isUnloading(loader)
             and (self.lastRequest == nil or self.timer - self.lastRequest >= ADBaleCollectTask.REQUEST_INTERVAL) then
@@ -612,6 +675,10 @@ function ADBaleCollectTask:update(dt)
         self:updateApproach(dt)
     elseif self.state == "backoff" then
         self:updateBackOff(dt)
+    elseif self.state == "grab" and self.wrapper then
+        self:updateWrapGrab(dt)
+    elseif self.state == "fold" and self.wrapper then
+        self:updateWrapFold(dt)
     elseif self.state == "grab" then
         if not self:updateGrabRoll(dt) then
             self:holdVehicle(dt)
@@ -657,13 +724,26 @@ function ADBaleCollectTask:updateFind()
         self:finish("noBales")
         return
     end
+    -- (15/11) enrubanneuse sans film (et des balles à enrubanner) : pas de balle prise qui resterait bloquée sur la
+    -- machine, recharge d'abord
+    if self.wrapper and not ADBaleWrapper.filmAvailable(loader) then
+        log("%s : plus de film sur l'enrubanneuse (%s), %d balle(s) encore à enrubanner", self:name(), ADBaleWrapper.filmText(loader), #list)
+        self:finish("noFilm")
+        return
+    end
     local geo = self:trainGeometry()
     if geo == nil then
         log("%s : la remorque n'a pas de bras (nœud grabNode) : arrêt", self:name())
         self:finish("noWork")
         return
     end
-    local plan = self:chooseBale(list, geo)
+    -- (15/11) enrubanneuse : les balles déjà enrubannées du champ comptent aussi comme obstacles sur la ligne
+    local obstacles = nil
+    if self.wrapper then
+        local okO, all = FarmPilotCall(self.obstacleBales, self)
+        obstacles = okO and all or nil
+    end
+    local plan = self:chooseBale(list, geo, obstacles)
     if plan == nil then
         self:finish("noBales")
         return
@@ -682,15 +762,15 @@ function ADBaleCollectTask:updateFind()
         plan.why ~= nil and (", " .. plan.why) or "",
         nearestDist < self:distanceTo(c) - 0.5 and string.format(", la plus proche à %.0f m", nearestDist) or "")
     if plan.onLine then
-        log("%s : balle à %.0f m, déjà dans l'axe (bras à %.1f m de côté), %s", self:name(), self:distanceTo(c), line.gx, costText)
+        log("%s : balle à %.0f m, déjà dans l'axe (bras à %.1f m de côté, visée décalée de %.0f cm), %s", self:name(), self:distanceTo(c), line.gx, (line.aim or 0) * 100, costText)
         self:startApproach()
         return
     end
     local pf = self.vehicle.ad.pathFinderModule
     pf:reset()
     pf:startPathPlanningTo({ x = line.ax, y = c.y, z = line.az }, { x = line.dx, z = line.dz })
-    log("%s : balle à %.0f m (%d à ramasser), %s, chemin vers la ligne d'approche (bras à %.1f m de côté, %.1f m derrière le tracteur, rayon %.1f m)",
-        self:name(), self:distanceTo(c), #list, costText, line.gx, line.behind, geo.rho)
+    log("%s : balle à %.0f m (%d %s), %s, chemin vers la ligne d'approche (bras à %.1f m de côté, visée décalée de %.0f cm, %.1f m derrière le tracteur, rayon %.1f m)",
+        self:name(), self:distanceTo(c), #list, self.wrapper and "à enrubanner" or "à ramasser", costText, line.gx, (line.aim or 0) * 100, line.behind, geo.rho)
     self:setState("planning")
 end
 
@@ -813,15 +893,17 @@ function ADBaleCollectTask:updateApproach(dt)
     end
     local gxw, _, gzw = self:grabPosition()
     local along = (gxw - line.bx) * line.dx + (gzw - line.bz) * line.dz
-    local lateral = (gxw - line.bx) * line.sx + (gzw - line.bz) * line.sz
-    if math.abs(along) < 2 and (self.bestLateral == nil or math.abs(lateral) < math.abs(self.bestLateral)) then
-        self.bestLateral = lateral
+    -- écart au point visé (décalage de visée compris) pour le suivi ; à la balle pour la trace
+    local lateral = (gxw - (line.tx or line.bx)) * line.sx + (gzw - (line.tz or line.bz)) * line.sz
+    local baleLateral = (gxw - line.bx) * line.sx + (gzw - line.bz) * line.sz
+    if math.abs(along) < 2 and (self.bestLateral == nil or math.abs(baleLateral) < math.abs(self.bestLateral)) then
+        self.bestLateral = baleLateral
     end
     local kmh = self:speedKmh()
     self.lineMaxSpeed = math.max(self.lineMaxSpeed or 0, kmh)
     if along > ADBaleCollectTask.PASS_BEYOND then
         self:holdVehicle(dt)
-        self:missed(string.format("bras passé à %.1f m de la balle, à %.1f km/h", math.abs(self.bestLateral or lateral), kmh))
+        self:missed(string.format("bras passé à %.1f m de la balle, à %.1f km/h", math.abs(self.bestLateral or baleLateral), kmh))
         return
     end
     if self.timer >= (self.approachTimeout or ADBaleCollectTask.APPROACH_TIMEOUT) then
@@ -857,7 +939,7 @@ function ADBaleCollectTask:updateApproach(dt)
     if along < -ADBaleCollectTask.FAR_DISTANCE then
         speed = ADBaleCollectTask.FAR_SPEED
     end
-    self.lastLateral, self.lastAlong = lateral, along
+    self.lastLateral, self.lastAlong = baleLateral, along
     -- sans contrôle de collision : les capteurs verraient la balle visée (et celles d'à côté) ; ralentissement
     -- seulement si le point suivi est très en biais, progressif
     self.vehicle.ad.specialDrivingModule:driveToPoint(dt, { x = cx, y = ty, z = cz }, speed, false, 0.5, speed, true,
@@ -884,9 +966,15 @@ end
 -- il continue tout droit sur la ligne pendant le chargement
 function ADBaleCollectTask:startGrab()
     local fromLine = self.state == "approach" and self.line ~= nil
+    if self.wrapper then
+        -- (15/11) enrubanneuse : suivi de la balle jusqu'à sa pose (updateWrapGrab)
+        self.wrapInfo = { start = g_time or 0, finishedTime = 0, noFilmTime = 0 }
+        self.nudge = nil
+    end
     if fromLine then
         local secs = ((g_time or 0) - (self.chosenAt or g_time or 0)) / 1000
-        log("%s : balle attrapée à %.1f km/h (%.1f au plus sur la ligne), bras à %.2f m de la balle visée (%.1f m avant), %.0f s depuis le choix",
+        log(self.wrapper and "%s : balle prise par l'enrubanneuse à %.1f km/h (%.1f au plus sur la ligne), bras à %.2f m de la balle visée (%.1f m avant), %.0f s depuis le choix"
+            or "%s : balle attrapée à %.1f km/h (%.1f au plus sur la ligne), bras à %.2f m de la balle visée (%.1f m avant), %.0f s depuis le choix",
             self:name(), self:speedKmh(), self.lineMaxSpeed or 0, math.abs(self.lastLateral or 0), -(self.lastAlong or 0), secs)
         local tx, _, tz = self:tractorPose()
         self.rollLine = self.line
@@ -905,7 +993,8 @@ function ADBaleCollectTask:updateGrabRoll(dt)
         return false
     end
     local tx, ty, tz, hx, hz = self:tractorPose()
-    if MathUtil.vector2Length(tx - self.rollStart.x, tz - self.rollStart.z) >= ADBaleCollectTask.GRAB_ROLL then
+    local roll = self.wrapper and ADBaleCollectTask.WRAP_ROLL or ADBaleCollectTask.GRAB_ROLL
+    if MathUtil.vector2Length(tx - self.rollStart.x, tz - self.rollStart.z) >= roll then
         self.rollLine = nil
         return false
     end
@@ -934,7 +1023,7 @@ function ADBaleCollectTask:rollBlocked(tx, tz, hx, hz)
     if not self:isFieldPoint(tx + hx * (front + ADBaleCollectTask.GRAB_FIELD_AHEAD), tz + hz * (front + ADBaleCollectTask.GRAB_FIELD_AHEAD)) then
         return true
     end
-    local list = ADBaleLoaderManager.findBales(self.loader, self.ctx.fieldNums, ADBaleLoaderManager.WRAP_ALL, {})
+    local list = self:obstacleBales()
     local ax, _, az = self:grabPosition()
     for _, c in ipairs(list) do
         local rx, rz = c.x - tx, c.z - tz
@@ -952,11 +1041,169 @@ function ADBaleCollectTask:rollBlocked(tx, tz, hx, hz)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Enrubanneuse : balle prise, enrubannée, posée
+-- ------------------------------------------------------------------------------------------------------------
+local function isWrapDone(state)
+    return state == ADBaleWrapper.const("STATE_WRAPPER_FINSIHED") or state == ADBaleWrapper.const("STATE_WRAPPER_DROPPING_BALE")
+        or state == ADBaleWrapper.const("STATE_WRAPPER_RESETTING_PLATFORM")
+end
+
+-- balle prise : tout droit WRAP_ROLL m puis arrêt ; balle finie : posée (par le jeu, sinon par nous) ; machine de
+-- nouveau au repos = balle suivante ; plus de film avec une balle prise = fin « noFilm »
+function ADBaleCollectTask:updateWrapGrab(dt)
+    local tool = self.loader
+    local w = self.wrapInfo
+    if w == nil then
+        w = { start = g_time or 0, finishedTime = 0, noFilmTime = 0 }
+        self.wrapInfo = w
+    end
+    local st = ADBaleWrapper.state(tool)
+    if not self:updateGrabRoll(dt) and not self:updateDropNudge(dt) then
+        self:holdVehicle(dt)
+    end
+    if isWrapDone(st) and not w.done then
+        w.done = true
+        local okF, film = FarmPilotCall(ADBaleWrapper.filmText, tool)
+        log("%s : balle enrubannée en %.0f s (film : %s)", self:name(), ((g_time or 0) - w.start) / 1000, okF and tostring(film) or "?")
+    end
+    if st == ADBaleWrapper.const("STATE_WRAPPER_FINSIHED") then
+        -- pose automatique du jeu pas faite (zone de pose prise, autre script) : on la fait poser
+        w.finishedTime = w.finishedTime + dt
+        if w.finishedTime >= ADBaleWrapper.FINISH_GRACE and not w.dropAsked then
+            local okD, r = FarmPilotCall(ADBaleWrapper.dropIfFinished, tool)
+            r = okD and r or nil
+            if r == "dropped" then
+                w.dropAsked = true
+                log("%s : balle finie pas posée par le jeu : pose demandée", self:name())
+            elseif r == "blocked" and not w.nudged then
+                w.nudged = true
+                local tx, _, tz, hx, hz = self:tractorPose()
+                self.nudge = { x = tx, z = tz, hx = hx, hz = hz, check = 0 }
+                log("%s : zone de pose derrière l'enrubanneuse prise : %d m en avant pour poser la balle", self:name(), ADBaleCollectTask.WRAP_NUDGE)
+            end
+        end
+    else
+        w.finishedTime = 0
+        w.dropAsked = nil
+    end
+    if st == ADBaleWrapper.const("STATE_MOVING_GRABBER_TO_WORK") and not ADBaleWrapper.filmAvailable(tool) then
+        w.noFilmTime = w.noFilmTime + dt
+        if w.noFilmTime >= ADBaleCollectTask.NO_FILM_WAIT then
+            log("%s : plus de film, la balle attend sur l'enrubanneuse (%s)", self:name(), ADBaleWrapper.filmText(tool))
+            self:endWrapGrab()
+            self:finish("noFilm")
+            return
+        end
+    else
+        w.noFilmTime = 0
+    end
+    if ADBaleWrapper.isIdle(tool) then
+        self.picked = self.picked + 1
+        self.ctx.wrapped = (self.ctx.wrapped or 0) + 1
+        log("%s : balle enrubannée posée en %.0f s (%d faite(s) au champ)", self:name(), ((g_time or 0) - w.start) / 1000, self.ctx.wrapped)
+        self:endWrapGrab()
+        self:setState("find")
+        return
+    end
+    if self.timer >= ADBaleCollectTask.WRAP_TIMEOUT then
+        log("%s : l'enrubanneuse n'a pas fini sa balle en %.0f s (%s) : arrêt", self:name(), self.timer / 1000, ADBaleWrapper.stateText(tool))
+        self:endWrapGrab()
+        self:finish("noWrap")
+    end
+end
+
+function ADBaleCollectTask:endWrapGrab()
+    self.wrapInfo = nil
+    self.nudge = nil
+    self.countBefore = nil
+    self.target = nil
+    self.rollLine = nil
+    self:claim(nil)
+end
+
+-- zone de pose prise : tout droit WRAP_NUDGE m au plus (arrêt : balle devant, bord du champ, balle posée) ;
+-- false = arrêt
+function ADBaleCollectTask:updateDropNudge(dt)
+    local n = self.nudge
+    if n == nil then
+        return false
+    end
+    local tx, ty, tz, hx, hz = self:tractorPose()
+    if MathUtil.vector2Length(tx - n.x, tz - n.z) >= ADBaleCollectTask.WRAP_NUDGE or ADBaleWrapper.state(self.loader) ~= ADBaleWrapper.const("STATE_WRAPPER_FINSIHED") then
+        self.nudge = nil
+        return false
+    end
+    n.check = n.check + dt
+    if n.check >= ADBaleCollectTask.GRAB_CHECK_INTERVAL then
+        n.check = 0
+        local okB, blocked = FarmPilotCall(self.rollBlocked, self, tx, tz, hx, hz)
+        if not okB or blocked then
+            self.nudge = nil
+            return false
+        end
+    end
+    local ahead = ADBaleCollectTask.WRAP_NUDGE + ADBaleCollectTask.LINE_LOOKAHEAD
+    local speed = ADBaleCollectTask.WRAP_NUDGE_SPEED
+    self.vehicle.ad.specialDrivingModule:driveToPoint(dt, { x = n.x + n.hx * ahead, y = ty, z = n.z + n.hz * ahead }, speed, false, 0.5, speed, true,
+        ADBaleCollectTask.LINE_SLOW_ANGLE, ADBaleCollectTask.LINE_SLOW_FACTOR)
+    return true
+end
+
+-- fin : balle en cours finie et posée (sauf balle qui attend le film), puis machine repliée pour la route
+function ADBaleCollectTask:updateWrapFold(dt)
+    local tool = self.loader
+    self:holdVehicle(dt)
+    local stuck = ADBaleWrapper.state(tool) == ADBaleWrapper.const("STATE_MOVING_GRABBER_TO_WORK") and not ADBaleWrapper.filmAvailable(tool)
+    if not self.foldRequested then
+        if not ADBaleWrapper.isIdle(tool) and not stuck and self.timer < ADBaleCollectTask.WRAP_TIMEOUT then
+            if ADBaleWrapper.state(tool) == ADBaleWrapper.const("STATE_WRAPPER_FINSIHED") then
+                self.foldFinishedTime = (self.foldFinishedTime or 0) + dt
+                if self.foldFinishedTime >= ADBaleWrapper.FINISH_GRACE and not self.foldDropAsked then
+                    local okD, r = FarmPilotCall(ADBaleWrapper.dropIfFinished, tool)
+                    self.foldDropAsked = okD and r == "dropped"
+                end
+            end
+            return
+        end
+        self.foldRequested = true
+        self.foldStart = self.timer
+        if ADBaleWrapper.hasFoldParts(tool) and not ADBaleWrapper.isFolded(tool) then
+            local okR, done = FarmPilotCall(ADBaleLoaderManager.setWorkPosition, tool, false)
+            if okR and done then
+                log("%s : enrubanneuse repliée pour la route", self:name())
+            else
+                log("%s : repli de l'enrubanneuse refusé par le jeu (%s) : elle reste dépliée", self:name(), ADBaleWrapper.stateText(tool))
+                self.foldRefused = true
+            end
+        end
+    end
+    if ADBaleWrapper.isFolded(tool) or self.foldRefused or self.timer - (self.foldStart or 0) >= ADBaleCollectTask.PREPARE_TIMEOUT then
+        -- départ bloqué par une balle juste devant : recul d'abord (comme la remorque)
+        if not self.finalBackOffDone and (self.lastStartObstructed or self:baleInFront()) then
+            self.finalBackOffDone = true
+            if self:startBackOff("done", "balle ou obstacle juste devant le tracteur avant de repartir", true) then
+                return
+            end
+        end
+        self:finished()
+    end
+end
+
+-- ------------------------------------------------------------------------------------------------------------
 -- Recul quand le départ est bloqué
 -- ------------------------------------------------------------------------------------------------------------
+-- (15/11) balles qui gênent (sous le tracteur, devant le bras) : remorque, toutes celles qu'elle pourrait prendre
+-- (comme avant) ; enrubanneuse, toutes les balles au sol du champ (les enrubannées aussi, qu'elle ne vise pas)
+function ADBaleCollectTask:obstacleBales()
+    if self.wrapper then
+        return ADBaleLoaderManager.fieldBales(self.ctx.fieldNums)
+    end
+    return ADBaleLoaderManager.findBales(self.loader, self.ctx.fieldNums, ADBaleLoaderManager.WRAP_ALL, {})
+end
+
 -- une balle du champ juste devant le tracteur (FRONT_LENGTH m devant son avant, FRONT_HALF_WIDTH m de chaque côté)
 function ADBaleCollectTask:baleInFront()
-    local okL, list = FarmPilotCall(ADBaleLoaderManager.findBales, self.loader, self.ctx.fieldNums, ADBaleLoaderManager.WRAP_ALL, {})
+    local okL, list = FarmPilotCall(self.obstacleBales, self)
     if not okL or type(list) ~= "table" then
         return false
     end
@@ -1040,9 +1287,20 @@ function ADBaleCollectTask:finish(result)
     self.result = result
     self.target = nil
     self:claim(nil)
-    log("%s : ramassage fini (%s), %d balle(s) ramassée(s), %d chargée(s)", self:name(), tostring(result), self.picked,
-        ADBaleLoaderManager.loadedCount(self.loader))
-    if result == "full" or result == "noBales" or result == "continue" then
+    if self.wrapper then
+        local okF, film = FarmPilotCall(ADBaleWrapper.filmText, self.loader)
+        log("%s : enrubannage fini (%s), %d balle(s) enrubannée(s) par cette tâche, %d au champ, film : %s", self:name(), tostring(result), self.picked,
+            self.ctx.wrapped or self.picked, okF and tostring(film) or "?")
+    else
+        log("%s : ramassage fini (%s), %d balle(s) ramassée(s), %d chargée(s)", self:name(), tostring(result), self.picked,
+            ADBaleLoaderManager.loadedCount(self.loader))
+    end
+    if result == "noBales" then
+        -- (15/11) balles autour pas prises avant de partir, et pourquoi
+        local tx, _, tz = self:tractorPose()
+        FarmPilotCall(ADBaleLoaderManager.reportMissed, self:name(), self.loader, self.ctx.fieldNums, self.wrap, self:skipList(), tx, tz)
+    end
+    if result == "full" or result == "noBales" or result == "continue" or result == "noFilm" then
         -- bras rentré avant la route
         self.foldRequested = false
         self:setState("fold")
@@ -1051,18 +1309,64 @@ function ADBaleCollectTask:finish(result)
     self:finished()
 end
 
+-- (15/11) enrubanneuse : pose automatique rendue comme avant
+function ADBaleCollectTask:restoreWrapper()
+    if self.wrapper and self.oldAutoDrop ~= nil then
+        FarmPilotCall(ADBaleWrapper.setAutoDrop, self.loader, self.oldAutoDrop)
+        self.oldAutoDrop = nil
+    end
+end
+
 function ADBaleCollectTask:abort()
     self:claim(nil)
+    self:restoreWrapper()
 end
 
 function ADBaleCollectTask:finished()
     self:claim(nil)
+    self:restoreWrapper()
     self.vehicle.ad.taskModule:setCurrentTaskFinished()
+end
+
+-- (15/11) titre « Ramasse les balles (prises/restantes) » : balles sur la remorque / balles encore à ramasser dans le
+-- champ pour cette remorque (rondes ou carrées, enrubannées ou non selon le réglage ; balles laissées après MAX_TRIES
+-- essais pas comptées). Le compte du champ est refait toutes les REMAINING_EVERY ms (le titre est lu à chaque image).
+ADBaleCollectTask.REMAINING_EVERY = 2000
+
+function ADBaleCollectTask:remainingCount()
+    local now = g_time or 0
+    if self.remaining ~= nil and now >= (self.remainingTime or 0) and now - self.remainingTime < ADBaleCollectTask.REMAINING_EVERY then
+        return self.remaining
+    end
+    self.remainingTime = now
+    if self.loader == nil or self.ctx == nil then
+        return self.remaining
+    end
+    local ok, list = FarmPilotCall(ADBaleLoaderManager.findBales, self.loader, self.ctx.fieldNums, self.wrap, self.left)
+    if ok and type(list) == "table" then
+        self.remaining = #list
+    end
+    return self.remaining
 end
 
 function ADBaleCollectTask:getI18nInfo()
     if self.state == "planning" then
         return self:getPlanningI18n()
     end
-    return "$l10n_AD_task_autonomous_bales;" .. string.format(" (%d)", ADBaleLoaderManager.loadedCount(self.loader))
+    if self.wrapper then
+        -- (15/11) « Enrubanne les balles (faites/restantes) » : balles enrubannées et posées au champ / balles encore à
+        -- enrubanner (même compte espacé que la remorque)
+        local done = self.ctx ~= nil and self.ctx.wrapped or self.picked
+        local left = self:remainingCount()
+        if left == nil then
+            return "$l10n_AD_task_autonomous_wrap;" .. string.format(" (%d)", done)
+        end
+        return "$l10n_AD_task_autonomous_wrap;" .. string.format(" (%d/%d)", done, left)
+    end
+    local loaded = ADBaleLoaderManager.loadedCount(self.loader)
+    local remaining = self:remainingCount()
+    if remaining == nil then
+        return "$l10n_AD_task_autonomous_bales;" .. string.format(" (%d)", loaded)
+    end
+    return "$l10n_AD_task_autonomous_bales;" .. string.format(" (%d/%d)", loaded, remaining)
 end

@@ -617,6 +617,20 @@
 		<text name="AD_autonomous_several" text="%s parcours de %s m sur le champ %s, choisissez-en un dans la fenêtre Parcours Autonome (Ctrl+Alt+5 du pavé numérique), en attente" />
 		<text name="AD_autonomous_noField" text="aucun champ ici, en attente" />
 		<text name="AD_autonomous_noWindrow" text="presse : aucun parcours Courseplay du champ %s ne tombe sur les andains, en attente" />
+		<text name="gui_ad_baler_title" text="Réglages de la presse" />
+		<text name="gui_ad_baler_head" text="Presse : %s · Champ : %s · %s sur la presse : %s rouleaux" />
+		<text name="gui_ad_baler_noBaler" text="Pas de presse à ficelle ou à filet sur cette ligne." />
+		<text name="gui_ad_baler_refill" text="Zone de recharge (ficelle / filet)" />
+		<text name="gui_ad_baler_pickRefill" text="Choisissez la zone de recharge de la ficelle / du filet (Choisir ou double clic), Retour pour revenir." />
+		<text name="gui_ad_baler_needRefill" text="Choisissez la zone de recharge." />
+		<text name="gui_ad_baler_twine" text="Ficelle" />
+		<text name="gui_ad_baler_net" text="Filet" />
+		<text name="gui_ad_baler_twineOrNet" text="Ficelle / filet" />
+		<text name="gui_ad_baler_tooltip" text="Réglages de la presse (zone de recharge)" />
+		<text name="gui_ad_baler_tooltipNext" text="Réglages de la presse (champ suivant)" />
+		<text name="AD_autonomous_balerTodo" text="zone de recharge de la presse « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
+		<text name="AD_autonomous_balerFill" text="presse : ficelle / filet presque vide, recharge à « %s » avant le champ" />
+		<text name="AD_autonomous_balerEmpty" text="presse : plus de ficelle / filet, recharge à « %s », puis retour au champ" />
 		<text name="AD_autonomous_noWidth" text="largeur de l'outil inconnue, en attente" />
 		<text name="AD_autonomous_noTool" text="mode Autonome : aucun outil de travail attelé" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay introuvable : ouvrier du jeu lancé sur le champ %s" />
@@ -671,9 +685,11 @@
 		<text name="AD_autonomous_headerTimeout" text="l'autre machine n'est pas venue, arrêt" />
 		<text name="AD_autonomous_headerNoTrailer" text="aucune remorque porte-barre vide pour reposer la barre" />
 		<text name="AD_task_autonomous_headerPlace" text="Garer la remorque près de la moissonneuse" />
+		<text name="AD_task_autonomous_headerYard" text="Poser la remorque hors de la route" />
 		<text name="AD_task_autonomous_headerTurn" text="Demi-tour pour dégager le côté de la barre" />
 		<text name="AD_autonomous_headerTurn" text="côté de la barre encombré, demi-tour par le réseau" />
 		<text name="AD_autonomous_headerMove" text="côté de la barre encombré, va à un endroit dégagé plus loin" />
+		<text name="AD_autonomous_headerYard" text="rien de dégagé le long de la route, pose la remorque hors de la route" />
 		<text name="AD_autonomous_headerSideBlocked" text="aucun endroit dégagé trouvé, attente au bout de la route" />
 		<text name="AD_autonomous_headerNoWay" text="pas de chemin dans le champ jusqu'à la moissonneuse, nouvel essai" />
 		<text name="AD_task_autonomous_headerBackIn" text="Reculer la remorque dans l'entrée du champ" />
@@ -807,6 +823,7 @@
 		<text name="AD_fpFn_balerSquare" text="Presse carrée" />
 		<text name="AD_fpFn_balerRound" text="Presse ronde" />
 		<text name="AD_fpFn_baleLoader" text="Remorque à balles" />
+		<text name="AD_fpFn_baleWrapper" text="Enrubanneuse" />
 		<text name="gui_ad_autonomous_title" text="Parcours Autonome" />
 		<text name="gui_ad_autonomous_field" text="Champ %s" />
 		<text name="gui_ad_autonomous_fields" text="Champs %s" />
@@ -888,6 +905,7 @@
 		<text name="gui_ad_baleLoader_wrapAll" text="Toutes" />
 		<text name="gui_ad_baleLoader_wrapWrapped" text="Enrubannées seulement" />
 		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Non enrubannées seulement" />
+		<text name="gui_ad_baleLoader_aim" text="Décalage de visée" />
 		<text name="gui_ad_baleLoader_deposit" text="Zone de dépôt (vente ou stockage)" />
 		<text name="gui_ad_baleLoader_pickDeposit" text="Choisissez la zone de dépôt (Choisir ou double clic), Retour pour revenir. En haut : près d'un point de vente qui prend les balles." />
 		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Choisissez la zone de dépôt (Choisir ou double clic), Retour pour revenir. Aucun point de vente des balles trouvé : elles seront posées au marqueur." />
@@ -895,6 +913,15 @@
 		<text name="gui_ad_baleLoader_needDeposit" text="Choisissez la zone de dépôt." />
 		<text name="gui_ad_baleLoader_tooltip" text="Réglages de la remorque à balles" />
 		<text name="gui_ad_baleLoader_tooltipNext" text="Réglages de la remorque à balles (champ suivant)" />
+		<text name="gui_ad_baleWrapper_title" text="Réglages de l'enrubanneuse" />
+		<text name="gui_ad_baleWrapper_head" text="Enrubanneuse : %s · Champ : %s · Prend les %s" />
+		<text name="gui_ad_baleWrapper_refill" text="Zone de recharge du film" />
+		<text name="gui_ad_baleWrapper_pickRefill" text="Choisissez la zone de recharge du film (Choisir ou double clic), Retour pour revenir. En haut : près d'une source de film (palettes, magasin)." />
+		<text name="gui_ad_baleWrapper_pickRefillAll" text="Choisissez la zone de recharge du film (Choisir ou double clic), Retour pour revenir. Aucune source de film trouvée près d'un marqueur : tous les marqueurs." />
+		<text name="gui_ad_baleWrapper_film" text="film" />
+		<text name="gui_ad_baleWrapper_needRefill" text="Choisissez la zone de recharge du film." />
+		<text name="gui_ad_baleWrapper_tooltip" text="Réglages de l'enrubanneuse" />
+		<text name="gui_ad_baleWrapper_tooltipNext" text="Réglages de l'enrubanneuse (champ suivant)" />
 		<text name="AD_autonomous_baleLoaderTodo" text="réglages de « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
 		<text name="AD_autonomous_balesStart" text="ramassage des balles du champ %s (%d à ramasser)" />
 		<text name="AD_autonomous_balesNone" text="plus de balle à ramasser au champ %s" />
@@ -908,10 +935,26 @@
 		<text name="AD_autonomous_balesUnloadFailed" text="dépôt des balles à « %s » pas fait (voir le log), en attente" />
 		<text name="AD_autonomous_balesNoWork" text="le bras de la remorque à balles ne sort pas, en attente" />
 		<text name="AD_autonomous_balesNoLoader" text="remorque à balles dételée, en attente" />
+		<text name="AD_autonomous_wrapStart" text="enrubannage des balles du champ %s (%d à enrubanner)" />
+		<text name="AD_autonomous_wrapNone" text="plus de balle à enrubanner au champ %s" />
+		<text name="AD_autonomous_wrapFilmEmpty" text="plus de film : recharge à « %s », puis retour au champ" />
+		<text name="AD_autonomous_wrapFilmFill" text="pas de film : recharge à « %s » avant le champ" />
+		<text name="AD_autonomous_wrapFilmBack" text="film rechargé, retour au champ « %s »" />
+		<text name="AD_autonomous_wrapFilmNoZone" text="plus de film et zone de recharge « %s » introuvable (roue dentée), en attente" />
+		<text name="AD_autonomous_wrapFilmFailed" text="film pas rechargé à « %s » (voir le log), en attente" />
+		<text name="AD_autonomous_wrapContinue" text="enrubannage arrêté : champ %s laissé, suite du travail" />
+		<text name="AD_autonomous_wrapNoWork" text="l'enrubanneuse ne se met pas en position de travail, en attente" />
+		<text name="AD_autonomous_wrapStuck" text="l'enrubanneuse n'a pas fini sa balle (voir le log), en attente" />
+		<text name="AD_autonomous_wrapDetached" text="enrubanneuse dételée, en attente" />
 		<text name="AD_task_autonomous_bales" text="Ramasse les balles" />
+		<text name="AD_task_autonomous_wrap" text="Enrubanne les balles" />
+		<text name="AD_task_fpMotorStart" text="Démarre" />
 		<text name="AD_task_autonomous_baleUnload" text="Dépose les balles" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="la cuve contient encore %s (%.0f L) et le produit choisi est %s : videz la cuve, départ refusé" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay n'a pas pu repartir au dernier point, en attente" />
+		<text name="AD_autonomous_cpContinue" text="parcours Courseplay « %s » repris là où il s'était arrêté sur le champ %s" />
+		<text name="input_ADRestartFromStart" text="FP - Reprendre au début" />
+		<text name="hud_fpEnDisable" text="FP - Activer/Désactiver : reprend là où il en était - Clic droit : reprendre au début" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
 		<text name="fp_reminder_title" text="Rappel éditeur" />

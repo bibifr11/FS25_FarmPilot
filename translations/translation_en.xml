@@ -619,6 +619,20 @@
 		<text name="AD_autonomous_several" text="%s courses of %s m on field %s, pick one in the Autonomous courses window (Ctrl+Alt+Numpad 5), waiting" />
 		<text name="AD_autonomous_noField" text="no field here, waiting" />
 		<text name="AD_autonomous_noWindrow" text="baler: no Courseplay course of field %s lies on the windrows, waiting" />
+		<text name="gui_ad_baler_title" text="Baler settings" />
+		<text name="gui_ad_baler_head" text="Baler: %s · Field: %s · %s on the baler: %s rolls" />
+		<text name="gui_ad_baler_noBaler" text="No baler with twine or net on this row." />
+		<text name="gui_ad_baler_refill" text="Refill point (twine / net)" />
+		<text name="gui_ad_baler_pickRefill" text="Choose the refill point for the twine / net (Choose or double click), Back to return." />
+		<text name="gui_ad_baler_needRefill" text="Choose the refill point." />
+		<text name="gui_ad_baler_twine" text="Twine" />
+		<text name="gui_ad_baler_net" text="Net" />
+		<text name="gui_ad_baler_twineOrNet" text="Twine / net" />
+		<text name="gui_ad_baler_tooltip" text="Baler settings (refill point)" />
+		<text name="gui_ad_baler_tooltipNext" text="Baler settings (next field)" />
+		<text name="AD_autonomous_balerTodo" text="refill point of the baler « %s » to validate for « %s » (orange gear), start refused" />
+		<text name="AD_autonomous_balerFill" text="baler: twine / net almost empty, refill at « %s » before the field" />
+		<text name="AD_autonomous_balerEmpty" text="baler: out of twine / net, refill at « %s », then back to the field" />
 		<text name="AD_autonomous_noWidth" text="tool width unknown, waiting" />
 		<text name="AD_autonomous_noTool" text="Autonomous mode: no work tool attached" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay not found: base game worker started on field %s" />
@@ -673,9 +687,11 @@
 		<text name="AD_autonomous_headerTimeout" text="the other machine did not come, stopping" />
 		<text name="AD_autonomous_headerNoTrailer" text="no empty header trailer to put the header on" />
 		<text name="AD_task_autonomous_headerPlace" text="Park the trailer near the combine" />
+		<text name="AD_task_autonomous_headerYard" text="Park the trailer off the road" />
 		<text name="AD_task_autonomous_headerTurn" text="U-turn to free the header side" />
 		<text name="AD_autonomous_headerTurn" text="header side blocked, U-turn through the network" />
 		<text name="AD_autonomous_headerMove" text="header side blocked, going to a clear spot farther away" />
+		<text name="AD_autonomous_headerYard" text="nothing clear along the road, parking the trailer off the road" />
 		<text name="AD_autonomous_headerSideBlocked" text="no clear spot found, waiting at the end of the route" />
 		<text name="AD_autonomous_headerNoWay" text="no way through the field to the harvester, trying again" />
 		<text name="AD_task_autonomous_headerBackIn" text="Back the trailer into the field entrance" />
@@ -809,6 +825,7 @@
 		<text name="AD_fpFn_balerSquare" text="Square baler" />
 		<text name="AD_fpFn_balerRound" text="Round baler" />
 		<text name="AD_fpFn_baleLoader" text="Bale loader" />
+		<text name="AD_fpFn_baleWrapper" text="Bale wrapper" />
 		<text name="gui_ad_autonomous_title" text="Autonomous courses" />
 		<text name="gui_ad_autonomous_field" text="Field %s" />
 		<text name="gui_ad_autonomous_fields" text="Fields %s" />
@@ -890,6 +907,7 @@
 		<text name="gui_ad_baleLoader_wrapAll" text="All" />
 		<text name="gui_ad_baleLoader_wrapWrapped" text="Wrapped only" />
 		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Unwrapped only" />
+		<text name="gui_ad_baleLoader_aim" text="Aim offset" />
 		<text name="gui_ad_baleLoader_deposit" text="Drop-off point (sale or storage)" />
 		<text name="gui_ad_baleLoader_pickDeposit" text="Choose the drop-off point (Choose or double click), Back to return. At the top: near a selling point that takes bales." />
 		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Choose the drop-off point (Choose or double click), Back to return. No selling point for bales found: they will be left at the marker." />
@@ -897,6 +915,15 @@
 		<text name="gui_ad_baleLoader_needDeposit" text="Choose the drop-off point." />
 		<text name="gui_ad_baleLoader_tooltip" text="Bale loader settings" />
 		<text name="gui_ad_baleLoader_tooltipNext" text="Bale loader settings (next field)" />
+		<text name="gui_ad_baleWrapper_title" text="Bale wrapper settings" />
+		<text name="gui_ad_baleWrapper_head" text="Wrapper: %s · Field: %s · Takes %s" />
+		<text name="gui_ad_baleWrapper_refill" text="Film refill point" />
+		<text name="gui_ad_baleWrapper_pickRefill" text="Choose the film refill point (Choose or double click), Back to return. At the top: near a film source (pallets, shop)." />
+		<text name="gui_ad_baleWrapper_pickRefillAll" text="Choose the film refill point (Choose or double click), Back to return. No film source found near a marker: all markers." />
+		<text name="gui_ad_baleWrapper_film" text="film" />
+		<text name="gui_ad_baleWrapper_needRefill" text="Choose the film refill point." />
+		<text name="gui_ad_baleWrapper_tooltip" text="Bale wrapper settings" />
+		<text name="gui_ad_baleWrapper_tooltipNext" text="Bale wrapper settings (next field)" />
 		<text name="AD_autonomous_baleLoaderTodo" text="settings of « %s » to validate for « %s » (orange gear), start refused" />
 		<text name="AD_autonomous_balesStart" text="collecting the bales of field %s (%d to collect)" />
 		<text name="AD_autonomous_balesNone" text="no more bales to collect on field %s" />
@@ -910,10 +937,26 @@
 		<text name="AD_autonomous_balesUnloadFailed" text="bales not dropped off at « %s » (see the log), waiting" />
 		<text name="AD_autonomous_balesNoWork" text="the bale loader arm does not come out, waiting" />
 		<text name="AD_autonomous_balesNoLoader" text="bale loader detached, waiting" />
+		<text name="AD_autonomous_wrapStart" text="wrapping the bales of field %s (%d to wrap)" />
+		<text name="AD_autonomous_wrapNone" text="no more bales to wrap on field %s" />
+		<text name="AD_autonomous_wrapFilmEmpty" text="out of film: refilling at « %s », then back to the field" />
+		<text name="AD_autonomous_wrapFilmFill" text="no film: refilling at « %s » before the field" />
+		<text name="AD_autonomous_wrapFilmBack" text="film refilled, back to the field « %s »" />
+		<text name="AD_autonomous_wrapFilmNoZone" text="out of film and film refill point « %s » not found (gear), waiting" />
+		<text name="AD_autonomous_wrapFilmFailed" text="film not refilled at « %s » (see the log), waiting" />
+		<text name="AD_autonomous_wrapContinue" text="wrapping stopped: field %s left, work continues" />
+		<text name="AD_autonomous_wrapNoWork" text="the bale wrapper does not get into working position, waiting" />
+		<text name="AD_autonomous_wrapStuck" text="the bale wrapper did not finish its bale (see the log), waiting" />
+		<text name="AD_autonomous_wrapDetached" text="bale wrapper detached, waiting" />
 		<text name="AD_task_autonomous_bales" text="Collecting bales" />
+		<text name="AD_task_autonomous_wrap" text="Wrapping bales" />
+		<text name="AD_task_fpMotorStart" text="Starting" />
 		<text name="AD_task_autonomous_baleUnload" text="Dropping off bales" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
+		<text name="AD_autonomous_cpContinue" text='Courseplay course "%s" resumed where it stopped on field %s' />
+		<text name="input_ADRestartFromStart" text="FP - Restart from the beginning" />
+		<text name="hud_fpEnDisable" text="FP - En/Disable: resumes where it stopped - Right click: restart from the beginning" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
 		<text name="fp_reminder_title" text="Editor reminder" />

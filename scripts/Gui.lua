@@ -78,6 +78,7 @@ function AutoDrive:loadGUI()
     end
 	if ADSprayerSettingsGui ~= nil then ADSprayerSettingsGui.load() end -- fenêtre « Réglages de l'épandeur », voir SprayerSettingsGUI.lua
 	if ADBaleLoaderSettingsGui ~= nil then ADBaleLoaderSettingsGui.load() end -- fenêtre « Réglages de la remorque à balles », voir BaleLoaderSettingsGUI.lua
+	if ADBalerSettingsGui ~= nil then ADBalerSettingsGui.load() end -- (15/11) fenêtre « Réglages de la presse », voir BalerSettingsGUI.lua
 	if ADTrailerSwapGui ~= nil then ADTrailerSwapGui.load() end -- fenêtre « Échange de bennes », voir TrailerSwapGUI.lua
 	if ADHeaderTractorGui ~= nil then ADHeaderTractorGui.load() end -- fenêtre « Transport de la barre », voir HeaderTractorGUI.lua
 	if ADRoadTypesGui ~= nil then ADRoadTypesGui.load() end -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua
@@ -181,6 +182,7 @@ end
 -- (08/11) roue dentée du semoir (ligne « Outil » ou « Outil suivant » du mode Autonome)
 function AutoDrive.onOpenSeederSettings(vehicle, isNext)
 	if ADBaleLoaderSettingsGui ~= nil and ADBaleLoaderSettingsGui.open(vehicle, isNext) then return end -- remorque à balles sur la ligne : sa fenêtre, voir BaleLoaderSettingsGUI.lua
+	if ADBalerSettingsGui ~= nil and ADBalerSettingsGui.open(vehicle, isNext) then return end -- (15/11) presse sur la ligne : sa fenêtre, voir BalerSettingsGUI.lua
 	if ADSprayerSettingsGui ~= nil and ADSprayerSettingsGui.open(vehicle, isNext) then return end -- épandeur / pulvé sur la ligne : sa fenêtre, voir SprayerSettingsGUI.lua
 	if AutoDrive.gui.ADSeederSettingsGui ~= nil and not AutoDrive.gui.ADSeederSettingsGui.isOpen then
 		ADSeederSettingsGui.context = { vehicle = vehicle, isNext = isNext == true }

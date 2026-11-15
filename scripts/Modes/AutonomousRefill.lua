@@ -152,6 +152,7 @@ end
 -- 5. cuves choisies pleines, vraies cuves seulement (ADSeederManager.productsFull d'origine si aucune)
 ADSeederRefill.originalProductsFull = ADSeederManager.productsFull
 function ADSeederRefill.productsFull(tool, fillTypes, rootVehicle)
+    if ADBaleWrapper ~= nil then local okW, fullW = FarmPilotCall(ADBaleWrapper.productsFull, tool, fillTypes) if okW and fullW ~= nil then return fullW end end -- (15/11) enrubanneuse : film plein, voir BaleWrapperManager.lua
     local units = ADSeederRefill.realUnits(tool, fillTypes)
     if #units == 0 then
         return ADSeederRefill.originalProductsFull(tool, fillTypes, rootVehicle)

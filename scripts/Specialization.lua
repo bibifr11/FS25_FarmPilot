@@ -157,6 +157,9 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpPickupPhase", "FarmPilot: pickup and deliver phase when saved (load / unload)")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpAutoReturn", "FarmPilot Autonome: on the way back to the parking when saved (park), see AutonomousResumeReturn.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpAutoStage", "FarmPilot Autonome: stage in progress when saved (name:data), resumed at load, see AutonomousResumeStage.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloadStage", "FarmPilot: unloader of a combine going to unload or to park when saved, see AutonomousResumeHeader.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpHeaderFrom", "FarmPilot Autonome: header taken from a header trailer (unique id|unique id), see AutonomousResumeHeader.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloaderFollow", "FarmPilot: unloaders following a combine to its next field, see AutonomousResumeHeader.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloaderTeam", "FarmPilot: unloaders team of a combine (unique id|trailer|park;...), see AutonomousHarvesterUnloaders.lua")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#selectedFillTypes", "selectedFillTypes")
@@ -471,6 +474,7 @@ function AutoDrive:onUpdate(dt)
         local allowTaskUpdate = (not AutoDrive.getSetting("FoldImplements", self) or (self.ad.foldStartTime + AutoDrive.foldTimeout < g_time))
         allowTaskUpdate = allowTaskUpdate and (self.ad.ALDelayStartTime + AutoDrive.ALDelayTimeout < g_time)
         allowTaskUpdate, shouldUStopVehicle = ADFoldGuard.update(self, dt, allowTaskUpdate, shouldUStopVehicle) -- outils immobiles et replies avant de partir (AutoDriveFoldGuard.lua)
+        if ADMotorStartWait ~= nil then allowTaskUpdate, shouldUStopVehicle = ADMotorStartWait.update(self, dt, allowTaskUpdate, shouldUStopVehicle) end -- lancé moteur éteint : « Démarre (5 s) », voir MotorStartWait.lua
 
         if allowTaskUpdate then
             -- forage harvester unloader: isolated plants are forgotten by every strict crop check of this update
@@ -1209,6 +1213,7 @@ function AutoDrive:startAutoDrive()
 
         if not self.ad.stateModule:isActive() then
             self.ad.stateModule:setActive(true)
+            if ADMotorStartWait ~= nil then FarmPilotCall(ADMotorStartWait.arm, self) end -- moteur éteint : 5 s pour démarrer, voir MotorStartWait.lua
 
             self.ad.isStoppingWithError = false
             self.ad.onRouteToPark = false

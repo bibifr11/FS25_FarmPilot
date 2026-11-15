@@ -21,6 +21,10 @@
 -- sont données par la tâche (exitEntranceId, exitDestinationId) au lieu des 1re et 2e destinations ; plus aucun
 -- point : la tâche reprend sa route habituelle (onNoExitCandidate) au lieu de l'arrêt. Bennes : rien ne change.
 --
+-- (15/11, champ 77) Benne de moissonneuse (« Décharger moissonneuse », pas d'ensileuse) : l'entrée du champ seulement,
+-- jamais un autre point au plus court (remplace l'exception du 27/10 pour elle), sauf réglage « Sortie de champ » sur
+-- « Le plus proche » ; pas de trajet = attente et nouvel essai de l'entrée toutes les RETRY_DELAY ms.
+--
 -- Branché par une ligne dans ExitFieldTask.lua : update (4 accroches), abort, finished, startPathPlanning, getI18nInfo.
 -- ============================================================================================================
 
@@ -43,6 +47,23 @@ ExitFieldTask.FIELD_POINT_MAX_DISTANCE = 2000 -- m, field entrance point tried f
 -- away found at once): the entrance is tried once, then every other point, the nearest clean one wins (never through
 -- crop, never off the field: the restrictions stay, pf.noFallback)
 ExitFieldTask.ENTRANCE_TRIES = 1
+
+-- (15/11) benne de moissonneuse, réglage « Sortie de champ » pas sur « Le plus proche » : l'entrée seulement
+function ExitFieldTask.entranceOnly(vehicle)
+    if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil then
+        return false
+    end
+    if AutoDrive.getSetting("fpExitField", vehicle) == 2 then
+        return false -- « Le plus proche » coché : au plus court permis
+    end
+    if AutoDrive.MODE_UNLOAD == nil or vehicle.ad.stateModule.getMode == nil or vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_UNLOAD then
+        return false
+    end
+    if AutoDrive.isChopperUnloading ~= nil and AutoDrive.isChopperUnloading(vehicle) then
+        return false -- ensileuse : comme avant
+    end
+    return true
+end
 ExitFieldTask.ENTRANCE_CROP_BONUS = 15 -- m of crop forgiven to the entrance when sorting the direct exit points
 ExitFieldTask.BEHIND_PENALTY = 60            -- m added to points behind the vehicle
 
@@ -152,6 +173,15 @@ function ExitFieldTask:startExitPlanning()
     -- point; another exit is the exception, after ENTRANCE_TRIES failures in a row
     if not self.directExit and self.candidateIndex == 2 and self.candidates[1] ~= nil and self.candidates[1].entrance then
         self.entranceTries = (self.entranceTries or 0) + 1
+        -- (15/11, champ 77) benne de moissonneuse : sortie TOUJOURS par l'entrée du champ, jamais au plus court, sauf
+        -- réglage « Sortie de champ » sur « Le plus proche » ; pas de trajet : elle attend et réessaie l'entrée
+        if ExitFieldTask.entranceOnly(self.vehicle) then
+            print(string.format("[AD-Exit] %s: sortie toujours par l'entree du champ (point %s), pas de trajet pour l'instant (essai %d), nouvel essai dans %d s", tostring(self.vehicle:getName()), tostring(self.candidates[1].wp.id), self.entranceTries, ExitFieldTask.RETRY_DELAY / 1000))
+            self.candidates = nil
+            self.retryDelay = ExitFieldTask.RETRY_DELAY
+            self.state = ExitFieldTask.STATE_DELAY_PATHPLANNING
+            return false
+        end
         if self.entranceTries < ExitFieldTask.ENTRANCE_TRIES then
             print(string.format("[AD-Exit] %s: pas de trajet par l'entree du champ (point %s) pour l'instant, essai %d/%d, nouvel essai dans %d s avant d'envisager un autre point", tostring(self.vehicle:getName()), tostring(self.candidates[1].wp.id), self.entranceTries, ExitFieldTask.ENTRANCE_TRIES, ExitFieldTask.RETRY_DELAY / 1000))
             self.candidates = nil

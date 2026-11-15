@@ -15,9 +15,15 @@
 -- - (09/11) Bouton >> (Continuer) avec des balles chargées : dépôt tout de suite (après la balle en cours), puis
 --   retour au champ s'il en reste. Remorque vide : champ laissé, la suite habituelle d'un champ fini. Pareil
 --   sur le 1er trajet vers le champ.
+-- - (15/11) Enrubanneuse (BaleWrapperManager.lua) : même arrivée, même tâche (BaleCollectTask.lua), pas de dépôt :
+--   les balles enrubannées restent où la machine les pose. Étapes : « collect » (enrubannage), « refill » (plus de
+--   film : route vers la zone de recharge du film, plein aux palettes, AutonomousMode.startRefill comme le semoir),
+--   « toField » (retour au champ, l'enrubannage reprend). Plus de balle à enrubanner : la suite d'un champ fini
+--   (finishField). >> : champ laissé après la balle en cours. Erreur (machine qui ne se déplie pas, balle pas finie,
+--   machine dételée, zone de recharge introuvable, film pas rechargé) : message, arrêt et attente.
 --
 -- Branché par une ligne dans : AutonomousMode.lua (reset ; handleFinishedTask : étapes et arrivée au champ ;
--- continue : bouton >>),
+-- continue : bouton >> ; handleRefillStage : afterRefill, film rechargé),
 -- Specialization.lua (stopAutoDrive : afterStop).
 -- ============================================================================================================
 
@@ -48,17 +54,19 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Arrivée au champ (hook AutonomousMode:handleFinishedTask) : true si le ramassage prend la main
 -- ------------------------------------------------------------------------------------------------------------
--- { tool, toolKey, field, marker, settings, fieldNum, fieldNums, fieldMarker } ou nil (pas de remorque réglée attelée)
+-- { tool, toolKey, field, marker, settings, fieldNum, fieldNums, fieldMarker, kind, wrapped } ou nil (pas de remorque
+-- réglée attelée) ; (15/11) kind = « wrapper » : enrubanneuse, wrapped = balles enrubannées au champ (titre)
 function ADBaleCollect.makeContext(vehicle)
     local c = ADBaleLoaderManager.context(vehicle, false)
     if c == nil or not ADBaleLoaderManager.isAttached(c.tool, vehicle) then
         return nil
     end
     local s = ADBaleLoaderManager:get(c.field, c.toolKey)
-    if not ADBaleLoaderManager.isValid(s) then
+    if not ADBaleLoaderManager.isValid(s, c.kind) then
         return nil
     end
     c.settings = s
+    c.wrapped = 0
     c.fieldMarker = vehicle.ad.stateModule:getFirstMarker()
     local f = ADAutonomousManager.nearField(vehicle)
     c.fieldNum = f ~= nil and ADAutonomousManager.fieldNumber(f) or nil
@@ -92,11 +100,18 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 function ADBaleCollect.startCollect(mode, first)
     local vehicle, ctx = mode.vehicle, mode.baleCtx
+    if ctx.kind == "wrapper" then
+        ADBaleCollect.startWrap(mode, first)
+        return
+    end
     local list, onField = ADBaleLoaderManager.findBales(ctx.tool, ctx.fieldNums, ctx.settings.wrap, nil)
     local loaded = ADBaleLoaderManager.loadedCount(ctx.tool)
     local f = tostring(ctx.fieldNum)
     log("%s : champ %s, %d balle(s) à ramasser (%d sur le champ, balles %s), %d sur la remorque", nameOf(vehicle), f, #list, onField,
         tostring(ctx.settings.wrap), loaded)
+    -- (15/11) balles autour pas comptées, et pourquoi
+    local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
+    FarmPilotCall(ADBaleLoaderManager.reportMissed, nameOf(vehicle), ctx.tool, ctx.fieldNums, ctx.settings.wrap, nil, vx, vz)
     if #list == 0 or ADBaleLoaderManager.isFull(ctx.tool) then
         if loaded > 0 then
             ADBaleCollect.goDeposit(mode, #list > 0)
@@ -112,6 +127,93 @@ function ADBaleCollect.startCollect(mode, first)
     mode.baleStage = "collect"
     mode.baleTask = ADBaleCollectTask:new(vehicle, ctx)
     vehicle.ad.taskModule:addTask(mode.baleTask)
+end
+
+-- (15/11) enrubanneuse au champ : balles à enrubanner ; aucune (et pas de balle en cours sur la machine) = suite d'un
+-- champ fini. Sans film, la tâche replie la machine et rend « noFilm » (recharge, voir goRefill)
+function ADBaleCollect.startWrap(mode, first)
+    local vehicle, ctx = mode.vehicle, mode.baleCtx
+    local list, onField = ADBaleLoaderManager.findBales(ctx.tool, ctx.fieldNums, nil, nil)
+    local f = tostring(ctx.fieldNum)
+    local film = ADBaleWrapper.filmAvailable(ctx.tool)
+    log("%s : champ %s, %d balle(s) à enrubanner (%d sur le champ), film : %s", nameOf(vehicle), f, #list, onField, ADBaleWrapper.filmText(ctx.tool))
+    local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
+    FarmPilotCall(ADBaleLoaderManager.reportMissed, nameOf(vehicle), ctx.tool, ctx.fieldNums, nil, nil, vx, vz)
+    if #list == 0 and not ADBaleLoaderManager.isBusy(ctx.tool) then
+        log("%s : champ %s fini, plus de balle à enrubanner (%d enrubannée(s))", nameOf(vehicle), f, ctx.wrapped or 0)
+        message(vehicle, "INFO", "AD_autonomous_wrapNone", f)
+        ADBaleCollect.finishField(mode)
+        return
+    end
+    if first and film then
+        message(vehicle, "INFO", "AD_autonomous_wrapStart", f, #list)
+    end
+    mode.baleStage = "collect"
+    mode.baleTask = ADBaleCollectTask:new(vehicle, ctx)
+    vehicle.ad.taskModule:addTask(mode.baleTask)
+end
+
+-- (15/11) plus de film : route vers la zone de recharge du film, plein aux palettes près du marqueur (même plein que le
+-- semoir : AutonomousMode.startRefill, la tâche de plein sort du champ), puis retour au champ (afterRefill)
+function ADBaleCollect.goRefill(mode)
+    local vehicle, ctx = mode.vehicle, mode.baleCtx
+    local zone = ctx.settings ~= nil and ctx.settings.refill or nil
+    local okP, plan = FarmPilotCall(ADBaleWrapper.refillPlan, ctx)
+    plan = okP and plan or nil
+    if plan == nil or plan.marker == nil or #plan.fillTypes == 0 then
+        log("%s : plus de film et zone de recharge « %s » introuvable (ou film inconnu sur la machine) : arrêt et attente", nameOf(vehicle), tostring(zone))
+        message(vehicle, "ERROR", "AD_autonomous_wrapFilmNoZone", tostring(zone))
+        ADBaleCollect.stopAndWait(mode)
+        return
+    end
+    plan.needsFill = true
+    mode.baleStage = "refill"
+    mode.baleTask = nil
+    log("%s : plus de film (%s) : route vers la zone de recharge « %s » (%s), puis retour au champ %s", nameOf(vehicle), ADBaleWrapper.filmText(ctx.tool),
+        tostring(plan.marker.name), table.concat(plan.settings.fillTypes or {}, "+"), tostring(ctx.fieldNum))
+    mode:startRefill(plan, "back")
+end
+
+-- (hook AutonomousMode:handleRefillStage, fin de l'étape « load ») recharge du film finie : retour au champ, où
+-- l'enrubannage reprend ; true = pris ici (plan d'une enrubanneuse)
+function ADBaleCollect.afterRefill(mode)
+    local plan = mode.refillPlan
+    if plan == nil or plan.kind ~= "wrapper" or mode.baleStage ~= "refill" or mode.baleCtx == nil then
+        return false
+    end
+    mode.refillStage = nil
+    mode.refillPlan = nil
+    mode.refillThen = nil
+    mode.refillTask = nil
+    local vehicle, ctx = mode.vehicle, mode.baleCtx
+    local zone = plan.marker ~= nil and plan.marker.name or plan.refillName
+    if not ADBaleWrapper.filmAvailable(ctx.tool) then
+        log("%s : recharge du film à « %s » finie sans film (%s) : arrêt et attente", nameOf(vehicle), tostring(zone), ADBaleWrapper.filmText(ctx.tool))
+        message(vehicle, "ERROR", "AD_autonomous_wrapFilmFailed", tostring(zone))
+        ADBaleCollect.stopAndWait(mode)
+        return true
+    end
+    log("%s : recharge du film faite à « %s » (%s)", nameOf(vehicle), tostring(zone), ADBaleWrapper.filmText(ctx.tool))
+    ADBaleCollect.backToField(mode, "AD_autonomous_wrapFilmBack")
+    return true
+end
+
+-- (15/11) retour au champ du ramassage (étape « toField », à l'arrivée : startCollect)
+function ADBaleCollect.backToField(mode, msgKey)
+    local vehicle, ctx = mode.vehicle, mode.baleCtx
+    local fieldMarker = ctx.fieldMarker or vehicle.ad.stateModule:getFirstMarker()
+    if fieldMarker == nil then
+        log("%s : pas de point du champ pour le retour : arrêt et attente", nameOf(vehicle))
+        ADBaleCollect.stopAndWait(mode)
+        return
+    end
+    ctx.fieldMarker = fieldMarker
+    mode.baleStage = "toField"
+    mode.driveToDestinationTask = DriveToDestinationTask:new(vehicle, fieldMarker.id)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_back", fieldMarker.name) end -- but affiché dans l'ATH, voir DriveGoal.lua
+    vehicle.ad.taskModule:addTask(mode.driveToDestinationTask)
+    log("%s : retour au champ « %s »", nameOf(vehicle), tostring(fieldMarker.name))
+    message(vehicle, "INFO", msgKey, tostring(fieldMarker.name))
 end
 
 -- back = true : il reste des balles, retour au champ après le dépôt ; msgKey : message à la place de « pleine »
@@ -163,6 +265,9 @@ function ADBaleCollect.onContinue(mode)
     if ctx == nil or ctx.tool == nil then
         return false
     end
+    if ctx.kind == "wrapper" then
+        return ADBaleCollect.onContinueWrap(mode)
+    end
     local loaded = ADBaleLoaderManager.loadedCount(ctx.tool)
     if stage == "toDeposit" or stage == "unload" then
         log("%s : >> : déjà en route vers le dépôt", nameOf(vehicle))
@@ -196,6 +301,47 @@ function ADBaleCollect.onContinue(mode)
     return false
 end
 
+-- (15/11) >> avec l'enrubanneuse : au champ, fin après la balle en cours puis champ laissé ; en route vers le champ :
+-- champ laissé ; pendant la recharge du film : le « Continuer » du plein (AutonomousMode:continue)
+function ADBaleCollect.onContinueWrap(mode)
+    local vehicle, ctx, stage = mode.vehicle, mode.baleCtx, mode.baleStage
+    if stage == "collect" and mode.baleTask ~= nil and mode.baleTask.result == nil then
+        log("%s : >> : enrubannage arrêté après la balle en cours, champ %s laissé", nameOf(vehicle), tostring(ctx.fieldNum))
+        mode.baleTask.depositRequested = true
+        return true
+    end
+    if stage == "toField" then
+        log("%s : >> : champ %s laissé avant d'y enrubanner", nameOf(vehicle), tostring(ctx.fieldNum))
+        vehicle.ad.taskModule:abortCurrentTask()
+        message(vehicle, "INFO", "AD_autonomous_wrapContinue", tostring(ctx.fieldNum))
+        ADBaleCollect.finishField(mode)
+        return true
+    end
+    return false
+end
+
+-- (15/11) fin de la tâche de l'enrubanneuse
+function ADBaleCollect.wrapDone(mode, task)
+    local vehicle, ctx = mode.vehicle, mode.baleCtx
+    local result = task ~= nil and task.result or "?"
+    local f = tostring(ctx.fieldNum)
+    if result == "noFilm" then
+        ADBaleCollect.goRefill(mode)
+    elseif result == "noBales" then
+        log("%s : champ %s fini, plus de balle à enrubanner (%d enrubannée(s))", nameOf(vehicle), f, ctx.wrapped or 0)
+        message(vehicle, "INFO", "AD_autonomous_wrapNone", f)
+        ADBaleCollect.finishField(mode)
+    elseif result == "continue" then
+        message(vehicle, "INFO", "AD_autonomous_wrapContinue", f)
+        ADBaleCollect.finishField(mode)
+    else
+        local key = ({ noWork = "AD_autonomous_wrapNoWork", noWrap = "AD_autonomous_wrapStuck" })[result] or "AD_autonomous_wrapDetached"
+        log("%s : enrubannage arrêté (%s) : arrêt et attente", nameOf(vehicle), tostring(result))
+        message(vehicle, "ERROR", key)
+        ADBaleCollect.stopAndWait(mode)
+    end
+end
+
 -- (hook AutonomousMode:handleFinishedTask) fin d'une étape
 function ADBaleCollect.handleStage(mode)
     local vehicle = mode.vehicle
@@ -209,7 +355,9 @@ function ADBaleCollect.handleStage(mode)
     local stage = mode.baleStage
     local task = mode.baleTask
     mode.baleTask = nil
-    if stage == "collect" then
+    if stage == "collect" and ctx ~= nil and ctx.kind == "wrapper" then
+        ADBaleCollect.wrapDone(mode, task)
+    elseif stage == "collect" then
         local result = task ~= nil and task.result or "?"
         local loaded = ADBaleLoaderManager.loadedCount(ctx.tool)
         if result == "continue" then

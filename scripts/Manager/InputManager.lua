@@ -65,6 +65,7 @@ ADInputManager.actionsToInputs = {
     {"ADPasteSettings", "input_pasteSettings", false, true},
     {"ADCreateFieldPoints", "input_createFieldPoints", false, true},
     {"ADAutonomousCourses", "input_autonomousCourses", false, false},
+    {"ADRestartFromStart", "input_restartFromStart", true, true},
 }
 
 --[[
@@ -287,6 +288,13 @@ function ADInputManager:input_start_stop(vehicle, farmId)
     end
     if vehicle.isServer then
         SpecializationUtil.raiseEvent(vehicle, "onUpdate", 16, false, false, false)
+    end
+end
+
+-- (15/11) clic droit sur Marche/Arrêt : reprendre au début, voir AutonomousResumeButton.lua
+function ADInputManager:input_restartFromStart(vehicle, farmId)
+    if ADResumeButton ~= nil and vehicle ~= nil and vehicle.ad ~= nil then
+        FarmPilotCall(ADResumeButton.restartFromStart, vehicle, farmId)
     end
 end
 

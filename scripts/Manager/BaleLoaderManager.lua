@@ -13,6 +13,15 @@
 --   getBaleTypeByBale), sur le champ de la ligne « Champ » (groupe AutoSwitch compris), libres (pas sur une autre
 --   machine), à notre ferme, et du même produit que celles déjà chargées si la remorque ne mélange pas.
 -- - Le ramassage lui-même : BaleCollectTask.lua ; la suite (dépôt, retour, fin de champ) : AutonomousBales.lua.
+-- - (15/11) Décalage de visée (AIM_ORDER cm, AIM_DEFAULT par défaut) : le tracteur passe d'autant plus loin de la
+--   balle. Visée juste (bras pile sur la balle) : la roue avant du tracteur percutait souvent la balle, qui finissait
+--   de travers à côté de la roue ; 10 cm de plus et la balle est toujours prise. Gardé par champ et par machine
+--   avec les autres réglages (ancienne sauvegarde sans décalage : AIM_DEFAULT).
+-- - (15/11) Enrubanneuse traînée qui prend les balles avec son bras (BaleWrapperManager.lua) : même roue dentée, même
+--   fenêtre, même ramassage, avec un genre de machine (« loader » / « wrapper ») : rowTool, context (kind), grabber,
+--   isBusy, position de travail, balles acceptées (getIsBaleWrappable : jamais une balle déjà enrubannée). Réglages
+--   de l'enrubanneuse : zone de recharge du film (refill, un marqueur) et décalage de visée ; pas de dépôt. Remorque à
+--   balles : rien ne change.
 --
 -- Branché par une ligne dans : AutonomousMode.lua (start : refuseStart), HudButton.lua (hudGear), AutoDrive.lua
 -- (saveToXml). Lu aussi par BaleLoaderSettingsGUI.lua, BaleCollectTask.lua et AutonomousBales.lua.
@@ -24,16 +33,28 @@ ADBaleLoaderManager = {}
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
 ADBaleLoaderManager.FILE_NAME = "FarmPilot_RemorquesBalles.xml"
-ADBaleLoaderManager.settings = {}   -- [nom du champ .. "|" .. clé de la machine] = { field, tool, toolName, wrap, deposit, stamp }
+ADBaleLoaderManager.settings = {}   -- [nom du champ .. "|" .. clé de la machine] = { field, tool, toolName, wrap, deposit, aim, kind, refill, stamp }
 ADBaleLoaderManager.loaded = false
 ADBaleLoaderManager.stamp = 0
 ADBaleLoaderManager.WRAP_ALL = "all"
 ADBaleLoaderManager.WRAP_WRAPPED = "wrapped"
 ADBaleLoaderManager.WRAP_UNWRAPPED = "unwrapped"
 ADBaleLoaderManager.WRAP_ORDER = { "all", "wrapped", "unwrapped" }
+ADBaleLoaderManager.AIM_DEFAULT = 10                           -- cm : décalage de visée par défaut
+ADBaleLoaderManager.AIM_ORDER = { 0, 5, 10, 15, 20, 25, 30 }   -- cm : valeurs proposées dans la fenêtre (roue dentée)
+ADBaleLoaderManager.AIM_MAX = 50                               -- cm au plus (fichier modifié à la main)
 ADBaleLoaderManager.SALE_RADIUS = 60       -- m entre le marqueur et la zone où le point de vente prend les balles
 ADBaleLoaderManager.FIELD_MARGIN = 6       -- m : balle au bord du champ (posée sur la tournière, l'herbe) comptée au champ
 ADBaleLoaderManager.MAX_HEIGHT = 1.6       -- m : centre de la balle plus haut que ça au-dessus du sol = sur une pile ou une remorque
+-- (15/11) balle restée au champ 58 (couchée, penchée, à 8 m du chemin, hors du champ) : la remorque est partie se
+-- garer ; elle doit toutes les enlever. Une balle hors de tout champ à moins de EDGE_SWEEP m d'un champ du groupe
+-- compte aussi (jamais une balle sur un autre champ, entrée du champ hors du contour par exemple) ; une balle penchée
+-- au-dessus d'un creux n'est plus prise pour une balle sur une pile (sol pris au plus haut autour, groundUnder) ; les
+-- balles vues et pas prises sont écrites dans le journal avec la raison.
+ADBaleLoaderManager.EDGE_SWEEP = 10        -- m : balle hors de tout champ à moins de ça du champ = comptée (15 proposé, 10 choisi)
+ADBaleLoaderManager.EDGE_STEP = 2.5        -- m entre deux points regardés vers le champ (8 directions)
+ADBaleLoaderManager.REPORT_RADIUS = 150    -- m autour du tracteur : balles pas prises écrites dans le journal
+ADBaleLoaderManager.REPORT_MAX = 10        -- lignes au plus par compte rendu
 -- produits de balles regardés pour les points de vente quand la remorque est vide
 ADBaleLoaderManager.SALE_FILLTYPES = { "STRAW", "DRYGRASS_WINDROW", "GRASS_WINDROW", "SILAGE", "COTTON" }
 
@@ -62,7 +83,23 @@ function ADBaleLoaderManager.isBaleLoader(tool)
     return tool ~= nil and tool.spec_baleLoader ~= nil and not tool.isDeleted and not tool.isDeleting
 end
 
--- remorque à balles de ce véhicule : la machine elle-même (automotrice), sinon l'outil attelé
+-- (15/11) enrubanneuse qui prend les balles au sol avec son bras (pas une presse-enrubanneuse)
+function ADBaleLoaderManager.isWrapper(tool)
+    return ADBaleWrapper ~= nil and ADBaleWrapper.isWrapper(tool)
+end
+
+-- remorque à balles ou enrubanneuse
+function ADBaleLoaderManager.isBaleTool(tool)
+    return ADBaleLoaderManager.isBaleLoader(tool) or ADBaleLoaderManager.isWrapper(tool)
+end
+
+-- « wrapper » (enrubanneuse) ou « loader » (remorque à balles)
+function ADBaleLoaderManager.kindOf(tool)
+    return ADBaleLoaderManager.isWrapper(tool) and "wrapper" or "loader"
+end
+
+-- remorque à balles de ce véhicule : la machine elle-même (automotrice), sinon l'outil attelé ; (15/11) sinon
+-- l'enrubanneuse attelée
 function ADBaleLoaderManager.attachedLoader(vehicle)
     if vehicle == nil then
         return nil
@@ -76,10 +113,16 @@ function ADBaleLoaderManager.attachedLoader(vehicle)
             return t
         end
     end
+    for _, t in ipairs(okT and tools or {}) do
+        if ADBaleLoaderManager.isWrapper(t) then
+            return t
+        end
+    end
     return nil
 end
 
--- outil de la ligne « Outil » (ou « Outil suivant ») : celui choisi si c'est une remorque à balles, sinon celle attelée
+-- outil de la ligne « Outil » (ou « Outil suivant ») : celui choisi si c'est une remorque à balles (ou une
+-- enrubanneuse, 15/11), sinon celle attelée
 function ADBaleLoaderManager.rowTool(vehicle, isNext)
     local sm = vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule or nil
     if sm == nil then
@@ -88,12 +131,12 @@ function ADBaleLoaderManager.rowTool(vehicle, isNext)
     if isNext and sm.getFpNextTool ~= nil then
         local nextTool = sm:getFpNextTool()
         if nextTool ~= nil then
-            return ADBaleLoaderManager.isBaleLoader(nextTool) and nextTool or nil
+            return ADBaleLoaderManager.isBaleTool(nextTool) and nextTool or nil
         end
     end
     local tool = sm.getFpTool ~= nil and sm:getFpTool() or nil
     if tool ~= nil then
-        return ADBaleLoaderManager.isBaleLoader(tool) and tool or nil
+        return ADBaleLoaderManager.isBaleTool(tool) and tool or nil
     end
     return ADBaleLoaderManager.attachedLoader(vehicle)
 end
@@ -102,7 +145,8 @@ function ADBaleLoaderManager.isAttached(tool, vehicle)
     return tool ~= nil and (tool == vehicle or ADSeederManager.attachedTo(tool, vehicle))
 end
 
--- { tool, toolKey, field (nom du marqueur), marker, vehicle } si la ligne a une remorque à balles et un champ ; sinon nil
+-- { tool, toolKey, field (nom du marqueur), marker, vehicle, kind } si la ligne a une remorque à balles (ou une
+-- enrubanneuse : kind = « wrapper ») et un champ ; sinon nil
 function ADBaleLoaderManager.context(vehicle, isNext)
     if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil then
         return nil
@@ -118,7 +162,8 @@ function ADBaleLoaderManager.context(vehicle, isNext)
     if marker == nil or marker.name == nil then
         return nil
     end
-    return { tool = tool, toolKey = ADSeederManager.toolKey(tool), field = marker.name, marker = marker, vehicle = vehicle }
+    return { tool = tool, toolKey = ADSeederManager.toolKey(tool), field = marker.name, marker = marker, vehicle = vehicle,
+        kind = ADBaleLoaderManager.kindOf(tool) }
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -166,8 +211,12 @@ function ADBaleLoaderManager.isFull(loader)
     return type(free) == "number" and free <= 0.01
 end
 
--- le bras ou le plateau bouge encore (balle en train d'être chargée, plateau qui tourne, pousseur)
+-- le bras ou le plateau bouge encore (balle en train d'être chargée, plateau qui tourne, pousseur) ; (15/11)
+-- enrubanneuse : une balle en cours (prise, enrubannage, pose)
 function ADBaleLoaderManager.isBusy(loader)
+    if ADBaleLoaderManager.isWrapper(loader) then
+        return not ADBaleWrapper.isIdle(loader)
+    end
     local spec = ADBaleLoaderManager.spec(loader)
     if spec == nil then
         return false
@@ -193,13 +242,24 @@ function ADBaleLoaderManager.isUnloading(loader)
     return BaleLoader ~= nil and spec.emptyState ~= nil and spec.emptyState ~= BaleLoader.EMPTY_NONE
 end
 
+-- (15/11) enrubanneuse : repli dans les limites où le bras prend les balles
 function ADBaleLoaderManager.isInWorkPosition(loader)
+    if ADBaleLoaderManager.isWrapper(loader) then
+        return ADBaleWrapper.foldReady(loader)
+    end
     local spec = ADBaleLoaderManager.spec(loader)
     return spec ~= nil and spec.isInWorkPosition == true
 end
 
--- position travail (bras sorti) ou transport : même commande que la touche du jeu
+-- position travail (bras sorti) ou transport : même commande que la touche du jeu ; (15/11) enrubanneuse : dépliée
+-- ou repliée (Foldable du jeu)
 function ADBaleLoaderManager.setWorkPosition(loader, work)
+    if ADBaleLoaderManager.isWrapper(loader) then
+        if work then
+            return ADBaleWrapper.unfold(loader)
+        end
+        return ADBaleWrapper.fold(loader)
+    end
     local spec = ADBaleLoaderManager.spec(loader)
     if spec == nil or BaleLoader == nil or loader.doStateChange == nil then
         return false
@@ -214,8 +274,11 @@ function ADBaleLoaderManager.setWorkPosition(loader, work)
     return ok
 end
 
--- le bras qui attrape les balles : nœud, portée (m)
+-- le bras qui attrape les balles : nœud, portée (m) ; (15/11) enrubanneuse : son bras (nearestDistance)
 function ADBaleLoaderManager.grabber(loader)
+    if ADBaleLoaderManager.isWrapper(loader) then
+        return ADBaleWrapper.grabber(loader)
+    end
     local spec = ADBaleLoaderManager.spec(loader)
     local g = spec ~= nil and spec.baleGrabber or nil
     if g == nil or g.grabNode == nil then
@@ -226,6 +289,9 @@ end
 
 -- « rondes », « carrées » ou les deux (fenêtre des réglages)
 function ADBaleLoaderManager.baleKinds(loader)
+    if ADBaleLoaderManager.isWrapper(loader) then
+        return ADBaleWrapper.baleKinds(loader)
+    end
     local spec = ADBaleLoaderManager.spec(loader)
     local round, square = false, false
     for _, bt in pairs(spec ~= nil and spec.baleTypes or {}) do
@@ -332,8 +398,46 @@ function ADBaleLoaderManager.onField(x, z, nums)
     return at(x + m, z) or at(x - m, z) or at(x, z + m) or at(x, z - m)
 end
 
+-- (15/11) balle hors de tout champ, à moins de EDGE_SWEEP m d'un champ du groupe (8 directions, tous les EDGE_STEP m) ;
+-- résultat gardé par balle tant qu'elle ne bouge pas (la liste est relue toutes les secondes)
+ADBaleLoaderManager.edgeCache = setmetatable({}, { __mode = "k" })
+
+function ADBaleLoaderManager.edgeOfField(x, z, nums, bale)
+    if nums == nil or next(nums) == nil then
+        return false
+    end
+    local c = bale ~= nil and ADBaleLoaderManager.edgeCache[bale] or nil
+    if c ~= nil and c.nums == nums and math.abs(c.x - x) < 0.5 and math.abs(c.z - z) < 0.5 then
+        return c.ok
+    end
+    local ok = false
+    if ADAutonomousManager.fieldAt(x, z) == nil then
+        local d = 0.70710678
+        local dirs = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { d, d }, { d, -d }, { -d, d }, { -d, -d } }
+        local step = ADBaleLoaderManager.EDGE_STEP
+        local r = step
+        while not ok and r <= ADBaleLoaderManager.EDGE_SWEEP + 0.01 do
+            for _, v in ipairs(dirs) do
+                local f = ADAutonomousManager.fieldAt(x + v[1] * r, z + v[2] * r)
+                local n = f ~= nil and ADAutonomousManager.fieldNumber(f) or nil
+                if n ~= nil and nums[tonumber(n) or n] == true then
+                    ok = true
+                    break
+                end
+            end
+            r = r + step
+        end
+    end
+    if bale ~= nil then
+        ADBaleLoaderManager.edgeCache[bale] = { x = x, z = z, nums = nums, ok = ok }
+    end
+    return ok
+end
+
 -- pourquoi la remorque ne prendrait pas cette balle (nil = elle la prend) ; mêmes contrôles que le jeu
 -- (BaleLoader.getBaleInRange), sauf la distance
+-- (15/11) enrubanneuse : getIsBaleWrappable du jeu (« wrapped » : déjà enrubannée, « size », « notSupported »),
+-- puis la ferme ; le réglage wrap ne compte pas (elle ne prend que les balles à enrubanner)
 function ADBaleLoaderManager.rejectReason(loader, bale, wrap)
     if bale == nil or bale.isDeleted or bale.nodeId == nil or (entityExists ~= nil and not entityExists(bale.nodeId)) then
         return "gone"
@@ -343,6 +447,13 @@ function ADBaleLoaderManager.rejectReason(loader, bale, wrap)
     end
     if bale.baleJointIndex ~= nil or bale.mountObject ~= nil or bale.dynamicMountObject ~= nil then
         return "mounted"
+    end
+    if ADBaleLoaderManager.isWrapper(loader) then
+        local why = ADBaleWrapper.rejectReason(loader, bale)
+        if why ~= nil then
+            return why
+        end
+        return ADBaleLoaderManager.farmReject(loader, bale)
     end
     if bale.getBaleSupportsBaleLoader ~= nil and not safe(bale.getBaleSupportsBaleLoader, bale) then
         return "notSupported"
@@ -364,12 +475,9 @@ function ADBaleLoaderManager.rejectReason(loader, bale, wrap)
         end
     end
     -- notre ferme
-    local farmId = loader.getActiveFarm ~= nil and safe(loader.getActiveFarm, loader) or (loader.getOwnerFarmId ~= nil and safe(loader.getOwnerFarmId, loader)) or nil
-    if farmId ~= nil and bale.ownerFarmId ~= nil and bale.ownerFarmId ~= farmId then
-        local ah = g_currentMission ~= nil and g_currentMission.accessHandler or nil
-        if ah == nil or ah.canFarmAccessOtherId == nil or not safe(ah.canFarmAccessOtherId, ah, farmId, bale.ownerFarmId) then
-            return "farm"
-        end
+    local farm = ADBaleLoaderManager.farmReject(loader, bale)
+    if farm ~= nil then
+        return farm
     end
     if wrap == ADBaleLoaderManager.WRAP_WRAPPED and not ADBaleLoaderManager.isWrapped(bale) then
         return "wrap"
@@ -379,14 +487,42 @@ function ADBaleLoaderManager.rejectReason(loader, bale, wrap)
     return nil
 end
 
+-- « farm » si la balle est à une autre ferme (sans accès), sinon nil
+function ADBaleLoaderManager.farmReject(loader, bale)
+    local farmId = loader.getActiveFarm ~= nil and safe(loader.getActiveFarm, loader) or (loader.getOwnerFarmId ~= nil and safe(loader.getOwnerFarmId, loader)) or nil
+    if farmId ~= nil and bale.ownerFarmId ~= nil and bale.ownerFarmId ~= farmId then
+        local ah = g_currentMission ~= nil and g_currentMission.accessHandler or nil
+        if ah == nil or ah.canFarmAccessOtherId == nil or not safe(ah.canFarmAccessOtherId, ah, farmId, bale.ownerFarmId) then
+            return "farm"
+        end
+    end
+    return nil
+end
+
 -- balle posée sur une autre (pile) ou sur une remorque : pas au sol, le bras ne la prend pas
-function ADBaleLoaderManager.isRaised(x, y, z)
+-- (15/11) sol pris au plus haut sous la balle et à RAISED_AROUND m autour : une balle couchée, penchée au-dessus d'un
+-- creux (entrée de champ, fossé) n'est pas « sur une pile » ; une balle sur une pile ou une remorque l'est toujours
+ADBaleLoaderManager.RAISED_AROUND = 1.2
+
+function ADBaleLoaderManager.groundUnder(x, z)
     local terrain = g_currentMission ~= nil and g_currentMission.terrainRootNode or nil
     if terrain == nil or getTerrainHeightAtWorldPos == nil then
-        return false
+        return nil
     end
-    local h = safe(getTerrainHeightAtWorldPos, terrain, x, 0, z)
-    return type(h) == "number" and y - h > ADBaleLoaderManager.MAX_HEIGHT
+    local r = ADBaleLoaderManager.RAISED_AROUND
+    local best = nil
+    for _, p in ipairs({ { 0, 0 }, { r, 0 }, { -r, 0 }, { 0, r }, { 0, -r } }) do
+        local h = safe(getTerrainHeightAtWorldPos, terrain, x + p[1], 0, z + p[2])
+        if type(h) == "number" and (best == nil or h > best) then
+            best = h
+        end
+    end
+    return best
+end
+
+function ADBaleLoaderManager.isRaised(x, y, z)
+    local h = ADBaleLoaderManager.groundUnder(x, z)
+    return h ~= nil and y - h > ADBaleLoaderManager.MAX_HEIGHT
 end
 
 -- balles à ramasser sur le champ : { {bale, x, y, z, round} }, et le nombre de balles vues sur le champ
@@ -396,7 +532,7 @@ function ADBaleLoaderManager.findBales(loader, nums, wrap, skip)
     for _, bale in ipairs(ADBaleLoaderManager.allBales()) do
         if bale.nodeId ~= nil and (entityExists == nil or entityExists(bale.nodeId)) then
             local x, y, z = ADBaleLoaderManager.balePosition(bale)
-            if ADBaleLoaderManager.onField(x, z, nums) and not ADBaleLoaderManager.isRaised(x, y, z) then
+            if (ADBaleLoaderManager.onField(x, z, nums) or ADBaleLoaderManager.edgeOfField(x, z, nums, bale)) and not ADBaleLoaderManager.isRaised(x, y, z) then
                 onFieldCount = onFieldCount + 1
                 if (skip == nil or not skip[bale]) and ADBaleLoaderManager.rejectReason(loader, bale, wrap) == nil then
                     out[#out + 1] = { bale = bale, x = x, y = y, z = z, round = bale.isRoundbale == true }
@@ -405,6 +541,72 @@ function ADBaleLoaderManager.findBales(loader, nums, wrap, skip)
         end
     end
     return out, onFieldCount
+end
+
+-- (15/11) toutes les balles au sol du champ (même règle que findBales, sans rien filtrer de plus que les balles sur
+-- une machine) : obstacles de l'enrubanneuse, qui ne vise pas les balles enrubannées mais doit passer à côté
+function ADBaleLoaderManager.fieldBales(nums)
+    local out = {}
+    for _, bale in ipairs(ADBaleLoaderManager.allBales()) do
+        if bale.nodeId ~= nil and not bale.isDeleted and (entityExists == nil or entityExists(bale.nodeId)) then
+            local mounted = bale.baleJointIndex ~= nil or bale.mountObject ~= nil or bale.dynamicMountObject ~= nil
+                or (bale.getIsMounted ~= nil and safe(bale.getIsMounted, bale) == true)
+            if not mounted then
+                local x, y, z = ADBaleLoaderManager.balePosition(bale)
+                if (ADBaleLoaderManager.onField(x, z, nums) or ADBaleLoaderManager.edgeOfField(x, z, nums, bale)) and not ADBaleLoaderManager.isRaised(x, y, z) then
+                    out[#out + 1] = { bale = bale, x = x, y = y, z = z, round = bale.isRoundbale == true }
+                end
+            end
+        end
+    end
+    return out
+end
+
+-- (15/11) compte rendu : balles à moins de REPORT_RADIUS m de (x, z) que la remorque ne prend pas, et pourquoi
+-- (autre champ, trop loin du champ, sur une pile, refusée par la remorque, laissée après 2 essais) ; enrubanneuse :
+-- les balles déjà enrubannées ne sont pas écrites (c'est normal qu'elle les laisse)
+function ADBaleLoaderManager.reportMissed(who, loader, nums, wrap, skip, x0, z0)
+    local lines = {}
+    local total = 0
+    local wrapper = ADBaleLoaderManager.isWrapper(loader)
+    local machine = wrapper and "l'enrubanneuse" or "la remorque"
+    local other = wrapper and "une autre enrubanneuse" or "une autre remorque"
+    for _, bale in ipairs(ADBaleLoaderManager.allBales()) do
+        if bale.nodeId ~= nil and (entityExists == nil or entityExists(bale.nodeId)) then
+            local x, y, z = ADBaleLoaderManager.balePosition(bale)
+            if MathUtil.vector2Length(x - x0, z - z0) <= ADBaleLoaderManager.REPORT_RADIUS then
+                local why = nil
+                local onIt = ADBaleLoaderManager.onField(x, z, nums) or ADBaleLoaderManager.edgeOfField(x, z, nums, bale)
+                if not onIt then
+                    local f = ADAutonomousManager.fieldAt(x, z)
+                    local n = f ~= nil and ADAutonomousManager.fieldNumber(f) or nil
+                    why = n ~= nil and string.format("sur un autre champ (n° %s)", tostring(n))
+                        or string.format("hors du champ, à plus de %d m", ADBaleLoaderManager.EDGE_SWEEP)
+                elseif ADBaleLoaderManager.isRaised(x, y, z) then
+                    local h = ADBaleLoaderManager.groundUnder(x, z)
+                    why = string.format("surélevée (%.1f m au-dessus du sol : pile ou remorque)", h ~= nil and y - h or -1)
+                elseif skip ~= nil and skip[bale] then
+                    why = "laissée (ratée, ou prise par " .. other .. ")"
+                else
+                    local r = ADBaleLoaderManager.rejectReason(loader, bale, wrap)
+                    if r ~= nil and r ~= "mounted" and not (wrapper and r == "wrapped") then
+                        why = "refusée par " .. machine .. " (" .. tostring(r) .. ")"
+                    end
+                end
+                if why ~= nil then
+                    total = total + 1
+                    if #lines < ADBaleLoaderManager.REPORT_MAX then
+                        lines[#lines + 1] = string.format("(%.0f, %.0f) %s", x, z, why)
+                    end
+                end
+            end
+        end
+    end
+    if total > 0 then
+        ADBaleLoaderManager.log("%s : %d balle(s) à moins de %d m pas prise(s) : %s%s", tostring(who), total, ADBaleLoaderManager.REPORT_RADIUS,
+            table.concat(lines, " ; "), total > #lines and " ; ..." or "")
+    end
+    return total
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -541,23 +743,50 @@ function ADBaleLoaderManager.validWrap(w)
     return ADBaleLoaderManager.WRAP_ALL
 end
 
+-- décalage de visée en cm : AIM_DEFAULT si absent ou illisible, entre 0 et AIM_MAX
+function ADBaleLoaderManager.validAim(v)
+    local n = tonumber(v)
+    if n == nil or n ~= n then
+        return ADBaleLoaderManager.AIM_DEFAULT
+    end
+    return math.max(0, math.min(ADBaleLoaderManager.AIM_MAX, math.floor(n + 0.5)))
+end
+
+-- (15/11) s.kind = « wrapper » (enrubanneuse) : zone de recharge du film (s.refill) et décalage de visée
 function ADBaleLoaderManager:set(field, tool, s)
     self:loadFromXml()
     self.stamp = self.stamp + 1
     local toolKey = ADSeederManager.toolKey(tool)
+    local kind = s.kind or ADBaleLoaderManager.kindOf(tool)
     local entry = {
         field = field, tool = toolKey, toolName = ADAutonomousManager.toolLabel(tool), wrap = ADBaleLoaderManager.validWrap(s.wrap),
-        deposit = s.deposit, stamp = self.stamp
+        deposit = s.deposit, aim = ADBaleLoaderManager.validAim(s.aim), stamp = self.stamp
     }
+    if kind == "wrapper" then
+        entry.kind = "wrapper"
+        entry.refill = s.refill
+        entry.wrap = ADBaleLoaderManager.WRAP_UNWRAPPED
+        entry.deposit = nil
+        self.settings[ADSeederManager.key(field, toolKey)] = entry
+        log("« %s », enrubanneuse %s : zone de recharge du film « %s », décalage de visée %d cm", tostring(field), toolKey, tostring(entry.refill), entry.aim)
+        return entry
+    end
     self.settings[ADSeederManager.key(field, toolKey)] = entry
-    log("« %s », machine %s : balles %s, dépôt « %s »", tostring(field), toolKey, entry.wrap, tostring(entry.deposit))
+    log("« %s », machine %s : balles %s, dépôt « %s », décalage de visée %d cm", tostring(field), toolKey, entry.wrap, tostring(entry.deposit), entry.aim)
     return entry
 end
 
--- ce qui manque : nil si c'est bon, sinon « none » ou « deposit » (zone absente ou effacée)
-function ADBaleLoaderManager.missing(s)
+-- ce qui manque : nil si c'est bon, sinon « none » ou « deposit » (zone absente ou effacée) ; (15/11) enrubanneuse
+-- (kind, sinon celui du réglage) : « refill » (zone de recharge du film absente ou effacée)
+function ADBaleLoaderManager.missing(s, kind)
     if s == nil then
         return "none"
+    end
+    if (kind or s.kind) == "wrapper" then
+        if s.refill == nil or ADGraphManager:getMapMarkerByName(s.refill) == nil then
+            return "refill"
+        end
+        return nil
     end
     if s.deposit == nil or ADGraphManager:getMapMarkerByName(s.deposit) == nil then
         return "deposit"
@@ -565,40 +794,46 @@ function ADBaleLoaderManager.missing(s)
     return nil
 end
 
-function ADBaleLoaderManager.isValid(s)
-    return ADBaleLoaderManager.missing(s) == nil
+function ADBaleLoaderManager.isValid(s, kind)
+    return ADBaleLoaderManager.missing(s, kind) == nil
 end
 
--- roue dentée : « none » (pas de remorque à balles sur la ligne), « ok » (validé), « todo » (à régler)
+-- roue dentée : « none » (pas de remorque à balles sur la ligne), « ok » (validé), « todo » (à régler) ; et le genre
+-- de machine (« loader » / « wrapper »)
 function ADBaleLoaderManager.status(vehicle, isNext)
     local ctx = ADBaleLoaderManager.context(vehicle, isNext)
     if ctx == nil then
         return "none"
     end
-    if ADBaleLoaderManager.isValid(ADBaleLoaderManager:get(ctx.field, ctx.toolKey)) then
-        return "ok"
+    if ADBaleLoaderManager.isValid(ADBaleLoaderManager:get(ctx.field, ctx.toolKey), ctx.kind) then
+        return "ok", ctx.kind
     end
-    return "todo"
+    return "todo", ctx.kind
 end
 
--- (hook HudButton) même roue dentée que le semoir et l'épandeur : eux d'abord, sinon la remorque à balles
+-- (hook HudButton) même roue dentée que le semoir et l'épandeur : eux d'abord, sinon la remorque à balles (ou
+-- l'enrubanneuse, 15/11)
 function ADBaleLoaderManager.hudGear(vehicle, isNext, status, toolTip)
     if status ~= nil and status ~= "none" then
         return status, toolTip
     end
-    local ok, s = FarmPilotCall(ADBaleLoaderManager.status, vehicle, isNext)
+    local ok, s, kind = FarmPilotCall(ADBaleLoaderManager.status, vehicle, isNext)
     s = ok and s or "none"
     if s == "none" then
         return status, toolTip
     end
+    if kind == "wrapper" then
+        return s, isNext and "gui_ad_baleWrapper_tooltipNext" or "gui_ad_baleWrapper_tooltip"
+    end
     return s, isNext and "gui_ad_baleLoader_tooltipNext" or "gui_ad_baleLoader_tooltip"
 end
 
--- { label, field, isNext } si une remorque à balles des lignes Outil / Outil suivant n'est pas réglée pour son champ
+-- { label, field, isNext } si une remorque à balles (ou une enrubanneuse) des lignes Outil / Outil suivant n'est pas
+-- réglée pour son champ
 function ADBaleLoaderManager.startBlock(vehicle)
     for _, isNext in ipairs({ false, true }) do
         local ctx = ADBaleLoaderManager.context(vehicle, isNext)
-        if ctx ~= nil and not ADBaleLoaderManager.isValid(ADBaleLoaderManager:get(ctx.field, ctx.toolKey)) then
+        if ctx ~= nil and not ADBaleLoaderManager.isValid(ADBaleLoaderManager:get(ctx.field, ctx.toolKey), ctx.kind) then
             local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, ctx.tool)
             return { label = okL and label or ADAutonomousManager.toolLabel(ctx.tool), field = ctx.field, isNext = isNext }
         end
@@ -672,10 +907,20 @@ function ADBaleLoaderManager:loadFromXml()
             toolName = getXMLString(xml, key .. "#toolName"),
             wrap = ADBaleLoaderManager.validWrap(getXMLString(xml, key .. "#wrap")),
             deposit = getXMLString(xml, key .. "#deposit"),
+            aim = ADBaleLoaderManager.validAim(getXMLInt(xml, key .. "#aim")),
+            kind = getXMLString(xml, key .. "#kind"),
+            refill = getXMLString(xml, key .. "#refill"),
             stamp = getXMLInt(xml, key .. "#stamp") or 0
         }
         if s.deposit == "" then
             s.deposit = nil
+        end
+        -- (15/11) enrubanneuse : zone de recharge du film ; remorque à balles (ancienne sauvegarde) : pas de genre
+        if s.kind ~= "wrapper" then
+            s.kind = nil
+        end
+        if s.refill == "" then
+            s.refill = nil
         end
         if s.field ~= nil and s.tool ~= nil then
             self.settings[ADSeederManager.key(s.field, s.tool)] = s
@@ -712,6 +957,11 @@ function ADBaleLoaderManager:saveToXml()
         setXMLString(xml, key .. "#toolName", s.toolName or "")
         setXMLString(xml, key .. "#wrap", s.wrap or ADBaleLoaderManager.WRAP_ALL)
         setXMLString(xml, key .. "#deposit", s.deposit or "")
+        setXMLInt(xml, key .. "#aim", ADBaleLoaderManager.validAim(s.aim))
+        if s.kind == "wrapper" then
+            setXMLString(xml, key .. "#kind", s.kind)
+            setXMLString(xml, key .. "#refill", s.refill or "")
+        end
         setXMLInt(xml, key .. "#stamp", s.stamp or 0)
     end
     saveXMLFile(xml)

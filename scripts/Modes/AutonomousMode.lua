@@ -147,6 +147,7 @@ function AutonomousMode:start(user)
     end
     if ADSprayerManager ~= nil and ADSprayerManager.refuseStart(self) then return end -- épandeur / pulvé : réglages à valider (roue dentée), voir SprayerManager.lua
     if ADBaleLoaderManager ~= nil and ADBaleLoaderManager.refuseStart(self) then return end -- remorque à balles : réglages à valider (roue dentée), voir BaleLoaderManager.lua
+    if ADBalerManager ~= nil and ADBalerManager.refuseStart ~= nil and ADBalerManager.refuseStart(self) then return end -- (15/11) presse : zone de recharge de la ficelle / du filet à valider (roue dentée), voir BalerManager.lua
     local frontStop, frontPlan = nil, nil
     if ADFrontFlow ~= nil then frontStop, frontPlan = ADFrontFlow.checkStart(self) if frontStop then return end end -- outil avant à atteler, voir AutonomousFront.lua
     -- (07/11) outil choisi dans le HUD et pas encore attelé : on va l'atteler d'abord
@@ -194,6 +195,8 @@ function AutonomousMode:start(user)
         plan = nil
     end
     plan = plan or (ADSprayerManager ~= nil and ADSprayerManager.preparePlan(self.vehicle, "field") or nil) -- épandeur / pulvé : même plein que le semoir, voir SprayerManager.lua
+    plan = plan or (ADBalerManager ~= nil and ADBalerManager.preparePlan ~= nil and ADBalerManager.preparePlan(self.vehicle, "field") or nil) -- (15/11) presse : ficelle / filet presque vide = recharge à sa zone d'abord, voir BalerManager.lua
+    plan = plan or (ADBaleWrapper ~= nil and ADBaleWrapper.startPlan(self.vehicle) or nil) -- (15/11) enrubanneuse sans film : recharge du film avant le champ, voir BaleWrapperManager.lua
     if plan ~= nil and plan.needsFill and plan.marker ~= nil then
         self:startRefill(plan, "field")
         return
@@ -242,6 +245,16 @@ function AutonomousMode.alreadyInField(vehicle)
     for _, n in ipairs(wanted) do
         if num == n then
             return true
+        end
+        -- (15/11) champs réunis dans AutoSwitch (« Champ 58 » = 58, 11, 14, 15, 57) : un champ du groupe compte aussi
+        -- (partie rechargée pendant le ramassage des balles sur le 57 : il repartait vers le point « Champ 58 »)
+        local okG, g = FarmPilotCall(ADAutonomousManager.groupOf, n)
+        if okG and g ~= nil and g.members ~= nil then
+            for _, m in ipairs(g.members) do
+                if tonumber(m) == num then
+                    return true
+                end
+            end
         end
     end
     return false
@@ -349,6 +362,8 @@ function AutonomousMode:handleFinishedTask()
                 AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_aiNoCp", f)
             end
             ADAutonomousManager.log("%s : %s -> ouvrier du jeu sur le champ %s", tostring(name), tostring(err), f)
+        elseif e ~= nil and ADResumeButton ~= nil and ADResumeButton.continueSafe(vehicle, e, f) then
+            -- (15/11) parcours déjà chargé et commencé : Courseplay repart au dernier point, voir AutonomousResumeButton.lua
         elseif e ~= nil then
             -- le parcours est lancé juste après l'arrêt de FarmPilot (stopAutoDrive)
             vehicle.ad.fpAutonomousCourse = e
@@ -1039,6 +1054,7 @@ function AutonomousMode:handleRefillStage()
     elseif stage == "load" then
         local plan = self.refillPlan
         ADAutonomousManager.log("%s : plein fait (%s)", name, ADSeederManager.fillText(plan.tool, plan.fillTypes))
+        if plan.kind == "wrapper" and self.refillThen == "back" and ADBaleCollect ~= nil and ADBaleCollect.afterRefill(self) then return end -- (15/11) enrubanneuse : film rechargé, retour au champ, voir AutonomousBales.lua
         if self.refillThen == "back" then
             local fieldMarker = vehicle.ad.stateModule:getFirstMarker()
             self.refillStage = "back"
@@ -1121,6 +1137,7 @@ function AutonomousMode.onCpEmpty(vehicle)
     local name = tostring(sm:getName())
     local plan = ADSeederManager.prepare(vehicle)
     plan = plan or (ADSprayerManager ~= nil and ADSprayerManager.preparePlan(vehicle, "back") or nil) -- épandeur / pulvé vide : même plein que le semoir, voir SprayerManager.lua
+    plan = plan or (ADBalerManager ~= nil and ADBalerManager.preparePlan ~= nil and ADBalerManager.preparePlan(vehicle, "back") or nil) -- (15/11) presse sans ficelle / filet : recharge à sa zone, voir BalerManager.lua
     if plan == nil or plan.marker == nil then
         ADAutonomousManager.log("%s : Courseplay arrêté (cuve vide), pas de semoir réglé attelé : arrêt", name)
         return false

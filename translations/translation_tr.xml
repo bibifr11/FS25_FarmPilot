@@ -619,6 +619,20 @@
 		<text name="AD_autonomous_several" text="%s tarlasında %s m boyutunda birden fazla (%s) rota var, Otonom rotalar penceresinden (Ctrl+Alt+Numpad 5) birini seçin, bekleniyor" />
 		<text name="AD_autonomous_noField" text="burada tarla yok, bekleniyor" />
 		<text name="AD_autonomous_noWindrow" text="baler: no Courseplay course of field %s lies on the windrows, waiting" />
+		<text name="gui_ad_baler_title" text="Balya makinesi ayarları" />
+		<text name="gui_ad_baler_head" text="Balya makinesi: %s · Tarla: %s · Makinedeki %s: %s rulo" />
+		<text name="gui_ad_baler_noBaler" text="Bu satırda ip veya file kullanan balya makinesi yok." />
+		<text name="gui_ad_baler_refill" text="Dolum noktası (ip / file)" />
+		<text name="gui_ad_baler_pickRefill" text="İp / file dolum noktasını seçin (Seç veya çift tıkla), Geri dönmek için Geri'yi kullanın." />
+		<text name="gui_ad_baler_needRefill" text="Dolum noktasını seçin." />
+		<text name="gui_ad_baler_twine" text="İp" />
+		<text name="gui_ad_baler_net" text="File" />
+		<text name="gui_ad_baler_twineOrNet" text="İp / file" />
+		<text name="gui_ad_baler_tooltip" text="Balya makinesi ayarları (dolum noktası)" />
+		<text name="gui_ad_baler_tooltipNext" text="Balya makinesi ayarları (sonraki tarla)" />
+		<text name="AD_autonomous_balerTodo" text="« %s » balya makinesinin dolum noktası « %s » için onaylanmalı (turuncu dişli), başlatma reddedildi" />
+		<text name="AD_autonomous_balerFill" text="balya makinesi: ip / file neredeyse bitti, tarladan önce « %s » noktasında dolum" />
+		<text name="AD_autonomous_balerEmpty" text="balya makinesi: ip / file bitti, « %s » noktasında dolum, sonra tarlaya dönüş" />
 		<text name="AD_autonomous_noWidth" text="ekipman genişliği bilinmiyor, bekleniyor" />
 		<text name="AD_autonomous_noTool" text="Otonom mod: takılı çalışma ekipmanı yok" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay bulunamadı: yapayzeka işçisi %s tarlasında başlatıldı" />
@@ -673,9 +687,11 @@
 		<text name="AD_autonomous_headerTimeout" text="the other machine did not come, stopping" />
 		<text name="AD_autonomous_headerNoTrailer" text="no empty header trailer to put the header on" />
 		<text name="AD_task_autonomous_headerPlace" text="Park the trailer near the combine" />
+		<text name="AD_task_autonomous_headerYard" text="Park the trailer off the road" />
 		<text name="AD_task_autonomous_headerTurn" text="U-turn to free the header side" />
 		<text name="AD_autonomous_headerTurn" text="header side blocked, U-turn through the network" />
 		<text name="AD_autonomous_headerMove" text="header side blocked, going to a clear spot farther away" />
+		<text name="AD_autonomous_headerYard" text="nothing clear along the road, parking the trailer off the road" />
 		<text name="AD_autonomous_headerSideBlocked" text="no clear spot found, waiting at the end of the route" />
 		<text name="AD_autonomous_headerNoWay" text="no way through the field to the harvester, trying again" />
 		<text name="AD_task_autonomous_headerBackIn" text="Back the trailer into the field entrance" />
@@ -799,6 +815,7 @@
 		<text name="AD_fpFn_balerSquare" text="Kare Balya Makinesi" />
 		<text name="AD_fpFn_balerRound" text="Yuvarlak Balya Makinesi" />
 		<text name="AD_fpFn_baleLoader" text="Bale loader" />
+		<text name="AD_fpFn_baleWrapper" text="Balya sarma makinesi" />
 		<text name="gui_ad_autonomous_title" text="Otonom Rotalar" />
 		<text name="gui_ad_autonomous_field" text="Tarla %s" />
 		<text name="gui_ad_autonomous_fields" text="Tarlalar %s" />
@@ -880,6 +897,7 @@
 		<text name="gui_ad_baleLoader_wrapAll" text="Tümü" />
 		<text name="gui_ad_baleLoader_wrapWrapped" text="Yalnızca paketlenmiş" />
 		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Yalnızca paketlenmemiş" />
+		<text name="gui_ad_baleLoader_aim" text="Nişan kaydırma" />
 		<text name="gui_ad_baleLoader_deposit" text="Bırakma noktası (satış veya depolama)" />
 		<text name="gui_ad_baleLoader_pickDeposit" text="Bırakma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Üst kısımda: balık kabul eden bir satış noktasının yakınında." />
 		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Bırakma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Balya için satış noktası bulunamadı: işaretçide bırakılacaklar." />
@@ -887,6 +905,15 @@
 		<text name="gui_ad_baleLoader_needDeposit" text="Bırakma noktasını seçin." />
 		<text name="gui_ad_baleLoader_tooltip" text="Balya yükleyici ayarları" />
 		<text name="gui_ad_baleLoader_tooltipNext" text="Balya yükleyici ayarları (sonraki tarla)" />
+		<text name="gui_ad_baleWrapper_title" text="Balya sarma makinesi ayarları" />
+		<text name="gui_ad_baleWrapper_head" text="Sarma makinesi: %s · Tarla: %s · Alınan: %s" />
+		<text name="gui_ad_baleWrapper_refill" text="Streç film doldurma noktası" />
+		<text name="gui_ad_baleWrapper_pickRefill" text="Streç film doldurma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Üst kısımda: bir film kaynağının (palet, mağaza) yakınında." />
+		<text name="gui_ad_baleWrapper_pickRefillAll" text="Streç film doldurma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Hiçbir işaretçinin yakınında film kaynağı bulunamadı: tüm işaretçiler." />
+		<text name="gui_ad_baleWrapper_film" text="film" />
+		<text name="gui_ad_baleWrapper_needRefill" text="Streç film doldurma noktasını seçin." />
+		<text name="gui_ad_baleWrapper_tooltip" text="Balya sarma makinesi ayarları" />
+		<text name="gui_ad_baleWrapper_tooltipNext" text="Balya sarma makinesi ayarları (sonraki tarla)" />
 		<text name="AD_autonomous_baleLoaderTodo" text="'%s' için '%s' ayarlarının doğrulanması gerekiyor (turuncu dişli), başlatma reddedildi" />
 		<text name="AD_autonomous_balesStart" text="%s tarlasının balyaları toplanıyor (toplanacak %d adet)" />
 		<text name="AD_autonomous_balesNone" text="%s tarlasında toplanacak başka balya kalmadı" />
@@ -900,10 +927,26 @@
 		<text name="AD_autonomous_balesUnloadFailed" text="balyalar '%s' konumuna bırakılamadı (günlüğe bakın), bekleniyor" />
 		<text name="AD_autonomous_balesNoWork" text="balya yükleyici kolu dışarı çıkmıyor, bekleniyor" />
 		<text name="AD_autonomous_balesNoLoader" text="balya yükleyici ayrılmış, bekleniyor" />
+		<text name="AD_autonomous_wrapStart" text="%s numaralı tarladaki balyalar sarılıyor (%d sarılacak)" />
+		<text name="AD_autonomous_wrapNone" text="%s numaralı tarlada sarılacak balya kalmadı" />
+		<text name="AD_autonomous_wrapFilmEmpty" text="film bitti: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
+		<text name="AD_autonomous_wrapFilmFill" text="film yok: tarladan önce « %s » konumunda dolduruluyor" />
+		<text name="AD_autonomous_wrapFilmBack" text="film dolduruldu, « %s » tarlasına geri dönülüyor" />
+		<text name="AD_autonomous_wrapFilmNoZone" text="film bitti ve « %s » doldurma noktası bulunamadı (dişli), bekleniyor" />
+		<text name="AD_autonomous_wrapFilmFailed" text="film « %s » konumunda doldurulamadı (günlüğe bakın), bekleniyor" />
+		<text name="AD_autonomous_wrapContinue" text="sarma durduruldu: %s numaralı tarla bırakıldı, işe devam ediliyor" />
+		<text name="AD_autonomous_wrapNoWork" text="balya sarma makinesi çalışma konumuna geçmiyor, bekleniyor" />
+		<text name="AD_autonomous_wrapStuck" text="balya sarma makinesi balyasını bitirmedi (günlüğe bakın), bekleniyor" />
+		<text name="AD_autonomous_wrapDetached" text="balya sarma makinesi ayrılmış, bekleniyor" />
 		<text name="AD_task_autonomous_bales" text="Balyalar toplanıyor" />
+		<text name="AD_task_autonomous_wrap" text="Balyalar sarılıyor" />
+		<text name="AD_task_fpMotorStart" text="Çalıştırılıyor" />
 		<text name="AD_task_autonomous_baleUnload" text="Balyalar boşaltılıyor." />
 		<text name="AD_autonomous_sprayerOtherProduct" text="tankta hâlâ %s (%.0f L) var ve seçilen ürün %s: tankı boşaltın, başlatma reddedildi" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay son ara noktada yeniden başlatılamadı, bekleniyor" />
+		<text name="AD_autonomous_cpContinue" text="&quot;%s&quot; Courseplay rotası %s tarlasında kaldığı yerden sürdürüldü" />
+		<text name="input_ADRestartFromStart" text="FP - Baştan başlat" />
+		<text name="hud_fpEnDisable" text="FP - Etkinleştir/Devre Dışı Bırak: kaldığı yerden devam eder - Sağ tık: baştan başlat" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
 		<text name="fp_reminder_title" text="Editor reminder" />

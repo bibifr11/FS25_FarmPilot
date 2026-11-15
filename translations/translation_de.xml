@@ -614,6 +614,20 @@
 		<text name="AD_autonomous_several" text="%s Kurse mit %s m auf Feld %s, bitte im Fenster Autonome Kurse wählen (Strg+Alt+Num 5), wartet" />
 		<text name="AD_autonomous_noField" text="hier ist kein Feld, wartet" />
 		<text name="AD_autonomous_noWindrow" text="Ballenpresse: kein Courseplay-Kurs auf Feld %s liegt auf den Schwaden, wartet" />
+		<text name="gui_ad_baler_title" text="Ballenpressen-Einstellungen" />
+		<text name="gui_ad_baler_head" text="Presse: %s · Feld: %s · %s auf der Presse: %s Rollen" />
+		<text name="gui_ad_baler_noBaler" text="Keine Ballenpresse mit Garn oder Netz in dieser Zeile." />
+		<text name="gui_ad_baler_refill" text="Nachfüllpunkt (Garn / Netz)" />
+		<text name="gui_ad_baler_pickRefill" text="Nachfüllpunkt für Garn / Netz wählen (Wählen oder Doppelklick), Zurück zum Zurückkehren." />
+		<text name="gui_ad_baler_needRefill" text="Nachfüllpunkt wählen." />
+		<text name="gui_ad_baler_twine" text="Garn" />
+		<text name="gui_ad_baler_net" text="Netz" />
+		<text name="gui_ad_baler_twineOrNet" text="Garn / Netz" />
+		<text name="gui_ad_baler_tooltip" text="Ballenpressen-Einstellungen (Nachfüllpunkt)" />
+		<text name="gui_ad_baler_tooltipNext" text="Ballenpressen-Einstellungen (nächstes Feld)" />
+		<text name="AD_autonomous_balerTodo" text="Nachfüllpunkt der Presse « %s » für « %s » bestätigen (oranges Zahnrad), Start verweigert" />
+		<text name="AD_autonomous_balerFill" text="Presse: Garn / Netz fast leer, Nachfüllen bei « %s » vor dem Feld" />
+		<text name="AD_autonomous_balerEmpty" text="Presse: kein Garn / Netz mehr, Nachfüllen bei « %s », dann zurück zum Feld" />
 		<text name="AD_autonomous_noWidth" text="Arbeitsbreite unbekannt, wartet" />
 		<text name="AD_autonomous_noTool" text="Autonom-Modus: kein Arbeitsgerät angehängt" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay nicht gefunden: Helfer des Spiels auf Feld %s gestartet" />
@@ -668,9 +682,11 @@
 		<text name="AD_autonomous_headerTimeout" text="die andere Maschine ist nicht gekommen, Stopp" />
 		<text name="AD_autonomous_headerNoTrailer" text="kein leerer Schneidwerkswagen zum Ablegen" />
 		<text name="AD_task_autonomous_headerPlace" text="Wagen beim Mähdrescher abstellen" />
+		<text name="AD_task_autonomous_headerYard" text="Wagen neben dem Weg abstellen" />
 		<text name="AD_task_autonomous_headerTurn" text="Wenden, damit die Schneidwerkseite frei ist" />
 		<text name="AD_autonomous_headerTurn" text="Schneidwerkseite blockiert, Wenden über das Netz" />
 		<text name="AD_autonomous_headerMove" text="Schneidwerkseite blockiert, fährt zu einer freien Stelle weiter weg" />
+		<text name="AD_autonomous_headerYard" text="entlang des Weges nichts frei, stellt den Wagen neben dem Weg ab" />
 		<text name="AD_autonomous_headerSideBlocked" text="keine freie Stelle gefunden, Warten am Ende der Route" />
 		<text name="AD_autonomous_headerNoWay" text="kein Weg im Feld bis zum Mähdrescher, neuer Versuch" />
 		<text name="AD_task_autonomous_headerBackIn" text="Anhänger rückwärts in die Feldeinfahrt stellen" />
@@ -804,6 +820,7 @@
 		<text name="AD_fpFn_balerSquare" text="Quaderballenpresse" />
 		<text name="AD_fpFn_balerRound" text="Rundballenpresse" />
 		<text name="AD_fpFn_baleLoader" text="Ballensammelwagen" />
+		<text name="AD_fpFn_baleWrapper" text="Ballenwickler" />
 		<text name="gui_ad_autonomous_title" text="Autonome Kurse" />
 		<text name="gui_ad_autonomous_field" text="Feld %s" />
 		<text name="gui_ad_autonomous_fields" text="Felder %s" />
@@ -885,6 +902,7 @@
 		<text name="gui_ad_baleLoader_wrapAll" text="Alle" />
 		<text name="gui_ad_baleLoader_wrapWrapped" text="Nur gewickelte" />
 		<text name="gui_ad_baleLoader_wrapUnwrapped" text="Nur ungewickelte" />
+		<text name="gui_ad_baleLoader_aim" text="Zielversatz" />
 		<text name="gui_ad_baleLoader_deposit" text="Abladestelle (Verkauf oder Lager)" />
 		<text name="gui_ad_baleLoader_pickDeposit" text="Abladestelle wählen (Wählen oder Doppelklick), Zurück zum Verlassen. Oben: in der Nähe einer Verkaufsstelle, die Ballen annimmt." />
 		<text name="gui_ad_baleLoader_pickDepositNoSale" text="Abladestelle wählen (Wählen oder Doppelklick), Zurück zum Verlassen. Keine Verkaufsstelle für Ballen gefunden: sie werden am Marker abgelegt." />
@@ -892,6 +910,15 @@
 		<text name="gui_ad_baleLoader_needDeposit" text="Abladestelle wählen." />
 		<text name="gui_ad_baleLoader_tooltip" text="Ballensammelwagen-Einstellungen" />
 		<text name="gui_ad_baleLoader_tooltipNext" text="Ballensammelwagen-Einstellungen (nächstes Feld)" />
+		<text name="gui_ad_baleWrapper_title" text="Ballenwickler-Einstellungen" />
+		<text name="gui_ad_baleWrapper_head" text="Wickler: %s · Feld: %s · Nimmt %s" />
+		<text name="gui_ad_baleWrapper_refill" text="Nachfüllpunkt für Folie" />
+		<text name="gui_ad_baleWrapper_pickRefill" text="Nachfüllpunkt für Folie wählen (Wählen oder Doppelklick), Zurück zum Verlassen. Oben: in der Nähe einer Folienquelle (Paletten, Laden)." />
+		<text name="gui_ad_baleWrapper_pickRefillAll" text="Nachfüllpunkt für Folie wählen (Wählen oder Doppelklick), Zurück zum Verlassen. Keine Folienquelle in der Nähe eines Markers gefunden: alle Marker." />
+		<text name="gui_ad_baleWrapper_film" text="Folie" />
+		<text name="gui_ad_baleWrapper_needRefill" text="Nachfüllpunkt für Folie wählen." />
+		<text name="gui_ad_baleWrapper_tooltip" text="Ballenwickler-Einstellungen" />
+		<text name="gui_ad_baleWrapper_tooltipNext" text="Ballenwickler-Einstellungen (nächstes Feld)" />
 		<text name="AD_autonomous_baleLoaderTodo" text="Einstellungen von « %s » für « %s » bestätigen (oranges Zahnrad), Start verweigert" />
 		<text name="AD_autonomous_balesStart" text="Ballen von Feld %s werden gesammelt (%d zu sammeln)" />
 		<text name="AD_autonomous_balesNone" text="keine Ballen mehr auf Feld %s" />
@@ -905,10 +932,26 @@
 		<text name="AD_autonomous_balesUnloadFailed" text="Ballen bei « %s » nicht abgeladen (siehe Log), wartet" />
 		<text name="AD_autonomous_balesNoWork" text="der Greifarm des Ballensammelwagens fährt nicht aus, wartet" />
 		<text name="AD_autonomous_balesNoLoader" text="Ballensammelwagen abgekoppelt, wartet" />
+		<text name="AD_autonomous_wrapStart" text="Wickeln der Ballen auf Feld %s (%d zu wickeln)" />
+		<text name="AD_autonomous_wrapNone" text="keine Ballen mehr zu wickeln auf Feld %s" />
+		<text name="AD_autonomous_wrapFilmEmpty" text="Folie leer: nachfüllen bei « %s », dann zurück zum Feld" />
+		<text name="AD_autonomous_wrapFilmFill" text="keine Folie: nachfüllen bei « %s » vor dem Feld" />
+		<text name="AD_autonomous_wrapFilmBack" text="Folie nachgefüllt, zurück zum Feld « %s »" />
+		<text name="AD_autonomous_wrapFilmNoZone" text="Folie leer und Nachfüllpunkt « %s » nicht gefunden (Zahnrad), wartet" />
+		<text name="AD_autonomous_wrapFilmFailed" text="Folie bei « %s » nicht nachgefüllt (siehe Log), wartet" />
+		<text name="AD_autonomous_wrapContinue" text="Wickeln beendet: Feld %s verlassen, die Arbeit geht weiter" />
+		<text name="AD_autonomous_wrapNoWork" text="der Ballenwickler geht nicht in Arbeitsstellung, wartet" />
+		<text name="AD_autonomous_wrapStuck" text="der Ballenwickler hat seinen Ballen nicht fertig gewickelt (siehe Log), wartet" />
+		<text name="AD_autonomous_wrapDetached" text="Ballenwickler abgekoppelt, wartet" />
 		<text name="AD_task_autonomous_bales" text="Sammelt Ballen" />
+		<text name="AD_task_autonomous_wrap" text="Wickelt Ballen" />
+		<text name="AD_task_fpMotorStart" text="Startet" />
 		<text name="AD_task_autonomous_baleUnload" text="Lädt Ballen ab" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="der Tank enthält noch %s (%.0f L) und das gewählte Produkt ist %s: Tank leeren, Start verweigert" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay konnte nicht am letzten Wegpunkt neu starten, wartet" />
+		<text name="AD_autonomous_cpContinue" text="Courseplay-Kurs „%s“ auf Feld %s dort fortgesetzt, wo er angehalten hat" />
+		<text name="input_ADRestartFromStart" text="FP - Von vorne beginnen" />
+		<text name="hud_fpEnDisable" text="FP - Ein/Ausschalten: macht dort weiter, wo es aufgehört hat - Rechtsklick: von vorne beginnen" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
 		<text name="fp_reminder_title" text="Editor-Erinnerung" />

@@ -27,7 +27,8 @@
 ADAutonomousManager.WORK_SPECS = {
     "spec_plow", "spec_plowPacker", "spec_cultivator", "spec_roller", "spec_weeder", "spec_mulcher", "spec_stonePicker", "spec_ridgeFormer",
     "spec_sowingMachine", "spec_treePlanter", "spec_sprayer", "spec_mower", "spec_tedder", "spec_windrower", "spec_baler",
-    "spec_baleLoader" -- remorque à balles (09/11), voir BaleLoaderManager.lua
+    "spec_baleLoader", -- remorque à balles (09/11), voir BaleLoaderManager.lua
+    "spec_baleWrapper" -- enrubanneuse (15/11), voir BaleWrapperManager.lua
 }
 
 -- (07/11) la fonction de l'outil à la place de son nom, plus courte :
@@ -39,10 +40,10 @@ ADAutonomousManager.FUNCTION_BY_CATEGORY = {
     STONEPICKERS = "stonePicker", SEEDERS = "seeder", PLANTERS = "planter", FERTILIZERSPREADERS = "fertilizerSpreader",
     SPRAYERS = "sprayer", SLURRYTANKS = "slurryTank", MANURESPREADERS = "manureSpreader", MOWERS = "mower",
     TEDDERS = "tedder", WINDROWERS = "windrower", BALERS = "baler", BALERSSQUARE = "balerSquare", BALERSROUND = "balerRound",
-    BALELOADERS = "baleLoader"
+    BALELOADERS = "baleLoader", BALEWRAPPERS = "baleWrapper"
 }
 ADAutonomousManager.FUNCTION_BY_SPEC = {
-    { "spec_sowingMachine", "seeder" }, { "spec_baler", "baler" }, { "spec_sprayer", "sprayer" }, { "spec_mower", "mower" },
+    { "spec_sowingMachine", "seeder" }, { "spec_baler", "baler" }, { "spec_baleWrapper", "baleWrapper" }, { "spec_sprayer", "sprayer" }, { "spec_mower", "mower" },
     { "spec_tedder", "tedder" }, { "spec_windrower", "windrower" }, { "spec_plow", "plow" }, { "spec_plowPacker", "roller" },
     { "spec_cultivator", "cultivator" }, { "spec_roller", "roller" }, { "spec_weeder", "weeder" }, { "spec_mulcher", "mulcher" },
     { "spec_stonePicker", "stonePicker" }, { "spec_baleLoader", "baleLoader" }
@@ -123,13 +124,26 @@ local function collectImplements(object, out, depth)
     end
 end
 
+-- (15/11) outil de travail par sa spécialisation ; enrubanneuse seulement avec un bras qui prend les balles au sol
+-- (BaleWrapperManager.lua) : presse-enrubanneuse (spec_baler) et enrubanneuse sans bras inchangées
+local function hasWorkSpec(o, name)
+    local spec = o[name]
+    if spec == nil then
+        return false
+    end
+    if name == "spec_baleWrapper" then
+        return type(spec) == "table" and spec.baleGrabber ~= nil and spec.baleGrabber.grabNode ~= nil
+    end
+    return true
+end
+
 -- true, ou false si aucun outil de travail n'est attelé
 function ADAutonomousManager.hasWorkTool(vehicle)
     local objects = {vehicle}
     collectImplements(vehicle, objects, 0)
     for _, o in ipairs(objects) do
         for _, name in ipairs(ADAutonomousManager.WORK_SPECS) do
-            if o[name] ~= nil then
+            if hasWorkSpec(o, name) then
                 return true
             end
         end
@@ -145,7 +159,7 @@ function ADAutonomousManager.workTools(vehicle)
     local front = ADAutonomousManager.frontSet ~= nil and ADAutonomousManager.frontSet(vehicle) or {}
     for _, o in ipairs(list) do
         for _, name in ipairs(ADAutonomousManager.WORK_SPECS) do
-            if o[name] ~= nil and not front[o] then
+            if hasWorkSpec(o, name) and not front[o] then
                 tools[#tools + 1] = o
                 break
             end
@@ -159,7 +173,7 @@ function ADAutonomousManager.isWorkObject(o)
         return false
     end
     for _, name in ipairs(ADAutonomousManager.WORK_SPECS) do
-        if o[name] ~= nil then
+        if hasWorkSpec(o, name) then
             return true
         end
     end

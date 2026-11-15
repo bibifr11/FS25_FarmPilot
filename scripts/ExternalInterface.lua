@@ -1099,7 +1099,11 @@ function AutoDrive:onAIJobFinished()
             local why = self.ad.fpAIJobStopText
             self.ad.fpAIJobStopText = nil
             ADAutonomousManager.log("%s : ouvrier du jeu arrêté avant la fin du champ, reste sur place (pas de parking)", tostring(self.ad.stateModule ~= nil and self.ad.stateModule:getName() or "?"))
-            AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_aiStopped", tostring(why or "?"))
+            local byButton = self.ad.fpButtonStop ~= nil and (g_time or 0) - self.ad.fpButtonStop < 5000 -- (15/11) arrêté au bouton Marche/Arrêt : pas de message d'erreur
+            self.ad.fpButtonStop = nil
+            if not byButton then
+                AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_aiStopped", tostring(why or "?"))
+            end
             return
         end
         if finishedOk and self.isServer then

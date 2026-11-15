@@ -154,6 +154,7 @@ source(Utils.getFilename("scripts/Utils/PathFinderUtils.lua", g_currentModDirect
 source(Utils.getFilename("scripts/Utils/Dubins.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/AutoDriveUtilFuncs.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/AutoDriveFoldGuard.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Utils/MotorStartWait.lua", g_currentModDirectory)) -- lancé moteur éteint : 5 s pour démarrer, « Démarre (5 s) » dans la fenêtre
 source(Utils.getFilename("scripts/Utils/AutoDriveFoldGround.lua", g_currentModDirectory)) -- repli : points collés au sol (rampe) recalés même quand personne n'est près
 source(Utils.getFilename("scripts/Utils/SortedQueue.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Utils/DevFuncs.lua", g_currentModDirectory))
@@ -167,9 +168,12 @@ source(Utils.getFilename("scripts/Manager/MessagesManager.lua", g_currentModDire
 source(Utils.getFilename("scripts/Manager/GraphManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/GraphManagerStart.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/DirtRoadManager.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/DirtRoadAccessZone.lua", g_currentModDirectory)) -- tertiaire près de la destination, raccourci une fois par passage, voir DirtRoadAccessZone.lua
 source(Utils.getFilename("scripts/Manager/AccessRoadManager.lua", g_currentModDirectory)) -- 4e type « route d'accès », voir AccessRoadManager.lua
 source(Utils.getFilename("scripts/Manager/AccessRoadStart.lua", g_currentModDirectory)) -- pas de départ sur une route d'accès, voir AccessRoadStart.lua
 source(Utils.getFilename("scripts/Manager/RoadSpeedManager.lua", g_currentModDirectory)) -- vitesse par type de route (calcul et conduite), voir RoadSpeedManager.lua
+source(Utils.getFilename("scripts/Manager/GateRegistry.lua", g_currentModDirectory)) -- portails et portes animés de la carte, voir GateRegistry.lua
+source(Utils.getFilename("scripts/Manager/GateManager.lua", g_currentModDirectory)) -- portail fermé sur la route : ouvert puis refermé, voir GateManager.lua
 source(Utils.getFilename("scripts/Manager/RoadTypesVehicles.lua", g_currentModDirectory)) -- routes secondaires / tertiaires par type de véhicule, voir RoadTypesVehicles.lua
 source(Utils.getFilename("scripts/Manager/TriggerManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/HarvestManager.lua", g_currentModDirectory))
@@ -337,6 +341,7 @@ source(Utils.getFilename("scripts/Manager/AutonomousManagerCourses.lua", g_curre
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/BalerManager.lua", g_currentModDirectory)) -- presse : parcours qui tombe sur les andains
 source(Utils.getFilename("scripts/Modes/AutonomousRefill.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/AutonomousBalerRefill.lua", g_currentModDirectory)) -- (15/11) presse : recharge de la ficelle / du filet par le plein du semoir
 source(Utils.getFilename("scripts/Manager/SprayerManager.lua", g_currentModDirectory)) -- épandeurs et pulvés en Autonome, voir SprayerManager.lua
 source(Utils.getFilename("scripts/Modes/AutonomousHeader.lua", g_currentModDirectory)) -- mode Autonome : moissonneuse équipée seule (remorque porte-barre)
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderMount.lua", g_currentModDirectory)) -- place de la barre de coupe sur sa remorque porte-barre
@@ -351,6 +356,8 @@ source(Utils.getFilename("scripts/Modes/AutonomousHeaderChoice.lua", g_currentMo
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderGround.lua", g_currentModDirectory)) -- barre sans remorque (coupe à maïs) : posée par la moissonneuse
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderEntry.lua", g_currentModDirectory)) -- barre prise : entrée directe dans le champ, jamais de route trop étroite pour la barre
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderRoadBack.lua", g_currentModDirectory)) -- remorque porte-barre reculée tout droit jusqu'à la route, barre prise au croisement
+source(Utils.getFilename("scripts/Modes/AutonomousHeaderYard.lua", g_currentModDirectory)) -- remorque porte-barre posée hors de la route près du bout quand rien ne va le long de la route
+source(Utils.getFilename("scripts/Modes/AutonomousHeaderReturn.lua", g_currentModDirectory)) -- fin de champ : moissonneuse et remorque porte-barre gardent leur écart sur la route du retour
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderGate.lua", g_currentModDirectory)) -- la moissonneuse attend en face de l'entrée du champ, la barre est arrêtée devant elle
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderHookup.lua", g_currentModDirectory)) -- gestes du chauffeur : brancher la barre, la verrouiller sur sa remorque
 source(Utils.getFilename("scripts/Modes/AutonomousHarvesterUnloaders.lua", g_currentModDirectory)) -- bennes qui suivent le champ de la moissonneuse
@@ -359,6 +366,7 @@ source(Utils.getFilename("scripts/Modes/SprayerRestReturn.lua", g_currentModDire
 source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory)) -- épandeurs : vider le reste (fin de champ, bouton parking)
 source(Utils.getFilename("scripts/Manager/RefillSources.lua", g_currentModDirectory)) -- zones de plein filtrées selon le produit
 source(Utils.getFilename("scripts/Manager/BaleLoaderManager.lua", g_currentModDirectory)) -- remorque à balles en Autonome : réglages, balles du champ
+source(Utils.getFilename("scripts/Manager/BaleWrapperManager.lua", g_currentModDirectory)) -- enrubanneuse en Autonome : bras, film, recharge du film
 source(Utils.getFilename("scripts/Modes/AutonomousBales.lua", g_currentModDirectory)) -- remorque à balles : dépôt, retour, fin de champ
 source(Utils.getFilename("scripts/Modes/AutonomousFuel.lua", g_currentModDirectory)) -- plein de carburant : Courseplay à sec, avant le champ suivant
 source(Utils.getFilename("scripts/Modes/TrailerHitch.lua", g_currentModDirectory)) -- modes avec benne : remorque à atteler, reposée à sa place
@@ -384,6 +392,7 @@ source(Utils.getFilename("scripts/Gui/AutonomousCoursesGUI.lua", g_currentModDir
 source(Utils.getFilename("scripts/Gui/SeederSettingsGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SprayerSettingsGUI.lua", g_currentModDirectory)) -- fenêtre de l'épandeur, voir SprayerSettingsGUI.lua
 source(Utils.getFilename("scripts/Gui/BaleLoaderSettingsGUI.lua", g_currentModDirectory)) -- fenêtre de la remorque à balles, voir BaleLoaderSettingsGUI.lua
+source(Utils.getFilename("scripts/Gui/BalerSettingsGUI.lua", g_currentModDirectory)) -- (15/11) fenêtre de la presse, voir BalerSettingsGUI.lua
 source(Utils.getFilename("scripts/Gui/TrailerSwapGUI.lua", g_currentModDirectory)) -- fenêtre « Échange de bennes », voir TrailerSwapGUI.lua
 source(Utils.getFilename("scripts/Gui/HeaderTractorGUI.lua", g_currentModDirectory)) -- fenêtre « Transport de la barre », voir HeaderTractorGUI.lua
 
@@ -397,6 +406,9 @@ source(Utils.getFilename("scripts/Manager/GraphManagerGrid.lua", g_currentModDir
 source(Utils.getFilename("scripts/Utils/FarmPilotPerf.lua", g_currentModDirectory)) -- commande console fpPerf : temps pris par FarmPilot dans log.txt
 source(Utils.getFilename("scripts/Modes/AutonomousResumeReturn.lua", g_currentModDirectory)) -- mode Autonome : le retour au garage reprend après le chargement de la partie et après la relance d'AutoDrive
 source(Utils.getFilename("scripts/Modes/AutonomousResumeStage.lua", g_currentModDirectory)) -- mode Autonome : au chargement de la partie, chaque véhicule reprend exactement son étape (balles, plein, reste, changement d'outil)
+source(Utils.getFilename("scripts/Modes/AutonomousResumeHeader.lua", g_currentModDirectory)) -- mode Autonome : au chargement de la partie, la moissonneuse équipée seule, le tracteur de sa remorque porte-barre et les bennes de moissonneuse reprennent exactement leur étape
+source(Utils.getFilename("scripts/Modes/CombineUnloaderJobDoneGuard.lua", g_currentModDirectory)) -- benne en fin de chantier : la fin de chantier n'est plus oubliée en route (vider puis parking, jamais d'attente d'appel)
+source(Utils.getFilename("scripts/Modes/AutonomousResumeButton.lua", g_currentModDirectory)) -- bouton Marche/Arrêt : le départ suivant reprend là où c'était ; clic droit : reprendre au début
 source(Utils.getFilename("scripts/Gui/DebugSettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/Settings.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/RoadTypesGUI.lua", g_currentModDirectory)) -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua

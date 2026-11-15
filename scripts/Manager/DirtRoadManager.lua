@@ -279,6 +279,8 @@ function ADDirtRoads.accessPoints(startID, targetID)
         local from = access[targetID] and target or nil
         for _, n in pairs(target.out or {}) do push(n, from) end
         for _, n in pairs(target.incoming or {}) do push(n, from) end
+        -- (15/11) tertiaire à moins de 50 m de la destination : accès aussi (DirtRoadAccessZone.lua)
+        if ADDirtRoads.nearTargetSeeds ~= nil then for _, n in ipairs(ADDirtRoads.nearTargetSeeds(targetID)) do push(n, nil) end end
     end
     local i = 1
     while queue[i] ~= nil do
@@ -286,6 +288,7 @@ function ADDirtRoads.accessPoints(startID, targetID)
         i = i + 1
         for _, n in pairs(p.out or {}) do push(n, p) end
         for _, n in pairs(p.incoming or {}) do push(n, p) end
+        if ADDirtRoads.spreadGap ~= nil then ADDirtRoads.spreadGap(p, network, push) end -- (15/11) tertiaire coupée par un embranchement (DirtRoadAccessZone.lua)
     end
     return access
 end
@@ -304,6 +307,7 @@ function ADDirtRoads.wrapDriveTime(baseFunc, vehicle, startID, targetID)
         local cost
         if isDirt(a) or isDirt(b) then
             local through = (isDirt(a) and not access[a.id]) or (isDirt(b) and not access[b.id])
+            if ADDirtRoads.throughEntry ~= nil then through = ADDirtRoads.throughEntry(a, b, access) end -- (15/11) une fois par passage (DirtRoadAccessZone.lua)
             local time = ADRoadSpeeds ~= nil and baseFunc(a, b, c) or ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) -- (15/11) vitesse réelle de la tertiaire (RoadSpeedManager.lua)
             cost = time * factor + (through and accessWeight or 0)
         else

@@ -602,6 +602,7 @@ function AutoDrive:saveSavegame()
 		ADSeederManager:saveToXml()
 		if ADSprayerManager ~= nil then ADSprayerManager:saveToXml() end -- réglages des épandeurs, voir SprayerManager.lua
 		if ADBaleLoaderManager ~= nil then ADBaleLoaderManager:saveToXml() end -- réglages des remorques à balles, voir BaleLoaderManager.lua
+		if ADBalerManager ~= nil and ADBalerManager.saveToXml ~= nil then ADBalerManager:saveToXml() end -- (15/11) réglages des presses (zone de recharge), voir BalerManager.lua
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil end")
 	end
 	--    Logging.info("[AD] AutoDrive:saveSavegame end")
@@ -747,6 +748,11 @@ function AutoDrive:update(dt)
 		if AutoDrive.devAutoDriveInit ~= nil then
 			AutoDrive.devAutoDriveInit()
 		end
+	end
+
+	-- portails ouverts / refermés par FarmPilot (GateManager.lua)
+	if ADGates ~= nil and ADGates.update ~= nil then
+		FarmPilotCall(ADGates.update, dt)
 	end
 
 	if AutoDrive.hideMouseCursorOnNextTick == true and not g_inGameMenu.isOpen then

@@ -158,6 +158,14 @@ function ADGraphManager:getPathTo(vehicle, waypointId, startPoint)
             how = "point rejoint par la courbe"
         end
     end
+    -- FarmPilot (15/11) : la route repart du point d'arrivée de la route précédente (points derrière ou sous le véhicule sautés), voir GraphManagerStart.lua
+    local arrivedWp = nil
+    if closestWaypoint == nil and ADGraphManager.pathFromArrival ~= nil then
+        local ok, awp, aid, ahow = FarmPilotCall(ADGraphManager.pathFromArrival, self, vehicle, waypointId, x, z)
+        if ok and awp ~= nil then
+            arrivedWp, closestWaypoint, how = awp, aid, ahow
+        end
+    end
     if closestWaypoint == nil and startPoint ~= nil and startPoint.id ~= nil then
         -- consider id to avoid using Pathfinder wayPoints
         local distanceToStartPoint = MathUtil.vector2Length(x - startPoint.x, z - startPoint.z)
@@ -170,11 +178,13 @@ function ADGraphManager:getPathTo(vehicle, waypointId, startPoint)
         how = "devant le véhicule"
     end
     -- FarmPilot (15/11) : jamais de départ sur une route d'accès, sauf aucun autre point à 20 m du véhicule, voir AccessRoadStart.lua
-    if closestWaypoint ~= nil and ADAccessRoads ~= nil and ADAccessRoads.fixStart ~= nil then
+    if closestWaypoint ~= nil and arrivedWp == nil and ADAccessRoads ~= nil and ADAccessRoads.fixStart ~= nil then
         local ok, other = FarmPilotCall(ADAccessRoads.fixStart, self, vehicle, closestWaypoint)
         if ok and other ~= nil then closestWaypoint, how = other, how .. ", route d'accès évitée" end
     end
-    if closestWaypoint ~= nil then
+    if arrivedWp ~= nil then
+        wp = arrivedWp
+    elseif closestWaypoint ~= nil then
         local outCandidates = self:getBestOutPoints(vehicle, closestWaypoint)
         wp = self:pathFromTo(closestWaypoint, waypointId, outCandidates, vehicle)
     end

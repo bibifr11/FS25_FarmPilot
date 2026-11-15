@@ -4,6 +4,8 @@
   enrubannées), zone de dépôt (vente ou stockage). Même forme que sprayerSettingsGUI.xml ; le code est dans
   scripts/Gui/BaleLoaderSettingsGUI.lua.
   Règle (09/11) : même roue dentée et même fenêtre que le semoir et l'épandeur, pas de système à part.
+  (15/11) Enrubanneuse : même fenêtre (titre id « titleText » changé par le code), zone de recharge du film et
+  décalage de visée.
 -->
 <GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
     <GuiElement profile="newLayer"/>
@@ -14,7 +16,7 @@
         <ThreePartBitmap profile="fp_dialogBgBottom"/>
 
         <BoxLayout profile="ad_common_dialogContentContainer">
-            <Text profile="ad_common_dialogTitle" text="$l10n_gui_ad_baleLoader_title"/>
+            <Text profile="ad_common_dialogTitle" id="titleText" text="$l10n_gui_ad_baleLoader_title"/>
 
             <ThreePartBitmap profile="ad_common_dialogTitleLineSeparator"/>
 

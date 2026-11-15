@@ -346,6 +346,8 @@ function ADDrivePathModule:followWaypoints(dt)
         if ADDirtRoads ~= nil then self.speedLimit = math.min(self.speedLimit, ADDirtRoads.getSpeedLimit(self)) end
         -- route secondaire : vitesse maxi des secondaires, dès 30 m avant d'y entrer (RoadSpeedManager.lua)
         if ADRoadSpeeds ~= nil then self.speedLimit = math.min(self.speedLimit, ADRoadSpeeds.getSpeedLimit(self)) end
+        -- portail fermé devant : ralentir, s'arrêter tant qu'il n'est pas ouvert (GateManager.lua)
+        if ADGates ~= nil then self.speedLimit = math.min(self.speedLimit, ADGates.getSpeedLimit(self)) end
 
         if self.vehicle.ad.trailerModule:isUnloadingToBunkerSilo() then
             -- drive through bunker silo
@@ -452,6 +454,7 @@ function ADDrivePathModule:reachedTarget()
     if AutoDrive.getDebugChannelIsSet(AutoDrive.DC_PATHINFO) then
         AutoDrive.debugPrint(self.vehicle, AutoDrive.DC_PATHINFO, "ADDrivePathModule:reachedTarget")
     end
+    if ADGraphManager.noteArrival ~= nil then FarmPilotCall(ADGraphManager.noteArrival, self.vehicle, self:getLastWayPointId()) end -- FarmPilot (15/11) : point d'arrivée, départ de la route suivante, voir GraphManagerStart.lua
     if self:getIsReversing() then
         -- while driving reverse the lastUsedWayPoint might be far away or not feasable to continue, so do not use it
         self.lastUsedWayPoint = nil

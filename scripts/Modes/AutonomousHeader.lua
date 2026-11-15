@@ -507,6 +507,12 @@ function ADHeaderFlow.onStart(mode)
         end
         return false
     end
+    -- (15/11) relancée à la main pendant l'amenée : son tracteur roule encore pour ce travail, elle le reprend
+    -- (AutonomousHeaderFollow.lua : rejoin)
+    if job ~= nil and job.combine == v and job.phase == "deliver" and not job.cancelled and not job.headerTaken
+        and ADHeaderFlow.rejoin ~= nil and ADHeaderFlow.rejoin(mode, job) then
+        return true
+    end
     local found, why = ADHeaderFlow.findHeader(v)
     if found == nil then
         if why ~= nil then
@@ -1397,6 +1403,7 @@ function AutonomousMode:reset()
     self.headerStopChecked = nil
     self.headerStopBefore = nil
     self.followCut = nil
+    self.followBehindLogged = nil
     self.followHold = nil
     self.headerPlanTime = nil
     self.headerBackIn = nil

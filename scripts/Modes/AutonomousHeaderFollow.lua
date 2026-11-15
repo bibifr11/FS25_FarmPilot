@@ -11,6 +11,17 @@
 --   chemin : FOLLOW_STOP m avant le bout. Elle y attend que la remorque soit en place, puis va atteler sa barre.
 -- - En route, à moins de FOLLOW_CLOSE m de la remorque pas encore en place : elle s'arrête là et repart quand la
 --   remorque s'est éloignée (FOLLOW_CLOSE + FOLLOW_RESUME m) ou est en place.
+-- - (15/11) « Parti devant elle » = aussi physiquement : la route qui reste au tracteur ne passe plus à moins de
+--   PASS_RANGE m d'elle, et la remorque est à PASS_RANGE m d'elle au moins. Avant : seule la longueur de route
+--   comptait ; le tracteur venu de la place de la remorque (G_Coupe) était « devant » en distance mais sa route
+--   passait par la cour où elle attendait, elle partait la première et lui bouchait la route (essai du 15/11 18:25,
+--   Lexion 6900 et MF 7S.210 qui s'attendaient l'un l'autre).
+-- - (15/11) Arrêt à FOLLOW_CLOSE m de la remorque seulement si la remorque est DEVANT elle (près de la route qui lui
+--   reste à suivre). Remorque derrière elle : elle ne s'arrête pas, elle continue jusqu'à son arrêt avant le chemin.
+-- - (15/11) Elle est sur la route même du tracteur et il est arrêté derrière elle depuis BLOCK_TIME ms : elle part la
+--   première pour lui ouvrir la route (puis elle ne s'arrête pas devant la remorque, voir plus haut).
+-- - (15/11) Relancée à la main pendant l'amenée (le tracteur roule encore pour ce travail) : elle reprend ce travail
+--   (rejoin) au lieu d'en créer un autre ; avant : « aucun tracteur libre pour déplacer la remorque porte-barre ».
 -- - Remorque en place pendant qu'elle roule : elle va atteler tout de suite.
 -- - (13/11) Route lâchée en chemin (remorque trop près, remorque en place) ou coupée à son arrêt : les points qui
 --   lui restaient à suivre sont gardés. La route calculée ensuite (suite vers le champ, route vers la barre) repart
@@ -37,6 +48,9 @@ ADHeaderFlow.FOLLOW_RESUME = 40            -- m de plus pour repartir après un 
 ADHeaderFlow.FOLLOW_MIN = 40               -- m du bout de la route au moins, pour l'arrêt avant le chemin
 ADHeaderFlow.FOLLOW_STOP = 80              -- m avant le bout quand la route n'a pas de chemin
 ADHeaderFlow.FOLLOW_CHECK = 1000           -- ms entre deux contrôles de l'avance du tracteur
+ADHeaderFlow.BLOCK_RANGE = 5               -- m : la route du tracteur passe sur elle (15/11)
+ADHeaderFlow.BLOCK_TIME = 10000            -- ms d'arrêt du tracteur derrière elle avant qu'elle parte la première (15/11)
+ADHeaderFlow.PASS_RANGE = 15               -- m : la route du tracteur passe plus près d'elle = il n'est pas encore passé devant (15/11)
 ADHeaderFlow.PLAN_TIMEOUT = 45000          -- ms de calcul du chemin vers la barre au plus
 ADHeaderFlow.PLAN_TIMEOUT_BLOCKED = 15000  -- ... quand le côté de la barre est déjà connu encombré
 ADHeaderFlow.RESUME_RANGE = 30             -- m au plus entre la moissonneuse et le point de sa route lâchée d'où la suivante repart
@@ -71,6 +85,33 @@ local function lengthFrom(wayPoints, from)
     end
     return l
 end
+
+-- distance de (x, z) à la route wayPoints à partir du point from (segments), math.huge sans route
+local function routeDistance(wayPoints, from, x, z)
+    local best = math.huge
+    if wayPoints == nil then
+        return best
+    end
+    from = math.max(from or 1, 1)
+    for k = from, #wayPoints do
+        local a = wayPoints[k]
+        local b = wayPoints[k + 1]
+        local d
+        if b == nil then
+            d = MathUtil.vector2Length(x - a.x, z - a.z)
+        else
+            local dx, dz = b.x - a.x, b.z - a.z
+            local l2 = dx * dx + dz * dz
+            local u = l2 > 0 and math.max(0, math.min(1, ((x - a.x) * dx + (z - a.z) * dz) / l2)) or 0
+            d = MathUtil.vector2Length(x - (a.x + u * dx), z - (a.z + u * dz))
+        end
+        if d < best then
+            best = d
+        end
+    end
+    return best
+end
+ADHeaderFlow.routeDistance = routeDistance
 
 -- route secondaire, chemin de terre ou route d'accès : le « chemin » qui mène au champ
 local function isLane(point)
@@ -197,6 +238,37 @@ function ADHeaderFlow.tractorAhead(job)
         return false
     end
     local current = dpm.getCurrentWayPointIndex ~= nil and dpm:getCurrentWayPointIndex() or 1
+    -- (15/11) pas encore passé devant elle : sa route passe encore près d'elle, ou la remorque est encore à côté
+    local cx0, _, cz0 = getWorldTranslation(v.components[1].node)
+    local near = routeDistance(wayPoints, math.max(current - 1, 1), cx0, cz0)
+    local trailerGap = job.trailer ~= nil and job.trailer.components ~= nil and gapTo(v, job.trailer) or math.huge
+    if near < ADHeaderFlow.PASS_RANGE or trailerGap < ADHeaderFlow.PASS_RANGE then
+        -- (15/11) elle est SUR la route du tracteur et il est arrêté derrière elle depuis BLOCK_TIME ms : elle part la
+        -- première pour lui ouvrir la route (elle ne s'arrêtera pas devant la remorque : followMonitor)
+        local now = g_time or 0
+        if near < ADHeaderFlow.BLOCK_RANGE and math.abs(t.lastSpeedReal or 0) < 0.0003 and gapTo(v, t) < ADHeaderFlow.FOLLOW_CLOSE then
+            job.blockedSince = job.blockedSince or now
+            if now - job.blockedSince >= ADHeaderFlow.BLOCK_TIME then
+                job.blockedSince = nil
+                job.leadFirst = true
+                log("%s : « %s » est arrêté derrière elle depuis %d s, sa route passe par elle (à %.0f m) : elle part la première pour lui ouvrir la route",
+                    nameOf(v), nameOf(t), ADHeaderFlow.BLOCK_TIME / 1000, near)
+                return true
+            end
+        else
+            job.blockedSince = nil
+        end
+        if not job.passLogged then
+            job.passLogged = true
+            log("%s : la route de « %s » passe encore par ici (à %.0f m, remorque à %.0f m) : attend qu'il soit passé devant", nameOf(v),
+                nameOf(t), near, trailerGap)
+        end
+        return false
+    end
+    if job.passLogged then
+        job.passLogged = nil
+        log("%s : « %s » est passé devant (sa route à %.0f m, remorque à %.0f m)", nameOf(v), nameOf(t), near, trailerGap)
+    end
     local remaining = lengthFrom(wayPoints, current)
     if job.combineRoute == nil then
         local marker = ADGraphManager:getMapMarkerById(job.fieldId)
@@ -211,6 +283,36 @@ function ADHeaderFlow.tractorAhead(job)
         return MathUtil.vector2Length(tx - last.x, tz - last.z) + ADHeaderFlow.FOLLOW_GAP <= MathUtil.vector2Length(cx - last.x, cz - last.z)
     end
     return remaining + ADHeaderFlow.FOLLOW_GAP <= job.combineRoute
+end
+
+-- (15/11) moissonneuse relancée pendant l'amenée, son tracteur roule encore pour ce travail : true = reprise
+function ADHeaderFlow.rejoin(mode, job)
+    local v, t = mode.vehicle, job.tractor
+    if t == nil or t.isDeleted or t.ad == nil or t.ad.fpHeaderJob ~= job or not t.ad.stateModule:isActive()
+        or t.ad.stateModule:getMode() ~= AutoDrive.MODE_AUTONOMOUS then
+        return false
+    end
+    if job.header == nil or ADHeaderFlow.trailerOf(job.header) ~= job.trailer then
+        return false
+    end
+    local sm = v.ad.stateModule
+    if not sm:isActive() then
+        v:startAutoDrive()
+        if not sm:isActive() then
+            return true
+        end
+    end
+    mode:reset()
+    v.ad.fpAutonomousCourse = nil
+    v.ad.fpAutonomousAI = nil
+    if job.trailerReady then
+        log("%s : relancée, « %s » a déjà mis la remorque en place : va atteler « %s »", nameOf(v), nameOf(t), label(job.header))
+        ADHeaderFlow.goToHeader(mode, job.header)
+    else
+        log("%s : relancée pendant l'amenée, « %s » roule encore avec la barre : elle reprend le même travail", nameOf(v), nameOf(t))
+        ADHeaderFlow.startWaitLeave(mode, job)
+    end
+    return true
 end
 
 -- la moissonneuse attend à sa place que la remorque soit partie devant elle
@@ -233,11 +335,31 @@ function ADHeaderFlow.startFollow(mode, job)
     log("%s : la remorque est partie, la suit vers « %s »", nameOf(v), tostring(marker.name))
     ADHeaderFlow.resumeStart(mode) -- après un arrêt derrière la remorque : la route repart du point qu'elle suivait
     mode.headerStage = "follow"
+    mode.followBehindLogged = nil
     mode.followCut = nil
     mode.followHold = nil
     mode.driveToDestinationTask = DriveToDestinationTask:new(v, marker.id)
     if ADDriveGoal ~= nil then ADDriveGoal.set(mode.driveToDestinationTask, "AD_fpGoal_fetch", label(job.header)) end
     v.ad.taskModule:addTask(mode.driveToDestinationTask)
+end
+
+-- (15/11) la remorque est devant la moissonneuse : près de la route qui lui reste à suivre (pas derrière elle)
+function ADHeaderFlow.trailerAhead(v, trailer)
+    local dpm = v.ad ~= nil and v.ad.drivePathModule or nil
+    local wayPoints = dpm ~= nil and dpm.wayPoints or nil
+    if wayPoints == nil or #wayPoints < 2 or trailer == nil or trailer.components == nil then
+        return true -- pas de route connue : prudence, comme avant
+    end
+    local current = dpm.getCurrentWayPointIndex ~= nil and dpm:getCurrentWayPointIndex() or 1
+    local rx, _, rz = getWorldTranslation(trailer.components[1].node)
+    -- devant son nez (sens de marche), et près de la route qui lui reste
+    local node = v.components[1].node
+    local cx, _, cz = getWorldTranslation(node)
+    local fx, _, fz = localDirectionToWorld(node, 0, 0, 1)
+    if (rx - cx) * fx + (rz - cz) * fz <= 0 then
+        return false
+    end
+    return routeDistance(wayPoints, current, rx, rz) < ADHeaderFlow.PASS_RANGE
 end
 
 -- à chaque image pendant qu'elle suit : remorque en place ou trop près = route lâchée ; route connue = coupée avant
@@ -274,7 +396,13 @@ function ADHeaderFlow.followMonitor(mode, job, dt)
         return
     end
     local gap = gapTo(v, job.trailer)
-    if gap <= ADHeaderFlow.FOLLOW_CLOSE then
+    if gap <= ADHeaderFlow.FOLLOW_CLOSE and (job.leadFirst or not ADHeaderFlow.trailerAhead(v, job.trailer)) then
+        -- (15/11) remorque derrière elle : s'arrêter la bloquerait (le tracteur attend derrière elle), elle continue
+        if not mode.followBehindLogged then
+            mode.followBehindLogged = true
+            log("%s : remorque à %.0f m mais derrière elle, ne s'arrête pas (elle bloquerait le tracteur), continue", nameOf(v), gap)
+        end
+    elseif gap <= ADHeaderFlow.FOLLOW_CLOSE then
         log("%s : à %.0f m de la remorque, attend qu'elle avance", nameOf(v), gap)
         mode.followHold = true
         noteAhead()
@@ -290,6 +418,14 @@ function ADHeaderFlow.followMonitor(mode, job, dt)
         return
     end
     mode.followCut = true
+    if job.leadFirst then
+        -- (15/11) partie devant le tracteur pour lui ouvrir la route : pas d'arrêt sur la route avant le chemin (elle le
+        -- bloquerait encore), elle va au bout de sa route ; la remorque ne s'arrêtera pas là (findSpot)
+        local last = wayPoints[#wayPoints]
+        job.combineStop = { x = last.x, z = last.z }
+        log("%s : partie devant « %s », va au bout de sa route sans s'arrêter avant le chemin du champ", nameOf(v), nameOf(job.tractor))
+        return
+    end
     local current = dpm.getCurrentWayPointIndex ~= nil and dpm:getCurrentWayPointIndex() or 1
     local i, fromEnd, lane = ADHeaderFlow.followStopIndex(wayPoints, current)
     if i == nil or i <= current + 1 then

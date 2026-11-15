@@ -7,6 +7,12 @@
 -- non enrubannées seulement) et zone de dépôt (marqueurs de la carte : ceux près d'un point de vente qui prend les
 -- balles d'abord, marqués « vente », puis tous les autres pour stocker). « Valider » enregistre ; tant que ce n'est
 -- pas validé, le départ est refusé (voir BaleLoaderManager.lua).
+-- (15/11) ligne « Décalage de visée » : 0 à 30 cm par pas de 5 (10 par défaut), le tracteur passe d'autant plus loin
+-- de la balle (sa roue avant la percutait).
+-- (15/11) Enrubanneuse (BaleWrapperManager.lua) : même fenêtre, titre « Réglages de l'enrubanneuse », l'enrubanneuse
+-- et le champ en tête, lignes « Zone de recharge du film » (marqueurs près d'une source de film d'abord, marqués
+-- « film », via RefillSources.lua ; aucun : tous les marqueurs) et « Décalage de visée ». Pas de zone : « Valider »
+-- refusé avec un message.
 --
 -- Branché par une ligne chacune dans Gui.lua : ADBaleLoaderSettingsGui.load (création, gui/baleLoaderSettingsGUI.xml)
 -- et ADBaleLoaderSettingsGui.open (roue dentée).
@@ -78,10 +84,24 @@ function ADBaleLoaderSettingsGui:loadContext()
     local saved = ADBaleLoaderManager:get(ctx.field, ctx.toolKey)
     self.saved = saved
     local base = saved or ADBaleLoaderManager:lastFor(ctx.toolKey)
-    local draft = { wrap = ADBaleLoaderManager.WRAP_ALL, deposit = nil }
+    if ctx.kind == "wrapper" then
+        -- (15/11) enrubanneuse : zone de recharge du film et décalage de visée
+        local draftW = { kind = "wrapper", refill = nil, aim = ADBaleLoaderManager.AIM_DEFAULT }
+        if base ~= nil then
+            draftW.refill = base.refill
+            draftW.aim = ADBaleLoaderManager.validAim(base.aim)
+            if draftW.refill ~= nil and ADGraphManager:getMapMarkerByName(draftW.refill) == nil then
+                draftW.refill = nil
+            end
+        end
+        self.draft = draftW
+        return
+    end
+    local draft = { wrap = ADBaleLoaderManager.WRAP_ALL, deposit = nil, aim = ADBaleLoaderManager.AIM_DEFAULT }
     if base ~= nil then
         draft.wrap = ADBaleLoaderManager.validWrap(base.wrap)
         draft.deposit = base.deposit
+        draft.aim = ADBaleLoaderManager.validAim(base.aim)
         if draft.deposit ~= nil and ADGraphManager:getMapMarkerByName(draft.deposit) == nil then
             draft.deposit = nil
         end
@@ -154,11 +174,96 @@ function ADBaleLoaderSettingsGui:depositRows()
     return rows, nSale
 end
 
+-- (15/11) zones de recharge du film de l'enrubanneuse : marqueurs près d'une source de film (zone de chargement, palettes
+-- posées) d'abord (« film »), puis tous les autres
+function ADBaleLoaderSettingsGui:refillRows()
+    local near = {}
+    if ADRefillSources ~= nil and ADBaleWrapper ~= nil then
+        local tool = self.ctx.tool
+        local okT, indexes = FarmPilotCall(ADBaleWrapper.filmFillTypes, tool)
+        if okT and type(indexes) == "table" and #indexes > 0 then
+            local farmId = nil
+            if tool.getOwnerFarmId ~= nil then
+                local okO, id = FarmPilotCall(tool.getOwnerFarmId, tool)
+                farmId = okO and id or nil
+            end
+            local okF, sources = FarmPilotCall(ADRefillSources.find, indexes, farmId)
+            if okF and type(sources) == "table" then
+                local okN, allowed = FarmPilotCall(ADRefillSources.markersNear, sources)
+                near = okN and type(allowed) == "table" and allowed or {}
+            end
+        end
+    end
+    local markers = {}
+    for _, m in pairs(ADGraphManager:getMapMarkers()) do
+        if m ~= nil and m.name ~= nil then
+            markers[#markers + 1] = m
+        end
+    end
+    table.sort(markers, function(a, b)
+        local na, nb = near[a.name] == true, near[b.name] == true
+        if na ~= nb then
+            return na
+        end
+        return string.lower(tostring(a.name)) < string.lower(tostring(b.name))
+    end)
+    local rows, nNear = {}, 0
+    for _, m in ipairs(markers) do
+        local value
+        if near[m.name] then
+            nNear = nNear + 1
+            value = g_i18n:getText("gui_ad_baleWrapper_film")
+        else
+            value = (m.group ~= nil and m.group ~= "All") and m.group or ""
+        end
+        if m.name == self.draft.refill then
+            value = g_i18n:getText("gui_ad_seeder_current") .. (value ~= "" and (" · " .. value) or "")
+        end
+        rows[#rows + 1] = { kind = "marker", name = m.name, text = m.name, value = value }
+    end
+    return rows, nNear
+end
+
+-- (15/11) lignes de l'enrubanneuse : zone de recharge du film, décalage de visée ; renvoie le texte d'en-tête
+function ADBaleLoaderSettingsGui:wrapperRows()
+    local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, self.ctx.tool)
+    local okK, kind = FarmPilotCall(ADBaleLoaderManager.baleKinds, self.ctx.tool)
+    local kindText = okK and KIND_TEXT[kind or ""] ~= nil and g_i18n:getText(KIND_TEXT[kind]) or "?"
+    local d = self.draft
+    self.rows[#self.rows + 1] = {
+        kind = "refill", text = g_i18n:getText("gui_ad_baleWrapper_refill"),
+        value = (d.refill or g_i18n:getText("gui_ad_seeder_refillNone")) .. "  >"
+    }
+    self.rows[#self.rows + 1] = {
+        kind = "aim", text = g_i18n:getText("gui_ad_baleLoader_aim"), value = string.format("%d cm", ADBaleLoaderManager.validAim(d.aim))
+    }
+    return string.format(g_i18n:getText("gui_ad_baleWrapper_head"), okL and label or ADAutonomousManager.toolLabel(self.ctx.tool), tostring(self.ctx.field), kindText)
+end
+
 function ADBaleLoaderSettingsGui:refreshItems()
     self.rows = {}
     local info
+    local wrapper = self.ctx ~= nil and self.ctx.kind == "wrapper"
+    if self.titleText ~= nil then
+        self.titleText:setText(g_i18n:getText(wrapper and "gui_ad_baleWrapper_title" or "gui_ad_baleLoader_title"))
+    end
     if self.ctx == nil or self.draft == nil then
         info = g_i18n:getText("gui_ad_baleLoader_noLoader")
+    elseif wrapper and self.mode == "markers" then
+        local rows, nNear = self:refillRows()
+        self.rows = rows
+        info = g_i18n:getText(nNear > 0 and "gui_ad_baleWrapper_pickRefill" or "gui_ad_baleWrapper_pickRefillAll")
+    elseif wrapper then
+        info = self:wrapperRows()
+        local status
+        if self.message ~= nil then
+            status = self.message
+        elseif self.saved ~= nil and ADBaleLoaderManager.isValid(self.saved, "wrapper") and self:draftEqualsSaved() then
+            status = g_i18n:getText("gui_ad_seeder_statusOk")
+        else
+            status = g_i18n:getText("gui_ad_seeder_statusTodo")
+        end
+        info = info .. "\n" .. status
     elseif self.mode == "markers" then
         local rows, nSale = self:depositRows()
         self.rows = rows
@@ -175,6 +280,9 @@ function ADBaleLoaderSettingsGui:refreshItems()
         self.rows[#self.rows + 1] = {
             kind = "deposit", text = g_i18n:getText("gui_ad_baleLoader_deposit"),
             value = (d.deposit or g_i18n:getText("gui_ad_seeder_refillNone")) .. "  >"
+        }
+        self.rows[#self.rows + 1] = {
+            kind = "aim", text = g_i18n:getText("gui_ad_baleLoader_aim"), value = string.format("%d cm", ADBaleLoaderManager.validAim(d.aim))
         }
         local status
         if self.message ~= nil then
@@ -194,7 +302,7 @@ function ADBaleLoaderSettingsGui:refreshItems()
         self.validateButton:setDisabled(self.mode ~= "settings" or self.ctx == nil)
     end
     self.settingsList:reloadData()
-    local current = self.draft ~= nil and self.mode == "markers" and self.draft.deposit or nil
+    local current = self.draft ~= nil and self.mode == "markers" and (wrapper and self.draft.refill or self.draft.deposit) or nil
     if current ~= nil then
         for i, r in ipairs(self.rows) do
             if r.name == current then
@@ -210,7 +318,11 @@ end
 
 function ADBaleLoaderSettingsGui:draftEqualsSaved()
     local a, b = self.draft, self.saved
+    if a ~= nil and b ~= nil and a.kind == "wrapper" then
+        return a.refill == b.refill and ADBaleLoaderManager.validAim(a.aim) == ADBaleLoaderManager.validAim(b.aim)
+    end
     return a ~= nil and b ~= nil and a.deposit == b.deposit and ADBaleLoaderManager.validWrap(a.wrap) == ADBaleLoaderManager.validWrap(b.wrap)
+        and ADBaleLoaderManager.validAim(a.aim) == ADBaleLoaderManager.validAim(b.aim)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -239,9 +351,28 @@ function ADBaleLoaderSettingsGui:act(row)
             end
         end
         d.wrap = order[i % #order + 1]
-    elseif row.kind == "deposit" then
+    elseif row.kind == "aim" then
+        -- 0 -> 5 -> ... -> 30 -> 0 cm (valeur hors liste : la suivante au-dessus)
+        local order = ADBaleLoaderManager.AIM_ORDER
+        local cur = ADBaleLoaderManager.validAim(d.aim)
+        local nextAim = order[1]
+        for _, a in ipairs(order) do
+            if a > cur then
+                nextAim = a
+                break
+            end
+        end
+        d.aim = nextAim
+    elseif row.kind == "deposit" or row.kind == "refill" then
         self.mode = "markers"
         self:refreshItems()
+        return
+    elseif row.kind == "marker" and d.kind == "wrapper" then
+        -- (15/11) zone de recharge du film de l'enrubanneuse
+        d.refill = row.name
+        self.mode = "settings"
+        self:refreshItems()
+        FarmPilotCall(self.settingsList.setSelectedIndex, self.settingsList, 1)
         return
     elseif row.kind == "marker" then
         d.deposit = row.name
@@ -267,8 +398,8 @@ function ADBaleLoaderSettingsGui:onClickValidate()
     if self.mode ~= "settings" or self.ctx == nil or self.draft == nil then
         return
     end
-    if ADBaleLoaderManager.missing(self.draft) ~= nil then
-        self.message = g_i18n:getText("gui_ad_baleLoader_needDeposit")
+    if ADBaleLoaderManager.missing(self.draft, self.ctx.kind) ~= nil then
+        self.message = g_i18n:getText(self.ctx.kind == "wrapper" and "gui_ad_baleWrapper_needRefill" or "gui_ad_baleLoader_needDeposit")
         self:refreshItems()
         return
     end

@@ -13,6 +13,12 @@
 -- - Remorque à balles en route vers le dépôt ou en train de décharger (« bales ») : il retourne au dépôt et décharge,
 --   puis retour au champ s'il restait des balles (comme avant la sauvegarde). Remorque déjà vide : retour au champ
 --   s'il restait des balles, sinon la suite d'un champ fini (champ suivant, garage).
+-- - (15/11) Remorque à balles en train de ramasser (« bales:collect ») : le ramassage reprend sur place, sur le champ
+--   sous le tracteur (sinon celui du point de destination), groupe AutoSwitch compris. Avant : départ vers « Champ 58 »
+--   depuis le champ 57 (réuni au 58), calcul du trajet depuis l'intérieur du champ, en échec.
+-- - (15/11) Enrubanneuse : en train d'enrubanner = « bales:collect » (même reprise sur place) ; en route vers la zone
+--   de recharge du film ou en train de recharger (« bales:film ») : film pas plein = la recharge reprend, puis retour
+--   au champ ; film déjà plein = retour au champ, l'enrubannage reprend à l'arrivée.
 -- - Plein de carburant (« fuel ») : sortie du champ / pompe = le plein reprend (puis retour au champ ou champ
 --   suivant, comme avant) ; plein fait, en route vers le champ = il y retourne et Courseplay repart au dernier point.
 -- - Plein du semoir ou de l'épandeur vidé pendant le champ (« refill ») : pas encore plein = le plein reprend, puis
@@ -127,6 +133,12 @@ ADResumeStage.register("bales", {
         if mode.baleStage == "toDeposit" or mode.baleStage == "unload" then
             return mode.baleBack and "back" or "last"
         end
+        if mode.baleStage == "collect" then
+            return "collect" -- (15/11) en train de ramasser dans le champ
+        end
+        if mode.baleStage == "refill" then
+            return "film" -- (15/11) enrubanneuse : recharge du film (route, plein)
+        end
         return nil
     end,
     resume = function(mode, data)
@@ -137,8 +149,39 @@ ADResumeStage.register("bales", {
         local name = nameOf(vehicle)
         local ok, ctx = FarmPilotCall(ADBaleCollect.makeContext, vehicle)
         if not ok or ctx == nil then
-            log("%s : partie rechargée pendant le dépôt des balles, mais plus de remorque à balles réglée attelée : départ habituel", name)
+            log("%s : partie rechargée pendant %s, mais plus de remorque à balles réglée attelée : départ habituel", name,
+                data == "collect" and "le ramassage des balles" or (data == "film" and "la recharge du film" or "le dépôt des balles"))
             return false
+        end
+        if data == "film" then
+            return ADResumeStage.resumeFilm(mode, ctx)
+        end
+        if data == "collect" then
+            -- (15/11) partie rechargée pendant le ramassage (champ 57, réuni au 58 dans AutoSwitch) : il repartait vers le
+            -- point « Champ 58 » par le réseau. Le ramassage reprend là où il est : champ sous le tracteur (makeContext)
+            -- et champs du point de destination (avec leur groupe)
+            local nums = ADAutonomousManager.markerFieldNumbers ~= nil and ADAutonomousManager.markerFieldNumbers(vehicle) or nil
+            ctx.fieldNums = ctx.fieldNums or {}
+            for _, n in ipairs(nums or {}) do
+                for k, _ in pairs(ADBaleLoaderManager.fieldNumbers(n)) do
+                    ctx.fieldNums[k] = true
+                end
+            end
+            if ctx.fieldNum == nil and nums ~= nil then
+                ctx.fieldNum = nums[1]
+            end
+            if ctx.fieldNum == nil then
+                log("%s : partie rechargée pendant le ramassage des balles, pas de champ ici : départ habituel", name)
+                return false
+            end
+            if not ADResumeStage.activate(mode) then
+                return false
+            end
+            mode.baleCtx = ctx
+            log("%s : partie rechargée pendant le ramassage des balles (champ %s, %d sur la remorque) : le ramassage reprend sur place",
+                name, tostring(ctx.fieldNum), ADBaleLoaderManager.loadedCount(ctx.tool))
+            ADBaleCollect.startCollect(mode, false)
+            return true
         end
         -- le champ du ramassage : celui du point de destination (le tracteur est loin du champ)
         local nums = ADAutonomousManager.markerFieldNumbers ~= nil and ADAutonomousManager.markerFieldNumbers(vehicle) or nil
@@ -175,6 +218,39 @@ ADResumeStage.register("bales", {
     end,
 })
 
+-- (15/11) enrubanneuse rechargée pendant la recharge du film : le champ est celui du point de destination (le
+-- tracteur en est loin) ; film pas plein = la recharge reprend, sinon retour au champ
+function ADResumeStage.resumeFilm(mode, ctx)
+    local vehicle = mode.vehicle
+    local name = nameOf(vehicle)
+    if ctx.kind ~= "wrapper" or ADBaleWrapper == nil then
+        log("%s : partie rechargée pendant la recharge du film, mais pas d'enrubanneuse réglée attelée : départ habituel", name)
+        return false
+    end
+    local nums = ADAutonomousManager.markerFieldNumbers ~= nil and ADAutonomousManager.markerFieldNumbers(vehicle) or nil
+    if nums ~= nil and nums[1] ~= nil then
+        ctx.fieldNum = nums[1]
+        ctx.fieldNums = ADBaleLoaderManager.fieldNumbers(nums[1])
+        for _, n in ipairs(nums) do
+            ctx.fieldNums[n] = true
+        end
+    end
+    if not ADResumeStage.activate(mode) then
+        return false
+    end
+    mode.baleCtx = ctx
+    if not ADBaleWrapper.filmFull(ctx.tool) then
+        log("%s : partie rechargée pendant la recharge du film (%s) : la recharge reprend, puis retour au champ %s", name,
+            ADBaleWrapper.filmText(ctx.tool), tostring(ctx.fieldNum))
+        ADBaleCollect.goRefill(mode)
+        return true
+    end
+    log("%s : partie rechargée après la recharge du film (%s) : retour au champ %s, l'enrubannage reprendra", name,
+        ADBaleWrapper.filmText(ctx.tool), tostring(ctx.fieldNum))
+    ADBaleCollect.backToField(mode, "AD_autonomous_wrapFilmBack")
+    return true
+end
+
 -- ------------------------------------------------------------------------------------------------------------
 -- Plein de carburant (AutonomousFuel.lua) : « back/exit », « back/pump », « back/back », « next/pump »…
 -- ------------------------------------------------------------------------------------------------------------
@@ -205,7 +281,7 @@ ADResumeStage.register("fuel", {
             return true
         end
         log("%s : partie rechargée pendant le plein de carburant : le plein reprend%s", name, after == "back" and ", puis retour au champ" or ", puis le champ suivant")
-        return ADFuelRun.start(vehicle, after, "partie rechargée pendant le plein") == true
+        return ADFuelRun.start(vehicle, after, ((ADResumeButton ~= nil and ADResumeButton.why) or "partie rechargée") .. " pendant le plein") == true
     end,
 })
 
@@ -226,6 +302,7 @@ ADResumeStage.register("refill", {
         if data ~= "back" then
             plan = ADSeederManager ~= nil and ADSeederManager.prepare(vehicle) or nil
             plan = plan or (ADSprayerManager ~= nil and ADSprayerManager.preparePlan(vehicle, "back") or nil)
+            plan = plan or (ADBalerManager ~= nil and ADBalerManager.preparePlan ~= nil and ADBalerManager.preparePlan(vehicle, "back") or nil) -- (15/11) presse : recharge de la ficelle / du filet, voir BalerManager.lua
         end
         if not ADResumeStage.activate(mode) then
             return false

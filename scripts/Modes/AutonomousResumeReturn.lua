@@ -13,7 +13,7 @@
 -- Règle :
 -- - « En train de rentrer » = mode Autonome en marche avec une étape de parking (outil vers sa place, dételage,
 --   tracteur vers sa place, outil avant, barre de moissonneuse), sauf le changement d'outil avant le champ suivant
---   (parkThen « swap ») ; aussi la benne qui va vider avant de se garer (AutonomousParkUnload.lua) et l'épandeur qui
+--   (parkThen « swap ») et le petit recul après un attelage avant de partir au travail (parkThen « restart ») ; aussi la benne qui va vider avant de se garer (AutonomousParkUnload.lua) et l'épandeur qui
 --   va rendre son reste avant de se garer (AutonomousSprayerDump.lua, après « park »).
 -- - Sauvegarde : #fpAutoReturn écrit pour un véhicule en train de rentrer. Véhicule pas encore reparti depuis le
 --   chargement : la valeur lue est gardée.
@@ -78,7 +78,8 @@ function ADResumeReturn.returnStage(vehicle)
     if mode == nil then
         return nil
     end
-    if mode.parkStage ~= nil and mode.parkThen ~= "swap" then
+    -- (15/11) petit recul après l'attelage puis départ au travail (parkThen « restart ») : il ne rentre pas
+    if mode.parkStage ~= nil and mode.parkThen ~= "swap" and mode.parkThen ~= "restart" then
         return tostring(mode.parkStage)
     end
     if mode.parkUnloadStage ~= nil then

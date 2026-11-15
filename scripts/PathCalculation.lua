@@ -42,6 +42,8 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
     local distanceFunc2 = function(a, b, c)
         return ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, 30, true)
     end
+    -- (15/11) temps de trajet à la vitesse réelle de chaque type de route (RoadSpeedManager.lua)
+    if ADRoadSpeeds ~= nil then distanceFunc2 = ADRoadSpeeds.driveTimeFunc(vehicle) end
     -- routes tertiaires : accès au départ / à la destination seulement, temps à leur vitesse maxi, x100 « Jamais » (DirtRoadManager.lua)
     if ADDirtRoads ~= nil then distanceFunc2 = ADDirtRoads.wrapDriveTime(distanceFunc2, vehicle, startID, targetID) end
     -- routes secondaires : Auto (tracteurs x1, camions x20 d'origine), Autorisées x1, Jamais x100 (DirtRoadManager.lua)
@@ -56,12 +58,19 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
         countIterations = countIterations + 1
         local next = candidates:dequeue()
         local point, distance, previousPoint = next.p, next.distance, next.pre
+        local fromQueue = true -- (15/11) point sorti de la file (le moins cher) ou suivi le long d'un tronçon
         while point ~= nil and (countIterations < ADPathCalculator.MAX_ITERATIONS) do
             countIterations = countIterations + 1
             if results[point.id] == nil then
                 results[point.id] = {}
             end
-            if point.id == targetID then
+            if point.id == targetID and not fromQueue then
+                -- (15/11) destination atteinte au bout d'un tronçon : remise dans la file, elle n'est gardée que quand
+                -- plus aucun autre chemin moins cher n'attend (sinon un trajet plus long que le meilleur était rendu)
+                candidates:enqueue({p=point, distance=distance, pre=previousPoint})
+                point = nil
+                break
+            elseif point.id == targetID then
                 foundTarget = true
                 lastPredecessor = previousPoint
                 point = nil
@@ -159,6 +168,7 @@ function ADPathCalculator:GetPath(startID, targetID, preferredStartIds, vehicle,
                         
                         previousPoint = point.id
                         point = outPoint
+                        fromQueue = false
                     else
                         point = nil
                     end
@@ -208,7 +218,7 @@ function ADPathCalculator:getDetourWeights()
     local maxDetour = AutoDrive.getSetting("mapMarkerDetour")
     if maxDetour > 0 then
         for _, marker in pairs(ADGraphManager:getMapMarkers()) do
-            addedWeights[marker.id] = maxDetour
+            addedWeights[marker.id] = maxDetour / (20 / 3.6) -- (15/11) en secondes comme le reste du coût (détour à 20 km/h)
         end
     end
     return addedWeights

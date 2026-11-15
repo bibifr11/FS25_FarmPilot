@@ -19,7 +19,12 @@
 --   25/10 22:34 ensileuse arrêtée, goulotte au-dessus de la bande d'herbe le long du champ : la ligne peut passer sur
 --               cette bande (étendu le 27/10, champ 13, à l'ensileuse qui roule) ;
 --   25/10 22:38 angle coupé : grosse difficulté près de l'ensileuse arrêtée, une pointe de culture
---               peut être coupée (CROP_TIP_LENGTH) ; la pointe d'un angle droit aussi (CORNER_CUT_*).
+--               peut être coupée (CROP_TIP_LENGTH) ; la pointe d'un angle droit aussi (CORNER_CUT_*) ;
+--   (15/11)     moissonneuse : aucune culture debout franchie (règle du 20/10) ; la bande étroite en travers et la
+--               pointe d'angle restent réservées à l'ensileuse.
+--   (15/11)     ensileuse : l'herbe jusqu'à STANDING_BORDER_BITE seulement si elle est ARRÊTÉE (25/10 22:35) ; en
+--               roulant, BORDER_BITE comme pour tous (25/10 19:09 « hors champ maintenant non ») ; la pointe d'angle
+--               (CORNER_CUT_*) seulement en grosse difficulté (cropTip, 25/10 22:38), plus à tout moment.
 -- Autre cas noté (27/10 17:18, champ 13) : un autre véhicule sur la ligne : on l'attend (VEHICLE_WAIT_MAX au plus) au
 -- lieu d'abandonner la poursuite.
 --
@@ -50,10 +55,12 @@ FollowCombineTask.BORDER_BITE = 3 -- m: field ground this close beside an off-fi
 -- line to its place may run over that strip (no crop there, obstacles checked, not another field).
 -- 27/10 17:10 (field 13, first row along the wall, pipe over the grass): the 7R stood on the strip 5 m from the crop,
 -- its line to the place pointed at the field, and the probe beside the line (parallel to the wall) found no field
--- ground: "hors du champ" every 2 s. The probe now also looks along the line, and the strip beside a forage
--- harvester's field is accepted whether it stands or drives (the whole first row is unloaded from the strip)
+-- ground: "hors du champ" every 2 s. The probe now also looks along the line
+-- (15/11) bande d'herbe acceptée seulement si l'ensileuse est arrêtée (décision du 25/10 22:35) : en roulant, la
+-- benne ne sort pas du champ (25/10 19:09), seule la bordure de BORDER_BITE m compte
 FollowCombineTask.STANDING_BORDER_BITE = 12 -- m
 FollowCombineTask.CROP_TIP_LENGTH = 12 -- m of crop (cover summed over the 4 m slices) the line may cross in great difficulty (25/10 22:38)
+-- (15/11) pointe d'angle : seulement en grosse difficulté (cropTip, CatchCombinePipeTask.tryCropTipHandover)
 FollowCombineTask.CORNER_CUT_SLICES = 2 -- 4 m slices of crop allowed on the chase line (tip of a corner)
 FollowCombineTask.CORNER_CUT_MAX_RATIO = 0.5 -- each partly covered only
 FollowCombineTask.LINE_VEHICLE_MARGIN = 2.5 -- m beside the train width: the centre of another vehicle this close to the line blocks it
@@ -172,11 +179,17 @@ function FollowCombineTask.isChaseLineClear(vehicle, combine, chasePos, chaseSid
                 -- 40 m behind the standing harvester, aligned, and gave the chase up for an axis 1-2 m over the border
                 local bite = FollowCombineTask.getBorderBite(px, pz, -dirZ, dirX)
                 if bite == nil and chopper then
-                    -- grass strip beside the field of the forage harvester (standing or driving, 27/10): field ground
+                    -- grass strip beside the field of the forage harvester: field ground
                     -- within STANDING_BORDER_BITE m beside or along the line, no standing crop at the point
                     local wide = FollowCombineTask.getBorderBite(px, pz, -dirZ, dirX, FollowCombineTask.STANDING_BORDER_BITE, dirX, dirZ)
                     if wide ~= nil and PathFinderModule.readCropAt ~= nil and PathFinderModule.readCropAt(px, pz) == 0 then
-                        bite = wide
+                        -- (15/11) seulement ensileuse arrêtée (25/10 22:35) ; en roulant la benne ne sort pas du champ
+                        if standing then
+                            bite = wide
+                        elseif vehicle.ad.rollingStripLogged == nil or (g_time or 0) - vehicle.ad.rollingStripLogged > 30000 then
+                            vehicle.ad.rollingStripLogged = g_time or 0
+                            print(string.format("[AD-Poursuite] %s: ligne sur l'herbe hors du champ vers %.0f,%.0f (champ a %.0f m) refusee : ensileuse en marche, herbe permise seulement si elle est arretee", tostring(vehicle:getName()), px, pz, wide))
+                        end
                     end
                 end
                 if bite == nil then
@@ -185,7 +198,7 @@ function FollowCombineTask.isChaseLineClear(vehicle, combine, chasePos, chaseSid
                 borderBite = true
                 if vehicle.ad.borderBiteLogged == nil or (g_time or 0) - vehicle.ad.borderBiteLogged > 30000 then
                     vehicle.ad.borderBiteLogged = g_time or 0
-                    print(string.format("[AD-Poursuite] %s: ligne qui mord la bordure du champ vers %.0f,%.0f (champ a %.0f m, pas d'obstacle%s), acceptee", tostring(vehicle:getName()), px, pz, bite, bite > FollowCombineTask.BORDER_BITE and (standing and ", herbe a cote de l'ensileuse arretee" or ", herbe a cote de l'ensileuse") or ""))
+                    print(string.format("[AD-Poursuite] %s: ligne qui mord la bordure du champ vers %.0f,%.0f (champ a %.0f m, pas d'obstacle%s), acceptee", tostring(vehicle:getName()), px, pz, bite, bite > FollowCombineTask.BORDER_BITE and ", herbe a cote de l'ensileuse arretee" or ""))
                 end
             end
         end
@@ -225,15 +238,19 @@ function FollowCombineTask.isChaseLineClear(vehicle, combine, chasePos, chaseSid
     if #cropSlices > 0 then
         -- the tip of a right-angle corner may be cut. Only that: crop on at most CORNER_CUT_SLICES consecutive
         -- 4 m slices, each partly covered (the corner point, not a crop block across the line)
-        local tip = #cropSlices <= FollowCombineTask.CORNER_CUT_SLICES
+        -- (15/11) ensileuse seulement : derrière la moissonneuse, la benne ne va jamais dans la culture (20/10)
+        local cornerShape = chopper and #cropSlices <= FollowCombineTask.CORNER_CUT_SLICES
         for i, c in ipairs(cropSlices) do
             if c.ratio > FollowCombineTask.CORNER_CUT_MAX_RATIO or (i > 1 and c.k ~= cropSlices[i - 1].k + 1) then
-                tip = false
+                cornerShape = false
             end
         end
+        -- (15/11) et seulement en grosse difficulté sur la fourrière (cropTip, 25/10 22:38), plus à tout moment
+        local tip = cornerShape and cropTip
         -- 24/10 17:46 (drive over it or swerve, never stop): a narrow band of crop across
         -- the line (one 4 m slice, clear after it up to the place) is crossed
-        local band = #cropSlices == 1 and cropSlices[1].k < slices - 1
+        -- (15/11) ensileuse seulement, comme la pointe d'angle : pour la moissonneuse la ligne reste bloquée
+        local band = chopper and #cropSlices == 1 and cropSlices[1].k < slices - 1
         -- great difficulty near the standing harvester (25/10 22:38): a tip of crop
         -- of CROP_TIP_SLICES consecutive slices at most, whatever their cover, may be crossed
         local cropLength = 0
@@ -267,6 +284,10 @@ function FollowCombineTask.isChaseLineClear(vehicle, combine, chasePos, chaseSid
         end
         vehicle.ad.bandCrossLogged = false
         if not tip then
+            if cornerShape and not vehicle.ad.cornerCutRefusedLogged then
+                vehicle.ad.cornerCutRefusedLogged = true
+                print(string.format("[AD-Poursuite] %s: pointe d'angle de %s sur la ligne droite (%d m) non coupee : seulement en grosse difficulte pres de l'ensileuse arretee", tostring(vehicle:getName()), tostring(cropName), #cropSlices * 4))
+            end
             return false, "culture " .. tostring(cropName)
         end
         if not vehicle.ad.cornerCutLogged then
@@ -275,6 +296,7 @@ function FollowCombineTask.isChaseLineClear(vehicle, combine, chasePos, chaseSid
         end
     else
         vehicle.ad.cornerCutLogged = false
+        vehicle.ad.cornerCutRefusedLogged = false
     end
     return true
 end

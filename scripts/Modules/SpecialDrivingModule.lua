@@ -211,7 +211,10 @@ function ADSpecialDrivingModule:driveReverse(dt, maxSpeed, maxAcceleration, guid
     
 end
 
-function ADSpecialDrivingModule:driveToPoint(dt, point, maxFollowSpeed, checkDynamicCollision, maxAcc, maxSpeed, capToMaxSpeed)
+-- FarmPilot (15/11) : slowAngleLimit et slowDownFactor facultatifs (ralentissement selon l'angle du point visé,
+-- progressif dans UtilFuncsSmoothDrive.lua) ; absents : 20° et 0,3 comme avant. Le ramassage des balles
+-- (BaleCollectTask.lua) passe 45° et 0,5 : il roulait à 1,8 km/h dès que le point visé passait à 30°.
+function ADSpecialDrivingModule:driveToPoint(dt, point, maxFollowSpeed, checkDynamicCollision, maxAcc, maxSpeed, capToMaxSpeed, slowAngleLimit, slowDownFactor)
     local speed = math.min(self.vehicle.ad.stateModule:getFieldSpeedLimit(), maxSpeed)
     local acc = math.max(0.75, maxAcc)
 
@@ -256,7 +259,7 @@ function ADSpecialDrivingModule:driveToPoint(dt, point, maxFollowSpeed, checkDyn
         self.vehicle.ad.trailerModule:handleTrailerReversing(false)
         local storedSmootherDriving = AutoDrive.smootherDriving
         AutoDrive.smootherDriving = false
-        AutoDrive.driveInDirection(self.vehicle, dt, 30, acc, 0.2, 20, true, true, lx, lz, speed, 0.3)
+        AutoDrive.driveInDirection(self.vehicle, dt, 30, acc, 0.2, slowAngleLimit or 20, true, true, lx, lz, speed, slowDownFactor or 0.3)
         AutoDrive.smootherDriving = storedSmootherDriving
     end
 end

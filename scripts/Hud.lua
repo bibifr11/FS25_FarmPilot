@@ -143,7 +143,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		fpKind = AutoDriveHud.fpRowKind(vehicle) or false
 	end
 	self.fpRowKind = fpKind
-	self.fpNextToolRow = self.fpRowKind ~= false
+	self.fpNextToolRow = self.fpRowKind ~= false and self.fpRowKind ~= "drive" -- (15/11) Conduire : ligne « Atteler » à la place d'une ligne vide, HUD de même taille
 	local pullDownRows = self.fpNextToolRow and 4 or 3
 	-- (10/11) mode Autonome : lignes « Outil avant » et « Outil avant suivant » en plus (6 lignes)
 	self.fpFrontRows = self.fpRowKind == "next"
@@ -271,6 +271,12 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		local swapGear = ADHudButton:new(self.posX + self.gapWidth, rowNextTool, self.iconWidth, self.iconHeight, "input_fpSeederSettings", nil, nil, nil, nil, nil, nil, nil, "gui_ad_trailerSwap_tooltip", 1, false)
 		swapGear.fpTrailer = true
 		table.insert(self.hudElements, swapGear)
+	elseif self.fpRowKind == "drive" then
+		-- (15/11) Conduire : « Atteler : ... » (remorque ou outil, facultatif) sur la ligne du bas, vide dans ce mode
+		local driveList = ADPullDownList:new(self.posX + 2 * self.gapWidth + self.buttonWidth, self.row2, self.iconWidth * 6 + self.gapWidth * 5, self.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+		driveList.fpTrailer = true
+		driveList.order = 3
+		table.insert(self.hudElements, driveList)
 	elseif self.fpRowKind == "harvester" and ADHarvesterHud ~= nil then
 		ADHarvesterHud.addRows(self, rowFill, rowNextTool) -- moissonneuse / ensileuse : lignes « Barre », voir HudHarvester.lua
 	elseif self.fpNextToolRow then
@@ -457,6 +463,9 @@ end
 function AutoDriveHud.fpRowKind(vehicle)
 	if AutoDriveHud.wantsFpNextToolRow(vehicle) then
 		return "next"
+	end
+	if ADTrailerHitch ~= nil and ADTrailerHitch.isDriveMode ~= nil and ADTrailerHitch.isDriveMode(vehicle) then
+		return "drive" -- (15/11) Conduire : ligne « Atteler », voir TrailerHitch.lua
 	end
 	if ADTrailerHitch ~= nil and ADTrailerHitch.isTrailerMode(vehicle) then
 		return "trailer"

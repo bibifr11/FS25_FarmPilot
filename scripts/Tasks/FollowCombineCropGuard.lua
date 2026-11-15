@@ -11,8 +11,9 @@
 --      place est aussi bloquée quand un bloc de culture debout est juste devant le tracteur dans cette direction
 --      (de 2 à 10 m devant, largeur de l'attelage + 2 m de chaque côté, deux tranches de 4 m couvertes chacune à plus
 --      de 60 %, lu en direct dans la carte de culture du jeu). Le tracteur s'arrête au bord et un trajet est calculé,
---      comme pour toute ligne bloquée. Une bande étroite, une pointe d'angle, une bande oubliée ou des pieds isolés
---      restent franchissables comme avant (ils ne couvrent pas 60 % de cette largeur sur 8 m) ;
+--      comme pour toute ligne bloquée. Des pieds isolés ou une bande oubliée restent franchissables (ils ne
+--      couvrent pas 60 % de cette largeur sur 8 m) ; (15/11) la bande étroite et la pointe d'angle sont refusées
+--      pour la moissonneuse dès la ligne droite (FollowCombineTaskChaseLine.lua, réservées à l'ensileuse) ;
 --   2. benne arrêtée « BLOQUE » 3 fois de suite avec de la culture sous elle : message au joueur (toutes les minutes
 --      au plus) : il faut la dégager à la main (AutoDrive coupe le moteur après le délai d'arrêt, 10 s par défaut).
 --

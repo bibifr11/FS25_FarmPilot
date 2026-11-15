@@ -348,27 +348,17 @@ function ADTrafficYieldModule:updateSectionBackOff(dt)
         self.reverseStart = {x = x, y = y, z = z}
         -- 26/10 (7R 350 + trailer just started its route, backed off 12 m + 10 m "straight" and ended in the grass):
         -- the back-off follows my own route behind me, never a straight line into the unknown
-        self.backOffLine = {{x = x, z = z}}
-        for _, t in ipairs(self.reverseTargets) do
-            if t.straight then
-                break
-            end
-            table.insert(self.backOffLine, {x = t.x, z = t.z})
-        end
+        self.backOffLine = self:buildTrackLine(x, z) -- (15/11) même tracé pour les autres reculs (TrafficYieldModuleReverser.lua)
     end
     local x, _, z = ADTrafficYieldModule.getPosition(self.vehicle)
     local reversed = MathUtil.vector2Length(x - self.reverseStart.x, z - self.reverseStart.z)
     local blockedBehind = self.vehicle.ad.collisionDetectionModule:checkReverseCollision()
     local blockedTooLong = self.reverseBlockedTimer:timer(blockedBehind, 8000, dt)
-    local target = self.reverseTargets[self.reverseTargetIndex]
-    if target ~= nil and target.straight then
-        target = nil -- end of my route behind me: no further
-    end
-    -- drifted off my route (trailer): stop here
-    local offRoute = #self.backOffLine >= 2 and ADTrafficYieldModule.distanceToPolyline(self.backOffLine, x, z) > 3.5
+    -- end of my route behind me: no further ; drifted off my route (trailer): stop here (getTrackTarget, Reverser)
+    local target, offRoute, aside = self:getTrackTarget(self.backOffLine, x, z)
     if offRoute and not backOff.offRouteLogged then
         backOff.offRouteLogged = true
-        self:log("back-off left my route (%.1f m aside), I stop here", ADTrafficYieldModule.distanceToPolyline(self.backOffLine, x, z))
+        self:log("back-off left my route (%.1f m aside), I stop here", aside)
         print(string.format("[AD-Croise] %s: le recul s'ecarte de mon trace, j'arrete la", ADTrafficYieldModule.getName(self.vehicle)))
     end
     if #self.backOffLine < 2 and not backOff.noRouteLogged then
@@ -598,16 +588,19 @@ function ADTrafficYieldModule:updateSectionClear(dt)
     if self:isReverseStuck() then
         blockedTooLong = true -- S3
     end
-    local target = self.reverseTargets[self.reverseTargetIndex]
+    -- (15/11) sur mon tracé, jamais tout droit (26/10) : sans tracé derrière moi pas de recul, à plus de 3,5 m du tracé arrêt
+    local target, trackStop = self:nextTrackTarget(x, z)
     local clear = self:isClearOfPartnerRoute()
     if clear or target == nil or blockedTooLong or reversed >= ADTrafficYieldModule.SECTION_CLEAR_MAX or g_time - self.clearStartTime > 150000 then
         plan.parked = true
         self.vehicle.ad.specialDrivingModule:releaseVehicle()
         self:holdVehicle(dt)
-        self:log("backed %.0f m out of the single track (%s), %s goes through", reversed, clear and "off its way" or (blockedTooLong and "blocked behind" or "limit"),
+        local trackWhy = ({noRoute = {"no route behind me", "pas de trace derriere moi"}, offRoute = {"off my route", "ecarte de mon trace"},
+            ["end"] = {"end of my route behind me", "bout de mon trace"}})[trackStop or ""]
+        self:log("backed %.0f m out of the single track (%s), %s goes through", reversed, clear and "off its way" or (blockedTooLong and "blocked behind" or (trackWhy ~= nil and trackWhy[1] or "limit")),
             ADTrafficYieldModule.getName(self.partner))
         print(string.format("[AD-Croise] %s: recule de %.0f m dans le chemin (%s), %s passe", ADTrafficYieldModule.getName(self.vehicle), reversed,
-            clear and "hors de son chemin" or (blockedTooLong and "bloque derriere" or "limite"), ADTrafficYieldModule.getName(self.partner)))
+            clear and "hors de son chemin" or (blockedTooLong and "bloque derriere" or (trackWhy ~= nil and trackWhy[2] or "limite")), ADTrafficYieldModule.getName(self.partner)))
         return
     end
     if self:reverseTowards(dt, target) then

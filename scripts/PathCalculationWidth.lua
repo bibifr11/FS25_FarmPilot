@@ -20,7 +20,10 @@
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
 -- route width check ------------------------------------------------------------------------------
-ADPathCalculator.NARROW_WEIGHT = 100000        -- added to a too narrow section: used only if there is no other way
+-- (15/11) un passage trop étroit pour l'attelage coûte plus qu'une route tertiaire prise en raccourci (ACCESS_WEIGHT de
+-- DirtRoadManager.lua, 1 000 000 par tronçon : il en faudrait 1 000) : entre une route trop étroite et une tertiaire en
+-- raccourci, la tertiaire passe. Une route d'accès traversée reste plus chère (THROUGH_WEIGHT, AccessRoadManager.lua).
+ADPathCalculator.NARROW_WEIGHT = 1000000000    -- added to a too narrow section: used only if there is no other way
 ADPathCalculator.WIDTH_MARGIN = 0.05           -- m free on each side of the train
 ADPathCalculator.WIDTH_CHECK_LOW = 0.3         -- m above ground: curbs and verges are ignored
 ADPathCalculator.WIDTH_CHECK_HIGH = 3.0        -- m above ground
@@ -104,13 +107,35 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Poids des tronçons trop étroits (calcul de route)
 -- ------------------------------------------------------------------------------------------------------------
+-- half width checked for this train, rounded to 10 cm so vehicles of about the same width share the measures
+function ADPathCalculator.getHalfWidth(vehicle)
+    local width = ADPathCalculator.getPassageWidth(vehicle)
+    return math.ceil((width / 2 + ADPathCalculator.WIDTH_MARGIN) * 10) / 10
+end
+
+-- (15/11) tronçons déjà relevés trop étroits pour la largeur de ce train, et largeur demandée (journal du choix d'une
+-- route tertiaire en raccourci, DirtRoadManager.lua logRoute)
+function ADPathCalculator.countNarrowFor(vehicle)
+    local ok, halfWidth = FarmPilotCall(ADPathCalculator.getHalfWidth, vehicle)
+    if not ok or type(halfWidth) ~= "number" then
+        return 0, nil
+    end
+    local count = 0
+    for _, row in pairs(ADPathCalculator.widthCache[halfWidth] or {}) do
+        for _, narrow in pairs(row) do
+            if narrow then
+                count = count + 1
+            end
+        end
+    end
+    return count, halfWidth * 2
+end
+
 function ADPathCalculator:getNarrowWeightFunc(vehicle)
     if vehicle == nil or g_currentMission == nil or g_currentMission.terrainRootNode == nil then
         return function() return 0 end
     end
-    local width = ADPathCalculator.getPassageWidth(vehicle)
-    -- rounded to 10 cm so vehicles of about the same width share the measures
-    local halfWidth = math.ceil((width / 2 + ADPathCalculator.WIDTH_MARGIN) * 10) / 10
+    local halfWidth = ADPathCalculator.getHalfWidth(vehicle)
     ADPathCalculator.lastNeededWidth = halfWidth * 2
     ADPathCalculator.widthCache[halfWidth] = ADPathCalculator.widthCache[halfWidth] or {}
     local cache = ADPathCalculator.widthCache[halfWidth]

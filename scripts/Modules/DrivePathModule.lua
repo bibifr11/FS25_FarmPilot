@@ -344,6 +344,8 @@ function ADDrivePathModule:followWaypoints(dt)
         self.speedLimit = math.min(self.speedLimit, ADIntersectionModule.getSpeedLimit(self.vehicle))
         -- chemin de terre : vitesse maxi du chemin, dès 30 m avant d'y entrer (DirtRoadManager.lua)
         if ADDirtRoads ~= nil then self.speedLimit = math.min(self.speedLimit, ADDirtRoads.getSpeedLimit(self)) end
+        -- route secondaire : vitesse maxi des secondaires, dès 30 m avant d'y entrer (RoadSpeedManager.lua)
+        if ADRoadSpeeds ~= nil then self.speedLimit = math.min(self.speedLimit, ADRoadSpeeds.getSpeedLimit(self)) end
 
         if self.vehicle.ad.trailerModule:isUnloadingToBunkerSilo() then
             -- drive through bunker silo

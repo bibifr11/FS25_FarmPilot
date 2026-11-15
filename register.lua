@@ -168,6 +168,8 @@ source(Utils.getFilename("scripts/Manager/GraphManager.lua", g_currentModDirecto
 source(Utils.getFilename("scripts/Manager/GraphManagerStart.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/DirtRoadManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/AccessRoadManager.lua", g_currentModDirectory)) -- 4e type « route d'accès », voir AccessRoadManager.lua
+source(Utils.getFilename("scripts/Manager/AccessRoadStart.lua", g_currentModDirectory)) -- pas de départ sur une route d'accès, voir AccessRoadStart.lua
+source(Utils.getFilename("scripts/Manager/RoadSpeedManager.lua", g_currentModDirectory)) -- vitesse par type de route (calcul et conduite), voir RoadSpeedManager.lua
 source(Utils.getFilename("scripts/Manager/RoadTypesVehicles.lua", g_currentModDirectory)) -- routes secondaires / tertiaires par type de véhicule, voir RoadTypesVehicles.lua
 source(Utils.getFilename("scripts/Manager/TriggerManager.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/HarvestManager.lua", g_currentModDirectory))
@@ -298,6 +300,7 @@ source(Utils.getFilename("scripts/Modules/PathFinderModuleRear.lua", g_currentMo
 source(Utils.getFilename("scripts/Modules/PathFinderModuleCorners.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/PathFinderModuleBand.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/PathFinderModuleLog.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/PathFinderModuleEntrance.lua", g_currentModDirectory)) -- (15/11) carré de 20 x 20 m à l'entrée du champ des bennes
 source(Utils.getFilename("scripts/Modules/StateModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/StateModuleAutonomous.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/StateModuleFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant
@@ -362,6 +365,7 @@ source(Utils.getFilename("scripts/Modes/TrailerHitch.lua", g_currentModDirectory
 source(Utils.getFilename("scripts/Hud/HudLoadPoint.lua", g_currentModDirectory)) -- chargement : produits du point de chargement, remorque adaptée
 source(Utils.getFilename("scripts/Modes/TrailerSwap.lua", g_currentModDirectory)) -- échange de bennes à la livraison
 source(Utils.getFilename("scripts/Modes/AutonomousParkUnload.lua", g_currentModDirectory)) -- bouton parking : benne pas vide, vidée d'abord
+source(Utils.getFilename("scripts/Modes/AutonomousFieldExit.lua", g_currentModDirectory)) -- mode Autonome : départ depuis un champ, sortie par l'entrée du champ d'abord (enveloppe les tâches de route)
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Sensors/CollSensor.lua", g_currentModDirectory))
@@ -387,10 +391,12 @@ source(Utils.getFilename("scripts/Gui/EnterDestinationFilterGUI.lua", g_currentM
 source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Manager/TireChangeManager.lua", g_currentModDirectory)) -- pneus changés automatiquement (usure d'AutoSwitch)
 source(Utils.getFilename("scripts/Utils/RootHarvester.lua", g_currentModDirectory)) -- bennes des arracheuses : côté de la goulotte, sortie du champ, file du calcul
-source(Utils.getFilename("scripts/Utils/TrailerCoverField.lua", g_currentModDirectory)) -- bâche des bennes de récolte : ouverte à l'entrée du champ, fermée à la sortie
+source(Utils.getFilename("scripts/Utils/TrailerCoverField.lua", g_currentModDirectory)) -- bâche des remorques : ouverte à l'entrée du champ, fermée à la sortie (15/11 : tous les modes)
 source(Utils.getFilename("scripts/Modes/AutonomousYardZone.lua", g_currentModDirectory)) -- mode Autonome : un seul tracteur à la fois dans la zone d'une place d'outils
 source(Utils.getFilename("scripts/Manager/GraphManagerGrid.lua", g_currentModDirectory)) -- points du réseau par cases de 100 m : point le plus proche sans parcourir tout le réseau
 source(Utils.getFilename("scripts/Utils/FarmPilotPerf.lua", g_currentModDirectory)) -- commande console fpPerf : temps pris par FarmPilot dans log.txt
+source(Utils.getFilename("scripts/Modes/AutonomousResumeReturn.lua", g_currentModDirectory)) -- mode Autonome : le retour au garage reprend après le chargement de la partie et après la relance d'AutoDrive
+source(Utils.getFilename("scripts/Modes/AutonomousResumeStage.lua", g_currentModDirectory)) -- mode Autonome : au chargement de la partie, chaque véhicule reprend exactement son étape (balles, plein, reste, changement d'outil)
 source(Utils.getFilename("scripts/Gui/DebugSettingsPage.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/Settings.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/RoadTypesGUI.lua", g_currentModDirectory)) -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua

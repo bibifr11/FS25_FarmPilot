@@ -28,6 +28,9 @@
 --    Règle : au chargement de la partie, le réseau est toujours caché (éditeur fermé). La touche du joueur
 --    l'affiche comme avant. L'état de l'affichage n'est plus sauvegardé.
 --
+-- (15/11) Mode Autonome en train de rentrer au garage : sauvegarde et reprise dans AutonomousResumeReturn.lua
+-- (enveloppes de ADSavegameResume.save / .load, clé #fpAutoReturn).
+--
 -- Branché par une ligne chacune : StateModule.lua (saveToXMLFile, readFromXMLFile), PickupAndDeliverMode.lua
 -- (getNextTask, état de départ), Specialization.lua (clé #fpPickupPhase de la sauvegarde) et AutoDrive.lua
 -- (loadMap, après la lecture des réglages). Chargé par register.lua après PickupAndDeliverMode.lua.

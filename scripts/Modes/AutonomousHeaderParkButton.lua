@@ -13,7 +13,10 @@
 --   (AutonomousHeader.lua : startCollect).
 -- - Une remorque vide existe mais aucun tracteur ne peut l'amener : la moissonneuse reste où elle est (message),
 --   elle ne part pas avec sa barre. Appuyer de nouveau plus tard.
--- - Aucune remorque porte-barre vide et pas de place pour cette barre : bouton d'origine, comme avant.
+-- - (15/11) Aucune remorque porte-barre vide (ou rien de lancé pour une autre raison) : la moissonneuse reste où elle
+--   est avec un message, jamais de route avec sa barre (plus de bouton d'origine). Appuyer de nouveau plus tard.
+-- - (15/11) La barre d'une moissonneuse ne passe jamais par la dépose d'un outil à sa place (AutonomousParkButton.lua :
+--   toolToDrop), même quand la barre a sa propre place de parking : toujours ce bouton-ci.
 -- - Barre déjà en train d'être reposée : le bouton ne change rien, le parking suit.
 --
 -- Branché par : Modes/AutonomousParkButton.lua (ADInputManager:input_parkVehicle). Chargé par register.lua après
@@ -100,7 +103,7 @@ function ADHeaderFlow.onParkButton(inputManager, vehicle, farmId)
     end
     sm:setMode(AutoDrive.MODE_AUTONOMOUS)
     log("%s : bouton parking : la barre « %s » d'abord sur sa remorque, puis le parking", nameOf(vehicle), label(header))
-    local ok, started, why = FarmPilotCall(ADHeaderFlow.onFieldDone, vehicle, nil, true)
+    local ok, started, why, trailer = FarmPilotCall(ADHeaderFlow.onFieldDone, vehicle, nil, true)
     if ok and started then
         AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_headerParkFirst")
         return true
@@ -114,8 +117,17 @@ function ADHeaderFlow.onParkButton(inputManager, vehicle, farmId)
     end
     if why == "noTractor" then
         log("%s : bouton parking : aucun tracteur pour amener la remorque, la moissonneuse reste là avec sa barre", nameOf(vehicle))
+        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 10000, "AD_autonomous_headerNoTractor", label(trailer))
+        print(string.format("[AD-Coupe] %s: bouton parking, aucun tracteur libre pour la remorque %s : reste sur place avec la barre", nameOf(vehicle), label(trailer)))
         return true
     end
-    log("%s : bouton parking : barre pas reposée (%s), parking comme avant", nameOf(vehicle), tostring(why))
-    return false
+    -- (15/11) plus de « parking comme avant » : la route avec la barre est interdite, elle reste là avec un message
+    log("%s : bouton parking : barre pas reposée (%s), la moissonneuse reste là avec sa barre", nameOf(vehicle), tostring(why))
+    if why == "noTrailer" then
+        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 12000, "AD_autonomous_headerParkStay")
+    else
+        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 12000, "AD_autonomous_headerParkStayOther")
+    end
+    print(string.format("[AD-Coupe] %s: bouton parking, barre %s pas reposee (%s) : reste sur place avec la barre", nameOf(vehicle), label(header), tostring(why)))
+    return true
 end

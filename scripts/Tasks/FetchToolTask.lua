@@ -313,6 +313,9 @@ function ADFetchToolTask:update(dt)
         local front = self:getFrontPoint(hitch)
         local pf = self.vehicle.ad.pathFinderModule
         pf:reset()
+        -- (15/11) barre de coupe sur sa remorque : jamais le secours qui traverse la culture (noFallback posé par
+        -- Modes/AutonomousHeader.lua, startFetchAttach)
+        pf.noFallback = self.noFallback == true
         pf:startPathPlanningTo(front, self:pathHeading(hitch))
         ADAutonomousManager.log("%s : chemin vers l'avant de l'outil (%.0f, %.0f)", tostring(self.vehicle.ad.stateModule:getName()), front.x, front.z)
         self:setState(ADFetchToolTask.STATE_PLANNING)

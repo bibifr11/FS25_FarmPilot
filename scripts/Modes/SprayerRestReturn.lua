@@ -1,6 +1,7 @@
 -- ============================================================================================================
 -- FarmPilot : SprayerRestReturn.lua
--- Mode Autonome, épandeurs et pulvés : le reste de la cuve est rendu ou revendu, jamais vidé en big bags.
+-- Mode Autonome, épandeurs et pulvés : le reste de la cuve est rendu ou revendu, jamais vidé en big bags ni en IBC
+-- (ni nouveaux, ni déjà posés).
 --
 -- (13/11) Le reste ne doit plus créer de big bags ni d'IBC (chaux, engrais, phyto ou autre) : s'il ne peut pas
 -- être vidé sans ça, il n'est pas vidé. Il est vidé dans une zone de vente ou là où il a été pris ; s'il ne peut
@@ -10,8 +11,8 @@
 -- Règle (dans l'ordre, au moment de la décision puis à l'arrêt sur place) :
 -- 1. Zone de plein (là où le produit a été pris), zones de chargement à moins de RADIUS m du marqueur :
 --    a) stock (silo, stockage, cuve de la ferme) qui accepte le produit et a de la place : le reste y est remis ;
---    b) point d'achat qui vend ce produit : le reste y est revendu au prix d'achat de ce point (argent ajouté) ;
---    c) big bags / IBC posés du même produit, pas pleins : le reste y est remis (aucun nouveau n'est créé).
+--    b) point d'achat qui vend ce produit : le reste y est revendu au prix d'achat de ce point (argent ajouté).
+--    (15/11) Plus d'étape « big bags / IBC déjà posés » : interdit de remplir un big bag ou un IBC, même posé.
 -- 2. Sinon, point de vente du jeu qui prend ce produit (le mieux payé, avec un marqueur du réseau à moins de
 --    RADIUS m) : le chauffeur y va et le vend, comme une benne qui vide.
 -- 3. Sinon : le reste est gardé dans la cuve, message et log disent pourquoi.
@@ -26,13 +27,13 @@ ADRestReturn = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADRestReturn.RADIUS = 50          -- m entre le marqueur et la zone de chargement / le big bag / le point de vente
+ADRestReturn.RADIUS = 50          -- m entre le marqueur et la zone de chargement / le point de vente
 ADRestReturn.MIN_LITERS = 0.5     -- L : en dessous, rien n'a bougé
 
 ADRestReturn.KIND_TEXT = {        -- textes du message (traductions) et du log
     stock = { key = "AD_rest_how_stock", log = "remis au stock" },
     buy = { key = "AD_rest_how_buy", log = "revendu au prix d'achat" },
-    bag = { key = "AD_rest_how_bag", log = "remis dans les big bags" },
+    -- (15/11) « bag » retiré : plus jamais de big bags ni d'IBC remplis, même déjà posés
     sell = { key = "AD_rest_how_sell", log = "vendu" },
 }
 
@@ -88,7 +89,7 @@ function ADRestReturn.logText(kind)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- 1. Zone de plein : stock, point d'achat, big bags
+-- 1. Zone de plein : stock, point d'achat
 -- ------------------------------------------------------------------------------------------------------------
 -- point d'achat (pas de stockage, quantité infinie) ?
 function ADRestReturn.isBuyingPoint(trigger, source)
@@ -150,6 +151,7 @@ local function storagesOf(source, ft, farmId)
     return list, total
 end
 
+--[==[ Mis de côté (15/11) : remplir les big bags / IBC déjà posés, interdit
 -- big bags / IBC du même produit, pas pleins, près de (x, z)
 local function bagsNear(x, z, ft, farmId)
     local list, total = {}, 0
@@ -176,8 +178,9 @@ local function bagsNear(x, z, ft, farmId)
     end
     return list, total
 end
+]==]
 
--- place à la zone de plein : { kind = "stock" | "buy" | "bag", marker, trigger, source, free, price } ou nil, raison
+-- place à la zone de plein : { kind = "stock" | "buy", marker, trigger, source, free, price } ou nil, raison
 function ADRestReturn.placeAt(marker, ft, farmId)
     local mx, mz = markerPos(marker)
     if mx == nil then
@@ -213,11 +216,8 @@ function ADRestReturn.placeAt(marker, ft, farmId)
     if buy ~= nil then
         return buy
     end
-    local _, free = bagsNear(mx, mz, ft, farmId)
-    if free > ADRestReturn.MIN_LITERS then
-        return { kind = "bag", marker = marker, free = free }
-    end
-    return nil, "ni stock qui l'accepte, ni point d'achat de ce produit, ni big bag pas plein à cette zone"
+    -- (15/11) plus d'étape big bags / IBC déjà posés : la suite est le point de vente (plan), sinon le reste est gardé
+    return nil, "ni stock qui l'accepte, ni point d'achat de ce produit à cette zone"
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -371,6 +371,7 @@ function ADRestReturn.apply(vehicle, tool, place)
             safe(g_currentMission.addMoney, g_currentMission, money, farmId, mt, true, true)
         end
         return moved, money
+    --[==[ Mis de côté (15/11) : remplir les big bags / IBC déjà posés, interdit
     elseif place.kind == "bag" then
         local mx, mz = markerPos(place.marker)
         if mx == nil then
@@ -393,6 +394,7 @@ function ADRestReturn.apply(vehicle, tool, place)
             return nil, "big bags pleins ou partis"
         end
         return total
+    ]==]
     elseif place.kind == "sell" then
         local trigger = place.trigger
         if not sellTriggerOk(trigger, ft, farmId) then

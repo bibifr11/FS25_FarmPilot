@@ -35,7 +35,29 @@ function PathFinderModule:partialGain(endPoint)
     end
     local startDistance = MathUtil.vector2Length(self.startX - self.target.x, self.startZ - self.target.z)
     local endDistance = MathUtil.vector2Length(endPoint.x - self.target.x, endPoint.z - self.target.z)
-    return startDistance - endDistance
+    local gain = startDistance - endDistance
+    if self.partialAlongRoute then
+        gain = math.max(gain, self:alongRouteGain(endPoint))
+    end
+    return gain
+end
+
+-- (15/11) benne de moissonneuse : le trajet fait parfois le tour du champ en s'éloignant d'abord de la cible (champ 58,
+-- bande d'herbe autour de la culture) ; chaque mètre roulé sur un trajet trouvé jusqu'à la cible la rapproche. Gain =
+-- distance le long du trajet jusqu'au point (pris parmi les points du trajet)
+function PathFinderModule:alongRouteGain(endPoint)
+    local wps = self.wayPoints
+    if wps == nil or #wps < 2 then
+        return -math.huge
+    end
+    local length = 0
+    for i = 2, #wps do
+        length = length + MathUtil.vector2Length(wps[i].x - wps[i - 1].x, wps[i].z - wps[i - 1].z)
+        if wps[i] == endPoint then
+            return length
+        end
+    end
+    return -math.huge
 end
 
 -- refused route: keep its clean beginning, up to the first refused stretch
@@ -64,7 +86,9 @@ PathFinderModule.SHARP_PARTIAL_MIN_LENGTH = 10
 
 function PathFinderModule:usePartialBeforeSharp()
     local index = self.firstSharpIndex
-    if not self:isChopperWork() or index == nil or index < 2 or not (self:partialAllowed() or self.partialPath) then
+    -- (15/11) aussi pour la benne de moissonneuse en strict (au plus près, puis nouveau calcul) ; l'ensileuse inchangée
+    local combineAlong = self.partialAlongRoute and not self:isChopperWork()
+    if not (self:isChopperWork() or combineAlong) or index == nil or index < 2 or not (self:partialAllowed() or self.partialPath) then
         return false
     end
     local length = 0

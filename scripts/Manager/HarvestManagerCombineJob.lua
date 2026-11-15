@@ -13,6 +13,9 @@
 --   part vider puis va à sa place (remorque choisie : la remorque à sa place puis le tracteur à la sienne ; sinon
 --   le « P » du véhicule) ; vide, elle y va tout de suite. Sans place réglée : comme pour l'ensileuse
 --   (CombineUnloaderModeJobDone.lua).
+-- - (15/11) Champ fini avec du grain (COMBINE_LAST_LOAD_MIN ou plus) : elle se fait d'abord VIDER sur place
+--   (goulotte sortie, ses bennes appelées comme en travail), la fin du chantier vient ensuite. La repose de la coupe
+--   attend aussi (AutonomousHeader : waitsForEmptyTank).
 -- - La benne sous la goulotte prend d'abord le reste de la trémie : elle part quand la goulotte est rentrée ou la
 --   trémie vide, au plus tard COMBINE_LAST_LOAD_TIME après la fin.
 -- - Une autre moissonneuse travaille encore sur le même point de champ : les bennes restent pour elle.
@@ -79,6 +82,59 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Champ fini (accroches dans ExternalInterface.lua)
 -- ------------------------------------------------------------------------------------------------------------
+-- (15/11) grain dans la trémie de la moissonneuse
+function ADHarvestManager.tankLevel(harvester)
+    local level = AutoDrive.getObjectFillLevels(harvester)
+    return level or 0
+end
+
+-- fin du chantier : plus d'appel, les bennes partent vider ce qu'elles ont, puis rentrent
+function ADHarvestManager:markCombineJobDone(harvester)
+    harvester.ad.combineEmptyFirst = nil
+    harvester.ad.combineEmptyFirstLogged = nil
+    harvester.ad.jobDone = true
+    harvester.ad.combineJobSince = g_time
+    harvester.ad.combineJobTold = {}
+    harvester.ad.combineJobWaitLogged = nil
+    print(string.format("[AD-Chantier] %s: champ fini, ses bennes partent vider ce qu'elles ont, puis rentrent", tostring(harvester:getName())))
+end
+
+-- (15/11) champ fini avec du grain : tant qu'elle n'est pas vide, elle reste une moissonneuse qui appelle ses bennes
+-- (goulotte sortie, comptée « en travail ») ; vide, fin du chantier. Elle reprend le travail : rien de plus.
+ADHarvestManager.COMBINE_EMPTY_LOG = 60000 -- ms entre deux lignes « attend d'être vidée »
+
+function ADHarvestManager:updateCombineEmptyFirst(harvester, vehicle)
+    local ad = harvester.ad
+    if g_time - ad.combineEmptyFirst >= ADHarvestManager.COMBINE_RESTART_GUARD and ADHarvestManager.isCombineDriverWorking(vehicle) then
+        ad.combineEmptyFirst = nil
+        ad.combineEmptyFirstLogged = nil
+        print(string.format("[AD-Chantier] %s: la moissonneuse reprend le travail avant d'etre videe", tostring(harvester:getName())))
+        return
+    end
+    local level = ADHarvestManager.tankLevel(harvester)
+    if level < ADHarvestManager.COMBINE_LAST_LOAD_MIN then
+        print(string.format("[AD-Chantier] %s: tremie videe (%.0f l)", tostring(harvester:getName()), level))
+        AutoDrive.setAugerPipeOpen({ harvester }, false)
+        self:markCombineJobDone(harvester)
+        return
+    end
+    if not AutoDrive.isPipeOut(harvester) then
+        AutoDrive.setAugerPipeOpen({ harvester }, true)
+    end
+    -- elle appelle comme en travail : dans la liste des moissonneuses actives
+    for i, idle in ipairs(self.idleHarvesters or {}) do
+        if idle == harvester then
+            table.remove(self.idleHarvesters, i)
+            table.insert(self.harvesters, harvester)
+            break
+        end
+    end
+    if g_time - (ad.combineEmptyFirstLogged or 0) >= ADHarvestManager.COMBINE_EMPTY_LOG then
+        ad.combineEmptyFirstLogged = g_time
+        print(string.format("[AD-Chantier] %s: champ fini, attend d'etre videe (%.0f l dans la tremie)", tostring(harvester:getName()), level))
+    end
+end
+
 -- vehicle : le véhicule dont le conducteur vient de finir son champ
 function ADHarvestManager:onFieldFinished(vehicle)
     if g_server == nil or vehicle == nil or self.harvesters == nil or self.idleHarvesters == nil then
@@ -90,12 +146,16 @@ function ADHarvestManager:onFieldFinished(vehicle)
                 and (harvester == vehicle or driverOf(harvester) == vehicle) then
                 if self:hasOtherWorkingCombine(harvester) then
                     print(string.format("[AD-Chantier] %s: champ fini, une autre moissonneuse travaille encore ici : les bennes restent pour elle", tostring(harvester:getName())))
+                elseif ADHarvestManager.tankLevel(harvester) >= ADHarvestManager.COMBINE_LAST_LOAD_MIN then
+                    -- (15/11) d'abord vidée : elle reste sur place, goulotte sortie, et appelle ses bennes comme en
+                    -- travail ; la fin du chantier (départ des bennes) vient quand la trémie est vide
+                    harvester.ad.combineEmptyFirst = g_time
+                    harvester.ad.combineEmptyFirstLogged = g_time
+                    AutoDrive.setAugerPipeOpen({ harvester }, true)
+                    print(string.format("[AD-Chantier] %s: champ fini, tremie %.0f l : elle se fait d'abord vider par ses bennes, puis fin du chantier",
+                        tostring(harvester:getName()), ADHarvestManager.tankLevel(harvester)))
                 else
-                    harvester.ad.jobDone = true
-                    harvester.ad.combineJobSince = g_time
-                    harvester.ad.combineJobTold = {}
-                    harvester.ad.combineJobWaitLogged = nil
-                    print(string.format("[AD-Chantier] %s: champ fini, ses bennes partent vider ce qu'elles ont, puis rentrent", tostring(harvester:getName())))
+                    self:markCombineJobDone(harvester)
                 end
             end
         end
@@ -156,6 +216,9 @@ end
 -- (accroche dans ADHarvestManager:update, après celle de l'ensileuse) champ fini : la moissonneuse n'appelle plus de
 -- benne tant qu'elle n'a pas repris le travail (updateCombineJob), même si son conducteur est encore vu actif un instant
 function ADHarvestManager:checkCombineJob(harvester, driverStopped)
+    if harvester.ad ~= nil and harvester.ad.combineEmptyFirst ~= nil then
+        return false -- (15/11) champ fini, pas encore vidée : elle appelle encore ses bennes
+    end
     if harvester.ad ~= nil and harvester.ad.combineJobSince ~= nil then
         harvester.ad.jobDone = true
         return true
@@ -164,6 +227,17 @@ function ADHarvestManager:checkCombineJob(harvester, driverStopped)
 end
 
 function ADHarvestManager:updateCombineJobs()
+    local emptying = {}
+    for _, list in ipairs({ self.harvesters, self.idleHarvesters }) do
+        for _, harvester in pairs(list) do
+            if harvester.ad ~= nil and harvester.ad.combineEmptyFirst ~= nil then
+                emptying[#emptying + 1] = harvester
+            end
+        end
+    end
+    for _, harvester in ipairs(emptying) do
+        self:updateCombineEmptyFirst(harvester, driverOf(harvester))
+    end
     for _, harvester in pairs(self.harvesters) do
         if harvester.ad ~= nil and harvester.ad.combineJobSince ~= nil then
             self:updateCombineJob(harvester, driverOf(harvester))

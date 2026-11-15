@@ -169,6 +169,11 @@ function ADGraphManager:getPathTo(vehicle, waypointId, startPoint)
         closestWaypoint = self:findMatchingWayPointForVehicle(vehicle)
         how = "devant le véhicule"
     end
+    -- FarmPilot (15/11) : jamais de départ sur une route d'accès, sauf aucun autre point à 20 m du véhicule, voir AccessRoadStart.lua
+    if closestWaypoint ~= nil and ADAccessRoads ~= nil and ADAccessRoads.fixStart ~= nil then
+        local ok, other = FarmPilotCall(ADAccessRoads.fixStart, self, vehicle, closestWaypoint)
+        if ok and other ~= nil then closestWaypoint, how = other, how .. ", route d'accès évitée" end
+    end
     if closestWaypoint ~= nil then
         local outCandidates = self:getBestOutPoints(vehicle, closestWaypoint)
         wp = self:pathFromTo(closestWaypoint, waypointId, outCandidates, vehicle)

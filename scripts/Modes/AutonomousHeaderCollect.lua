@@ -16,6 +16,10 @@
 --   culture debout, et si le côté du cadre est dégagé jusqu'à elle (isSideFree, AutonomousHeaderSpot.lua : culture,
 --   eau, fossé, obstacle). Les endroits dégagés avec la marge habituelle passent d'abord ; ensuite ceux où seule
 --   la largeur de la barre est dégagée (bande coupée au milieu d'une culture).
+-- - (15/11, champ 58) Règles de base, comme pour les bennes : seule la culture du champ de la moissonneuse compte,
+--   la culture d'un champ voisin et les îlots oubliés sont ignorés (contrôle des endroits et trajet du tracteur).
+--   La place de la barre est cherchée à COLLECT_DISTANCES m d'elle (40 m d'abord, puis plus près, puis plus loin) :
+--   une moissonneuse près du bord du champ laisse souvent de la place plus près ou plus loin.
 -- - Aucun endroit atteint : le tracteur reste où il est, le dit (message) et recommence toutes les
 --   COLLECT_RETRY_TIME ; la moissonneuse attend (WAIT_TIMEOUT au plus).
 -- - La moissonneuse ne trouve pas de chemin jusqu'à la remorque : l'endroit est écarté, la remorque va au suivant
@@ -40,6 +44,7 @@ ADHeaderFlow.COLLECT_REJECT = 15         -- m autour d'un endroit écarté
 ADHeaderFlow.COLLECT_RETRY_TIME = 60000  -- ms entre deux essais quand aucun endroit n'est atteint
 ADHeaderFlow.COLLECT_MOVES = 3           -- déplacements de la remorque au plus quand la moissonneuse n'arrive pas à elle
 ADHeaderFlow.COLLECT_LOG_MAX = 3         -- essais ratés écrits un par un dans le journal (ensuite un sur dix)
+ADHeaderFlow.COLLECT_DISTANCES = { 40, 30, 55, 70 } -- m entre la moissonneuse et la place de la barre, dans l'ordre
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Petits outils
@@ -74,6 +79,25 @@ end
 
 local function hasCrop(x, z)
     return ADFieldPark ~= nil and ADFieldPark.hasGrowingCrop ~= nil and ADFieldPark.hasGrowingCrop(x, z) == true
+end
+
+-- (15/11) règles de base pendant fn : seule la culture du champ de la moissonneuse compte (champs voisins ignorés),
+-- îlots oubliés ignorés (PathFinderModuleEntrance.lua) ; remis comme avant ensuite, même en cas d'erreur
+function ADHeaderFlow.withCombineCropRules(tractor, combine, fn, ...)
+    if PathFinderModule == nil or PathFinderModule.getCropOwnAreas == nil then
+        return fn(...)
+    end
+    local savedAreas = PathFinderModule.cropOwnAreas
+    local savedIslands = PathFinderModule.cropIgnoreIslands
+    PathFinderModule.cropOwnAreas = PathFinderModule.getCropOwnAreas(tractor, {}, combine)
+    PathFinderModule.cropIgnoreIslands = true
+    local results = table.pack(pcall(fn, ...))
+    PathFinderModule.cropOwnAreas = savedAreas
+    PathFinderModule.cropIgnoreIslands = savedIslands
+    if not results[1] then
+        error(results[2], 0)
+    end
+    return table.unpack(results, 2, results.n)
 end
 
 -- point suivi du tracteur (AutoDrive amène ce point-là au bout du chemin)
@@ -134,7 +158,11 @@ end
 
 -- endroits où amener la remorque, dans l'ordre : { x, z (point suivi du tracteur), dirX, dirZ (son cap), pose (place
 -- de la barre), narrow } ; 2e valeur : pourquoi les autres sont écartés (texte du journal)
-function ADHeaderFlow.collectSpots(tractor, combine, header, trailer, rejected)
+function ADHeaderFlow.collectSpots(tractor, combine, header, trailer, rejected, quiet)
+    return ADHeaderFlow.withCombineCropRules(tractor, combine, ADHeaderFlow.collectSpotsRaw, tractor, combine, header, trailer, rejected, quiet)
+end
+
+function ADHeaderFlow.collectSpotsRaw(tractor, combine, header, trailer, rejected, quiet)
     local tx, tz = refPoint(tractor)
     local cNode = combine.components[1].node
     local cx, _, cz = getWorldTranslation(cNode)
@@ -162,10 +190,16 @@ function ADHeaderFlow.collectSpots(tractor, combine, header, trailer, rejected)
     local combineLength = (combine.size ~= nil and combine.size.length) or ADHeaderFlow.DEFAULT_COMBINE_LENGTH or 10
     local depth = combineLength + ADHeaderDropTask.APPROACH
     local wide, narrow, why = {}, {}, {}
+    if not quiet then
+        log("%s : moissonneuse « %s » à (%.0f, %.0f)%s, tracteur à (%.0f, %.0f) : places de la barre cherchées à %s m d'elle",
+            nameOf(tractor), nameOf(combine), cx, cz, mustBeField and " sur le champ" or " hors du champ", tx, tz,
+            table.concat(ADHeaderFlow.COLLECT_DISTANCES, ", "))
+    end
+    for _, dist in ipairs(ADHeaderFlow.COLLECT_DISTANCES) do
     for _, yaw in ipairs(yaws) do
         local ux, uz = math.sin(yaw), math.cos(yaw)
         -- place de la barre, tournée dans le sens où la moissonneuse arrive (elle roule de chez elle vers la place)
-        local px, pz = cx + ux * ADHeaderPlaceTask.PLACE_DIST, cz + uz * ADHeaderPlaceTask.PLACE_DIST
+        local px, pz = cx + ux * dist, cz + uz * dist
         local heading, sx, sz = yaw, px, pz
         if model ~= nil then
             -- cap du tracteur qui tourne la place dans ce sens, et son point suivi (attelage droit)
@@ -203,7 +237,12 @@ function ADHeaderFlow.collectSpots(tractor, combine, header, trailer, rejected)
         end
         if reason ~= nil then
             why[reason] = (why[reason] or 0) + 1
+            if not quiet then
+                log("%s : place de la barre à %d m, direction %.0f°, tracteur vers (%.0f, %.0f) : écartée (%s)",
+                    nameOf(tractor), dist, math.deg(yaw), sx, sz, tostring(reason))
+            end
         end
+    end
     end
     for _, spot in ipairs(narrow) do
         wide[#wide + 1] = spot
@@ -273,13 +312,13 @@ function ADHeaderFlow.collectEnter(mode, job, moved)
         ADHeaderFlow.tractorWait(mode, job)
         return
     end
-    local spots, why = ADHeaderFlow.collectSpots(t, job.combine, job.header, job.trailer, job.collectRejected)
+    -- essais répétés toutes les minutes : le journal n'est pas rempli (seuls les premiers sont écrits un par un)
+    local quiet = (job.collectFails or 0) >= ADHeaderFlow.COLLECT_LOG_MAX
+    local spots, why = ADHeaderFlow.collectSpots(t, job.combine, job.header, job.trailer, job.collectRejected, quiet)
     if #spots == 0 then
         collectFailed(mode, job, why ~= "" and ("aucun endroit dégagé autour d'elle : " .. why) or "aucun endroit dégagé autour d'elle")
         return
     end
-    -- essais répétés toutes les minutes : le journal n'est pas rempli (seuls les premiers sont écrits un par un)
-    local quiet = (job.collectFails or 0) >= ADHeaderFlow.COLLECT_LOG_MAX
     if why ~= "" and not quiet then
         log("%s : %d endroit(s) possible(s) autour de la moissonneuse (écartés : %s)", nameOf(t), #spots, why)
     end

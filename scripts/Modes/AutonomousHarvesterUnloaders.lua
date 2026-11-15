@@ -20,9 +20,24 @@
 -- - Elle n'a pas repris au bout de FOLLOW_MAX_TIME, ou son champ a été changé à la main : les bennes ne l'attendent
 --   plus.
 --
+-- Règle (15/11) : aucune benne au changement de champ (toutes au garage) : son équipe de la session d'avant revient.
+-- - Équipe de la moissonneuse (pas l'ensileuse) : les tracteurs en mode « Décharger moissonneuse » qui l'ont servie
+--   (même 1re destination, ou servant cette moissonneuse), notés pendant qu'elle travaille et à son départ, avec
+--   leur remorque choisie (ligne « Remorque ») et leur parking. Un tracteur n'est que dans une équipe. Gardée dans
+--   la sauvegarde de la moissonneuse (#fpUnloaderTeam, identifiants uniques des véhicules).
+-- - Elle a repris le travail au champ suivant (même moment que plus haut) et aucune benne n'est pour ce champ (aucun
+--   tracteur actif en « Décharger moissonneuse » vers ce champ ou vers elle, aucune de ses bennes en route) : chaque
+--   tracteur de son équipe à l'arrêt, et chaque benne notée à l'arrêt, repasse en « Décharger moissonneuse », 1re
+--   destination = le nouveau champ, même remorque (allée chercher au départ, TrailerHitch.lua) et même parking,
+--   puis AutoDrive démarre. Pas avant : ils gêneraient la moissonneuse qui reprend sa coupe.
+-- - Jamais repris : tracteur conduit par le joueur, actif (AutoDrive, Courseplay, ouvrier), avec un autre outil
+--   attelé (sa benne ou une masse seulement), sans benne à atteler, sans destination de déchargement.
+-- - Équipe vide (première fois) : comme avant.
+--
 -- Branché par : enveloppes posées au chargement sur AutonomousMode.goToNextField (plan),
 -- CombineUnloaderMode:getParkAfterJobMarker (pas de parking tant qu'elle suit), CombineUnloaderMode:onHarvesterJobDone
--- (journal) et ADHarvestManager:update (suivi). Chargé par register.lua après AutonomousHeaderChoice.lua.
+-- (journal), ADHarvestManager:update (suivi) et ADSavegameResume.save / .load (équipe dans la sauvegarde ; clé
+-- #fpUnloaderTeam déclarée dans Specialization.lua). Chargé par register.lua après AutonomousHeaderChoice.lua.
 -- ============================================================================================================
 
 ADHarvesterUnloaders = {}
@@ -33,9 +48,14 @@ ADHarvesterUnloaders = {}
 ADHarvesterUnloaders.FOLLOW_MAX_TIME = 60 * 60 * 1000 -- ms : pas repris le travail au bout de ça, les bennes ne l'attendent plus
 ADHarvesterUnloaders.READY_GUARD = 5000               -- ms après la fin du champ avant de regarder si elle a repris le travail (comme COMBINE_RESTART_GUARD)
 ADHarvesterUnloaders.RETRY_TIME = 1000                -- ms entre deux essais pour une benne occupée
+ADHarvesterUnloaders.TEAM_SCAN_TIME = 5000            -- ms entre deux relevés de l'équipe des moissonneuses au travail (15/11)
 
 -- [moissonneuse] = { old = marqueur fini, new = marqueur suivant, crew = { [benne] = true }, since, ready, nextTry }
 ADHarvesterUnloaders.pending = {}
+-- (15/11) [moissonneuse] = { new = marqueur suivant, since } : partie sans benne qui la suit, son équipe est rappelée
+-- quand elle a repris le travail
+ADHarvesterUnloaders.recallWatch = {}
+ADHarvesterUnloaders.nextTeamScan = 0
 
 local function log(fmt, ...)
     ADHeaderFlow.log(fmt, ...)
@@ -91,6 +111,283 @@ local function isWorking(harvester)
         return true
     end
     return harvester.getIsAIActive ~= nil and harvester:getIsAIActive() == true and not harvester.ad.stateModule:isActive()
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Son équipe de bennes, gardée dans la sauvegarde
+-- ------------------------------------------------------------------------------------------------------------
+-- ensileuse (sans trémie) : rien de cette règle ne la concerne
+local function isChopper(v)
+    return v.ad ~= nil and v.ad.isChopper == true or (v.spec_combine ~= nil and v.spec_combine.isBufferCombine == true)
+end
+
+local function isTeamHarvester(v)
+    return not isGone(v) and ADHeaderFlow.isCombine(v) and not isChopper(v)
+end
+
+-- identifiant stable du véhicule (le même d'une partie à l'autre), ou nil
+local function uidOf(v)
+    if v == nil or v.getUniqueId == nil then
+        return nil
+    end
+    local ok, id = FarmPilotCall(v.getUniqueId, v)
+    if ok and id ~= nil and id ~= "" then
+        return tostring(id)
+    end
+    return nil
+end
+
+local function byUid(uid)
+    if uid == nil or uid == "" then
+        return nil
+    end
+    local system = g_currentMission ~= nil and g_currentMission.vehicleSystem or nil
+    if system ~= nil and system.getVehicleByUniqueId ~= nil then
+        local ok, v = FarmPilotCall(system.getVehicleByUniqueId, system, uid)
+        if ok and v ~= nil then
+            return v
+        end
+    end
+    for _, v in pairs(vehicles()) do
+        if uidOf(v) == uid then
+            return v
+        end
+    end
+    return nil
+end
+
+local function unloadModeOf(v)
+    return v.ad.modes ~= nil and v.ad.modes[AutoDrive.MODE_UNLOAD] or nil
+end
+
+-- réglages du tracteur à garder : remorque choisie (nil = celle attelée) et parking
+local function settingsOf(v)
+    local sm = v.ad.stateModule
+    local trailer = sm.getFpTrailer ~= nil and sm:getFpTrailer() or nil
+    local park = sm.getParkDestinationAtJobFinished ~= nil and sm:getParkDestinationAtJobFinished() or nil
+    return {
+        trailer = uidOf(trailer) or sm.fpTrailerUniqueId,
+        park = (park ~= nil and park >= 1) and park or nil
+    }
+end
+
+-- [uid] = { trailer = uid ou nil, park = n° de marqueur ou nil }
+function ADHarvesterUnloaders.getTeam(harvester)
+    return harvester ~= nil and harvester.ad ~= nil and harvester.ad.fpUnloaderTeam or nil
+end
+
+-- note les tracteurs actifs en « Décharger moissonneuse » qui la servent (marker : son champ) ; un tracteur n'est
+-- que dans une équipe
+function ADHarvesterUnloaders.rememberTeam(harvester, marker)
+    if not isTeamHarvester(harvester) then
+        return 0
+    end
+    local count = 0
+    for _, v in pairs(vehicles()) do
+        local sm = v.ad ~= nil and v.ad.stateModule or nil
+        local mode = sm ~= nil and unloadModeOf(v) or nil
+        if v ~= harvester and mode ~= nil and not ADHeaderFlow.isCombine(v) and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:isActive()
+            and (mode.combine == harvester or (mode.combine == nil and marker ~= nil and sm:getFirstMarker() == marker)) then
+            local uid = uidOf(v)
+            if uid ~= nil then
+                for _, other in pairs(vehicles()) do
+                    local team = other ~= harvester and ADHarvesterUnloaders.getTeam(other) or nil
+                    if team ~= nil then
+                        team[uid] = nil
+                    end
+                end
+                harvester.ad.fpUnloaderTeam = harvester.ad.fpUnloaderTeam or {}
+                if harvester.ad.fpUnloaderTeam[uid] == nil then
+                    log("%s : « %s » noté dans son équipe de bennes", nameOf(harvester), nameOf(v))
+                end
+                harvester.ad.fpUnloaderTeam[uid] = settingsOf(v)
+                count = count + 1
+            end
+        end
+    end
+    return count
+end
+
+-- relevé régulier : les moissonneuses au travail notent leurs bennes
+local function scanTeams()
+    if g_time < ADHarvesterUnloaders.nextTeamScan then
+        return
+    end
+    ADHarvesterUnloaders.nextTeamScan = g_time + ADHarvesterUnloaders.TEAM_SCAN_TIME
+    for _, v in pairs(vehicles()) do
+        if isTeamHarvester(v) and isWorking(v) then
+            ADHarvesterUnloaders.rememberTeam(v, v.ad.stateModule:getFirstMarker())
+        end
+    end
+end
+
+-- sauvegarde : « uid|remorque|parking;… »
+function ADHarvesterUnloaders.teamToString(team)
+    if team == nil then
+        return nil
+    end
+    local uids = {}
+    for uid in pairs(team) do
+        uids[#uids + 1] = uid
+    end
+    table.sort(uids)
+    local parts = {}
+    for _, uid in ipairs(uids) do
+        local memo = team[uid]
+        parts[#parts + 1] = string.format("%s|%s|%s", uid, memo.trailer or "", memo.park ~= nil and tostring(memo.park) or "")
+    end
+    return #parts > 0 and table.concat(parts, ";") or nil
+end
+
+function ADHarvesterUnloaders.teamFromString(text)
+    if type(text) ~= "string" or text == "" then
+        return nil
+    end
+    local team, count = {}, 0
+    for part in string.gmatch(text, "[^;]+") do
+        local uid, trailer, park = string.match(part, "^([^|]*)|([^|]*)|([^|]*)$")
+        if uid ~= nil and uid ~= "" then
+            team[uid] = { trailer = trailer ~= "" and trailer or nil, park = tonumber(park) }
+            count = count + 1
+        end
+    end
+    return count > 0 and team or nil
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Rappel de l'équipe quand elle a repris le travail sans benne
+-- ------------------------------------------------------------------------------------------------------------
+-- une benne est déjà pour ce champ : tracteur actif en « Décharger moissonneuse » vers ce champ ou vers elle, ou une
+-- de ses bennes notées encore en route
+local function hasUnloaderFor(harvester, marker, entry)
+    for _, v in pairs(vehicles()) do
+        local sm = v.ad ~= nil and v.ad.stateModule or nil
+        if v ~= harvester and sm ~= nil and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:isActive() then
+            local mode = unloadModeOf(v)
+            if sm:getFirstMarker() == marker or (mode ~= nil and mode.combine == harvester)
+                or (entry ~= nil and entry.crew[v] and sm:getFirstMarker() == entry.old) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- un outil attelé qui n'est ni sa benne ni une masse ; sinon false et la benne attelée
+local function otherToolOf(tractor, wanted)
+    local list = ADTrailerHitch ~= nil and ADTrailerHitch.attachedTrailers(tractor) or {}
+    local own = nil
+    for _, o in ipairs(list) do
+        if own == nil and ADTrailerHitch.isTrailerObject(o) and (wanted == nil or o == wanted) then
+            own = o
+        else
+            return true
+        end
+    end
+    return false, own
+end
+
+-- nil = repris ; sinon la raison
+local function recallOne(harvester, tractor, memo, marker)
+    local sm = tractor.ad.stateModule
+    local mode = unloadModeOf(tractor)
+    if mode == nil then
+        return "pas de mode « Décharger moissonneuse »"
+    end
+    if AutoDrive.getIsEntered ~= nil and AutoDrive:getIsEntered(tractor:getRootVehicle()) then
+        return "conduit par le joueur"
+    end
+    if sm:isActive() or (AutoDrive.getIsCPActive ~= nil and AutoDrive:getIsCPActive(tractor))
+        or (tractor.getIsAIActive ~= nil and tractor:getIsAIActive()) then
+        return "au travail ailleurs"
+    end
+    local wanted = memo.trailer ~= nil and byUid(memo.trailer) or nil
+    local other, own = otherToolOf(tractor, wanted)
+    if other then
+        return "un autre outil est attelé"
+    end
+    if wanted ~= nil and own == nil then
+        local attacher = wanted.getAttacherVehicle ~= nil and wanted:getAttacherVehicle() or nil
+        if attacher ~= nil then
+            return "sa remorque est attelée à un autre véhicule"
+        end
+    end
+    if wanted == nil and own == nil then
+        return "pas de benne à atteler"
+    end
+    if sm:getSecondMarker() == nil then
+        return "pas de destination de déchargement"
+    end
+    tractor.ad.fpModeBeforePark = nil -- (15/11) le mode d'avant une dépose ne revient plus à l'arrêt
+    sm:setMode(AutoDrive.MODE_UNLOAD)
+    if sm:getMode() ~= AutoDrive.MODE_UNLOAD then
+        return "mode refusé"
+    end
+    sm:setFirstMarker(marker.markerIndex)
+    if sm.setFpTrailer ~= nil and sm:getFpTrailer() ~= wanted then
+        sm:setFpTrailer(wanted) -- même remorque qu'avant (nil = celle attelée)
+    end
+    if memo.park ~= nil and sm.setParkDestinationAtJobFinished ~= nil and ADGraphManager:getMapMarkerById(memo.park) ~= nil then
+        sm:setParkDestinationAtJobFinished(memo.park)
+    end
+    tractor.ad.harvestJobDone = nil
+    mode:start(AutoDrive.USER_PLAYER)
+    if not sm:isActive() then
+        return "départ refusé"
+    end
+    print(string.format("[AD-Chantier] %s: equipe de %s, rappele vers %s (remorque %s)", tostring(tractor:getName()), tostring(harvester:getName()),
+        tostring(marker.name), ((wanted or own) ~= nil and ADTrailerHitch ~= nil) and ADTrailerHitch.label(wanted or own) or "?"))
+    return nil
+end
+
+-- elle a repris le travail à marker sans benne : son équipe à l'arrêt (et ses bennes notées à l'arrêt) y part ;
+-- exclude = bennes à laisser ; renvoie le nombre de tracteurs repris
+function ADHarvesterUnloaders.recallTeam(harvester, marker, entry, exclude)
+    if not isTeamHarvester(harvester) or marker == nil then
+        return 0
+    end
+    local team = ADHarvesterUnloaders.getTeam(harvester)
+    if team == nil or next(team) == nil then
+        return 0 -- première fois : comme avant
+    end
+    if hasUnloaderFor(harvester, marker, entry) then
+        return 0
+    end
+    local list, seen = {}, {}
+    for uid, memo in pairs(team) do
+        local v = byUid(uid)
+        if v == nil then
+            team[uid] = nil -- vendu
+        elseif not isGone(v) and v ~= harvester and not seen[v] and not (exclude ~= nil and exclude[v]) then
+            seen[v] = true
+            list[#list + 1] = { vehicle = v, memo = memo }
+        end
+    end
+    if entry ~= nil then
+        for v in pairs(entry.crew) do
+            if not isGone(v) and not seen[v] and not v.ad.stateModule:isActive() and v.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD then
+                seen[v] = true
+                list[#list + 1] = { vehicle = v, memo = settingsOf(v) }
+            end
+        end
+    end
+    table.sort(list, function(a, b) return nameOf(a.vehicle) < nameOf(b.vehicle) end)
+    local count = 0
+    for _, item in ipairs(list) do
+        local ok, why = FarmPilotCall(recallOne, harvester, item.vehicle, item.memo, marker)
+        if not ok then
+            log("ERREUR rappel de « %s » : %s", nameOf(item.vehicle), tostring(why))
+        elseif why ~= nil then
+            log("%s : « %s » pas rappelé (%s)", nameOf(harvester), nameOf(item.vehicle), why)
+        else
+            count = count + 1
+            log("%s : aucune benne à « %s », « %s » de son équipe rappelé", nameOf(harvester), tostring(marker.name), nameOf(item.vehicle))
+        end
+    end
+    if count > 0 then
+        AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersRecall", count, tostring(marker.name))
+    end
+    return count
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -250,6 +547,7 @@ local function updateEntry(harvester, entry)
             ADHarvesterUnloaders.pending[harvester] = nil
             log("%s : « %s » récolté par « %s », les bennes y restent", nameOf(harvester), tostring(entry.old.name), nameOf(other))
             AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersStay", tostring(entry.old.name))
+            ADHarvesterUnloaders.recallTeam(harvester, entry.new, nil, entry.crew) -- (15/11) son équipe à l'arrêt, sans ces bennes-là
             return
         end
         entry.ready = true
@@ -258,8 +556,13 @@ local function updateEntry(harvester, entry)
         for _ in pairs(entry.crew) do
             count = count + 1
         end
-        log("%s : au travail à « %s », ses %d benne(s) la rejoignent", nameOf(harvester), tostring(entry.new.name), count)
-        AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersFollow", count, tostring(entry.new.name))
+        -- (15/11) aucune benne pour le nouveau champ : son équipe et ses bennes à l'arrêt repartent (les bennes reprises
+        -- ont alors le nouveau champ en 1re destination, moveUnloader les laisse)
+        local recalled = ADHarvesterUnloaders.recallTeam(harvester, entry.new, entry, nil)
+        if recalled == 0 then
+            log("%s : au travail à « %s », ses %d benne(s) la rejoignent", nameOf(harvester), tostring(entry.new.name), count)
+            AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersFollow", count, tostring(entry.new.name))
+        end
     end
     if g_time < entry.nextTry then
         return
@@ -284,8 +587,40 @@ local function updateEntry(harvester, entry)
     end
 end
 
+-- (15/11) partie sans benne qui la suit : quand elle a repris le travail, son équipe est rappelée
+local function updateWatch(harvester, watch)
+    ADHarvesterUnloaders.recallWatch[harvester] = nil
+    if isGone(harvester) or ADHarvesterUnloaders.pending[harvester] ~= nil then
+        return
+    end
+    local sm = harvester.ad.stateModule
+    if sm:getMode() ~= AutoDrive.MODE_AUTONOMOUS or sm:getFirstMarker() ~= watch.new then
+        return -- son champ a été changé
+    end
+    if g_time - watch.since > ADHarvesterUnloaders.FOLLOW_MAX_TIME then
+        log("%s : pas repris le travail en %d min, son équipe n'est pas rappelée", nameOf(harvester), ADHarvesterUnloaders.FOLLOW_MAX_TIME / 60000)
+        return
+    end
+    local since = harvester.ad.combineJobSince or watch.since
+    if g_time - since < ADHarvesterUnloaders.READY_GUARD or not isWorking(harvester) then
+        ADHarvesterUnloaders.recallWatch[harvester] = watch -- pas encore au travail : on attend
+        return
+    end
+    ADHarvesterUnloaders.recallTeam(harvester, watch.new, nil, nil)
+end
+
 -- (à chaque image, avant ADHarvestManager:update) suivi des moissonneuses parties au champ suivant
 function ADHarvesterUnloaders.update(dt)
+    scanTeams() -- (15/11) équipe de chaque moissonneuse au travail
+    if next(ADHarvesterUnloaders.recallWatch) ~= nil then
+        local watched = {}
+        for harvester, watch in pairs(ADHarvesterUnloaders.recallWatch) do
+            watched[#watched + 1] = { harvester = harvester, watch = watch }
+        end
+        for _, w in ipairs(watched) do
+            updateWatch(w.harvester, w.watch)
+        end
+    end
     if next(ADHarvesterUnloaders.pending) == nil then
         return
     end
@@ -312,6 +647,7 @@ function AutonomousMode.goToNextField(vehicle)
     local oldMarker = sm ~= nil and sm:getFirstMarker() or nil
     if harvester then
         vehicle.ad.fpHeaderPrevField = sm:getFirstMarkerId()
+        FarmPilotCall(ADHarvesterUnloaders.rememberTeam, vehicle, oldMarker) -- (15/11) ses bennes encore là sont notées
     end
     local result = baseGoToNextField(vehicle)
     if harvester then
@@ -321,6 +657,13 @@ function AutonomousMode.goToNextField(vehicle)
             local ok, err = FarmPilotCall(ADHarvesterUnloaders.plan, vehicle, oldMarker, newMarker)
             if not ok then
                 log("ERREUR bennes au champ suivant : %s", tostring(err))
+            end
+            -- (15/11) aucune benne ne la suit et elle a une équipe : rappelée quand elle aura repris le travail
+            ADHarvesterUnloaders.recallWatch[vehicle] = nil
+            local team = ADHarvesterUnloaders.getTeam(vehicle)
+            if ADHarvesterUnloaders.pending[vehicle] == nil and team ~= nil and next(team) ~= nil and isTeamHarvester(vehicle) then
+                ADHarvesterUnloaders.recallWatch[vehicle] = { new = newMarker, since = g_time }
+                log("%s : aucune benne ne la suit, son équipe sera rappelée à « %s » quand elle aura repris le travail", nameOf(vehicle), tostring(newMarker.name))
             end
         end
     end
@@ -358,8 +701,41 @@ if ADHarvestManager ~= nil and ADHarvestManager.update ~= nil then
         local ok, err = FarmPilotCall(ADHarvesterUnloaders.update, dt)
         if not ok then
             ADHarvesterUnloaders.pending = {}
+            ADHarvesterUnloaders.recallWatch = {}
             log("ERREUR suivi des bennes au champ suivant : %s", tostring(err))
         end
         return baseUpdate(self, dt)
+    end
+end
+
+-- (15/11) son équipe dans la sauvegarde de la moissonneuse (#fpUnloaderTeam)
+if ADSavegameResume ~= nil then
+    local baseSave = ADSavegameResume.save
+    function ADSavegameResume.save(stateModule, xmlFile, key, ...)
+        if baseSave ~= nil then
+            baseSave(stateModule, xmlFile, key, ...)
+        end
+        local ok, err = FarmPilotCall(function()
+            local vehicle = stateModule.vehicle
+            local text = vehicle ~= nil and ADHarvesterUnloaders.teamToString(ADHarvesterUnloaders.getTeam(vehicle)) or nil
+            if text ~= nil then
+                xmlFile:setValue(key .. "#fpUnloaderTeam", text)
+            end
+        end)
+        if not ok then
+            log("ERREUR sauvegarde de l'équipe de bennes : %s", tostring(err))
+        end
+    end
+
+    local baseLoad = ADSavegameResume.load
+    function ADSavegameResume.load(stateModule, xmlFile, key, ...)
+        if baseLoad ~= nil then
+            baseLoad(stateModule, xmlFile, key, ...)
+        end
+        local vehicle = stateModule.vehicle
+        if vehicle ~= nil and vehicle.ad ~= nil then
+            local ok, text = FarmPilotCall(xmlFile.getValue, xmlFile, key .. "#fpUnloaderTeam")
+            vehicle.ad.fpUnloaderTeam = ok and ADHarvesterUnloaders.teamFromString(text) or nil
+        end
     end
 end

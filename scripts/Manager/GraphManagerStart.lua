@@ -135,6 +135,7 @@ function ADGraphManager:pathFromOtherStart(vehicle, targetId, failedId)
             ids[#ids + 1] = closest
         end
     end
+    if ADAccessRoads ~= nil and ADAccessRoads.filterStartIds ~= nil then ids = ADAccessRoads.filterStartIds(vehicle, ids) end -- (15/11) pas de départ sur une route d'accès (AccessRoadStart.lua)
     local tried = {}
     if failedId ~= nil then
         tried[failedId] = true

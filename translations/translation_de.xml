@@ -420,6 +420,8 @@
 		<text name="AD_fpGoal_bales_short" text="Ballen abladen" />
 		<text name="AD_fpGoal_swap" text="Anhängertausch bei %s" />
 		<text name="AD_fpGoal_swap_short" text="Anhängertausch" />
+		<text name="AD_fpGoal_drop" text="%s an seinen Platz stellen" />
+		<text name="AD_fpGoal_drop_short" text="an seinen Platz stellen" />
 		<text name="AD_fpGoal_hitch" text="%s ankuppeln" />
 		<text name="AD_fpGoal_hitch_short" text="Anhänger ankuppeln" />
 		<text name="AD_fpGoal_hitch_tiny" text="Ankuppeln" />
@@ -493,7 +495,7 @@
 		<text name="gui_ad_fieldParkWhileWaiting" text="Im Feld warten" />
 		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Ein Überladefahrzeug, das auf den Ruf eines Dreschers wartet, fährt ins Feld und parkt auf einer freien Fläche ohne Bestand, abseits der Wege, damit es die Straße nicht blockiert" />
 		<text name="gui_ad_autonomousNoCp" text="Autonom ohne Courseplay" />
-		<text name="gui_ad_autonomousNoCp_tooltip" text="Was der Autonom-Modus tut, wenn Courseplay nicht installiert ist: der Fahrer hält an und wartet, oder der Helfer des Spiels übernimmt das Feld (klassischer Modus)" />
+		<text name="gui_ad_autonomousNoCp_tooltip" text="Was der Autonom-Modus tut, wenn Courseplay nicht installiert ist oder keinen Kurs mit der Arbeitsbreite auf dem Feld hat: der Fahrer hält an und wartet, oder der Helfer des Spiels übernimmt das Feld (klassischer Modus)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Warten" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Helfer des Spiels" />
 		<text name="gui_ad_dirtRoads" text="Tertiärstraßen" />
@@ -508,6 +510,8 @@
 		<text name="AD_foldWait" text="%s %s: warte, bis %s eingeklappt ist (%d %%)%s, fahre nicht los" />
 		<text name="gui_ad_dirtRoadSpeed" text="Höchstgeschwindigkeit auf Tertiärstraßen" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Höchstgeschwindigkeit auf Tertiärstraßen-Punkten. Die Routenberechnung berücksichtigt sie: eine Tertiärstraße wird nur genutzt, wenn sie Zeit spart" />
+		<text name="gui_ad_secondaryRoadSpeed" text="Höchstgeschwindigkeit auf Nebenstraßen" />
+		<text name="gui_ad_secondaryRoadSpeed_tooltip" text="Höchstgeschwindigkeit auf Nebenstraßen-Punkten. Die Routenberechnung berücksichtigt sie: eine Nebenstraße wird nur genutzt, wenn sie Zeit spart" />
 		<text name="gui_ad_roadTypes_title_secondary" text="Nebenstrecken: Fahrzeugtypen" />
 		<text name="gui_ad_roadTypes_title_tertiary" text="Tertiärstraßen: Fahrzeugtypen" />
 		<text name="gui_ad_roadTypes_info_secondary" text="Wenn « Nebenstrecken » auf Auto steht, für alle Fahrzeuge. Ja: Nebenstrecken werden genutzt, sobald sie Zeit sparen. Nein: nur wenn es keine andere Strecke gibt." />
@@ -613,7 +617,9 @@
 		<text name="AD_autonomous_noWidth" text="Arbeitsbreite unbekannt, wartet" />
 		<text name="AD_autonomous_noTool" text="Autonom-Modus: kein Arbeitsgerät angehängt" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay nicht gefunden: Helfer des Spiels auf Feld %s gestartet" />
+		<text name="AD_autonomous_aiNoCourse" text="kein Courseplay-Kurs mit %s m auf Feld %s: Helfer des Spiels gestartet" />
 		<text name="AD_autonomous_aiFailed" text="der Helfer des Spiels konnte nicht starten, wartet" />
+		<text name="AD_autonomous_aiStopped" text="der Helfer des Spiels hat vor dem Feldende angehalten (%s): der Traktor bleibt hier" />
 		<text name="AD_autonomous_noCp" text="Courseplay auf diesem Fahrzeug nicht gefunden, wartet" />
 		<text name="AD_autonomous_cpFailed" text="Courseplay konnte mit „%s“ nicht starten, wartet" />
 		<text name="AD_autonomous_nextField" text="Nächstes Feld: %s" />
@@ -694,10 +700,21 @@
 		<text name="AD_autonomous_unloadersFollow" text="%d Abfahrer folgen nach « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d Abfahrer folgen nach « %s », sobald der Mähdrescher wieder arbeitet" />
 		<text name="AD_autonomous_unloadersStay" text="die Abfahrer bleiben bei « %s » (andere Maschine)" />
+		<text name="AD_autonomous_unloadersRecall" text="%d Abfahrer ihres Teams vom Hof zurückgeholt, unterwegs nach « %s »" />
 		<text name="AD_fpFn_cutter" text="Schneidwerk" />
 		<text name="AD_fpFn_cornHeader" text="Maisgebiss" />
 		<text name="AD_fpFn_chopperHeader" text="Häckslervorsatz" />
 		<text name="AD_autonomous_headerChosenBusy" text="« %s » (gewählt) ist nicht frei, « %s » fährt stattdessen" />
+		<text name="AD_autonomous_headerStayNoTrailer" text="Feld fertig, kein leerer Schneidwerkswagen: bleibt hier mit dem Schneidwerk, neuer Versuch jede Minute" />
+		<text name="AD_autonomous_headerStayNoTractor" text="Feld fertig, kein freier Traktor für den Schneidwerkswagen « %s »: bleibt hier mit dem Schneidwerk, neuer Versuch jede Minute" />
+		<text name="AD_autonomous_headerStay" text="Feld fertig, Schneidwerk nicht abgelegt: bleibt hier mit dem Schneidwerk, neuer Versuch jede Minute" />
+		<text name="AD_task_autonomous_headerStay" text="Auf Schneidwerkswagen und Traktor warten" />
+		<text name="AD_autonomous_headerParkStay" text="Parken angefordert: kein leerer Schneidwerkswagen, bleibt hier mit dem Schneidwerk" />
+		<text name="AD_autonomous_headerParkStayOther" text="Parken angefordert: das Schneidwerk kann nicht abgelegt werden, bleibt hier mit dem Schneidwerk" />
+		<text name="AD_autonomous_headerEmptyFirst" text="Feld fertig: wartet auf das Abtanken, bevor das Schneidwerk abgelegt wird" />
+		<text name="AD_task_autonomous_headerEmptyFirst" text="Auf das Abtanken warten" />
+		<text name="AD_autonomous_headerCarry" text="« %s » passt nicht über die Straße zum nächsten Feld: zurück auf den Wagen, der Traktor bringt es" />
+		<text name="AD_autonomous_headerCarryStay" text="« %s » passt nicht über die Straße zum nächsten Feld und kann nicht abgelegt werden (kein leerer Wagen oder kein freier Traktor): Halt hier" />
 		<text name="gui_ad_headerTractor_title" text="Schneidwerkstransport" />
 		<text name="gui_ad_headerTractor_tooltip" text="Fahrzeug für den Schneidwerkswagen" />
 		<text name="gui_ad_headerTractor_auto" text="Nächster freier Traktor" />
@@ -736,6 +753,19 @@
 		<text name="AD_trailer_fetchBusy" text="der Anhänger '%s' hängt an einem anderen Fahrzeug" />
 		<text name="AD_trailer_fetchOther" text="ein Anhänger oder Gerät ist schon angehängt: abhängen, um '%s' zu holen, oder 'Der angehängte' in der Zeile 'Anhänger' wählen" />
 		<text name="AD_trailer_fetchNoJoint" text="der Anhänger '%s' passt nicht an die Heckkupplung dieses Traktors (oder sie ist schon belegt)" />
+		<text name="AD_drive_row" text="Anhängen: %s" />
+		<text name="AD_drive_rowNone" text="Anhängen: nichts" />
+		<text name="AD_drive_listNone" text="Nichts (so losfahren)" />
+		<text name="AD_drive_fetchGo" text="hängt '%s' vor der Fahrt an" />
+		<text name="AD_drive_fetchDone" text="'%s' angehängt, Start" />
+		<text name="AD_drive_fetchFailed" text="'%s' konnte nicht angehängt werden, Stopp" />
+		<text name="AD_drive_fetchNoPath" text="kein Weg bis vor '%s': Traktor davor in Linie stellen und neu starten" />
+		<text name="AD_drive_fetchMissed" text="Anhängen von '%s' fehlgeschlagen, Stopp davor" />
+		<text name="AD_drive_fetchBusy" text="'%s' hängt an einem anderen Fahrzeug" />
+		<text name="AD_drive_fetchOther" text="schon angehängt ohne Parkplatz (oder mehrere): abhängen, um '%s' zu holen, oder 'Nichts' in der Zeile 'Anhängen' wählen" />
+		<text name="AD_drive_fetchNoJoint" text="'%s' passt nicht hinten an diesen Traktor (oder die Heckkupplung ist belegt)" />
+		<text name="AD_drive_dropGo" text="stellt '%s' an seinen Platz, dann wird '%s' angehängt" />
+		<text name="AD_drive_dropFailed" text="'%s' konnte an seinem Platz nicht abgehängt werden, Stopp" />
 		<text name="AD_trailer_dropGo" text="Arbeit fertig: der Anhänger '%s' fährt an seinen Platz, dann der Traktor an seinen" />
 		<text name="gui_ad_trailerSwap_title" text="Anhängertausch" />
 		<text name="gui_ad_trailerSwap_tooltip" text="Anhängertausch bei der Ablieferung" />
@@ -1071,7 +1101,7 @@
 		<text name="fp_help_c7_1_title" text="Spreader settings" />
 		<text name="fp_help_c7_1_text" text="Trailed or self-propelled. Cog on the machine's row, « Spreader settings » window:&#10;- Product to load (those the tank accepts).&#10;- Quantity to take: Full, or Just enough for the field (rate x area + 10 %, the estimate is shown).&#10;- Refill point (markers near a place that has the product).&#10;- Validate (Space key). Start refused until it is validated." />
 		<text name="fp_help_c7_2_title" text="Refill and rest" />
-		<text name="fp_help_c7_2_text" text="Refilling works like for the seeder, at the start and when the tank is empty at the field. At the end of the field: same product on the next field with the same machine, the rest is kept. Otherwise the rest is given back to the stock or sold, then the usual steps. Slurry, manure, digestate or a machine that cannot unload: the rest is kept." />
+		<text name="fp_help_c7_2_text" text="Refilling works like for the seeder, at the start and when the tank is empty at the field. At the end of the field: same product on the next field with the same machine, the rest is kept. Otherwise the rest is given back to the stock or sold, then the usual steps. Slurry, manure, digestate: the rest also goes back into the pit / the storage, or is sold." />
 		<text name="fp_help_c7_3_title" text="P button with product left" />
 		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
 		<text name="fp_help_c8_title" text="Baler" />

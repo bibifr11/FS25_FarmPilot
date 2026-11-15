@@ -33,8 +33,23 @@
 --   moissonneuse recule et va à sa place ; le tracteur pose la remorque à sa place puis se gare (fin de travail
 --   habituelle).
 -- - Place de la barre sur la remorque (lockPose) : AutonomousHeaderMount.lua.
+-- - (15/11) Barre décrochée par le jeu pendant le trajet mais toujours posée sur le plateau : elle compte comme sur
+--   la remorque et le jeu la bloque de nouveau (restsOn, holds).
 -- - Barre sans remorque (coupe à maïs...) : la moissonneuse la repose elle-même, à sa place ou là où elle l'a prise,
---   avant toute remorque (AutonomousHeaderGround.lua).
+--   avant toute remorque (AutonomousHeaderGround.lua). (15/11) Une barre prise sur une remorque y retourne toujours.
+-- - (15/11) Champ fini sans remorque porte-barre vide ou sans tracteur libre : la moissonneuse reste où elle est
+--   (moteur coupé comme une attente normale), message au joueur, nouvel essai toutes les minutes ; jamais la fin
+--   d'origine par la route avec la barre (startFieldEndWait).
+-- - (15/11) Rien ne roule dans une culture : l'attelage d'une barre posée sur sa remorque, la remorque amenée près de
+--   la moissonneuse et la pose n'utilisent jamais le secours de la recherche de chemin qui traverse la culture
+--   (pf.noFallback : startFetchAttach ici, Tasks/HeaderDropTask.lua).
+-- - (15/11) « Barre suivante » : changée au champ suivant même quand la moissonneuse garde son travail de la barre
+--   prise (phase « harvest »), qui est alors terminé.
+-- - (15/11) Fin de champ : la moissonneuse se fait d'abord vider (trémie sous ADHarvestManager.COMBINE_LAST_LOAD_MIN
+--   l), sur place, puis seulement la repose de la barre (startTankWait ; côté bennes : waitsForEmptyTank).
+-- - (15/11) Départ au champ suivant avec une barre prise sur une remorque qui ne passe pas sur la route (ni entrée
+--   directe, ni route assez large : AutonomousHeaderEntry.lua, headerTravelOk) : reposée sur sa remorque et ré-amenée
+--   par le tracteur (flux du changement de barre).
 -- - La barre est choisie seule (pas de ligne en plus dans le HUD). Le travail en cours n'est pas sauvegardé : partie
 --   rechargée pendant la récolte = remorque retrouvée à la fin du champ (celle du départ si elle est vide, sinon la
 --   remorque porte-barre vide la plus proche qui a une place pour cette barre).
@@ -187,11 +202,84 @@ function ADHeaderFlow.isHeaderTrailer(v)
     return false
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Barre décrochée de sa remorque, toujours posée dessus
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11, champ 58) le verrou du jeu a lâché la barre pendant le trajet (elle n'était plus dans les objets bloqués
+-- ni en attente de l'être) mais elle était toujours posée sur la remorque. Elle passait pour une barre « par terre » :
+-- côté du cadre deviné (lockPose, cas 4), mauvais côté contrôlé à l'arrivée, moissonneuse envoyée du mauvais côté,
+-- repose prévue par terre en fin de champ. Maintenant : une barre posée sur le plateau compte comme sur la remorque
+-- (restsOn) et elle est rendue au jeu pour qu'il la bloque de nouveau (même chemin que le déclencheur du plateau :
+-- en attente, bloquée dès qu'elle ne bouge plus).
+ADHeaderFlow.REST_SIDE = 2.0          -- m de chaque côté de l'axe du plateau (barre posée en travers comprise)
+ADHeaderFlow.REST_END = 1.0           -- m au-delà de la demi-longueur de la remorque
+ADHeaderFlow.REST_BELOW = 0.5         -- m sous le plateau au plus (barre tombée à côté : plus bas)
+ADHeaderFlow.REST_ABOVE = 3.0         -- m au-dessus du plateau au plus
+ADHeaderFlow.relocked = setmetatable({}, { __mode = "k" }) -- barre déjà rendue au jeu (journal une fois)
+
+-- la partie de la remorque qui porte la barre (même repère qu'AutonomousHeaderMount.lua : rememberMount)
+function ADHeaderFlow.bedNode(trailer)
+    local s = trailer ~= nil and trailer.spec_dynamicMountAttacher or nil
+    local trigger = s ~= nil and s.dynamicMountAttacherTrigger or nil
+    if trigger ~= nil and trigger.rootNode ~= nil then
+        return trigger.rootNode
+    end
+    return trailer ~= nil and trailer.components ~= nil and trailer.components[1] ~= nil and trailer.components[1].node or nil
+end
+
+-- la barre est posée sur le plateau de la remorque (pas attelée), bloquée ou non
+function ADHeaderFlow.restsOn(trailer, header)
+    if trailer == nil or header == nil or trailer == header or isGone(header) or attacherOf(header) ~= nil then
+        return false
+    end
+    if header.components == nil or header.components[1] == nil or header.components[1].node == nil then
+        return false
+    end
+    local bed = ADHeaderFlow.bedNode(trailer)
+    if bed == nil then
+        return false
+    end
+    local wx, wy, wz = getWorldTranslation(header.components[1].node)
+    local x, y, z = worldToLocal(bed, wx, wy, wz)
+    if x == nil then
+        return false
+    end
+    local length = trailer.size ~= nil and trailer.size.length or 10
+    return math.abs(x) <= ADHeaderFlow.REST_SIDE and math.abs(z) <= length / 2 + ADHeaderFlow.REST_END
+        and y >= -ADHeaderFlow.REST_BELOW and y <= ADHeaderFlow.REST_ABOVE
+end
+
+-- barre posée sur le plateau mais plus bloquée : rendue au jeu, qui la bloque dès qu'elle ne bouge plus
+-- (DynamicMountAttacher:onUpdateTick, objets en attente)
+local function relock(trailer, header)
+    local s = trailer.spec_dynamicMountAttacher
+    if not trailer.isServer or s.pendingDynamicMountObjects == nil then
+        return
+    end
+    s.pendingDynamicMountObjects[header] = 1
+    if trailer.raiseActive ~= nil then
+        trailer:raiseActive()
+    end
+    if ADHeaderFlow.relocked[header] ~= trailer then
+        ADHeaderFlow.relocked[header] = trailer
+        log("« %s » n'était plus bloquée sur « %s » mais toujours posée dessus : rendue au jeu pour être bloquée de nouveau", label(header), label(trailer))
+    end
+end
+
 local function holds(trailer, object)
     local s = trailer.spec_dynamicMountAttacher
-    return (s.dynamicMountedObjects ~= nil and s.dynamicMountedObjects[object] ~= nil)
-        or (s.pendingDynamicMountObjects ~= nil and s.pendingDynamicMountObjects[object] ~= nil)
+    if (s.dynamicMountedObjects ~= nil and s.dynamicMountedObjects[object] ~= nil)
+        or (s.pendingDynamicMountObjects ~= nil and s.pendingDynamicMountObjects[object] ~= nil) then
+        return true
+    end
+    -- (15/11) décrochée mais toujours posée dessus
+    if ADHeaderFlow.isHeader(object) and ADHeaderFlow.restsOn(trailer, object) then
+        relock(trailer, object)
+        return true
+    end
+    return false
 end
+ADHeaderFlow.holds = holds
 
 -- la barre est bloquée sur la remorque (le jeu l'a verrouillée à sa place)
 function ADHeaderFlow.isMounted(trailer, header)
@@ -214,7 +302,16 @@ end
 
 function ADHeaderFlow.isEmptyTrailer(trailer)
     local s = trailer.spec_dynamicMountAttacher
-    return next(s.dynamicMountedObjects or {}) == nil and next(s.pendingDynamicMountObjects or {}) == nil
+    if next(s.dynamicMountedObjects or {}) ~= nil or next(s.pendingDynamicMountObjects or {}) ~= nil then
+        return false
+    end
+    -- (15/11) une barre décrochée, toujours posée dessus
+    for _, v in pairs(vehicles()) do
+        if v ~= trailer and ADHeaderFlow.isHeader(v) and ADHeaderFlow.restsOn(trailer, v) then
+            return false
+        end
+    end
+    return true
 end
 
 -- barre de la ferme, dételée, qui s'attelle à l'avant de la moissonneuse : { header, trailer (ou nil), distance } ;
@@ -360,7 +457,11 @@ function ADHeaderFlow.onStart(mode)
         end
         -- barre attelée qui ne va pas (autre barre choisie, ne coupe pas la culture) : reposée, puis la bonne
         -- (AutonomousHeaderChoice.lua)
-        if job == nil and ADHeaderFlow.swapFor ~= nil then
+        -- (15/11) la moissonneuse garde son travail « harvest » (barre prise, récolte) jusqu'à la fin du champ : au
+        -- champ suivant, la « Barre suivante » est prise quand même ; cet ancien travail est terminé par la pose
+        -- (startCollect ou AutonomousHeaderGround.lua : startSwap), sa remorque reste la préférée
+        local changeable = job == nil or (job.phase == "harvest" and job.combine == v)
+        if changeable and ADHeaderFlow.swapFor ~= nil then
             local other = ADHeaderFlow.swapFor(v, header)
             if other ~= nil then
                 log("%s : barre « %s » à changer pour « %s »", nameOf(v), label(header), label(other))
@@ -372,6 +473,36 @@ function ADHeaderFlow.onStart(mode)
                 if ADHeaderFlow.startCollect(v, header, true) then
                     return true
                 end
+            end
+        end
+        -- (15/11) départ au champ suivant (fpHeaderPrevField : AutonomousHarvesterUnloaders.lua) avec une barre prise
+        -- sur une remorque : elle ne passe pas sur la route (ni entrée directe, ni route assez large,
+        -- AutonomousHeaderEntry.lua : headerTravelOk) : reposée sur sa remorque, le tracteur la ré-amène au champ
+        -- suivant (même flux que le changement de barre). Jamais de départ par le réseau sans ce contrôle.
+        if changeable and v.ad.fpHeaderPrevField ~= nil and ADHeaderFlow.headerTravelOk ~= nil
+            and ADHeaderGround ~= nil and ADHeaderGround.cameFromTrailer(v, header) then
+            local okT, fits, why = FarmPilotCall(ADHeaderFlow.headerTravelOk, v, header)
+            if not okT then
+                log("ERREUR contrôle de la route vers le champ suivant : %s", tostring(fits))
+                fits, why = false, "erreur"
+            end
+            if fits then
+                log("%s : champ suivant, la barre « %s » peut y aller (%s)", nameOf(v), label(header), tostring(why))
+            else
+                print(string.format("[AD-Coupe] %s: champ suivant, la barre %s ne passe pas (%s) : reposee sur sa remorque, le tracteur la ramene",
+                    nameOf(v), label(header), tostring(why)))
+                log("%s : champ suivant, « %s » ne passe pas (%s) : reposée sur sa remorque puis ré-amenée", nameOf(v), label(header), tostring(why))
+                AutonomousMode.message(v, ADMessagesManager.messageTypes.INFO, 10000, "AD_autonomous_headerCarry", label(header))
+                if ADHeaderFlow.startCollect(v, header, true) then
+                    return true
+                end
+                -- pas de remorque vide ou pas de tracteur : elle ne part pas avec la barre
+                print(string.format("[AD-Coupe] %s: champ suivant, barre %s pas reposee (pas de remorque vide ou de tracteur) : reste sur place", nameOf(v), label(header)))
+                AutonomousMode.message(v, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_headerCarryStay", label(header))
+                if v.ad.stateModule:isActive() then
+                    v:stopAutoDrive()
+                end
+                return true
             end
         end
         return false
@@ -579,6 +710,18 @@ function ADHeaderFlow.handleStage(mode)
         end
         mode:reset()
         mode:start()
+        return true
+    end
+    if stage == "tankWait" then
+        -- (15/11) fin de champ, trémie pas encore vidée : nouveau contrôle (tankRetry)
+        mode.headerStage = nil
+        ADHeaderFlow.tankRetry(mode, result)
+        return true
+    end
+    if stage == "fieldEndWait" then
+        -- (15/11) fin de champ, pas de remorque vide ou pas de tracteur : nouvel essai (fieldEndRetry)
+        mode.headerStage = nil
+        ADHeaderFlow.fieldEndRetry(mode, result)
         return true
     end
     if stage == "toHeader" then
@@ -885,9 +1028,10 @@ end
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Champ fini (enveloppe de AutonomousMode.parkWithToolDrop) : true = la moissonneuse appelle la remorque
+-- (15/11) ou l'attend sur place (startFieldEndWait) : jamais la fin d'origine par la route avec la barre
 -- ------------------------------------------------------------------------------------------------------------
 -- near (bouton parking, AutonomousHeaderParkButton.lua) : la remorque vient près de la moissonneuse si elle est loin
--- de son champ ; 2e valeur quand rien n'est lancé : pourquoi (« noTrailer », « noTractor »...)
+-- de son champ ; 2e et 3e valeurs quand rien n'est lancé : pourquoi (« noTrailer », « noTractor »...), la remorque
 function ADHeaderFlow.onFieldDone(vehicle, forcedTool, near)
     if forcedTool ~= nil or not ADHeaderFlow.isCombine(vehicle) then
         return false
@@ -900,11 +1044,199 @@ function ADHeaderFlow.onFieldDone(vehicle, forcedTool, near)
     if header == nil then
         return false
     end
+    -- (15/11) fin de champ : vidée d'abord, la repose de la barre ensuite (pas pour le bouton parking)
+    if not near and ADHeaderFlow.tankLevel(vehicle) >= ADHeaderFlow.tankEmptyMin() then
+        ADHeaderFlow.startTankWait(vehicle, header)
+        return true
+    end
+    return ADHeaderFlow.fieldEndTry(vehicle, header, near, false)
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Fin de champ : la moissonneuse se fait d'abord vider
+-- ------------------------------------------------------------------------------------------------------------
+-- Trémie à TANK_EMPTY_MIN l ou plus (le même seuil que les bennes : ADHarvestManager.COMBINE_LAST_LOAD_MIN) : elle ne
+-- bouge pas (moteur tournant, la goulotte doit pouvoir vider) et n'appelle pas encore la remorque ; revérifie toutes
+-- les TANK_CHECK ms ; sous le seuil, la suite habituelle (fieldEndTry). Côté bennes : waitsForEmptyTank.
+ADHeaderFlow.TANK_EMPTY_MIN = 50       -- l : moins dans la trémie = vide (sans HarvestManagerCombineJob.lua)
+ADHeaderFlow.TANK_CHECK = 5000         -- ms entre deux contrôles
+ADHeaderFlow.TANK_LOG_EVERY = 12       -- contrôles entre deux lignes du journal (1 min)
+
+function ADHeaderFlow.tankEmptyMin()
+    return (ADHarvestManager ~= nil and ADHarvestManager.COMBINE_LAST_LOAD_MIN) or ADHeaderFlow.TANK_EMPTY_MIN
+end
+
+-- litres dans la trémie (ce qui se vide par la goulotte)
+function ADHeaderFlow.tankLevel(vehicle)
+    if AutoDrive.getObjectFillLevels == nil then
+        return 0
+    end
+    local ok, level = FarmPilotCall(AutoDrive.getObjectFillLevels, vehicle)
+    return (ok and tonumber(level)) or 0
+end
+
+-- true tant que la moissonneuse attend d'être vidée avant de reposer sa barre
+function ADHeaderFlow.waitsForEmptyTank(vehicle)
+    if vehicle == nil or vehicle.ad == nil or vehicle.ad.fpHeaderTankWait == nil or vehicle.ad.stateModule == nil then
+        return false
+    end
+    local mode = vehicle.ad.modes ~= nil and vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS] or nil
+    return vehicle.ad.stateModule:isActive() and mode ~= nil and mode.headerStage == "tankWait"
+end
+
+-- la moissonneuse attend sur place d'être vidée ; true = attente lancée
+function ADHeaderFlow.startTankWait(vehicle, header)
+    local sm = vehicle.ad.stateModule
+    local wait = vehicle.ad.fpHeaderTankWait
+    if wait == nil or wait.header ~= header then
+        wait = { header = header, checks = 0 }
+        vehicle.ad.fpHeaderTankWait = wait
+        local level = ADHeaderFlow.tankLevel(vehicle)
+        print(string.format("[AD-Coupe] %s: champ fini, %.0f l dans la tremie : attend d'etre videe avant de reposer la coupe %s",
+            nameOf(vehicle), level, label(header)))
+        log("%s : champ fini, %.0f l dans la trémie : attend d'être vidée avant de reposer « %s »", nameOf(vehicle), level, label(header))
+        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 10000, "AD_autonomous_headerEmptyFirst")
+    end
+    wait.checks = wait.checks + 1
+    if wait.checks > 1 and wait.checks % ADHeaderFlow.TANK_LOG_EVERY == 0 then
+        print(string.format("[AD-Coupe] %s: attend toujours d'etre videe avant de reposer la coupe (%.0f l, %d s)", nameOf(vehicle),
+            ADHeaderFlow.tankLevel(vehicle), wait.checks * ADHeaderFlow.TANK_CHECK / 1000))
+    end
+    vehicle.ad.onRouteToRefuel = false
+    vehicle.ad.onRouteToRepair = false
+    vehicle.ad.restartCP = false
+    sm:setStartHelper(false)
+    if not sm:isActive() then
+        vehicle:startAutoDrive()
+        if not sm:isActive() then
+            return false -- (FarmPilot ne démarre pas : elle reste quand même où elle est)
+        end
+    end
+    local mode = vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS]
+    mode:reset()
+    mode.headerStage = "tankWait"
+    mode.headerTask = ADHeaderWaitTask:new(vehicle, function() return ADHeaderFlow.attachedHeader(vehicle) ~= header end, ADHeaderFlow.TANK_CHECK)
+    mode.headerTask.textKey = "AD_task_autonomous_headerEmptyFirst"
+    mode.headerTask.keepMotor = true
+    vehicle.ad.taskModule:addTask(mode.headerTask)
+    return true
+end
+
+-- fin d'un contrôle : encore pleine, elle attend ; vidée, la repose de la barre
+function ADHeaderFlow.tankRetry(mode, result)
+    local v = mode.vehicle
+    local wait = v.ad.fpHeaderTankWait
+    local header = ADHeaderFlow.attachedHeader(v)
+    if result ~= "timeout" or header == nil or wait == nil or wait.header ~= header then
+        v.ad.fpHeaderTankWait = nil
+        print(string.format("[AD-Coupe] %s: attente de la vidange finie (%s), plus de barre a reposer : arret", nameOf(v), tostring(result)))
+        stopHere(mode, nil)
+        return
+    end
+    if ADHeaderFlow.tankLevel(v) >= ADHeaderFlow.tankEmptyMin() then
+        ADHeaderFlow.startTankWait(v, header)
+        return
+    end
+    v.ad.fpHeaderTankWait = nil
+    print(string.format("[AD-Coupe] %s: tremie videe (%d s d'attente), repose de la coupe %s", nameOf(v), wait.checks * ADHeaderFlow.TANK_CHECK / 1000, label(header)))
+    local ok, err = FarmPilotCall(ADHeaderFlow.fieldEndTry, v, header, false, false)
+    if not ok then
+        log("ERREUR fin de champ après la vidange : %s", tostring(err))
+        stopHere(mode, nil)
+    end
+end
+
+-- (15/11) jamais de route avec la barre pour aller la poser : pas de remorque porte-barre vide ou pas de tracteur
+-- libre, la moissonneuse reste où elle est (à l'arrêt, moteur coupé comme une attente normale), un message au joueur,
+-- et un nouvel essai toutes les FIELD_END_RETRY ms. Plus aucun secours par la route (place de la barre, parking
+-- d'origine) : l'enveloppe de parkWithToolDrop et les accroches d'ExternalInterface.lua reçoivent true.
+ADHeaderFlow.FIELD_END_RETRY = 60000  -- ms entre deux essais
+ADHeaderFlow.FIELD_END_LOG_MAX = 3     -- essais écrits un par un dans le journal, ensuite un sur dix
+
+-- une pose de la barre : par la moissonneuse pour une barre sans remorque (AutonomousHeaderGround.lua), sinon sur
+-- une remorque amenée par un tracteur ; near : bouton parking (AutonomousHeaderParkButton.lua, il décide lui-même
+-- quand rien n'est lancé : 2e et 3e valeurs, la raison et la remorque) ; retry : nouvel essai pendant l'attente
+function ADHeaderFlow.fieldEndTry(vehicle, header, near, retry)
     -- barre sans remorque : posée par la moissonneuse (AutonomousHeaderGround.lua)
     if ADHeaderGround ~= nil and ADHeaderGround.startFieldEnd(vehicle, header) then
         return true
     end
-    return ADHeaderFlow.startCollect(vehicle, header, false, near)
+    local started, why, trailer = ADHeaderFlow.startCollect(vehicle, header, false, near, true)
+    if started or near then
+        return started, why, trailer
+    end
+    ADHeaderFlow.startFieldEndWait(vehicle, header, why, trailer, retry)
+    return true
+end
+
+-- la moissonneuse attend sur place avec sa barre (pas de remorque vide, pas de tracteur...) ; true = attente lancée
+function ADHeaderFlow.startFieldEndWait(vehicle, header, why, trailer, retry)
+    local sm = vehicle.ad.stateModule
+    local stay = vehicle.ad.fpHeaderStay
+    if not retry or stay == nil or stay.header ~= header then
+        stay = { header = header, tries = 0 }
+        vehicle.ad.fpHeaderStay = stay
+    end
+    stay.tries = stay.tries + 1
+    if stay.tries <= ADHeaderFlow.FIELD_END_LOG_MAX or stay.tries % 10 == 0 or stay.why ~= why then
+        print(string.format("[AD-Coupe] %s: champ fini, barre %s pas reposee (%s) : reste sur place, moteur coupe, nouvel essai dans %d s (essai %d)",
+            nameOf(vehicle), label(header), tostring(why), ADHeaderFlow.FIELD_END_RETRY / 1000, stay.tries))
+    end
+    if stay.tries == 1 or stay.why ~= why then
+        log("%s : champ fini, « %s » pas reposée (%s) : reste ici avec la barre, nouvel essai toutes les %d s", nameOf(vehicle), label(header),
+            tostring(why), ADHeaderFlow.FIELD_END_RETRY / 1000)
+        if why == "noTractor" then
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 15000, "AD_autonomous_headerStayNoTractor", label(trailer))
+        elseif why == "noTrailer" then
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 15000, "AD_autonomous_headerStayNoTrailer")
+        else
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 15000, "AD_autonomous_headerStay")
+        end
+    end
+    stay.why = why
+    vehicle.ad.onRouteToRefuel = false
+    vehicle.ad.onRouteToRepair = false
+    vehicle.ad.restartCP = false
+    sm:setStartHelper(false)
+    if not sm:isActive() then
+        vehicle:startAutoDrive()
+        if not sm:isActive() then
+            return false -- (FarmPilot ne démarre pas : elle reste quand même où elle est)
+        end
+    end
+    local mode = vehicle.ad.modes[AutoDrive.MODE_AUTONOMOUS]
+    mode:reset()
+    mode.headerStage = "fieldEndWait"
+    -- fini avant l'heure : la barre n'est plus attelée (dételée par le joueur)
+    mode.headerTask = ADHeaderWaitTask:new(vehicle, function() return ADHeaderFlow.attachedHeader(vehicle) ~= header end, ADHeaderFlow.FIELD_END_RETRY)
+    mode.headerTask.textKey = "AD_task_autonomous_headerStay"
+    vehicle.ad.taskModule:addTask(mode.headerTask)
+    return true
+end
+
+-- fin de l'attente : nouvel essai, ou arrêt si la barre n'est plus là
+function ADHeaderFlow.fieldEndRetry(mode, result)
+    local v = mode.vehicle
+    local stay = v.ad.fpHeaderStay
+    local header = ADHeaderFlow.attachedHeader(v)
+    if result ~= "timeout" or header == nil or stay == nil or stay.header ~= header then
+        v.ad.fpHeaderStay = nil
+        print(string.format("[AD-Coupe] %s: attente de fin de champ finie (%s), plus de barre a reposer : arret", nameOf(v), tostring(result)))
+        stopHere(mode, nil)
+        return
+    end
+    local ok, err = FarmPilotCall(ADHeaderFlow.fieldEndTry, v, header, false, true)
+    if not ok then
+        log("ERREUR fin de champ, nouvel essai : %s", tostring(err))
+        stopHere(mode, nil)
+        return
+    end
+    if mode.headerStage ~= "fieldEndWait" then
+        if stay.tries > 0 then
+            print(string.format("[AD-Coupe] %s: fin d'attente apres %d essai(s), la barre %s va etre reposee", nameOf(v), stay.tries, label(header)))
+        end
+        v.ad.fpHeaderStay = nil
+    end
 end
 
 -- (14/11) champ fini, réglage « Se garer à la fin du travail » sur Non : une moissonneuse en mode Autonome qui a sa
@@ -925,14 +1257,17 @@ function ADHeaderFlow.fieldEndAlways(vehicle)
 end
 
 -- la moissonneuse appelle la remorque vide pour reposer sa barre ; swap : changement de barre (au champ suivant ou au
--- départ), la bonne barre est amenée ensuite ; true = lancé
-function ADHeaderFlow.startCollect(vehicle, header, swap, near)
+-- départ), la bonne barre est amenée ensuite ; true = lancé ; quiet : pas de message quand rien n'est lancé (fin de
+-- champ et bouton parking donnent le leur : startFieldEndWait, AutonomousHeaderParkButton.lua)
+function ADHeaderFlow.startCollect(vehicle, header, swap, near, quiet)
     local sm = vehicle.ad.stateModule
     local old = vehicle.ad.fpHeaderJob
     local trailer = ADHeaderFlow.findEmptyTrailer(vehicle, header, old ~= nil and old.trailer or nil)
     if trailer == nil then
-        log("%s : champ fini, aucune remorque porte-barre vide, fin habituelle", nameOf(vehicle))
-        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 10000, "AD_autonomous_headerNoTrailer")
+        if not quiet then
+            log("%s : %s, aucune remorque porte-barre vide", nameOf(vehicle), swap and "changement de barre" or "champ fini")
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 10000, "AD_autonomous_headerNoTrailer")
+        end
         return false, "noTrailer"
     end
     if old ~= nil and old.tractor ~= nil and old.tractor.ad ~= nil and old.tractor.ad.fpHeaderJob == old then
@@ -940,9 +1275,11 @@ function ADHeaderFlow.startCollect(vehicle, header, swap, near)
     end
     local tractor, why, chosenBusy = ADHeaderFlow.tractorFor(trailer, vehicle)
     if tractor == nil then
-        log("%s : champ fini, pas de tracteur pour « %s » (%s), fin habituelle", nameOf(vehicle), label(trailer), tostring(why))
-        AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 10000, "AD_autonomous_headerNoTractor", label(trailer))
-        return false, "noTractor"
+        if not quiet then
+            log("%s : %s, pas de tracteur pour « %s » (%s)", nameOf(vehicle), swap and "changement de barre" or "champ fini", label(trailer), tostring(why))
+            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.WARN, 10000, "AD_autonomous_headerNoTractor", label(trailer))
+        end
+        return false, "noTractor", trailer
     end
     -- (12/11) le tracteur roule encore pour ranger cette remorque (barre prise il y a peu) : il est rappelé
     if tractor.ad.stateModule:isActive() and ADHeaderFlow.isParkingTrailer ~= nil and ADHeaderFlow.isParkingTrailer(tractor, trailer) then
@@ -1079,6 +1416,11 @@ function AutonomousMode:startFetchAttach()
                 return { header, trailer, tractor }
             end
             return {}
+        end
+        -- (15/11) rien ne roule dans une culture : le chemin jusqu'à la barre n'utilise jamais le secours qui la
+        -- traverse (pas de chemin = la remorque est déplacée, AutonomousHeaderFollow.lua : onFetchFailed)
+        if trailer ~= nil then
+            task.noFallback = true
         end
         -- (12/11) remorque reculée dans l'entrée du champ : une courbe calculée du chemin jusqu'au cadre, pas de
         -- recherche de chemin (AutonomousHeaderBackIn.lua)

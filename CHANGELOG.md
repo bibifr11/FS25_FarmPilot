@@ -3,6 +3,24 @@
 FarmPilot 1.0.0.0 est basé sur AutoDrive 3.0.1.4 (Stephan Schlosser et l'équipe AutoDrive, licence MIT).
 FarmPilot 1.0.0.0 is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence).
 
+## 1.0.5.9 → 1.0.7.5
+
+🇫🇷 FR
+- Moissonneuse équipée et ses bennes : règles des bennes revues (rappel du garage, plus de ronds, garage à 15 m, la benne va jusqu'à la moissonneuse), barre décrochée mais posée sur sa remorque, remorque de coupe en fin de champ, vidange avant de reposer la barre.
+- Champs : sortie par l'entrée du champ, entrée et sortie par un portail en prenant large, départ déjà dans le champ = travail sur place.
+- Mode Conduire : atteler une remorque ou un outil avant de partir ; ce qui est déjà attelé est d'abord posé à sa place.
+- Mode Autonome : l'ouvrier du jeu va lui-même au champ et part aussi quand Courseplay n'a pas de parcours de la bonne largeur ; retour au garage repris ; reprise exacte au rechargement de la partie.
+- Ramassage des balles, calcul d'itinéraire sur route, vitesses par type de route ; bâche seulement sur les bennes.
+
+----------------------------------------------------------------------------
+
+🇬🇧 EN
+- Equipped combine and its trailers: trailer rules reworked (called back from the yard, no more circling, yard spot at 15 m, the trailer drives up to the combine), header unhitched but kept on its trailer, header trailer at the end of the field, unloading before storing the header.
+- Fields: exit through the field entrance, entry and exit through a gate taking a wide turn, starting inside the field = work on the spot.
+- Drive mode: hitch a trailer or tool before leaving; what is already hitched is first parked at its spot.
+- Autonomous mode: the game worker drives to the field itself and also starts when Courseplay has no course of the right width; return to the yard resumed; exact resume when reloading the savegame.
+- Bale pickup, road route calculation, speeds per road type; cover only on trailers.
+
 ## 1.0.5.8
 
 🇫🇷 FR

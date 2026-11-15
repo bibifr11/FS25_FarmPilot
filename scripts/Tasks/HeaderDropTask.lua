@@ -17,6 +17,9 @@
 -- - Arrivée trop de côté (MISS_LATERAL) : elle recule dans l'axe et recommence, au plus RETRIES fois.
 -- - Pas bloquée après MOUNT_TIMEOUT : échec (la moissonneuse s'arrête, la remorque ne part pas avec une barre libre).
 -- - Le résultat (self.result = "ok" ou la raison de l'échec) est lu par Modes/AutonomousHeader.lua.
+-- - (15/11) Rien ne roule dans une culture : ces recherches de chemin (le tracteur vers la moissonneuse, la
+--   moissonneuse vers la remorque) n'utilisent jamais le secours qui traverse la culture (pf.noFallback) ; pas de
+--   chemin = endroit suivant ou nouvel essai (Modes/AutonomousHeaderCollect.lua).
 --
 -- Branché par : Modes/AutonomousHeader.lua (startWait : ADHeaderWaitTask:new ; tractorStage : ADHeaderPlaceTask:new ;
 -- startDrop : ADHeaderDropTask:new ; monitor : ADHeaderDropTask.goalFor), Modes/AutonomousHeaderSpot.lua
@@ -43,8 +46,16 @@ function ADHeaderWaitTask:setUp()
 end
 
 function ADHeaderWaitTask:update(dt)
-    self.vehicle.ad.specialDrivingModule:stopVehicle()
-    self.vehicle.ad.specialDrivingModule:update(dt)
+    local sdm = self.vehicle.ad.specialDrivingModule
+    -- (15/11) keepMotor : moteur tournant pendant l'attente (moissonneuse qui se fait vider, la goulotte doit marcher)
+    if self.keepMotor then
+        sdm.motorShouldNotBeStopped = true
+    end
+    sdm:stopVehicle()
+    sdm:update(dt)
+    if self.keepMotor then
+        sdm.motorShouldNotBeStopped = false
+    end
     self.timer = self.timer + dt
     local ok, done = FarmPilotCall(self.isDone)
     if ok and done then
@@ -165,6 +176,10 @@ function ADHeaderPlaceTask:update(dt)
         end
         local pf = self.vehicle.ad.pathFinderModule
         pf:reset()
+        -- (15/11) rien ne roule dans une culture : jamais le secours qui la traverse, pas de chemin = endroit suivant
+        pf.noFallback = true
+        -- (15/11) règles de base : culture des champs voisins et îlots oubliés ignorés (PathFinderModuleEntrance.lua)
+        pf.cropCombine = self.combine
         pf:startPathPlanningTo({ x = spot.x, y = 0, z = spot.z }, { x = spot.dirX, z = spot.dirZ })
         -- quiet (essais répétés toutes les minutes) : écrit seulement quand un chemin est trouvé
         self.spotText = string.format("%s : entre dans le champ vers la moissonneuse (%.0f, %.0f)%s", name, spot.x, spot.z, which or "")
@@ -223,6 +238,10 @@ end
 function ADHeaderPlaceTask:finish(result)
     if self.result ~= nil then
         return
+    end
+    local pf = self.vehicle.ad ~= nil and self.vehicle.ad.pathFinderModule or nil
+    if pf ~= nil then
+        pf.cropCombine = nil
     end
     self.result = result
     self.vehicle.ad.taskModule:setCurrentTaskFinished()
@@ -415,6 +434,9 @@ function ADHeaderDropTask:update(dt)
         local start = { x = goal.x - goal.dirX * ADHeaderDropTask.APPROACH, y = goal.pose.y, z = goal.z - goal.dirZ * ADHeaderDropTask.APPROACH }
         local pf = self.vehicle.ad.pathFinderModule
         pf:reset()
+        -- (15/11) rien ne roule dans une culture : jamais le secours qui la traverse, pas de chemin = la remorque va
+        -- ailleurs (AutonomousHeaderCollect.lua : collectDropFailed)
+        pf.noFallback = true
         pf:startPathPlanningTo(start, { x = goal.dirX, z = goal.dirZ })
         ADHeaderFlow.log("%s : chemin vers la remorque, place %s (%.0f, %.0f)", name, goal.pose.exact and "prévue" or "générale", start.x, start.z)
         self:setState(ADHeaderDropTask.STATE_PLANNING)

@@ -11,7 +11,16 @@
 --      virage ;
 --   3. sinon, manœuvre : arrêt à un point avant le virage, recul tout droit de REVERSE_DISTANCES m, virage pris de là
 --      (point marqué cornerReverse, conduit par ADCornerModule:handle) ;
---   4. rien ne passe : virage gardé tel quel (log « nothing fits »).
+--   4. (15/11, portail du champ 38) « prendre large quand ça ne passe pas » : le virage est repris en débordant
+--      sur l'herbe à l'extérieur du virage (SWING_DEVIATION_MAX m au plus de la route dessinée, jamais dans une
+--      culture), pour entrer bien droit. Quand la route finit sur un champ juste après le virage (entrée de champ
+--      par un portail), la sortie peut être prise plus loin dans le champ, dans l'axe d'arrivée : l'attelage entier
+--      passe le portail avant la fin de la route (l'outil ne se déplie pas dans le portail).
+--      (15/11, sortie du même portail) En miroir pour un virage à moins de FIELD_END_NEAR m du DÉBUT de la route
+--      quand l'attelage part d'un champ : le virage est repris large (tout droit hors de l'entrée, à travers le
+--      chemin, sur l'herbe en face, puis le virage) ; là, le champ qu'il quitte ne refuse plus ses roues (« field
+--      (trailer) ») et aucune culture d'un autre champ n'est touchée ;
+--   5. rien ne passe : virage gardé tel quel (log « nothing fits »).
 --
 -- Branché par : DrivePathModuleObstacles.lua (prepareRoute -> ADCornerModule:smoothRoute).
 -- ============================================================================================================
@@ -41,6 +50,13 @@ ADCornerModule.ARC_STEP = 2.5                  -- m between two inserted points 
 ADCornerModule.LINE_STEP = 5                   -- m between two inserted points on a straight
 ADCornerModule.SIM_TAIL = 12                   -- m simulated after the end of the bend (the trailer comes through)
 ADCornerModule.REVERSE_DISTANCES = {8, 14, 20} -- m backed up before the bend (manoeuvre)
+ADCornerModule.SWING_DEVIATION_MAX = 16        -- (15/11) m a wide swing may move away from the drawn route (verge, grass)
+ADCornerModule.SWING_TESTS_MAX = 40            -- candidates simulated at most for the wide swing
+ADCornerModule.FIELD_EXTEND_MAX = 30           -- m the end of the route may be continued into the field, in its axis
+ADCornerModule.FIELD_EXTEND_STEP = 3           -- m between two points of that continuation (and of the approach)
+ADCornerModule.FIELD_END_NEAR = 30             -- m: the bend ends closer than this to the end of the route (entrance)
+ADCornerModule.FIELD_CLEAR_MARGIN = 3          -- m beyond the length of the train: the whole train is past the gate
+ADCornerModule.SWING_APPROACH_MAX = 15         -- m before the entrance where the train may come straight into its axis
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils (points insérés, distances à la route dessinée)
@@ -235,7 +251,7 @@ end
 -- compared with the drawn route, plus the turning added, plus the distance from it); the first clear one is returned: {points, exit, start, path}
 -- starts: {p = pose, point = route point at the pose, drawnBefore = metres of drawn route from it to the bend, extraCost}
 -- drawnAfter[m]: metres of drawn route from the bend to the exit point m
-function ADCornerModule:bestPath(starts, wayPoints, exits, drawnAfter, drawn, bendAngle, reference)
+function ADCornerModule:bestPath(starts, wayPoints, exits, drawnAfter, drawn, bendAngle, reference, swing)
     local candidates = {}
     for _, st in ipairs(starts) do
         for _, m in ipairs(exits) do
@@ -257,7 +273,19 @@ function ADCornerModule:bestPath(starts, wayPoints, exits, drawnAfter, drawn, be
     -- faster bend, swinging from the outside), smaller ones when it does not fit, the real radius of the train last.
     -- Each radius has its own budget of simulations so the tight one is still tried
     local deviationMax = math.abs(bendAngle) > ADCornerModule.UTURN_ANGLE and ADCornerModule.DEVIATION_MAX_UTURN or ADCornerModule.DEVIATION_MAX
+    if swing ~= nil then
+        deviationMax = ADCornerModule.SWING_DEVIATION_MAX
+    end
+    -- (15/11) prendre large : d'abord les tracés qui s'écartent à l'extérieur du virage (1er arc dans l'autre sens),
+    -- puis le reste ; chaque fois le plus grand rayon d'abord
+    local bendSide = bendAngle > 0 and 1 or -1
     table.sort(candidates, function(a, b)
+        if swing ~= nil and swing.preferOutward then
+            local aw, bw = a.path.s1 ~= bendSide, b.path.s1 ~= bendSide
+            if aw ~= bw then
+                return aw
+            end
+        end
         if a.rank ~= b.rank then
             return a.rank > b.rank
         end
@@ -268,6 +296,9 @@ function ADCornerModule:bestPath(starts, wayPoints, exits, drawnAfter, drawn, be
     local wideReference = nil
     for _, c in ipairs(candidates) do
         local budget = c.rank == 1 and ADCornerModule.TESTS_MAX or ADCornerModule.TESTS_MAX_WIDE
+        if swing ~= nil then
+            budget = ADCornerModule.SWING_TESTS_MAX
+        end
         if (testedByRank[c.rank] or 0) < budget then
             local points = pathPoints(c.start.p, c.path)
             local deviation = 0
@@ -276,16 +307,30 @@ function ADCornerModule:bestPath(starts, wayPoints, exits, drawnAfter, drawn, be
             end
             -- a larger radius than the train needs: only when it stays on the road (close to the drawn route)
             local maxDeviation = c.rank > 1 and math.min(deviationMax, ADCornerModule.WIDE_DEVIATION_MAX) or deviationMax
-            if deviation <= maxDeviation then
+            local cropAt = nil
+            if swing ~= nil then
+                -- (15/11) prendre large : hors de la route permis, jamais dans une culture
+                maxDeviation = deviationMax
+                cropAt = swing.cropAt(points)
+            end
+            if cropAt ~= nil then
+                lastReason = string.format("crop at %.0f,%.0f", cropAt.x, cropAt.z)
+            elseif deviation <= maxDeviation then
                 tested = tested + 1
                 testedByRank[c.rank] = (testedByRank[c.rank] or 0) + 1
                 local line = append(append(append({c.start.point}, points), {wayPoints[c.exit]}), tail(wayPoints, c.exit))
+                local simStart = self:straightPose(c.start.p.x, c.start.p.z, c.start.p.a)
+                if c.start.origin ~= nil then
+                    -- (15/11) straight out of the entrance first: simulated from the entrance itself
+                    line = append(append({c.start.origin}, c.start.prefix), line)
+                    simStart = self:straightPose(c.start.origin.x, c.start.origin.z, c.start.p.a)
+                end
                 local ref = reference
-                if c.rank > 1 then
+                if c.rank > 1 and swing == nil then
                     wideReference = wideReference or {onField = reference.onField, onRoad = reference.onRoad, wideLine = drawn}
                     ref = wideReference
                 end
-                local clear, reason = self:simulate(line, self:straightPose(c.start.p.x, c.start.p.z, c.start.p.a), ref)
+                local clear, reason = self:simulate(line, simStart, ref)
                 if ADCornerModule.TRACE then
                     self:log("  try r %.1f %d/%d exit %d len %.0f cost %.1f dev %.1f: %s", c.path.r, c.path.s1, c.path.s2, c.exit, c.path.length, c.cost, deviation, clear and "clear" or tostring(reason))
                 end
@@ -377,11 +422,17 @@ function ADCornerModule:handleBend(wayPoints, out, first, last, angle, drawnRadi
         tostring(wayPoints[first].id), tostring(wayPoints[last].id), math.deg(math.abs(angle)), drawnRadius, wayPoints[first].x, wayPoints[first].z)
     local exits = self:exitIndices(wayPoints, last)
     if #exits == 0 then
+        local swung, nextIndex = self:swingBend(wayPoints, out, first, last, angle, minOut, where, "no room after it")
+        if swung then
+            return "path", nextIndex
+        end
         self:log("%s: kept as it is (no room after it)", where)
         return false, first
     end
     local entries = self:entryIndices(out, minOut)
     local exitPoint = wayPoints[exits[#exits]]
+    -- (15/11) leaving a field by its entrance: the field it leaves is allowed in the wide swing only (crop checked
+    -- there, swingOut), not here
     local reference = {onField = self:isOnField(prev.x, prev.z) or self:isOnField(exitPoint.x, exitPoint.z),
                        onRoad = self:isOnRoadMesh(prev.x, prev.z) and self:isOnRoadMesh(exitPoint.x, exitPoint.z)}
     -- the drawn route, from the furthest entry point to the furthest exit point
@@ -443,7 +494,13 @@ function ADCornerModule:handleBend(wayPoints, out, first, last, angle, drawnRadi
         return false, first
     end
 
-    -- 3. manoeuvre: stop at an entry point, back up straight, take the bend from there
+    -- 3. (15/11) prendre large quand ça ne passe pas (avant une marche arrière)
+    local swung, swingNext = self:swingBend(wayPoints, out, first, last, angle, minOut, where, originalReason)
+    if swung then
+        return "path", swingNext
+    end
+
+    -- 4. manoeuvre: stop at an entry point, back up straight, take the bend from there
     for _, distance in ipairs(ADCornerModule.REVERSE_DISTANCES) do
         local starts = {}
         for _, e in ipairs(entries) do
@@ -483,6 +540,271 @@ function ADCornerModule:handleBend(wayPoints, out, first, last, angle, drawnRadi
     end
     self:log("%s: nothing fits, kept as it is (drawn route: %s; last candidate: %s)", where, tostring(originalReason), tostring(lastReason))
     return false, first
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Prendre large : déborder à l'extérieur du virage, entrer droit, attelage entier dans le champ
+-- ------------------------------------------------------------------------------------------------------------
+-- growing crop at a point outside the field of the destination (that field is worked by the vehicle anyway)
+local function cropOutside(point, ownArea)
+    if ADFieldPark == nil or ADFieldPark.hasGrowingCrop == nil or not ADFieldPark.hasGrowingCrop(point.x, point.z) then
+        return false
+    end
+    if ownArea ~= nil and PathFinderModule ~= nil and PathFinderModule.isInFieldArea ~= nil and PathFinderModule.isInFieldArea(ownArea, point.x, point.z) then
+        return false
+    end
+    return true
+end
+
+-- (15/11) the axis of the entrance: from the end of the bend to the end of the route (unit vector), nil if too short
+local function entranceAxis(wayPoints, last)
+    local n = #wayPoints
+    local p, e = wayPoints[last], wayPoints[n]
+    if last >= n then
+        p = wayPoints[n - 1]
+    end
+    local dx, dz = e.x - p.x, e.z - p.z
+    local l = math.sqrt(dx * dx + dz * dz)
+    if l < 1 then
+        return nil
+    end
+    return dx / l, dz / l
+end
+
+-- the bend wayPoints[first .. last] did not pass: wide swing to come straight into the axis of the end of the
+-- route (the gate), then straight through it and, when the route ends on a field, on into the field until the
+-- whole train is past it. Returns true and the next index of wayPoints to read
+function ADCornerModule:swingBend(wayPoints, out, first, last, angle, minOut, where, originalReason)
+    local prev = out[#out]
+    local n = #wayPoints
+    local toEnd = 0
+    for k = last, n - 1 do
+        toEnd = toEnd + ADCornerModule.dist(wayPoints[k], wayPoints[k + 1])
+    end
+    -- only an entrance at the end of the route (field gate, yard gate): the bend ends close to it ; or the way out
+    -- of a field at the start of the route (the same gate the other way)
+    if self:isLeavingField(wayPoints, first) then
+        return self:swingOut(wayPoints, out, first, last, angle, minOut, where, originalReason)
+    end
+    if toEnd > ADCornerModule.FIELD_END_NEAR or n < 2 then
+        return false
+    end
+    local ux, uz = entranceAxis(wayPoints, last)
+    if ux == nil then
+        return false
+    end
+    local p, e = wayPoints[last], wayPoints[n]
+    if last >= n then
+        p = wayPoints[n - 1]
+    end
+    local trainLength = (self.geo ~= nil and (self.geo.hitch + self.geo.trailer) or 0) + ((self.geo ~= nil and self.geo.tractorBox ~= nil and self.geo.tractorBox.front) or 3)
+    -- the new end of the route: approach points on the axis before the entrance, the entrance, the end, then on into
+    -- the field (on field ground) until the whole train is past the entrance
+    local route = {}
+    local step = ADCornerModule.FIELD_EXTEND_STEP
+    local approach = {}
+    local d = ADCornerModule.SWING_APPROACH_MAX
+    while d >= step do
+        approach[#approach + 1] = newPoint(p.x - ux * d, p.z - uz * d)
+        d = d - step
+    end
+    for k = 1, first - 1 do
+        route[k] = wayPoints[k]
+    end
+    local firstApproach = #route + 1
+    append(route, approach)
+    route[#route + 1] = p
+    if e ~= p then
+        route[#route + 1] = e
+    end
+    local endIndex = #route
+    local onField = self:isOnField(e.x, e.z)
+    local passed = 0
+    local need = trainLength + ADCornerModule.FIELD_CLEAR_MARGIN - ADCornerModule.dist(p, e)
+    if onField then
+        local dd = step
+        while dd <= ADCornerModule.FIELD_EXTEND_MAX and passed < need do
+            local x, z = e.x + ux * dd, e.z + uz * dd
+            if not self:isOnField(x, z) then
+                break
+            end
+            route[#route + 1] = newPoint(x, z)
+            passed = dd
+            dd = dd + step
+        end
+    end
+    -- exits: the approach points (the train comes straight into the axis there)
+    local exits = {}
+    for k = firstApproach, firstApproach + #approach - 1 do
+        exits[#exits + 1] = k
+    end
+    local entries = self:entryIndices(out, minOut)
+    local reference = {onField = self:isOnField(prev.x, prev.z) or onField, onRoad = false}
+    local drawn = {}
+    for k = entries[#entries], #out do
+        drawn[#drawn + 1] = out[k]
+    end
+    for k = first, last do
+        drawn[#drawn + 1] = wayPoints[k]
+    end
+    append(drawn, approach)
+    local drawnAfter = {}
+    local dl = ADCornerModule.dist(prev, wayPoints[first])
+    for k = first, last - 1 do
+        dl = dl + ADCornerModule.dist(wayPoints[k], wayPoints[k + 1])
+    end
+    for _, m in ipairs(exits) do
+        drawnAfter[m] = math.max(0, dl - ADCornerModule.dist(route[m], p))
+    end
+    local starts = {}
+    for _, en in ipairs(entries) do
+        local ep, before = out[en], out[en - 1]
+        if before ~= nil then
+            starts[#starts + 1] = {p = {x = ep.x, z = ep.z, a = ADCornerModule.segHeading(before, ep)}, point = ep, index = en, drawnBefore = self:lengthBack(out, en, #out)}
+        end
+    end
+    local ownArea = nil
+    if onField and PathFinderModule ~= nil and PathFinderModule.getConnectedFieldArea ~= nil then
+        ownArea = PathFinderModule.getConnectedFieldArea(e.x, e.z)
+    end
+    local swing = {preferOutward = true, cropAt = function(points)
+        for _, q in ipairs(points) do
+            if cropOutside(q, ownArea) then
+                return q
+            end
+        end
+        return nil
+    end}
+    -- the whole train goes through the entrance in the simulation
+    local savedTail = ADCornerModule.SIM_TAIL
+    ADCornerModule.SIM_TAIL = math.max(savedTail, ADCornerModule.SWING_APPROACH_MAX + trainLength + ADCornerModule.FIELD_CLEAR_MARGIN)
+    local ok, best, tests, lastReason = pcall(self.bestPath, self, starts, route, exits, drawnAfter, drawn, angle, reference, swing)
+    ADCornerModule.SIM_TAIL = savedTail
+    if not ok then
+        self:log("%s: wide swing error %s", where, tostring(best))
+        return false
+    end
+    if best == nil then
+        self:log("%s: wide swing tried, nothing fits (%d tested; last candidate: %s)", where, tests or 0, tostring(lastReason))
+        return false
+    end
+    self:replace(out, best.start.index, best.points)
+    for m = best.exit, #route do
+        out[#out + 1] = route[m]
+    end
+    local tip = out[#out]
+    if tip ~= e then
+        -- the destination stays the same (map marker of the last point, AutoDrive reads it by its id)
+        tip.id = e.id
+        tip.fieldExtendedEnd = true
+    end
+    self:log("%s: wide swing, radius %.1f m from %.0f m before, straight into the entrance %.0f m before it (%d points, %.0f m from the drawn line at most, %d tested; drawn route: %s)%s",
+        where, best.path.r, best.start.drawnBefore, ADCornerModule.dist(route[best.exit], p), #best.points, best.deviation, tests, tostring(originalReason),
+        passed > 0 and string.format(", route continued %.0f m into the field (train %.0f m, all past the entrance)", passed, trainLength) or "")
+    return true, n + 1
+end
+
+-- (15/11) the route starts on a field (or the vehicle stands on one) and the bend wayPoints[first] comes less than
+-- FIELD_END_NEAR m after the start: the train is leaving the field through its entrance
+function ADCornerModule:isLeavingField(wayPoints, first)
+    local length = 0
+    for k = 1, first - 1 do
+        length = length + ADCornerModule.dist(wayPoints[k], wayPoints[k + 1])
+    end
+    if length > ADCornerModule.FIELD_END_NEAR then
+        return false
+    end
+    for k = 1, first - 1 do
+        if self:isOnField(wayPoints[k].x, wayPoints[k].z) then
+            return true
+        end
+    end
+    local v = self.vehicle
+    if v ~= nil and v.components ~= nil and v.components[1] ~= nil and v.components[1].node ~= nil and getWorldTranslation ~= nil then
+        local x, _, z = getWorldTranslation(v.components[1].node)
+        return self:isOnField(x, z)
+    end
+    return false
+end
+
+-- (15/11) way out of a field by its entrance, the bend just after it does not pass: wide swing (straight across the
+-- track, on the grass opposite, then the bend), never in a crop of another field. Returns true and the next index
+function ADCornerModule:swingOut(wayPoints, out, first, last, angle, minOut, where, originalReason)
+    local prev = out[#out]
+    local exits = self:exitIndices(wayPoints, last)
+    if #exits == 0 then
+        return false
+    end
+    local entries = self:entryIndices(out, minOut)
+    local reference = {onField = true, onRoad = false}
+    local drawn = {}
+    for k = entries[#entries], #out do
+        drawn[#drawn + 1] = out[k]
+    end
+    for k = first, exits[#exits] do
+        drawn[#drawn + 1] = wayPoints[k]
+    end
+    local drawnAfter = {}
+    local dl, k = ADCornerModule.dist(prev, wayPoints[first]), first
+    for _, m in ipairs(exits) do
+        while k < m do
+            dl = dl + ADCornerModule.dist(wayPoints[k], wayPoints[k + 1])
+            k = k + 1
+        end
+        drawnAfter[m] = dl
+    end
+    local starts = {}
+    for _, en in ipairs(entries) do
+        local ep, before = out[en], out[en - 1]
+        if before ~= nil then
+            starts[#starts + 1] = {p = {x = ep.x, z = ep.z, a = ADCornerModule.segHeading(before, ep)}, point = ep, index = en, drawnBefore = self:lengthBack(out, en, #out)}
+        end
+    end
+    -- straight on out of the entrance first, in its axis (across the track, onto the grass opposite), then the bend
+    local before = out[#out - 1]
+    if before ~= nil then
+        local a = ADCornerModule.segHeading(before, prev)
+        local sx, sz = math.sin(a), math.cos(a)
+        local prefix = {}
+        local d = ADCornerModule.FIELD_EXTEND_STEP
+        while d <= ADCornerModule.SWING_APPROACH_MAX do
+            local q = newPoint(prev.x + sx * d, prev.z + sz * d)
+            prefix[#prefix + 1] = q
+            local copy = {}
+            for i2, item in ipairs(prefix) do
+                copy[i2] = item
+            end
+            starts[#starts + 1] = {p = {x = q.x, z = q.z, a = a}, point = q, index = #out, prefix = copy, origin = prev, drawnBefore = -d}
+            drawn[#drawn + 1] = q
+            d = d + ADCornerModule.FIELD_EXTEND_STEP
+        end
+    end
+    if #starts == 0 then
+        return false
+    end
+    -- the field it leaves: its crop does not count (it was just worked there)
+    local ownArea = nil
+    local origin = wayPoints[1]
+    if PathFinderModule ~= nil and PathFinderModule.getConnectedFieldArea ~= nil and self:isOnField(origin.x, origin.z) then
+        ownArea = PathFinderModule.getConnectedFieldArea(origin.x, origin.z)
+    end
+    local swing = {preferOutward = false, cropAt = function(points)
+        for _, q in ipairs(points) do
+            if cropOutside(q, ownArea) then
+                return q
+            end
+        end
+        return nil
+    end}
+    local best, tests, lastReason = self:bestPath(starts, wayPoints, exits, drawnAfter, drawn, angle, reference, swing)
+    if best == nil then
+        self:log("%s: leaving the field, wide swing tried, nothing fits (%d tested; last candidate: %s)", where, tests or 0, tostring(lastReason))
+        return false
+    end
+    self:replace(out, best.start.index, append(append({}, best.start.prefix or {}), best.points))
+    self:log("%s: leaving the field, wide swing, %.0f m straight out first, then radius %.1f m (%d points, %.0f m from the drawn line at most, %d tested; drawn route: %s)",
+        where, best.start.prefix ~= nil and ADCornerModule.dist(prev, best.start.point) or 0, best.path.r, #best.points, best.deviation, tests, tostring(originalReason))
+    return true, best.exit
 end
 
 -- keeps out[1 .. keep] and adds the points

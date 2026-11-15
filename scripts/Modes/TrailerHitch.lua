@@ -11,6 +11,14 @@
 --   est attelée et qu'elle a sa place de parking, et le tracteur la sienne, elle est posée à sa place puis le
 --   tracteur va se garer (même suite que le bouton parking, AutonomousParkButton.lua : parkWithToolDrop).
 -- Rien de choisi (« Celle attelée ») : rien ne change.
+--
+-- (15/11) mode Conduire : même ligne, « Atteler : ... », sous la destination (pas de ligne de plus). Facultative :
+-- rien de choisi = départ comme avant. Liste = remorques ET outils dételés qui s'attellent à l'arrière.
+-- - seulement au départ donné par le joueur (HUD, touche) : pas pour le bouton parking, le plein, la réparation,
+--   ni les départs des autres mods (Courseplay, ADS...) ;
+-- - choix d'une fois : une fois attelé, la ligne revient à « rien » ; à destination, rien n'est dételé.
+-- - (15/11) autre chose déjà attelé qui a sa place de parking : posé d'abord à sa place (route de la place, puis
+--   dételage comme l'échange de bennes), puis on va atteler le choix. Sans place, ou plusieurs : départ refusé.
 -- Échange de bennes à la livraison (pleine posée sur une place, vide attelée) : TrailerSwap.lua, qui reprend
 -- l'attelage d'ici (startFetch, after = "swap").
 --
@@ -30,7 +38,8 @@ ADTrailerHitch.MODES = {
     [AutoDrive.MODE_PICKUPANDDELIVER] = true,
     [AutoDrive.MODE_DELIVERTO] = true,
     [AutoDrive.MODE_LOAD] = true,
-    [AutoDrive.MODE_UNLOAD] = true
+    [AutoDrive.MODE_UNLOAD] = true,
+    [AutoDrive.MODE_DRIVETO] = true -- (15/11) Conduire : ligne « Atteler » (remorque ou outil)
 }
 
 ADTrailerHitch.FAIL_KEYS = {
@@ -41,6 +50,24 @@ ADTrailerHitch.FAIL_KEYS = {
     noJoint = "AD_trailer_fetchNoJoint",
     other = "AD_trailer_fetchOther"
 }
+
+-- (15/11) mode Conduire
+function ADTrailerHitch.isDriveMode(vehicle)
+    local sm = vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule or nil
+    -- moissonneuse / ensileuse : cette ligne du HUD montre déjà ses infos (HudHarvesterInfo)
+    return sm ~= nil and sm.getFpTrailer ~= nil and sm:getMode() == AutoDrive.MODE_DRIVETO and not vehicle.ad.hasCombine
+end
+
+-- texte « remorque » des autres modes, ou sa version « remorque ou outil » en Conduire (AD_trailer_x -> AD_drive_x)
+function ADTrailerHitch.key(vehicle, key)
+    if key ~= nil and ADTrailerHitch.isDriveMode(vehicle) and g_i18n ~= nil then
+        local driveKey = (key:gsub("^AD_trailer_", "AD_drive_"))
+        if driveKey ~= key and g_i18n:hasText(driveKey) then
+            return driveKey
+        end
+    end
+    return key
+end
 
 function ADTrailerHitch.log(fmt, ...)
     local ok, txt = FarmPilotCall(string.format, fmt, ...)
@@ -56,6 +83,9 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 function ADTrailerHitch.isTrailerMode(vehicle)
     local sm = vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule or nil
+    if sm ~= nil and sm:getMode() == AutoDrive.MODE_DRIVETO then
+        return ADTrailerHitch.isDriveMode(vehicle) -- (15/11) pas pour une moissonneuse
+    end
     return sm ~= nil and sm.getFpTrailer ~= nil and ADTrailerHitch.MODES[sm:getMode()] == true
 end
 
@@ -89,6 +119,10 @@ function ADTrailerHitch.isFetchableTrailer(vehicle, trailer)
         return false
     end
     if not ADTrailerHitch.isTrailerObject(trailer) then
+        -- (15/11) Conduire : un outil de travail aussi
+        if ADTrailerHitch.isDriveMode(vehicle) then
+            return ADAutonomousManager.isFetchableTool(vehicle, trailer)
+        end
         return false
     end
     local farm = farmOf(vehicle)
@@ -113,6 +147,12 @@ function ADTrailerHitch.label(trailer)
     if trailer == nil then
         return "?"
     end
+    if not ADTrailerHitch.isTrailerObject(trailer) and ADAutonomousManager.isWorkObject(trailer) and ADAutonomousManager.toolShortLabel ~= nil then
+        local okS, short = FarmPilotCall(ADAutonomousManager.toolShortLabel, trailer) -- (15/11) outil (Conduire) : « Déchaumeur (8 m) »
+        if okS and short ~= nil and short ~= "" then
+            return tostring(short)
+        end
+    end
     local name = trailer.getName ~= nil and trailer:getName() or nil
     if name == nil or name == "" then
         name = ADAutonomousManager.toolLabel(trailer)
@@ -134,12 +174,21 @@ function ADTrailerHitch.fetchableTrailers(vehicle)
     local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
     for _, v in pairs(system.vehicles) do
         local ok, fetchable = FarmPilotCall(ADTrailerHitch.isFetchableTrailer, vehicle, v)
-        if ok and fetchable then
+        if ok and fetchable and ADTrailerHitch.isTrailerObject(v) then -- les outils (Conduire) : ajoutés plus bas
             local tx, _, tz = getWorldTranslation(v.components[1].node)
             out[#out + 1] = { tool = v, name = ADTrailerHitch.label(v), distance = MathUtil.vector2Length(tx - vx, tz - vz) }
         end
     end
     table.sort(out, function(a, b) return a.distance < b.distance end)
+    -- (15/11) Conduire : les outils après les remorques (même liste que la ligne « Outil » du mode Autonome)
+    if ADTrailerHitch.isDriveMode(vehicle) and ADAutonomousManager.fetchableTools ~= nil then
+        local okT, tools = FarmPilotCall(ADAutonomousManager.fetchableTools, vehicle)
+        if okT and type(tools) == "table" then
+            for _, e in ipairs(tools) do
+                out[#out + 1] = e
+            end
+        end
+    end
     local count = {}
     for _, e in ipairs(out) do
         count[e.name] = (count[e.name] or 0) + 1
@@ -200,7 +249,7 @@ function ADTrailerHitch.trailerToFetch(vehicle)
 end
 
 local function message(vehicle, messageType, duration, key, ...)
-    AutonomousMode.message(vehicle, messageType, duration, key, ...)
+    AutonomousMode.message(vehicle, messageType, duration, ADTrailerHitch.key(vehicle, key), ...)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -219,11 +268,25 @@ function ADTrailerHitch.beforeStart(mode, user)
     if not ADTrailerHitch.isTrailerMode(vehicle) then
         return false
     end
+    if ADTrailerHitch.isDriveMode(vehicle) and not ADTrailerHitch.driveFetchAllowed(vehicle, user) then
+        return false
+    end
     if ADLoadPoint ~= nil and ADLoadPoint.beforeStart(mode, user) then return true end -- remorque adaptée aux produits choisis, voir HudLoadPoint.lua
     local ok, trailer, err, wanted = FarmPilotCall(ADTrailerHitch.trailerToFetch, vehicle)
     if not ok then
         ADTrailerHitch.log("ERREUR remorque à atteler : %s", tostring(trailer))
         return false
+    end
+    if err == "other" and ADTrailerHitch.isDriveMode(vehicle) then
+        -- (15/11) Conduire : ce qui est attelé va d'abord à sa place, s'il en a une
+        local okD, drop = FarmPilotCall(ADTrailerHitch.toolToDropFirst, vehicle)
+        if okD and drop ~= nil then
+            if not vehicle.ad.stateModule:isActive() then
+                vehicle:startAutoDrive()
+            end
+            ADTrailerHitch.startDropFirst(mode, drop, wanted, user)
+            return true
+        end
     end
     if err ~= nil then
         message(vehicle, ADMessagesManager.messageTypes.ERROR, 12000, ADTrailerHitch.FAIL_KEYS[err] or "AD_trailer_fetchFailed", wanted ~= nil and ADTrailerHitch.label(wanted) or "?")
@@ -241,6 +304,51 @@ function ADTrailerHitch.beforeStart(mode, user)
     end
     ADTrailerHitch.startFetch(mode, trailer, user)
     return true
+end
+
+-- (15/11) Conduire : on va atteler seulement au départ donné par le joueur vers la destination choisie
+-- (pas le bouton parking, qui passe aussi par Conduire, ni le plein, la réparation, les autres mods)
+function ADTrailerHitch.driveFetchAllowed(vehicle, user)
+    if user ~= AutoDrive.USER_PLAYER then
+        return false
+    end
+    if vehicle.ad.onRouteToPark or vehicle.ad.onRouteToRefuel or vehicle.ad.onRouteToRepair then
+        return false
+    end
+    local sm = vehicle.ad.stateModule
+    local park = sm.getParkDestinationAtJobFinished ~= nil and sm:getParkDestinationAtJobFinished() or nil
+    if park ~= nil and park >= 1 and sm.getFirstMarkerId ~= nil and sm:getFirstMarkerId() == park then
+        return false
+    end
+    return true
+end
+
+-- (15/11) Conduire : la seule remorque / le seul outil attelé, s'il a sa place de parking (marqueur) ; sinon nil
+function ADTrailerHitch.toolToDropFirst(vehicle)
+    local list = attachedTrailers(vehicle)
+    if #list ~= 1 then
+        return nil
+    end
+    local o = list[1]
+    local park = o.advd ~= nil and o.advd.parkDestination or -1
+    if park == nil or park < 1 or ADGraphManager:getMapMarkerById(park) == nil then
+        return nil
+    end
+    return o, ADGraphManager:getMapMarkerById(park)
+end
+
+-- (15/11) Conduire : poser d'abord ce qui est attelé à sa place, puis aller atteler le choix
+function ADTrailerHitch.startDropFirst(mode, drop, wanted, user)
+    local vehicle = mode.vehicle
+    local _, marker = ADTrailerHitch.toolToDropFirst(vehicle)
+    vehicle.ad.onRouteToPark = false
+    mode.fpHitch = { trailer = wanted, user = user, stage = "dropRoute", stuck = 0, drop = drop }
+    ADTrailerHitch.log("%s : « %s » d'abord à sa place « %s », puis va atteler « %s »", nameOf(vehicle), ADTrailerHitch.label(drop),
+        tostring(marker.name), ADTrailerHitch.label(wanted))
+    message(vehicle, ADMessagesManager.messageTypes.INFO, 10000, "AD_drive_dropGo", ADTrailerHitch.label(drop), ADTrailerHitch.label(wanted))
+    mode.fpHitch.task = DriveToDestinationTask:new(vehicle, marker.id)
+    if ADDriveGoal ~= nil then ADDriveGoal.set(mode.fpHitch.task, "AD_fpGoal_drop", ADTrailerHitch.label(drop)) end -- but affiché dans l'ATH, voir DriveGoal.lua
+    vehicle.ad.taskModule:addTask(mode.fpHitch.task)
 end
 
 -- aller atteler la remorque : par le réseau jusque devant elle, puis marche arrière et attelage.
@@ -328,6 +436,39 @@ function ADTrailerHitch.handleFinishedTask(mode)
         end
         return false
     end
+    if h.stage == "dropRoute" then
+        -- (15/11) Conduire : arrivé à la place de ce qui est attelé : dételage
+        if vehicle.ad.isStoppingWithError then
+            mode.fpHitch = nil
+            vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
+            return true
+        end
+        h.stage = "detach"
+        h.task = ADDetachToolTask:new(vehicle, h.drop)
+        vehicle.ad.taskModule:addTask(h.task)
+        return true
+    end
+    if h.stage == "detach" then
+        local dropLabel = ADTrailerHitch.label(h.drop)
+        mode.fpHitch = nil
+        if h.task == nil or h.task.result ~= "ok" then
+            ADTrailerHitch.log("%s : « %s » pas dételé (%s), arrêt", nameOf(vehicle), dropLabel, tostring(h.task ~= nil and h.task.result or "?"))
+            message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_drive_dropFailed", dropLabel)
+            vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
+            return true
+        end
+        ADTrailerHitch.log("%s : « %s » posé à sa place, va atteler « %s »", nameOf(vehicle), dropLabel, ADTrailerHitch.label(h.trailer))
+        local okF, trailer, err, wanted = FarmPilotCall(ADTrailerHitch.trailerToFetch, vehicle)
+        if not okF or err ~= nil or trailer == nil then
+            local why = okF and err or "other"
+            ADTrailerHitch.log("%s : attelage de « %s » impossible après la dépose (%s), arrêt", nameOf(vehicle), ADTrailerHitch.label(h.trailer), tostring(why))
+            message(vehicle, ADMessagesManager.messageTypes.ERROR, 12000, ADTrailerHitch.FAIL_KEYS[why] or "AD_trailer_fetchFailed", ADTrailerHitch.label(wanted or h.trailer))
+            vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))
+            return true
+        end
+        ADTrailerHitch.startFetch(mode, trailer, h.user)
+        return true
+    end
     if h.stage == "route" then
         if vehicle.ad.isStoppingWithError then
             mode.fpHitch = nil
@@ -351,6 +492,10 @@ function ADTrailerHitch.handleFinishedTask(mode)
         end
         ADTrailerHitch.log("%s : remorque « %s » attelée, départ du mode", nameOf(vehicle), label)
         message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_trailer_fetchDone", label)
+        if ADTrailerHitch.isDriveMode(vehicle) then
+            -- (15/11) Conduire : choix d'une fois, la ligne revient à « rien » (la prochaine conduite part telle quelle)
+            vehicle.ad.stateModule:setFpTrailer(nil)
+        end
         -- départ normal du mode (la remorque choisie est maintenant attelée)
         mode:start(h.user)
     else

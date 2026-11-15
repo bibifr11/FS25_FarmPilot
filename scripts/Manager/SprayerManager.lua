@@ -15,7 +15,8 @@
 --   Courseplay s'arrête cuve vide (sortie du champ, plein, retour, Courseplay repart au dernier point). Ce fichier ne
 --   fait que le réglage, le plan de plein et l'arrêt du chargement à la quantité voulue.
 -- - Automoteur : la machine elle-même est l'« outil », comme l'épandeur traîné.
--- - Le reste de la cuve en fin de champ (vidé en big bags / IBC ou gardé) : AutonomousSprayerDump.lua.
+-- - Le reste de la cuve en fin de champ (rendu au stock, revendu, vendu ou gardé) : AutonomousSprayerDump.lua.
+--   (15/11) Plus jamais de big bags ni d'IBC (SprayerRestReturn.lua).
 --
 -- Branché par une ligne dans : AutonomousMode.lua (start : refuseStart et preparePlan ; monitorTasks :
 -- monitorTarget ; onCpEmpty : preparePlan), HudButton.lua (hudGear), AutoDrive.lua (saveToXml). Lu aussi par

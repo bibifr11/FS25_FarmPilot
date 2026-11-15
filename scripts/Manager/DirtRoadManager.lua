@@ -12,14 +12,17 @@
 --
 -- Règles :
 -- - Éditeur : Maj gauche + clic sur un point (ou sur une section) fait tourner son type :
---   primaire -> secondaire -> chemin de terre -> primaire + intersection -> secondaire + intersection -> primaire.
+--   primaire -> secondaire -> chemin de terre -> route d'accès -> primaire + intersection -> secondaire + intersection
+--   -> tertiaire + intersection -> route d'accès + intersection -> primaire ((15/11) le point rouge garde son type).
 -- - Réglage véhicule « Chemins de terre » : Auto (camions et semis : Jamais ; tracteurs et autres : Autorisés),
 --   Jamais, Autorisés.
--- - Réglage général « Vitesse maxi sur chemin de terre » (30 km/h par défaut) : le véhicule ne la dépasse pas sur un
+-- - Réglage général « Vitesse maxi sur chemin de terre » (25 km/h par défaut depuis le 15/11, 30 avant) : le véhicule ne la dépasse pas sur un
 --   chemin de terre, et le calcul de route compte le temps de trajet à cette vitesse.
 -- - Autorisés : le chemin de terre est pris seulement s'il fait gagner du temps (ou si la route est trop étroite).
 -- - Jamais : un chemin de terre coûte 100 fois plus ; il n'est pris que s'il n'y a pas d'autre route (ou si la seule
 --   autre route est trop étroite pour l'attelage). Le log le dit.
+-- - (15/11) Route trop étroite pour l'attelage contre tertiaire en raccourci : la tertiaire passe (NARROW_WEIGHT,
+--   PathCalculationWidth.lua, plus cher que ACCESS_WEIGHT). Le journal le dit.
 -- - Un segment est « chemin de terre » quand l'un de ses deux points l'est (comme les routes secondaires).
 -- - Nom affiché « route tertiaire » (principale, secondaire, tertiaire ; le code garde « dirt »). Même option
 --   pour les secondaires (Auto, Jamais ou Autorisé) :
@@ -96,8 +99,8 @@ AutoDrive.settings.secondaryRoads = {
 AutoDrive.settings.dirtRoadSpeed = {
     values = { 15, 20, 25, 30, 35, 40, 50 },
     texts = { "15 km/h", "20 km/h", "25 km/h", "30 km/h", "35 km/h", "40 km/h", "50 km/h" },
-    default = 4,
-    current = 4,
+    default = 3, -- (15/11) 25 km/h (avant : 30)
+    current = 3,
     text = "gui_ad_dirtRoadSpeed",
     tooltip = "gui_ad_dirtRoadSpeed_tooltip",
     translate = false,
@@ -123,7 +126,10 @@ function ADDirtRoads.isDirtId(wayPointId)
 end
 
 -- type suivant (Maj gauche + clic) : primaire -> secondaire -> chemin de terre -> route d'accès (12/11) ->
--- primaire + intersection -> secondaire + intersection -> primaire ; les autres drapeaux (point de champ…) sont gardés
+-- primaire + intersection -> secondaire + intersection -> tertiaire + intersection -> route d'accès + intersection
+-- -> primaire ; les autres drapeaux (point de champ…) sont gardés
+-- (15/11) le point rouge (intersection) garde son type sur une tertiaire et sur une route d'accès, comme sur une
+-- principale et une secondaire (drapeaux 16 + 32 et 16 + 64, envoyés sur 7 bits par Sync.lua)
 function ADDirtRoads.nextFlags(flags)
     flags = flags or 0
     local SUB, INTER, DIRT = AutoDrive.FLAG_SUBPRIO, AutoDrive.FLAG_INTERSECTION, AutoDrive.FLAG_DIRT_ROAD
@@ -134,8 +140,17 @@ function ADDirtRoads.nextFlags(flags)
     local dirt = bit32.band(flags, DIRT) > 0
     local access = ACCESS > 0 and bit32.band(flags, ACCESS) > 0
     if intersection then
-        if subPrio or dirt or access then
-            return others                       -- secondaire + intersection -> primaire
+        if access then
+            return others                       -- route d'accès + intersection -> primaire
+        end
+        if dirt then
+            if ACCESS > 0 then
+                return others + ACCESS + INTER  -- (15/11) tertiaire + intersection -> route d'accès + intersection
+            end
+            return others                       -- tertiaire + intersection -> primaire
+        end
+        if subPrio then
+            return others + DIRT + INTER        -- (15/11) secondaire + intersection -> tertiaire + intersection
         end
         return others + SUB + INTER             -- primaire + intersection -> secondaire + intersection
     end
@@ -289,7 +304,8 @@ function ADDirtRoads.wrapDriveTime(baseFunc, vehicle, startID, targetID)
         local cost
         if isDirt(a) or isDirt(b) then
             local through = (isDirt(a) and not access[a.id]) or (isDirt(b) and not access[b.id])
-            cost = ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) * factor + (through and accessWeight or 0)
+            local time = ADRoadSpeeds ~= nil and baseFunc(a, b, c) or ADGraphManager:getDriveTimeBetweenNodes(a.id, b.id, c, cap, true) -- (15/11) vitesse réelle de la tertiaire (RoadSpeedManager.lua)
+            cost = time * factor + (through and accessWeight or 0)
         else
             cost = baseFunc(a, b, c)
         end
@@ -388,7 +404,14 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
             through = through + 1
         end
     end
-    if through > 0 then
+    -- (15/11) une route trop étroite pour l'attelage coûte plus qu'une tertiaire en raccourci : le journal le dit
+    local narrow, needed = 0, nil
+    if through > 0 and ADPathCalculator ~= nil and ADPathCalculator.countNarrowFor ~= nil then
+        narrow, needed = ADPathCalculator.countNarrowFor(vehicle)
+    end
+    if through > 0 and narrow > 0 then
+        log("%s : route tertiaire prise en raccourci (%d points) : les autres routes ont un passage trop étroit pour l'attelage (%.1f m) ou n'existent pas, la tertiaire passe avant une route trop étroite", tostring(name), through, needed or 0)
+    elseif through > 0 then
         log("%s : route tertiaire prise en raccourci (%d points), seulement parce qu'il n'y a pas d'autre route", tostring(name), through)
     elseif allowed then
         log("%s : route tertiaire pour accéder à la destination (%d points, %d km/h maxi dessus, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)

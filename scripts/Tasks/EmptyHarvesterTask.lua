@@ -14,6 +14,8 @@ EmptyHarvesterTask.WAITING_TIME = 7000
 EmptyHarvesterTask.WAITING_FOR_PIPE = 1000
 -- stop retrying the path to the pipe after this many failures in a row
 EmptyHarvesterTask.MAX_PATHFINDER_FAILURES = 6
+-- (15/11) mode Strict : après MAX_PATHFINDER_FAILURES, nouvel essai toutes les STRICT_RETRY_DELAY ms au lieu de l'arrêt
+EmptyHarvesterTask.STRICT_RETRY_DELAY = 15000
 
 function EmptyHarvesterTask:new(vehicle, combine)
     local o = EmptyHarvesterTask:create()
@@ -34,10 +36,42 @@ function EmptyHarvesterTask:new(vehicle, combine)
     return o
 end
 
+-- (15/11) pas de trajet complet vers la moissonneuse arrêtée : rouler au plus près (dernier point propre), puis
+-- recalculer au bout. Le trajet partiel n'existe qu'en mode Strict (PathFinderModule:partialAllowed).
+function EmptyHarvesterTask.allowPartial(vehicle)
+    vehicle.ad.pathFinderModule.allowPartialPath = true
+end
+
+-- (15/11) mode Strict, aucun trajet vers la moissonneuse : la benne va d'abord se garer dans le champ (sa place
+-- d'attente, WaitForCallTaskFieldPark.lua), puis elle est rappelée et recalcule depuis cette place. Une fois toutes
+-- les PARK_RETRY_INTERVAL au plus ; entre deux, elle attend sur place et recalcule (STRICT_RETRY_DELAY).
+EmptyHarvesterTask.PARK_RETRY_INTERVAL = 300000
+
+function EmptyHarvesterTask.parkBeforeRetry(task)
+    local vehicle = task.vehicle
+    local mode = vehicle.ad.modes ~= nil and vehicle.ad.modes[AutoDrive.MODE_UNLOAD] or nil
+    if mode == nil or mode.setToWaitForCall == nil then
+        return false
+    end
+    local last = vehicle.ad.fpParkBeforeRetry
+    local now = g_time or 0
+    if last ~= nil and last.combine == task.combine and now - last.time < EmptyHarvesterTask.PARK_RETRY_INTERVAL then
+        return false
+    end
+    vehicle.ad.fpParkBeforeRetry = {combine = task.combine, time = now}
+    print(string.format("[AD-Fin] %s: pas de trajet vers %s apres %d essais, il va d'abord se garer dans le champ puis recalcule",
+        tostring(vehicle:getName()), tostring(task.combine:getName()), task.pathFinderFailures))
+    mode:notifyAboutFailedPathfinder()
+    task:finished(ADTaskModule.DONT_PROPAGATE)
+    mode:setToWaitForCall()
+    return true
+end
+
 function EmptyHarvesterTask:setUp()
     EmptyHarvesterTask.debugMsg(self.vehicle, "EmptyHarvesterTask:setUp")
     self.vehicle.ad.pathFinderModule:reset()
     self.vehicle.ad.pathFinderModule:startPathPlanningToPipe(self.combine, false)
+    EmptyHarvesterTask.allowPartial(self.vehicle)
     self.trailers, self.trailerCount = AutoDrive.getAllUnits(self.vehicle)
     self.tractorTrainLength = AutoDrive.getTractorTrainLength(self.vehicle, true, false)
     AutoDrive.setTrailerCoverOpen(self.vehicle, self.trailers, true)
@@ -77,7 +111,24 @@ function EmptyHarvesterTask:update(dt)
             if self.wayPoints == nil or #self.wayPoints == 0 then
                 -- If the target/pipe location is blocked, we can issue a notification and stop the task - Otherwise we pause a moment and retry
                 self.pathFinderFailures = self.pathFinderFailures + 1
-                if self.vehicle.ad.pathFinderModule:isTargetBlocked() or self.pathFinderFailures >= EmptyHarvesterTask.MAX_PATHFINDER_FAILURES then
+                local pfm = self.vehicle.ad.pathFinderModule
+                -- (15/11) mode Strict : pas de trajet = on n'arrête jamais le chauffeur. Pas même un trajet partiel :
+                -- il attend sur place et recalcule (la moissonneuse avance, un passage s'ouvre)
+                local keepTrying = pfm.strictField or pfm.strictFruit
+                if keepTrying and (pfm:isTargetBlocked() or self.pathFinderFailures >= EmptyHarvesterTask.MAX_PATHFINDER_FAILURES)
+                    and EmptyHarvesterTask.parkBeforeRetry(self) then
+                    return
+                elseif keepTrying and (pfm:isTargetBlocked() or self.pathFinderFailures >= EmptyHarvesterTask.MAX_PATHFINDER_FAILURES) then
+                    if self.pathFinderFailures == EmptyHarvesterTask.MAX_PATHFINDER_FAILURES or self.pathFinderFailures % 30 == 0 then
+                        print(string.format("[AD-Fin] %s: pas de trajet vers %s apres %d essais, il attend la et recalcule (mode Strict : jamais arrete)",
+                            tostring(self.vehicle:getName()), tostring(self.combine:getName()), self.pathFinderFailures))
+                    end
+                    self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:notifyAboutFailedPathfinder()
+                    pfm:reset()
+                    pfm:startPathPlanningToPipe(self.combine, false)
+                    EmptyHarvesterTask.allowPartial(self.vehicle)
+                    pfm:addDelayTimer(EmptyHarvesterTask.STRICT_RETRY_DELAY)
+                elseif pfm:isTargetBlocked() or self.pathFinderFailures >= EmptyHarvesterTask.MAX_PATHFINDER_FAILURES then
                     self:finished(ADTaskModule.DONT_PROPAGATE)
                     self.vehicle:stopAutoDrive()
                     AutoDriveMessageEvent.sendMessageOrNotification(self.vehicle, ADMessagesManager.messageTypes.WARN, "$l10n_AD_Driver_of; %s $l10n_AD_cannot_find_path; %s", 5000, self.vehicle.ad.stateModule:getName(), self.combine.ad.stateModule:getName())
@@ -86,9 +137,14 @@ function EmptyHarvesterTask:update(dt)
                     self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD]:notifyAboutFailedPathfinder()
                     self.vehicle.ad.pathFinderModule:reset()
                     self.vehicle.ad.pathFinderModule:startPathPlanningToPipe(self.combine, false)
+                    EmptyHarvesterTask.allowPartial(self.vehicle)
                     self.vehicle.ad.pathFinderModule:addDelayTimer(10000)
                 end
             else
+                self.routeIsPartial = self.vehicle.ad.pathFinderModule.partialPath == true
+                if not self.routeIsPartial then
+                    self.vehicle.ad.fpParkBeforeRetry = nil
+                end
                 self.state = EmptyHarvesterTask.STATE_DRIVING
                 return
             end
@@ -99,6 +155,19 @@ function EmptyHarvesterTask:update(dt)
             return
         end
     elseif self.state == EmptyHarvesterTask.STATE_DRIVING then
+        if self.routeIsPartial and self.vehicle.ad.drivePathModule:isTargetReached() then
+            -- (15/11) bout du trajet partiel : on est au plus près, nouveau calcul vers la goulotte depuis ici
+            self.routeIsPartial = false
+            print(string.format("[AD-Fin] %s: au bout du trajet partiel, nouveau calcul vers %s",
+                tostring(self.vehicle:getName()), tostring(self.combine:getName())))
+            self.vehicle.ad.specialDrivingModule:stopVehicle()
+            self.vehicle.ad.specialDrivingModule:update(dt)
+            self.vehicle.ad.pathFinderModule:reset()
+            self.vehicle.ad.pathFinderModule:startPathPlanningToPipe(self.combine, false)
+            EmptyHarvesterTask.allowPartial(self.vehicle)
+            self.state = EmptyHarvesterTask.STATE_PATHPLANNING
+            return
+        end
         if self.vehicle.ad.drivePathModule:isTargetReached() then
             if AutoDrive:getIsCPActive(self.combine) then
                 self.vehicle.ad.specialDrivingModule:stopVehicle()

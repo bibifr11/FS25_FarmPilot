@@ -17,6 +17,10 @@
 -- (14/11) Réglage « Sortie de champ » (fpExitField, Settings.lua) : « Le plus proche » = l'entrée n'est plus essayée
 -- d'abord, tous les points du plus proche au plus loin (routes tracées juste hors du champ, comme AutoDrive).
 --
+-- (15/11) Départ du mode Autonome depuis un champ (AutonomousFieldExit.lua) : l'entrée du champ et la destination
+-- sont données par la tâche (exitEntranceId, exitDestinationId) au lieu des 1re et 2e destinations ; plus aucun
+-- point : la tâche reprend sa route habituelle (onNoExitCandidate) au lieu de l'arrêt. Bennes : rien ne change.
+--
 -- Branché par une ligne dans ExitFieldTask.lua : update (4 accroches), abort, finished, startPathPlanning, getI18nInfo.
 -- ============================================================================================================
 
@@ -69,13 +73,13 @@ function ExitFieldTask:buildCandidates()
     local vx, _, vz = getWorldTranslation(self.vehicle.components[1].node)
     local dx, _, dz = AutoDrive.localDirectionToWorld(self.vehicle, 0, 0, 1)
     local minDistance = AutoDrive.getDriverRadius(self.vehicle)
-    local destination = self.vehicle.ad.stateModule:getSecondWayPoint()
+    local destination = self.exitDestinationId or self.vehicle.ad.stateModule:getSecondWayPoint() -- (départ du mode Autonome : sa destination, voir AutonomousFieldExit.lua)
     local routes = {}
     local closest = self.vehicle:getClosestWayPoint()
     if closest ~= nil then
         table.insert(routes, ADGraphManager:pathFromTo(closest, destination, nil, self.vehicle))
     end
-    local fieldRoute = ADGraphManager:pathFromTo(self.vehicle.ad.stateModule:getFirstWayPoint(), destination, nil, self.vehicle)
+    local fieldRoute = ADGraphManager:pathFromTo(self.exitEntranceId or self.vehicle.ad.stateModule:getFirstWayPoint(), destination, nil, self.vehicle) -- (départ du mode Autonome : l'entrée du champ où il est, voir AutonomousFieldExit.lua)
     table.insert(routes, fieldRoute)
     -- (14/11) réglage « Sortie de champ » : « Le plus proche » = l'entrée sans priorité, du plus proche au plus loin
     local closestFirst = AutoDrive.getSetting("fpExitField", self.vehicle) == 2
@@ -157,6 +161,7 @@ function ExitFieldTask:startExitPlanning()
         end
         print(string.format("[AD-Exit] %s: exception : l'entree du champ (point %s) n'a donne aucun trajet (%d essai(s)), les autres points de sortie sont essayes du plus proche au plus loin, sans culture ni sortie du champ", tostring(self.vehicle:getName()), tostring(self.candidates[1].wp.id), self.entranceTries))
     end
+    if candidate == nil and self.onNoExitCandidate ~= nil then return self:onNoExitCandidate() end -- départ du mode Autonome : sa route habituelle, voir AutonomousFieldExit.lua
     if candidate == nil and not self.directExit and AutoDrive.isChopperUnloading(self.vehicle) then
         -- forage harvester only (opening a field: a narrow cut strip, no turning, no passing)
         -- fallback: no forward route found and the field exit is behind, U-turn in the strip first

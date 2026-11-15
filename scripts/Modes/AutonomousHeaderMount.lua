@@ -50,8 +50,12 @@ local function attacherOf(o)
     return nil
 end
 
--- la barre est sur la remorque (bloquée, ou posée et pas encore bloquée)
+-- la barre est sur la remorque (bloquée, ou posée et pas encore bloquée, ou (15/11) décrochée mais toujours posée
+-- dessus : AutonomousHeader.lua, holds)
 local function holds(trailer, object)
+    if ADHeaderFlow.holds ~= nil then
+        return ADHeaderFlow.holds(trailer, object)
+    end
     local s = trailer.spec_dynamicMountAttacher
     return (s.dynamicMountedObjects ~= nil and s.dynamicMountedObjects[object] ~= nil)
         or (s.pendingDynamicMountObjects ~= nil and s.pendingDynamicMountObjects[object] ~= nil)

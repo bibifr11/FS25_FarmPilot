@@ -423,6 +423,8 @@
 		<text name="AD_fpGoal_bales_tiny" text="dépôt des balles" />
 		<text name="AD_fpGoal_swap" text="échange de benne à %s" />
 		<text name="AD_fpGoal_swap_short" text="échange de benne" />
+		<text name="AD_fpGoal_drop" text="poser %s à sa place" />
+		<text name="AD_fpGoal_drop_short" text="poser à sa place" />
 		<text name="AD_fpGoal_hitch" text="atteler %s" />
 		<text name="AD_fpGoal_hitch_short" text="atteler la remorque" />
 		<text name="AD_fpGoal_hitch_tiny" text="atteler" />
@@ -511,7 +513,7 @@
 		<text name="gui_ad_fieldParkWhileWaiting" text="Attente dans le champ" />
 		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Un déchargeur qui attend l'appel d'une moissonneuse entre dans le champ et se gare sur une place libre sans culture, loin des chemins, pour ne pas bloquer la route" />
 		<text name="gui_ad_autonomousNoCp" text="Autonome sans Courseplay" />
-		<text name="gui_ad_autonomousNoCp_tooltip" text="Ce que fait le mode Autonome quand Courseplay n'est pas installé : le chauffeur s'arrête et attend, ou l'ouvrier du jeu prend le champ (mode Classique)" />
+		<text name="gui_ad_autonomousNoCp_tooltip" text="Ce que fait le mode Autonome quand Courseplay n'est pas installé, ou n'a aucun parcours de la largeur de l'outil sur le champ : le chauffeur s'arrête et attend, ou l'ouvrier du jeu prend le champ (mode Classique)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Attendre" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Ouvrier du jeu" />
 		<text name="gui_ad_dirtRoads" text="Routes tertiaires" />
@@ -526,6 +528,8 @@
 		<text name="AD_foldWait" text="%s %s : j'attends que %s soit replié (%d %%)%s, je ne pars pas" />
 		<text name="gui_ad_dirtRoadSpeed" text="Vitesse maxi sur route tertiaire" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Vitesse maximale sur les points « route tertiaire ». Le calcul de route en tient compte : une route tertiaire n'est prise que si elle fait gagner du temps" />
+		<text name="gui_ad_secondaryRoadSpeed" text="Vitesse maxi sur route secondaire" />
+		<text name="gui_ad_secondaryRoadSpeed_tooltip" text="Vitesse maximale sur les points « route secondaire ». Le calcul de route en tient compte : une route secondaire n'est prise que si elle fait gagner du temps" />
 		<text name="gui_ad_roadTypes_title_secondary" text="Routes secondaires : types de véhicules" />
 		<text name="gui_ad_roadTypes_title_tertiary" text="Routes tertiaires : types de véhicules" />
 		<text name="gui_ad_roadTypes_info_secondary" text="Quand « Routes secondaires » est sur Auto, pour tous les véhicules. Oui : routes secondaires prises dès qu'elles font gagner du temps. Non : seulement s'il n'y a pas d'autre route." />
@@ -616,7 +620,9 @@
 		<text name="AD_autonomous_noWidth" text="largeur de l'outil inconnue, en attente" />
 		<text name="AD_autonomous_noTool" text="mode Autonome : aucun outil de travail attelé" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay introuvable : ouvrier du jeu lancé sur le champ %s" />
+		<text name="AD_autonomous_aiNoCourse" text="aucun parcours Courseplay de %s m sur le champ %s : ouvrier du jeu lancé" />
 		<text name="AD_autonomous_aiFailed" text="l'ouvrier du jeu n'a pas pu démarrer, en attente" />
+		<text name="AD_autonomous_aiStopped" text="l'ouvrier du jeu s'est arrêté avant la fin du champ (%s) : le tracteur reste sur place" />
 		<text name="AD_autonomous_noCp" text="Courseplay introuvable sur ce véhicule, en attente" />
 		<text name="AD_autonomous_cpFailed" text="Courseplay n'a pas pu démarrer avec « %s », en attente" />
 		<text name="AD_autonomous_nextField" text="Champ suivant : %s" />
@@ -697,10 +703,21 @@
 		<text name="AD_autonomous_unloadersFollow" text="%d benne(s) suivent vers « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d benne(s) suivront vers « %s » quand la moissonneuse aura repris le travail" />
 		<text name="AD_autonomous_unloadersStay" text="les bennes restent à « %s » (autre machine)" />
+		<text name="AD_autonomous_unloadersRecall" text="%d benne(s) de son équipe reprise(s) au garage, en route vers « %s »" />
 		<text name="AD_fpFn_cutter" text="Coupe" />
 		<text name="AD_fpFn_cornHeader" text="Coupe à maïs" />
 		<text name="AD_fpFn_chopperHeader" text="Bec d'ensileuse" />
 		<text name="AD_autonomous_headerChosenBusy" text="« %s » (choisi) n'est pas libre, « %s » y va à sa place" />
+		<text name="AD_autonomous_headerStayNoTrailer" text="champ fini, aucune remorque porte-barre vide : reste ici avec la barre, nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerStayNoTractor" text="champ fini, aucun tracteur libre pour la remorque porte-barre « %s » : reste ici avec la barre, nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerStay" text="champ fini, barre pas reposée : reste ici avec la barre, nouvel essai toutes les minutes" />
+		<text name="AD_task_autonomous_headerStay" text="Attendre une remorque porte-barre et un tracteur" />
+		<text name="AD_autonomous_headerParkStay" text="parking demandé : aucune remorque porte-barre vide, reste ici avec la barre" />
+		<text name="AD_autonomous_headerParkStayOther" text="parking demandé : la barre ne peut pas être reposée, reste ici avec la barre" />
+		<text name="AD_autonomous_headerEmptyFirst" text="champ fini : attend d'être vidée avant de reposer la barre" />
+		<text name="AD_task_autonomous_headerEmptyFirst" text="Attendre d'être vidée" />
+		<text name="AD_autonomous_headerCarry" text="« %s » ne passe pas sur la route jusqu'au champ suivant : reposée sur sa remorque, le tracteur la ramène" />
+		<text name="AD_autonomous_headerCarryStay" text="« %s » ne passe pas sur la route jusqu'au champ suivant et ne peut pas être reposée (pas de remorque vide ou pas de tracteur libre) : arrêt ici" />
 		<text name="gui_ad_headerTractor_title" text="Transport de la barre" />
 		<text name="gui_ad_headerTractor_tooltip" text="Véhicule de la remorque porte-barre" />
 		<text name="gui_ad_headerTractor_auto" text="Tracteur libre le plus proche" />
@@ -739,6 +756,19 @@
 		<text name="AD_trailer_fetchBusy" text="la remorque « %s » est attelée à un autre engin" />
 		<text name="AD_trailer_fetchOther" text="une remorque ou un outil est déjà attelé : dételez-le pour aller chercher « %s », ou choisissez « Celle attelée » sur la ligne « Remorque »" />
 		<text name="AD_trailer_fetchNoJoint" text="la remorque « %s » ne s'attelle pas à l'arrière de ce tracteur (ou l'attelage arrière est déjà pris)" />
+		<text name="AD_drive_row" text="Atteler : %s" />
+		<text name="AD_drive_rowNone" text="Atteler : rien" />
+		<text name="AD_drive_listNone" text="Rien (partir tel quel)" />
+		<text name="AD_drive_fetchGo" text="va atteler « %s » avant de partir" />
+		<text name="AD_drive_fetchDone" text="« %s » attelé, départ" />
+		<text name="AD_drive_fetchFailed" text="« %s » n'a pas pu être attelé, arrêt" />
+		<text name="AD_drive_fetchNoPath" text="pas de chemin jusqu'à l'avant de « %s » : placez le tracteur devant, dans son axe, et relancez" />
+		<text name="AD_drive_fetchMissed" text="attelage de « %s » raté, arrêt devant" />
+		<text name="AD_drive_fetchBusy" text="« %s » est attelé à un autre engin" />
+		<text name="AD_drive_fetchOther" text="déjà attelé sans place de parking (ou plusieurs) : dételez-le pour aller chercher « %s », ou choisissez « Rien » sur la ligne « Atteler »" />
+		<text name="AD_drive_fetchNoJoint" text="« %s » ne s'attelle pas à l'arrière de ce tracteur (ou l'attelage arrière est déjà pris)" />
+		<text name="AD_drive_dropGo" text="pose « %s » à sa place, puis va atteler « %s »" />
+		<text name="AD_drive_dropFailed" text="« %s » n'a pas pu être dételé à sa place, arrêt" />
 		<text name="AD_trailer_dropGo" text="travail fini : la remorque « %s » va à sa place, puis le tracteur à la sienne" />
 		<text name="gui_ad_trailerSwap_title" text="Échange de bennes" />
 		<text name="gui_ad_trailerSwap_tooltip" text="Échange de bennes à la livraison" />
@@ -1074,9 +1104,9 @@
 		<text name="fp_help_c7_1_title" text="Réglages de l'épandeur" />
 		<text name="fp_help_c7_1_text" text="Traînés ou automoteurs. Roue dentée sur la ligne de la machine, fenêtre « Réglages de l'épandeur » :&#10;- Produit à charger (ceux que la cuve accepte).&#10;- Quantité à prendre : Plein, ou Juste ce qu'il faut pour le champ (dose x surface + 10 %, l'estimation est affichée).&#10;- Zone de ravitaillement (marqueurs près d'un endroit qui a le produit).&#10;- Valider (touche Espace). Départ refusé tant que ce n'est pas validé." />
 		<text name="fp_help_c7_2_title" text="Plein et reste" />
-		<text name="fp_help_c7_2_text" text="Le plein se fait comme pour le semoir, au départ et quand la cuve est vide au champ. À la fin du champ : même produit au champ suivant avec la même machine, le reste est gardé. Sinon, le reste est vidé en big bags ou IBC à la zone de plein, puis la suite habituelle. Lisier, fumier, digestat ou machine sans déchargement : le reste est gardé." />
+		<text name="fp_help_c7_2_text" text="Le plein se fait comme pour le semoir, au départ et quand la cuve est vide au champ. À la fin du champ : même produit au champ suivant avec la même machine, le reste est gardé. Sinon, le reste est rendu au stock ou vendu, puis la suite habituelle. Lisier, fumier, digestat : le reste est aussi remis en fosse / au stock, ou vendu." />
 		<text name="fp_help_c7_3_title" text="Bouton P avec du produit" />
-		<text name="fp_help_c7_3_text" text="Bouton Garer sur un épandeur ou pulvé qui a encore plus de 20 L : il va d'abord vider le reste en big bags ou IBC, puis se gare (outil posé à sa place s'il en a une). Zone utilisée : celle du champ en cours, sinon la dernière réglée pour cette machine et ce produit, sinon le marqueur le plus proche qui a ce produit." />
+		<text name="fp_help_c7_3_text" text="Bouton Garer sur un épandeur ou pulvé qui a encore plus de 20 L : il se débarrasse d'abord du reste, puis se gare (outil posé à sa place s'il en a une). Zone utilisée : celle du champ en cours, sinon la dernière réglée pour cette machine et ce produit, sinon le marqueur le plus proche qui a ce produit." />
 		<text name="fp_help_c8_title" text="Presse à balles" />
 		<text name="fp_help_c8_1_title" text="Le parcours qui suit les andains" />
 		<text name="fp_help_c8_1_text" text="Avec une presse, FarmPilot ne cherche pas la largeur de l'outil : il lit les andains au sol et prend le parcours Courseplay du champ, quelle que soit sa largeur, qui passe le mieux dessus (en général celui de la moissonneuse ou de l'andaineur). Courseplay gère la presse comme d'habitude (balles, enrubannage)." />

@@ -202,6 +202,18 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 PathFinderModule.CELL_MAX_RATIO = 0.10
 
+-- (15/11) mode Strict : la culture n'est tolérée avant la goulotte que dans les PIPE_CROP_STRICT derniers mètres
+-- (avant : les 3 dernières cases, jusqu'à ~27 m avec des cases de 9 m). Réglage normal : comme AutoDrive.
+PathFinderModule.PIPE_CROP_STRICT = 20
+
+function PathFinderModule:pipeCropAllowed(cell)
+    if not (self.strictFruit or self.strictField) or self.target == nil then
+        return true
+    end
+    local center = cell.worldPos or self:gridLocationToWorldLocation(cell)
+    return MathUtil.vector2Length(center.x - self.target.x, center.z - self.target.z) <= PathFinderModule.PIPE_CROP_STRICT
+end
+
 -- crop of a grid cell, read from the field map: one share for every crop at once
 function PathFinderModule:checkForFruitInArea(cell, corners)
     if self.goingToNetwork then
@@ -231,7 +243,7 @@ function PathFinderModule:checkForFruitInArea(cell, corners)
     cell.hasFruit = hasFruit
     cell.fruitValue = ratio
     --Allow fruit in the last few grid cells (not behind the harvester: cut ground there)
-    if (self:cellDistance(cell) <= 3 and self.goingToPipe and not self.goingBehind) then
+    if (self:cellDistance(cell) <= 3 and self.goingToPipe and not self.goingBehind) and self:pipeCropAllowed(cell) then
         cell.isRestricted = false or wasRestricted
     end
     -- the vehicle already stands there: crop in the start cell (or within START_CROP_RADIUS) does not block the way out,

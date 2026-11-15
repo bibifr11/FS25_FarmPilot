@@ -6,6 +6,10 @@
 -- - Suivi du bord : dans les endroits très étroits (une bande coupée où un seul train passe), le trajet suit le bord
 --   de la culture à écart fixe au lieu de la grille (les cases coupent une bande en biais en escalier) ; il finit
 --   près de l'ensileuse (la poursuite prend le relais), là où le bord est perdu ou la bande bouchée.
+-- - (15/11) Suivi du bord pour la benne de la moissonneuse (Strict, trajet vers sa goulotte) : une bande ou un chemin
+--   le long de la culture ; il finit près du point visé à la goulotte (le calcul suivant prend le relais), là où le
+--   bord est perdu ou la bande bouchée. Couloir culture = carrosserie + marge de 0,7 m de chaque côté (jamais dans la
+--   culture), jamais sur un autre champ ; l'herbe et les chemins hors du champ sont permis en Strict champ.
 -- - 2e déchargeur : vise une miette du 1er (le point et le sens de la trace) au lieu d'un point derrière lui.
 --
 -- Historique :
@@ -19,7 +23,8 @@
 -- - virages : aucun seuil de largeur, anticiper davantage, côté extérieur avant le virage
 --   (extérieur, intérieur, extérieur), pas plus d'écart que nécessaire, aussi loin que le champ le permet.
 --
--- Règle : seulement pour l'ensileuse en strict ; sinon la grille d'AutoDrive.
+-- Règle : seulement en strict ; voie du précédent et 2e déchargeur : ensileuse seulement ; suivi du bord : ensileuse,
+-- et (15/11) benne de moissonneuse vers sa goulotte ; sinon la grille d'AutoDrive.
 --
 -- Branché par PathFinderModule.lua : startPathPlanningToPipe (tryLaneOrEdge) ; startPathPlanningToFollow et
 -- edgeCropAt par DriveToVehicleTask.lua.
@@ -72,6 +77,8 @@ PathFinderModule.EDGE_BEND_EXTRA = 10 -- m looked ahead beyond the turn radius f
 PathFinderModule.EDGE_BEND_MARGIN = 0.7 -- start turning away before the last moment
 
 PathFinderModule.EDGE_MIN_GAIN = 2 -- m closer to the target at least at the end of an edge piece (25/10 19:14)
+-- (15/11) moissonneuse : le suivi finit à cette distance du point visé à la goulotte, ligne droite propre jusqu'à lui
+PathFinderModule.EDGE_PIPE_RANGE = 20
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils
@@ -79,6 +86,40 @@ PathFinderModule.EDGE_MIN_GAIN = 2 -- m closer to the target at least at the end
 function PathFinderModule:edgeCropAt(x, z)
     local crop = PathFinderModule.getMapCropAt(x, z)
     return crop ~= nil and crop ~= 0
+end
+
+-- (15/11) benne de moissonneuse en strict, sur le trajet vers sa goulotte : le suivi du bord lui sert aussi. Test
+-- explicite de la machine à vider (une moissonneuse, pas une ensileuse) : sans lui, rien ne change
+function PathFinderModule:isEdgeCombineWork()
+    local combine = self.pipeCombine
+    return not self:isChopperWork() and (self.strictFruit or self.strictField) and self.goingToPipe == true
+        and combine ~= nil and combine.ad ~= nil and combine.ad.isHarvester == true and combine.ad.isChopper ~= true
+end
+
+-- sol où le train peut rouler pendant le suivi du bord. Ensileuse : le champ seulement (inchangé).
+-- (15/11) moissonneuse : jamais sur un autre champ ; hors du champ (herbe, chemin de terre, bas-côté) permis en
+-- Strict champ (même règle que la grille, PathFinderModuleField.lua) ou quand le trajet n'est pas limité au champ
+function PathFinderModule:edgeGroundAt(x, z, combineWork)
+    local onField = PathFinderModule.getMapOnFieldAt(x, z)
+    if not combineWork then
+        return onField
+    end
+    if not onField then
+        return self.strictField == true or not self.restrictToField
+    end
+    local field = PathFinderModule.getFieldAtPosition(x, z)
+    if field ~= nil and field == self.edgeField then
+        -- le champ où travaille la moissonneuse
+        return true
+    end
+    if field ~= nil and not (self.allowedFields ~= nil and self.allowedFields[field] == true) then
+        -- un autre champ (sauf celui du départ ou de l'arrivée en Strict champ, comme la grille)
+        return false
+    end
+    if self.strictField then
+        return self:isFieldPositionAllowed(x, z, true)
+    end
+    return true
 end
 
 -- distance (0.5 m steps) from x, z along nx, nz to the first crop sample, nil if none within maxDistance
@@ -212,10 +253,18 @@ end
 -- Suivi du bord de la culture (fonction principale)
 -- ------------------------------------------------------------------------------------------------------------
 function PathFinderModule:tryEdgeFollow()
-    if not self:isChopperWork() or not (self.strictFruit or self.strictField) or (self.pipeCombine == nil and self.edgeGoal == nil) or self.startX == nil then
+    -- (15/11) aussi la benne de la moissonneuse (isEdgeCombineWork), l'ensileuse reste comme avant
+    local combineWork = self:isEdgeCombineWork()
+    if (not self:isChopperWork() and not combineWork) or not (self.strictFruit or self.strictField) or (self.pipeCombine == nil and self.edgeGoal == nil) or self.startX == nil then
         return false
     end
     local name = self:getLogName()
+    local cropWord = combineWork and "de la culture" or "du mais"
+    local reached = combineWork and "goulotte de la moissonneuse a portee, ligne droite propre" or "ensileuse a portee, ligne droite propre"
+    if combineWork then
+        local mx, _, mz = getWorldTranslation(self.pipeCombine.components[1].node)
+        self.edgeField = PathFinderModule.getFieldAtPosition(mx, mz)
+    end
     local x, _, z, hx, hz = self:getStartPose()
     local l = math.sqrt(hx * hx + hz * hz)
     if l < 0.01 then
@@ -239,7 +288,7 @@ function PathFinderModule:tryEdgeFollow()
     local free = 0
     while free < PathFinderModule.EDGE_FREE_SCAN do
         local px, pz = x + sx * (free + 0.5), z + sz * (free + 0.5)
-        if not PathFinderModule.getMapOnFieldAt(px, pz) or self:edgeCropAt(px, pz) then
+        if not self:edgeGroundAt(px, pz, combineWork) or self:edgeCropAt(px, pz) then
             break
         end
         free = free + 0.5
@@ -247,10 +296,14 @@ function PathFinderModule:tryEdgeFollow()
     -- no width threshold: a crop edge beside the train is followed, the grid cuts strips into stairs.
     -- Never from inside the crop: every piece (also the ones planned ahead while driving) is checked in full
     local width = cropDistance + free
-    if cropDistance < self:getCropHalfWidth() or free < 0.5 then
+    local cropHalf = self:getCropHalfWidth()
+    if combineWork then
+        -- (15/11) moissonneuse : couloir culture = carrosserie + marge de 0,7 m de chaque côté, jamais moins
+        cropHalf = math.max(cropHalf, self.trainHalfWidth or cropHalf)
+    end
+    if cropDistance < cropHalf or free < 0.5 then
         return false
     end
-    local cropHalf = self:getCropHalfWidth()
     local gap = cropHalf + PathFinderModule.EDGE_GAP
     local radius = self.realTurnRadius or self.minTurnRadius or 8
     local step = PathFinderModule.EDGE_STEP
@@ -261,6 +314,12 @@ function PathFinderModule:tryEdgeFollow()
         cx, _, cz = getWorldTranslation(self.pipeCombine.components[1].node)
     end
     local closeRange = CatchCombinePipeTask ~= nil and type(CatchCombinePipeTask.CLOSE_RANGE) == "number" and CatchCombinePipeTask.CLOSE_RANGE or 30
+    if combineWork and self.target ~= nil then
+        -- (15/11) moissonneuse : le but est le point visé à sa goulotte (ou derrière elle quand elle est loin), pas
+        -- son centre ; le suivi finit près de lui, le calcul suivant prend le relais
+        cx, cz = self.target.x, self.target.z
+        closeRange = PathFinderModule.EDGE_PIPE_RANGE
+    end
     local points = {{x = x, y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, x, 1, z), z = z}}
     local px, pz, dx, dz = x, z, hx, hz
     local length, best, sinceBest = 0, MathUtil.vector2Length(cx - x, cz - z), 0
@@ -309,7 +368,7 @@ function PathFinderModule:tryEdgeFollow()
                 local free = 0
                 while free < PathFinderModule.EDGE_FREE_SCAN do
                     local fx, fz = bx - lx * (free + 0.5), bz - lz * (free + 0.5)
-                    if not PathFinderModule.getMapOnFieldAt(fx, fz) or self:edgeCropAt(fx, fz) then
+                    if not self:edgeGroundAt(fx, fz, combineWork) or self:edgeCropAt(fx, fz) then
                         break
                     end
                     free = free + 0.5
@@ -319,7 +378,7 @@ function PathFinderModule:tryEdgeFollow()
                 local depth = 0
                 while depth < 30 do
                     local fx, fz = cornerX + dx * (depth + 0.5) + lx * 3, cornerZ + dz * (depth + 0.5) + lz * 3
-                    if not PathFinderModule.getMapOnFieldAt(fx, fz) or self:edgeCropAt(fx, fz) then
+                    if not self:edgeGroundAt(fx, fz, combineWork) or self:edgeCropAt(fx, fz) then
                         break
                     end
                     depth = depth + 0.5
@@ -395,7 +454,7 @@ function PathFinderModule:tryEdgeFollow()
                     along = e1 ~= nil and e2 ~= nil and e1 - 0.5 >= gap - 0.5 and e2 - 0.5 >= gap - 0.5
                 end
                 if along then
-                    print(string.format("[AD-Fin] %s: bord du mais retrouve le long du train apres %.0f deg, fin du virage", name, math.deg(turned)))
+                    print(string.format("[AD-Fin] %s: bord %s retrouve le long du train apres %.0f deg, fin du virage", name, cropWord, math.deg(turned)))
                 end
                 if along or dx * clx + dz * clz > 0.995 or turned > math.rad(120) then
                     print(string.format("[AD-Fin] %s: angle passe (%.0f deg)%s", name, math.deg(turned), cutCorner and ", coin coupe" or ""))
@@ -448,8 +507,11 @@ function PathFinderModule:tryEdgeFollow()
         end
         cornerQX = nil
         -- the train at the tyres: no crop across, centre on the field, body side allowed, no obstacle
-        local ok = PathFinderModule.getMapOnFieldAt(qx, qz)
-        local why = ok and nil or "centre hors du champ"
+        local ok = self:edgeGroundAt(qx, qz, combineWork)
+        local why = nil
+        if not ok then
+            why = combineWork and "centre hors du sol permis" or "centre hors du champ"
+        end
         local samples = math.ceil(cropHalf * 4)
         for k = 0, samples do
             if not ok then
@@ -465,13 +527,21 @@ function PathFinderModule:tryEdgeFollow()
                         cutCorner = true
                     else
                         ok = false
-                        why = string.format("mais sous le pneu en %.1f,%.1f", mx, mz)
+                        why = string.format("%s sous le pneu en %.1f,%.1f", combineWork and "culture" or "mais", mx, mz)
                         break
                     end
                 end
             end
         end
-        if ok and self.strictField then
+        if ok and combineWork then
+            -- (15/11) moissonneuse : côtés du train (carrosserie + marge) jamais sur un autre champ, en strict champ
+            -- comme en strict culture
+            local side = self.trainHalfWidth or 2
+            ok = self:edgeGroundAt(qx - lx * side, qz - lz * side, true) and self:edgeGroundAt(qx + lx * side, qz + lz * side, true)
+            if not ok then
+                why = "carrosserie sur un autre champ ou hors du sol permis"
+            end
+        elseif ok and self.strictField then
             local side = (self.trainHalfWidth or 2) - PathFinderModule.FRUIT_CHECK_CORRIDOR_MARGIN
             ok = self:isTrainSideAllowed(qx - lx * side, qz - lz * side) and self:isTrainSideAllowed(qx + lx * side, qz + lz * side)
             if not ok then
@@ -497,7 +567,7 @@ function PathFinderModule:tryEdgeFollow()
         points[#points + 1] = {x = qx, y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, qx, 1, qz), z = qz}
         local distance = MathUtil.vector2Length(cx - qx, cz - qz)
         if distance < closeRange and corner == nil and self:isFruitStretchClear({x = qx, z = qz}, target, cropHalf) then
-            reason = "ensileuse a portee, ligne droite propre"
+            reason = reached
             break
         end
         if distance < best - 0.5 or corner ~= nil then
@@ -510,7 +580,7 @@ function PathFinderModule:tryEdgeFollow()
             end
         end
     end
-    if reason ~= "ensileuse a portee, ligne droite propre" and reason ~= "longueur max" then
+    if reason ~= reached and reason ~= "longueur max" then
         -- stopped short of a blocked spot: the train overruns its last point
         local cut = 0
         while #points > 2 and cut < PathFinderModule.EDGE_STOP_OVERRUN do
@@ -542,7 +612,7 @@ function PathFinderModule:tryEdgeFollow()
     end
     -- 25/10 19:14 (7R: edge pieces up to 135 m from the harvester): a piece that ends farther from the target
     -- than it starts leads away, it is refused
-    if reason ~= "ensileuse a portee, ligne droite propre" then
+    if reason ~= reached then
         local lastP = points[#points]
         local startD = MathUtil.vector2Length(target.x - x, target.z - z)
         local endD = MathUtil.vector2Length(target.x - lastP.x, target.z - lastP.z)
@@ -557,6 +627,12 @@ function PathFinderModule:tryEdgeFollow()
     self.smoothDone = true
     self.dubinsDone = true
     ADScheduler:removePathfinderVehicle(self.vehicle)
+    if combineWork then
+        -- (15/11) ligne claire : la benne de la moissonneuse suit le bord
+        print(string.format("[AD-Fin] %s: benne de moissonneuse (strict), bande de %.1f m, suivi du bord de la culture a %.1f m de la carrosserie (marge %.1f m + ecart %.1f m) sur %.0f m (%d points, fin : %s, %d pas vers l'interieur des courbes)",
+            name, width, PathFinderModule.FRUIT_CHECK_CORRIDOR_MARGIN + PathFinderModule.EDGE_GAP, PathFinderModule.FRUIT_CHECK_CORRIDOR_MARGIN, PathFinderModule.EDGE_GAP, length, #points, reason, bendTurns))
+        return true
+    end
     print(string.format("[AD-Fin] %s: bande de %.1f m, suivi du bord du mais a %.1f m du pneu sur %.0f m (%d points, fin : %s, %d pas vers l'interieur des courbes)", name, width, PathFinderModule.EDGE_GAP, length, #points, reason, bendTurns))
     return true
 end
@@ -565,6 +641,7 @@ end
 -- Au départ vers la goulotte : voie, sinon bord
 -- ------------------------------------------------------------------------------------------------------------
 -- forage harvester: the lane of the previous unloader first, else follow the crop edge, else the grid
+-- (15/11) moissonneuse en strict : pas de voie du précédent (tryLane, ensileuse seulement), le bord, sinon la grille
 -- accroche de startPathPlanningToPipe
 function PathFinderModule:tryLaneOrEdge(chasing)
     if not chasing and not self:tryLane() and not self:tryEdgeFollow() and self.edgeOnly then

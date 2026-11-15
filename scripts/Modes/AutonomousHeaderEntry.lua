@@ -24,6 +24,10 @@
 --   clôtures ; les véhicules ne comptent pas), contrôlée tous les ROAD_STEP m jusqu'au champ. Sinon l'endroit est
 --   écarté, comme un côté encombré.
 -- - Barre plus étroite, ou marqueur sans numéro de champ : rien ne change.
+-- - (15/11) Départ au champ suivant avec une barre prise sur une remorque : même contrôle (entrée directe ou route
+--   assez large, headerTravelOk) ; sinon la barre est reposée sur sa remorque et le tracteur la ré-amène
+--   (AutonomousHeader.lua, onStart). Jamais de départ par le réseau avec une barre de plus de ROAD_MIN_WIDTH m sans
+--   ce contrôle.
 -- - Réglages ENTRY = false et ROAD_CHECK = false : comme avant.
 --
 -- Branché par : Modes/AutonomousHeaderSpot.lua (findRouteStop, findSpot : afterPickupOk), Modes/AutonomousMode.lua
@@ -284,6 +288,58 @@ function ADHeaderFlow.afterPickupOk(t, job, pose, points, from, back, extra, sta
         return true
     end
     return false, string.format("route trop étroite pour la barre : %s en (%.0f, %.0f)", tostring(name or "obstacle"), x, z), true
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Départ au champ suivant, barre attelée
+-- ------------------------------------------------------------------------------------------------------------
+-- la moissonneuse peut aller au champ de son marqueur de destination avec la barre attelée ? true, raison ; false,
+-- raison. Barre de ROAD_MIN_WIDTH m ou moins, contrôle coupé ou marqueur sans numéro de champ : true (comme avant).
+-- Sinon : entrée directe d'où elle est, ou route du réseau (depuis son point le plus proche) assez large jusqu'au
+-- champ (roadFits). Utilisé par AutonomousHeader.lua (onStart, départ au champ suivant).
+function ADHeaderFlow.headerTravelOk(v, header)
+    if not ADHeaderFlow.ROAD_CHECK or header == nil then
+        return true, "contrôle de la route coupé"
+    end
+    local _, span = ADHeaderFlow.headerBox(header)
+    if span <= ADHeaderFlow.ROAD_MIN_WIDTH then
+        return true, string.format("barre de %.1f m", span)
+    end
+    local job = { combine = v, header = header, phase = "nextField" }
+    if wanted(job) == nil then
+        return true, "marqueur sans numéro de champ"
+    end
+    if ADHeaderFlow.ENTRY then
+        local plan = ADHeaderFlow.entryFromVehicle(v, job, header, true)
+        if plan ~= nil then
+            return true, "entrée directe"
+        end
+    end
+    local sm = v.ad.stateModule
+    local marker = sm ~= nil and sm:getFirstMarker() or nil
+    if marker == nil or ADGraphManager.pathFromTo == nil then
+        return false, "pas de point de destination"
+    end
+    local x, _, z = getWorldTranslation(v.components[1].node)
+    local best, bestD = nil, math.huge
+    local all = ADGraphManager.getWayPoints ~= nil and ADGraphManager:getWayPoints() or nil
+    for _, wp in pairs(all or {}) do
+        if wp.x ~= nil and wp.id ~= nil then
+            local d = MathUtil.vector2Length(wp.x - x, wp.z - z)
+            if d < bestD then
+                best, bestD = wp, d
+            end
+        end
+    end
+    local points = best ~= nil and ADGraphManager:pathFromTo(best.id, marker.id) or nil
+    if points == nil or #points < 2 then
+        return false, "pas de route du réseau jusqu'au champ"
+    end
+    local fits, fx, fz, name = ADHeaderFlow.roadFits(v, job, points, 1, #points)
+    if fits then
+        return true, string.format("route assez large (%.1f m)", span)
+    end
+    return false, string.format("route trop étroite pour la barre : %s en (%.0f, %.0f)", tostring(name or "obstacle"), fx, fz)
 end
 
 -- ------------------------------------------------------------------------------------------------------------

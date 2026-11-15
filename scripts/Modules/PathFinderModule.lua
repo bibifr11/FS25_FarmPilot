@@ -353,7 +353,7 @@ function PathFinderModule:startPathPlanningToPipe(combine, chasing)
         -- shorten path calculation for close combine
         self.max_pathfinder_steps = PathFinderModule.MAX_PATHFINDER_STEPS_COMBINE_TURN
     end
-    self:tryLaneOrEdge(chasing) -- (ensileuse : voie du précédent, sinon bord de la culture), voir PathFinderModuleEdge.lua
+    self:tryLaneOrEdge(chasing) -- (ensileuse : voie du précédent, sinon bord de la culture ; (15/11) moissonneuse en strict : bord de la culture), voir PathFinderModuleEdge.lua
     self.chasingVehicle = chasing
 end
 

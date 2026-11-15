@@ -253,7 +253,9 @@ function ADYardZone.update(vehicle, dt)
             end
         end
     end
-    if want.canWait and distance(want.x, want.z, vx, vz) > ADYardZone.APPROACH then
+    -- (15/11) loin de sa place : ni zone ni attente, même hors route (relance d'AutoDrive à 918 m de « G_Broyeur » :
+    -- la zone était prise de loin)
+    if distance(want.x, want.z, vx, vz) > ADYardZone.APPROACH then
         stopWaiting(vehicle)
         return
     end

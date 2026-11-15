@@ -425,6 +425,8 @@
 		<text name="AD_fpGoal_bales_tiny" text="dropping bales" />
 		<text name="AD_fpGoal_swap" text="trailer swap at %s" />
 		<text name="AD_fpGoal_swap_short" text="trailer swap" />
+		<text name="AD_fpGoal_drop" text="park %s at its place" />
+		<text name="AD_fpGoal_drop_short" text="park at its place" />
 		<text name="AD_fpGoal_hitch" text="hitching %s" />
 		<text name="AD_fpGoal_hitch_short" text="hitching the trailer" />
 		<text name="AD_fpGoal_hitch_tiny" text="hitching" />
@@ -513,7 +515,7 @@
 		<text name="gui_ad_fieldParkWhileWaiting" text="Wait inside the field" />
 		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="An unloader waiting for a harvester call drives into the field and parks on free ground without crop, away from the roads, so it does not block the way" />
 		<text name="gui_ad_autonomousNoCp" text="Autonomous without Courseplay" />
-		<text name="gui_ad_autonomousNoCp_tooltip" text="What Autonomous mode does when Courseplay is not installed: the driver stops and waits, or the base game worker takes the field (classic mode)" />
+		<text name="gui_ad_autonomousNoCp_tooltip" text="What Autonomous mode does when Courseplay is not installed, or has no course of the tool width on the field: the driver stops and waits, or the base game worker takes the field (classic mode)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Wait" />
 		<text name="gui_ad_autonomousNoCp_ai" text="Game worker" />
 		<text name="gui_ad_dirtRoads" text="Tertiary roads" />
@@ -528,6 +530,8 @@
 		<text name="AD_foldWait" text="%s %s: waiting for %s to fold (%d %%)%s, not leaving" />
 		<text name="gui_ad_dirtRoadSpeed" text="Max speed on tertiary roads" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Maximum speed on tertiary road points. The route search uses it: a tertiary road is taken only when it saves time" />
+		<text name="gui_ad_secondaryRoadSpeed" text="Max speed on secondary roads" />
+		<text name="gui_ad_secondaryRoadSpeed_tooltip" text="Maximum speed on secondary road points. The route search uses it: a secondary road is taken only when it saves time" />
 		<text name="gui_ad_roadTypes_title_secondary" text="Secondary roads: vehicle types" />
 		<text name="gui_ad_roadTypes_title_tertiary" text="Tertiary roads: vehicle types" />
 		<text name="gui_ad_roadTypes_info_secondary" text="When « Secondary roads » is set to Auto, for all vehicles. Yes: secondary roads taken whenever they save time. No: only when there is no other route." />
@@ -618,7 +622,9 @@
 		<text name="AD_autonomous_noWidth" text="tool width unknown, waiting" />
 		<text name="AD_autonomous_noTool" text="Autonomous mode: no work tool attached" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay not found: base game worker started on field %s" />
+		<text name="AD_autonomous_aiNoCourse" text="no Courseplay course of %s m on field %s: base game worker started" />
 		<text name="AD_autonomous_aiFailed" text="the base game worker could not start, waiting" />
+		<text name="AD_autonomous_aiStopped" text="the base game worker stopped before the end of the field (%s): the tractor stays here" />
 		<text name="AD_autonomous_noCp" text="Courseplay not found on this vehicle, waiting" />
 		<text name="AD_autonomous_cpFailed" text='Courseplay could not start with "%s", waiting' />
 		<text name="AD_autonomous_nextField" text="Next field: %s" />
@@ -699,10 +705,21 @@
 		<text name="AD_autonomous_unloadersFollow" text="%d trailer(s) follow to « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
 		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
+		<text name="AD_autonomous_unloadersRecall" text="%d trailer(s) of its team called back from the yard, on the way to « %s »" />
 		<text name="AD_fpFn_cutter" text="Header" />
 		<text name="AD_fpFn_cornHeader" text="Corn header" />
 		<text name="AD_fpFn_chopperHeader" text="Forage harvester header" />
 		<text name="AD_autonomous_headerChosenBusy" text="« %s » (chosen) is not free, « %s » goes instead" />
+		<text name="AD_autonomous_headerStayNoTrailer" text="field done, no empty header trailer: stays here with the header, new try every minute" />
+		<text name="AD_autonomous_headerStayNoTractor" text="field done, no free tractor for the header trailer « %s »: stays here with the header, new try every minute" />
+		<text name="AD_autonomous_headerStay" text="field done, header not put down: stays here with the header, new try every minute" />
+		<text name="AD_task_autonomous_headerStay" text="Wait for a header trailer and a tractor" />
+		<text name="AD_autonomous_headerParkStay" text="parking requested: no empty header trailer, stays here with the header" />
+		<text name="AD_autonomous_headerParkStayOther" text="parking requested: the header cannot be put down, stays here with the header" />
+		<text name="AD_autonomous_headerEmptyFirst" text="field done: waits to be emptied before putting the header down" />
+		<text name="AD_task_autonomous_headerEmptyFirst" text="Wait to be emptied" />
+		<text name="AD_autonomous_headerCarry" text="« %s » does not fit on the road to the next field: put back on its trailer, the tractor brings it" />
+		<text name="AD_autonomous_headerCarryStay" text="« %s » does not fit on the road to the next field and cannot be put down (no empty trailer or no free tractor): stopping here" />
 		<text name="gui_ad_headerTractor_title" text="Header transport" />
 		<text name="gui_ad_headerTractor_tooltip" text="Vehicle for the header trailer" />
 		<text name="gui_ad_headerTractor_auto" text="Nearest free tractor" />
@@ -741,6 +758,19 @@
 		<text name="AD_trailer_fetchBusy" text="the trailer '%s' is attached to another vehicle" />
 		<text name="AD_trailer_fetchOther" text="a trailer or implement is already attached: detach it to fetch '%s', or choose 'The attached one' on the 'Trailer' line" />
 		<text name="AD_trailer_fetchNoJoint" text="the trailer '%s' cannot be attached to the rear of this tractor (or the rear hitch is already in use)" />
+		<text name="AD_drive_row" text="Attach: %s" />
+		<text name="AD_drive_rowNone" text="Attach: nothing" />
+		<text name="AD_drive_listNone" text="Nothing (leave as is)" />
+		<text name="AD_drive_fetchGo" text="going to attach '%s' before leaving" />
+		<text name="AD_drive_fetchDone" text="'%s' attached, starting" />
+		<text name="AD_drive_fetchFailed" text="'%s' could not be attached, stopping" />
+		<text name="AD_drive_fetchNoPath" text="no path to the front of '%s': place the tractor in front of it, in line, and start again" />
+		<text name="AD_drive_fetchMissed" text="attaching '%s' failed, stopped in front of it" />
+		<text name="AD_drive_fetchBusy" text="'%s' is attached to another vehicle" />
+		<text name="AD_drive_fetchOther" text="already attached without a parking place (or several): detach it to fetch '%s', or choose 'Nothing' on the 'Attach' line" />
+		<text name="AD_drive_fetchNoJoint" text="'%s' cannot be attached to the rear of this tractor (or the rear hitch is already used)" />
+		<text name="AD_drive_dropGo" text="parking '%s' at its place, then attaching '%s'" />
+		<text name="AD_drive_dropFailed" text="'%s' could not be detached at its place, stopping" />
 		<text name="AD_trailer_dropGo" text="job done: the trailer '%s' goes to its place, then the tractor to its own" />
 		<text name="gui_ad_trailerSwap_title" text="Trailer swap" />
 		<text name="gui_ad_trailerSwap_tooltip" text="Trailer swap at delivery" />
@@ -1076,7 +1106,7 @@
 		<text name="fp_help_c7_1_title" text="Spreader settings" />
 		<text name="fp_help_c7_1_text" text="Trailed or self-propelled. Cog on the machine's row, « Spreader settings » window:&#10;- Product to load (those the tank accepts).&#10;- Quantity to take: Full, or Just enough for the field (rate x area + 10 %, the estimate is shown).&#10;- Refill point (markers near a place that has the product).&#10;- Validate (Space key). Start refused until it is validated." />
 		<text name="fp_help_c7_2_title" text="Refill and rest" />
-		<text name="fp_help_c7_2_text" text="Refilling works like for the seeder, at the start and when the tank is empty at the field. At the end of the field: same product on the next field with the same machine, the rest is kept. Otherwise the rest is given back to the stock or sold, then the usual steps. Slurry, manure, digestate or a machine that cannot unload: the rest is kept." />
+		<text name="fp_help_c7_2_text" text="Refilling works like for the seeder, at the start and when the tank is empty at the field. At the end of the field: same product on the next field with the same machine, the rest is kept. Otherwise the rest is given back to the stock or sold, then the usual steps. Slurry, manure, digestate: the rest also goes back into the pit / the storage, or is sold." />
 		<text name="fp_help_c7_3_title" text="P button with product left" />
 		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
 		<text name="fp_help_c8_title" text="Baler" />

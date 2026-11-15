@@ -1088,8 +1088,19 @@ function AutoDrive:onAIJobFinished()
     else
         -- FarmPilot mode Autonome : champ fini par l'ouvrier du jeu (pas arrêté par le joueur) -> champ suivant s'il y en a un
         local finishedOk = self.ad ~= nil and self.ad.fpAIJobFinishedOk == true
+        local autonomousJob = self.ad ~= nil and self.ad.fpAutonomousAIJob == true
         if self.ad ~= nil then
             self.ad.fpAIJobFinishedOk = nil
+            self.ad.fpAutonomousAIJob = nil
+        end
+        if autonomousJob and not finishedOk and self.isServer then
+            -- (15/11) ouvrier du jeu lancé par le mode Autonome, arrêté avant la fin du champ (erreur du jeu ou arrêt
+            -- du joueur) : le tracteur reste sur place avec un message, jamais de retour au parking sans avoir fait le champ
+            local why = self.ad.fpAIJobStopText
+            self.ad.fpAIJobStopText = nil
+            ADAutonomousManager.log("%s : ouvrier du jeu arrêté avant la fin du champ, reste sur place (pas de parking)", tostring(self.ad.stateModule ~= nil and self.ad.stateModule:getName() or "?"))
+            AutonomousMode.message(self, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_aiStopped", tostring(why or "?"))
+            return
         end
         if finishedOk and self.isServer then
             if ADSprayerDump ~= nil and ADSprayerDump.onFieldFinished(self) then return end -- épandeur : rendre ou vendre le reste d'abord, voir AutonomousSprayerDump.lua

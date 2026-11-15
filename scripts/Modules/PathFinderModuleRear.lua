@@ -16,7 +16,9 @@
 -- - 25/10 16:35 : plus de place à chaque arrivée à contresens au même endroit (CatchCombinePipeTask.tryWrongWayTurn) ;
 -- - 25/10 19:14 : la place derrière une moissonneuse dos à une haie était dans la
 --   haie ; la marche s'arrête au premier obstacle fixe ;
--- - ensileuse : toujours par derrière, à toute distance, même arrêtée.
+-- - ensileuse : toujours par derrière, à toute distance, même arrêtée ;
+-- - (15/11) ensileuse : par derrière quel que soit le réglage « Éviter la culture / Rester dans le champ » (règle du
+--   23/10 : jamais par le côté ni par l'avant) ; le réglage strict ne compte plus que pour la moissonneuse.
 --
 -- Règle : rien n'est visé au-delà d'un obstacle fixe ni hors du champ.
 --
@@ -302,7 +304,9 @@ PathFinderModule.REAR_UTURN_EXTRA = 5 -- m
 PathFinderModule.ANTICIPATED_MAX_AGE = 60000 -- ms
 function PathFinderModule:startRearFallback()
     local combine = self.pipeCombine
-    if self.rearFallbackDone or not self.goingToPipe or combine == nil or combine.components == nil or not (self.strictFruit or self.strictField) then
+    -- (15/11) ensileuse : derrière elle quel que soit le réglage culture / champ (23/10, jamais par le côté ni par l'avant)
+    local chopper = combine ~= nil and combine.ad ~= nil and combine.ad.isChopper == true
+    if self.rearFallbackDone or not self.goingToPipe or combine == nil or combine.components == nil or not (self.strictFruit or self.strictField or chopper) then
         return false
     end
     -- only to catch a harvester that drives: behind a stopped one the trailer cannot reach the pipe, nothing takes over there
@@ -393,6 +397,10 @@ function PathFinderModule:startRearFallback()
     end
     local allowPartial = self.allowPartialPath
     local fruitToCheck = self.fruitToCheck
+    -- (15/11) réglage non strict : seule la règle de l'ensileuse (23/10) envoie derrière elle, dit au journal
+    if not (self.strictFruit or self.strictField) then
+        where = where .. " (ensileuse : par l'arriere quel que soit le reglage culture/champ)"
+    end
     print(string.format("[AD-Fin] %s: je vais derriere la moissonneuse (%.0f,%.0f, cap %.0f deg) : moissonneuse en %.0f,%.0f cap %.0f deg, %.0f m derriere, %s", self:getLogName(), target.x, target.z, math.deg(math.atan2(arrive.x, arrive.z)), x, z, math.deg(math.atan2(rx, rz)), back, where))
     self:startPathPlanningTo(target, arrive)
     -- behind the harvester is cut ground: no crop allowed near the target, the whole route judged
@@ -410,10 +418,14 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- far from the harvester: aim at its rear first, its own cut track always leads there; the chase takes over close to it
 -- forage harvester: always from behind, at any distance, the chase takes over there
+-- (15/11) ensileuse : quel que soit le réglage culture / champ ; moissonneuse : en réglage strict seulement, comme avant
 -- accroche de startPathPlanningToPipe
 function PathFinderModule:startRearFirst(combine, chasing)
-    if not chasing and combine.ad ~= nil and (self.strictFruit or self.strictField)
-        and (combine.ad.isChopper or AutoDrive.getDistanceBetween(self.vehicle, combine) > PathFinderModule.REAR_FIRST_DISTANCE) then
+    if chasing or combine.ad == nil then
+        return
+    end
+    if combine.ad.isChopper
+        or ((self.strictFruit or self.strictField) and AutoDrive.getDistanceBetween(self.vehicle, combine) > PathFinderModule.REAR_FIRST_DISTANCE) then
         self:startRearFallback()
     end
 end

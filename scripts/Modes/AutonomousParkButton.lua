@@ -10,7 +10,8 @@
 -- champ (AutonomousMode.parkWithToolDrop) : l'outil va à sa place et y est dételé, puis le tracteur va à la sienne.
 -- Sinon (pas d'outil avec sa place, plusieurs, tracteur sans place) : bouton d'origine, le tracteur se gare tel
 -- quel.
--- Épandeur / pulvé avec du produit : vidange en big bags d'abord (AutonomousSprayerDump.lua), puis ce bouton.
+-- Épandeur / pulvé avec du produit : le reste est d'abord rendu ou vendu (AutonomousSprayerDump.lua), puis ce bouton.
+-- (15/11) Plus de vidange en big bags / IBC depuis le 13/11 (SprayerRestReturn.lua).
 -- (11/11) Benne pas vide et destination de déchargement réglée : elle va vider d'abord (AutonomousParkUnload.lua),
 -- puis ce bouton.
 --
@@ -22,7 +23,7 @@
 --
 -- (09/11) La dépose passe en mode Autonome (seul mode qui sait poser l'outil). Le mode d'avant (Chargement /
 -- Livraison…) est noté au passage (rememberMode) et rendu à l'arrêt de FarmPilot (afterStop, crochet dans
--- Specialization.lua), avec ses cibles automatiques. Même chose pour la vidange en big bags (AutonomousSprayerDump.lua)
+-- Specialization.lua), avec ses cibles automatiques. Même chose pour le reste rendu ou vendu (AutonomousSprayerDump.lua)
 -- et la remorque posée en fin de chantier (TrailerHitch.lua).
 -- ============================================================================================================
 
@@ -211,7 +212,14 @@ ADParkButton.originalInput = ADInputManager.input_parkVehicle
 function ADInputManager:input_parkVehicle(vehicle, farmId, ...)
     if ADSprayerDump ~= nil and ADSprayerDump.onParkButton(self, vehicle, farmId) then return end -- épandeur / pulvé : vider le reste d'abord, voir AutonomousSprayerDump.lua
     if ADParkUnload ~= nil and ADParkUnload.onParkButton(self, vehicle, farmId) then return end -- benne pas vide : aller la vider d'abord, voir AutonomousParkUnload.lua
-    local tool, why = ADParkButton.toolToDrop(vehicle)
+    -- (15/11) moissonneuse avec sa barre : jamais par toolToDrop (la barre irait à sa place par la route), toujours
+    -- d'abord sur sa remorque (AutonomousHeaderParkButton.lua)
+    local headerCombine = ADHeaderFlow ~= nil and ADHeaderFlow.isCombine ~= nil and ADHeaderFlow.isCombine(vehicle)
+        and ADHeaderFlow.attachedHeader(vehicle) ~= nil
+    local tool, why = nil, "moissonneuse avec sa barre"
+    if not headerCombine then
+        tool, why = ADParkButton.toolToDrop(vehicle)
+    end
     if tool ~= nil then
         local name = tostring(vehicle.ad.stateModule:getName())
         -- comme le bouton d'origine : Courseplay arrêté, FarmPilot arrêté s'il roulait

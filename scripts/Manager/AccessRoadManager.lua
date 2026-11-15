@@ -8,7 +8,9 @@
 -- Règles :
 -- - Éditeur : Maj gauche + clic sur un point (ou sur une section) fait tourner son type :
 --   primaire -> secondaire -> tertiaire -> route d'accès -> primaire + intersection -> secondaire + intersection
---   -> primaire (DirtRoadManager.lua, nextFlags).
+--   -> tertiaire + intersection -> route d'accès + intersection -> primaire (DirtRoadManager.lua, nextFlags).
+--   (15/11) Le point rouge (intersection) garde son type, comme sur une principale et une secondaire : dans
+--   l'éditeur il est rouge (comme une secondaire + intersection), le calcul de route le compte en route d'accès.
 -- - Couleurs (12/11) : orange foncé pour le sens unique, orange clair pour le double sens (tous deux distincts de
 --   l'orange et du marron des secondaires ; modifiables dans « Choix des couleurs »).
 -- - Tous les véhicules, sans réglage : la route d'accès est permise seulement si le départ est dessus (le véhicule en
@@ -30,7 +32,9 @@ ADAccessRoads = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADAccessRoads.THROUGH_WEIGHT = 100000000    -- route d'accès traversée sans y accéder : seulement si aucune autre route
+-- (15/11) plus cher qu'un passage trop étroit (NARROW_WEIGHT, PathCalculationWidth.lua, monté à 1 000 000 000) : l'ordre
+-- reste route d'accès traversée > passage trop étroit > tertiaire en raccourci
+ADAccessRoads.THROUGH_WEIGHT = 1000000000000 -- route d'accès traversée sans y accéder : seulement si aucune autre route
 
 -- couleurs de l'éditeur : orange foncé sens unique, orange clair double sens (secondaires : orange 1 / 0.531 / 0.14,
 -- marron 0.389 / 0.177 / 0)

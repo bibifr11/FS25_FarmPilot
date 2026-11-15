@@ -13,6 +13,9 @@
 --   Ensuite : changement de barre = la suivante (elle va la chercher, ou un tracteur l'amène sur sa remorque) ;
 --   fin de champ = la moissonneuse va à sa place de parking.
 -- - Barre prise sur une remorque : rien ne change, elle y retourne (remorque appelée).
+--   (15/11) Toujours, même quand elle a sa propre place de parking : la place de la barre et l'endroit où elle a été
+--   prise (dropPlan) ne servent qu'aux barres prises sans remorque. Pas de remorque vide ou pas de tracteur : la
+--   moissonneuse attend sur place (AutonomousHeader.lua : startFieldEndWait), jamais de route avec la barre.
 -- - L'endroit gardé en mémoire ne survit pas à un rechargement de la partie (pas dans la sauvegarde) : après un
 --   rechargement, la place de parking de la barre, sinon une remorque vide.
 --
@@ -32,6 +35,8 @@ ADHeaderGround.EXIT_MARGIN = 4      -- m de recul en plus de la moissonneuse et 
 
 -- endroit où chaque barre a été prise par terre (clés faibles : barre vendue = oubliée)
 ADHeaderGround.homes = setmetatable({}, { __mode = "k" })
+-- (15/11) remorque porte-barre sur laquelle chaque barre a été prise (clés faibles)
+ADHeaderGround.fromTrailer = setmetatable({}, { __mode = "k" })
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -73,10 +78,13 @@ function ADHeaderGround.remember(combine, header)
     if header == nil then
         return
     end
-    if ADHeaderFlow.trailerOf(header) ~= nil then
+    local trailer = ADHeaderFlow.trailerOf(header)
+    if trailer ~= nil then
         ADHeaderGround.homes[header] = nil -- prise sur une remorque : elle y retournera
+        ADHeaderGround.fromTrailer[header] = trailer
         return
     end
+    ADHeaderGround.fromTrailer[header] = nil
     local spot = ADHeaderGround.hitchOf(combine, header)
     ADHeaderGround.homes[header] = spot
     if spot ~= nil then
@@ -95,10 +103,24 @@ function ADHeaderGround.isFree(combine, header, spot)
     return ADFrontPlaceTask.isFree(combine, cx, cz, spot.dirX, spot.dirZ, len / 2 + ADHeaderGround.FREE_MARGIN, width / 2 + ADHeaderGround.FREE_MARGIN)
 end
 
+-- (15/11) la barre a été prise sur une remorque porte-barre (elle est encore dessus, elle a été notée au moment de
+-- l'attelage, ou le travail en cours de la moissonneuse vient d'une remorque) : elle y retourne toujours
+function ADHeaderGround.cameFromTrailer(combine, header)
+    if ADHeaderFlow.trailerOf(header) ~= nil or ADHeaderGround.fromTrailer[header] ~= nil then
+        return true
+    end
+    local job = combine ~= nil and combine.ad ~= nil and combine.ad.fpHeaderJob or nil
+    return job ~= nil and job.header == header and job.trailer ~= nil
+end
+
 -- ------------------------------------------------------------------------------------------------------------
 -- Où poser la barre sans remorque : { marker } (sa place), { slot } (là où elle a été prise), ou nil
 -- ------------------------------------------------------------------------------------------------------------
 function ADHeaderGround.dropPlan(combine, header)
+    -- (15/11) barre prise sur une remorque : jamais à sa place ni par terre, toujours sur une remorque
+    if ADHeaderGround.cameFromTrailer(combine, header) then
+        return nil
+    end
     local park = header.advd ~= nil and header.advd.parkDestination or -1
     local marker = park ~= nil and park >= 1 and ADGraphManager:getMapMarkerById(park) or nil
     if marker ~= nil then

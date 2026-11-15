@@ -159,7 +159,8 @@ end
 -- Ouvrier du jeu (mode « Classique », sans Courseplay)
 -- ------------------------------------------------------------------------------------------------------------
 -- (07/11) mode « Classique » : l'ouvrier du jeu prend le champ quand Courseplay est absent (réglage « Autonome sans Courseplay » sur Ouvrier du jeu).
--- Nouveau travail « champ » du jeu, au point où le chauffeur est arrivé (dans le champ le plus proche s'il est au bord).
+-- Nouveau travail « champ » du jeu, au point où le chauffeur est arrivé (dans le champ le plus proche s'il est au bord :
+-- l'ouvrier du jeu y va lui-même, voir startBaseWorker).
 -- (07/11) fin d'un travail « champ » de l'ouvrier du jeu : note si le champ est fini (et non arrêté par le joueur
 -- ou en erreur), avant l'événement onAIJobFinished qui décide du champ suivant (ExternalInterface)
 function ADAutonomousManager.onAIJobFieldWorkStop(job, aiMessage)
@@ -173,6 +174,25 @@ function ADAutonomousManager.onAIJobFieldWorkStop(job, aiMessage)
         finished = okIsa and isa == true
     end
     vehicle.ad.fpAIJobFinishedOk = finished
+    -- (15/11) raison de l'arrêt dans le journal (ouvrier lancé par le mode Autonome), pour savoir ce que le jeu a dit
+    if vehicle.ad.fpAutonomousAIJob then
+        local text = nil
+        if aiMessage ~= nil and aiMessage.getMessage ~= nil then
+            local okT, t = FarmPilotCall(aiMessage.getMessage, aiMessage)
+            if okT and type(t) == "string" then
+                text = t
+            end
+        end
+        if text == nil and aiMessage ~= nil and ClassUtil ~= nil and ClassUtil.getClassNameByObject ~= nil then
+            local okC, c = FarmPilotCall(ClassUtil.getClassNameByObject, aiMessage)
+            if okC and type(c) == "string" then
+                text = c
+            end
+        end
+        vehicle.ad.fpAIJobStopText = text
+        local name = vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule.getName ~= nil and vehicle.ad.stateModule:getName() or "?"
+        log("%s : ouvrier du jeu arrêté (%s), message du jeu : %s", tostring(name), finished and "champ fini" or "pas fini", tostring(text or "aucun"))
+    end
 end
 
 function ADAutonomousManager.startBaseWorker(vehicle)
@@ -189,9 +209,20 @@ function ADAutonomousManager.startBaseWorker(vehicle)
         return false, "travail non créé"
     end
     local farmId = vehicle:getOwnerFarmId()
-    job:applyCurrentState(vehicle, mission, farmId, true)
+    -- (15/11) tracteur arrêté hors du champ (point du champ sur le chemin, champ 16) : un départ « direct » faisait
+    -- travailler l'ouvrier là où il était, sans champ sous les roues, et il s'arrêtait aussitôt. Hors du champ,
+    -- travail « champ » normal : l'ouvrier du jeu va lui-même au point du champ le plus proche (dans le sens du
+    -- tracteur), puis travaille. Dans le champ : départ direct, là où il est, comme avant.
+    local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
+    local underField = ADAutonomousManager.fieldAt(vx, vz)
+    local direct = underField ~= nil and underField == field
+    job:applyCurrentState(vehicle, mission, farmId, direct)
     if px ~= nil and job.positionAngleParameter ~= nil and job.positionAngleParameter.setPosition ~= nil then
         job.positionAngleParameter:setPosition(px, pz)
+    end
+    if not direct and job.positionAngleParameter ~= nil and job.positionAngleParameter.setAngle ~= nil and localDirectionToWorld ~= nil and MathUtil ~= nil and MathUtil.getYRotationFromDirection ~= nil then
+        local dx, _, dz = localDirectionToWorld(vehicle.components[1].node, 0, 0, 1)
+        job.positionAngleParameter:setAngle(MathUtil.getYRotationFromDirection(dx, dz))
     end
     job:setValues()
     local ok, err = job:validate(farmId)
@@ -199,7 +230,15 @@ function ADAutonomousManager.startBaseWorker(vehicle)
         return false, tostring(err)
     end
     mission.aiSystem:startJob(job, farmId)
-    log("ouvrier du jeu lancé sur le champ %s", tostring(ADAutonomousManager.fieldNumber(field)))
+    if vehicle.ad ~= nil then
+        vehicle.ad.fpAutonomousAIJob = true -- fin du travail : voir AutoDrive:onAIJobFinished (ExternalInterface.lua)
+        vehicle.ad.fpAIJobStopText = nil
+    end
+    if direct then
+        log("ouvrier du jeu lancé sur le champ %s", tostring(ADAutonomousManager.fieldNumber(field)))
+    else
+        log("ouvrier du jeu lancé sur le champ %s : tracteur hors du champ, l'ouvrier va lui-même au point du champ (%.0f, %.0f) à %.0f m", tostring(ADAutonomousManager.fieldNumber(field)), px or 0, pz or 0, MathUtil ~= nil and MathUtil.vector2Length ~= nil and MathUtil.vector2Length((px or vx) - vx, (pz or vz) - vz) or 0)
+    end
     return true
 end
 

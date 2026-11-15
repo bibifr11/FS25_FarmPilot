@@ -14,8 +14,8 @@
 --   - champ suivant avec la même machine et le même produit réglé : le reste est gardé (il servira là-bas, le plein
 --     suivant ne prend que ce qui manque) ;
 --   - sinon (pas de champ suivant, autre produit, autre outil) : le chauffeur va à la zone de plein de ce champ et y
---     rend le reste (stock, point d'achat, big bags déjà posés), ou va le vendre à un point de vente qui le prend
---     (SprayerRestReturn.lua) ;
+--     rend le reste (stock, point d'achat), ou va le vendre à un point de vente qui le prend
+--     (SprayerRestReturn.lua) ; (15/11) plus jamais de big bags ni d'IBC remplis, même déjà posés ;
 --   - rien de tout ça : le reste est gardé, le log dit pourquoi.
 -- - Ensuite, la suite habituelle : champ suivant, sinon outil posé et tracteur garé (AutoDrive:onCpFinished).
 --
@@ -545,7 +545,8 @@ function ADDumpRestTask:update(dt)
         if self.unloaded > 0.5 then
             self:finish("ok")
         else
-            self:finish("pas de place pour poser les big bags")
+            -- (15/11) texte du log seulement : plus de big bags posés depuis le 13/11, le reste n'a pas bougé
+            self:finish("le reste n'a pas bougé")
         end
     elseif self.timer >= ADSprayerDump.UNLOAD_TIMEOUT then
         self.unloaded = (self.startLevel or 0) - level

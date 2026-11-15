@@ -281,13 +281,10 @@ function PathFinderModule:isFieldPositionAllowed(x, z, isOnField)
         return true
     end
     if not isOnField then
-        -- finer grids find gaps on the grass between trees AutoDrive does not always see: stay on field ground,
-        -- except around the start and the target (the vehicle may wait on the grass beside the field)
-        -- strict: the field ground only, whatever the grid, except around the start and the target
-        local near = PathFinderModule.OFF_FIELD_NEAR_ENDS
-        local nearStart = self.startX ~= nil and MathUtil.vector2Length(x - self.startX, z - self.startZ) < near
-        local nearTarget = self.target ~= nil and MathUtil.vector2Length(x - self.target.x, z - self.target.z) < near
-        return nearStart or nearTarget
+        -- (15/11) strict = partout sauf sur un autre champ : l'herbe, les chemins de terre et les bas-côtés autour du
+        -- champ restent permis sur tout le trajet (les obstacles sont contrôlés comme ailleurs). Plus de cercle de
+        -- 12 m autour du départ et de l'arrivée : la benne arrêtée sur le chemin du champ 58 y était enfermée.
+        return true
     end
     -- the unloader may stand at the entrance on ground taken for another field: the first meters from where it
     -- stands are never refused for another field

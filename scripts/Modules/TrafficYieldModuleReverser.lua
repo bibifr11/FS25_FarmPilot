@@ -4,7 +4,11 @@
 -- classique.
 --
 -- Règle :
--- - il recule le long de son propre trajet (getMaxReverse m), en ligne droite seulement au début du trajet ;
+-- - il recule le long de son propre trajet (getMaxReverse m) ;
+-- - (15/11) sur son tracé, jamais tout droit (règle du 26/10, comme le recul avant le chemin) : au bout du tracé
+--   derrière lui, il s'arrête ; sans tracé derrière lui, il ne recule pas (rôles inversés, comme un recul bloqué) ; à
+--   plus de TRACK_MAX_ASIDE m de son tracé (remorque), il s'arrête. Même règle pour celui qui sort du chemin
+--   (updateSectionClear, TrafficYieldModuleSingleTrack.lua) ;
 -- - une voie d'attente (impasse de moins de WAITING_LANE_MAX_LENGTH m) derrière lui : il y entre, l'autre ne cherche
 --   pas de place ; sinon une branche latérale au carrefour si l'autre n'a pas encore de place ;
 -- - il trouve une place à côté de lui le premier : les rôles s'inversent, il se gare et l'autre passe ;
@@ -21,6 +25,7 @@
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
 ADTrafficYieldModule.WAITING_LANE_MAX_LENGTH = 80 -- m, a dead end longer than this is a road, not a waiting lane
+ADTrafficYieldModule.TRACK_MAX_ASIDE = 3.5        -- m, (26/10) a reverse that drifts further from my route stops there
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Recul le long de mon trajet
@@ -75,6 +80,80 @@ function ADTrafficYieldModule:buildReverseTargets(maxDistance)
     end
 
     return targets
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Recul sur mon tracé, jamais tout droit
+-- ------------------------------------------------------------------------------------------------------------
+-- (26/10) my route behind me as a line, from my position: the reverse targets up to the first straight one (the
+-- straight ones only exist past the start of my route)
+function ADTrafficYieldModule:buildTrackLine(x, z)
+    local line = {{x = x, z = z}}
+    local targets = self.reverseTargets or {}
+    for i = self.reverseTargetIndex or 1, #targets do
+        local t = targets[i]
+        if t.straight then
+            break
+        end
+        table.insert(line, {x = t.x, z = t.z})
+    end
+    return line
+end
+
+-- (26/10) next reverse target on my route (nil past the end of my route behind me: never straight on), whether I
+-- drifted more than TRACK_MAX_ASIDE m off that route, and how far
+function ADTrafficYieldModule:getTrackTarget(line, x, z)
+    local target = self.reverseTargets ~= nil and self.reverseTargets[self.reverseTargetIndex] or nil
+    if target ~= nil and target.straight then
+        target = nil
+    end
+    local aside = #line >= 2 and ADTrafficYieldModule.distanceToPolyline(line, x, z) or 0
+    return target, aside > ADTrafficYieldModule.TRACK_MAX_ASIDE, aside
+end
+
+-- (15/11) the 26/10 rule for the reverse of the classic plan and of the one that backs out of the single track:
+-- next target on my route, or nil with the reason ("noRoute": no route behind me, I do not reverse; "offRoute": more
+-- than TRACK_MAX_ASIDE m off my route, I stop; "end": end of my route behind me, never straight on). One log line each
+function ADTrafficYieldModule:nextTrackTarget(x, z)
+    local name = ADTrafficYieldModule.getName(self.vehicle)
+    if self.trackLineFor ~= self.reverseTargets then
+        self.trackLineFor = self.reverseTargets
+        self.trackLine = self:buildTrackLine(x, z)
+        self.trackLogged = {}
+        if #self.trackLine >= 2 then
+            local length = ADTrafficYieldModule.getPathLength(self.trackLine, 1)
+            self:log("I reverse along my route (%.0f m of route behind me), never straight on", length)
+            print(string.format("[AD-Croise] %s: je recule sur mon trace (%.0f m de trace derriere moi), jamais tout droit", name, length))
+        end
+    end
+    local line, logged = self.trackLine, self.trackLogged
+    if #line < 2 then
+        if not logged.noRoute then
+            logged.noRoute = true
+            self:log("no route behind me to reverse along")
+            print(string.format("[AD-Croise] %s: pas de trace derriere moi, je ne recule pas", name))
+        end
+        return nil, "noRoute"
+    end
+    local target, offRoute, aside = self:getTrackTarget(line, x, z)
+    if offRoute then
+        if not logged.offRoute then
+            logged.offRoute = true
+            self:log("reverse left my route (%.1f m aside), I stop here", aside)
+            print(string.format("[AD-Croise] %s: le recul s'ecarte de mon trace (%.1f m), j'arrete la", name, aside))
+        end
+        return nil, "offRoute"
+    end
+    if target == nil then
+        local following = self.reverseTargets ~= nil and self.reverseTargets[self.reverseTargetIndex] or nil
+        if following ~= nil and following.straight and not logged.routeEnd then
+            logged.routeEnd = true
+            self:log("end of my route behind me: I do not reverse straight on")
+            print(string.format("[AD-Croise] %s: bout de mon trace derriere moi, je ne recule pas plus loin tout droit", name))
+        end
+        return nil, "end"
+    end
+    return target, nil
 end
 
 -- reverse towards a world point; own reached check (distance only) so sharp turns into a branch are possible
@@ -322,7 +401,11 @@ function ADTrafficYieldModule:updateReverserRetreat(dt)
         blockedTooLong = true
     end
 
-    local target = self.reverseTargets[self.reverseTargetIndex]
+    -- (15/11) sur mon tracé, jamais tout droit (26/10) ; sans tracé derrière moi, je ne recule pas : rôles inversés
+    local target, trackStop = self:nextTrackTarget(x, z)
+    if trackStop == "noRoute" then
+        plan.reverserStuck = true
+    end
     if extra then
         local more = MathUtil.vector2Length(x - room.x, z - room.z)
         if more >= ADTrafficYieldModule.MORE_ROOM or target == nil or blockedTooLong or reversed >= maxReverse + 5 then

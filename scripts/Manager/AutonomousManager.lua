@@ -499,6 +499,11 @@ function ADAutonomousManager:choose(vehicle)
         return nil, "noTool"
     end
     if not ADAutonomousManager.hasCp(vehicle) then
+        -- (15/11) Courseplay installé mais absent de ce véhicule : attente avec le message « Courseplay introuvable
+        -- sur ce véhicule », jamais l'ouvrier du jeu (« noCp » seulement quand Courseplay n'est pas installé)
+        if ADAutonomousManager.cpGlobal("g_Courseplay") ~= nil then
+            return nil, "noCpVehicle"
+        end
         return nil, "noCp"
     end
     local width = ADAutonomousManager.toolWidth(vehicle)
@@ -521,7 +526,11 @@ function ADAutonomousManager:choose(vehicle)
     ADAutonomousManager.prefetched = false
     local courses = ADAutonomousManager.listCourses()
     if courses == nil then
-        return nil, "noCp"
+        -- (15/11) Courseplay installé (hasCp plus haut) mais parcours introuvables : jamais l'ouvrier du jeu (réservé à
+        -- « noCp », Courseplay absent). Code « none » : arrêt, attente et message « aucun parcours ».
+        -- (15/11) 7e valeur « unreadable » : même avec le réglage « Ouvrier du jeu », pas d'ouvrier du jeu ici
+        -- (stockage illisible, ce n'est pas « aucun parcours de cette largeur »), voir AutonomousMode.lua
+        return nil, "none", width, fieldNum, nil, nil, "unreadable"
     end
     if fieldNum == nil then
         -- (09/11) champ sans numéro : traité comme « pas de champ ici » (avant : erreur Lua rattrapée)

@@ -444,7 +444,15 @@ function CombineUnloaderMode:getTaskAfterUnload(filledToUnload)
         -- Should we park in the field?
         if (self.combine and self.combine.ad.isChopper) or (AutoDrive.getSetting("parkInField", self.vehicle) or (self.lastTask ~= nil and self.lastTask.stayOnField)) then
             -- If we are in fruit, we should clear it
-            if AutoDrive.isVehicleOrTrailerInCrop(self.vehicle, true) then
+            -- (15/11) mode Strict, benne de moissonneuse : jamais de « Destruction de la culture » (elle roulait tout
+            -- droit devant la moissonneuse à travers la culture). Elle reste là et ne repart que par un trajet propre
+            local inCrop = AutoDrive.isVehicleOrTrailerInCrop(self.vehicle, true)
+            local strictCombine = inCrop and AutoDrive.getSetting("avoidFruit", self.vehicle) == "strict"
+                and not (self.combine ~= nil and self.combine.ad ~= nil and self.combine.ad.isChopper)
+            if strictCombine then
+                print(string.format("[AD-Fin] %s: decharge fini dans la culture, strict : pas de destruction de la culture, il attend la et ne repart que par un trajet propre", tostring(self.vehicle:getName())))
+                self:setToWaitForCall()
+            elseif inCrop then
                 CombineUnloaderMode.debugMsg(self.vehicle, "CombineUnloaderMode:getTaskAfterUnload ClearCropTask...")
                 nextTask = ClearCropTask:new(self.vehicle, self.combine)
                 self.state = self.STATE_LEAVE_CROP

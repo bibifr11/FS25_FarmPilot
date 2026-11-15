@@ -204,6 +204,15 @@ end
 -- départ normal vers le champ (1re destination), le parcours Courseplay est choisi à l'arrivée
 function AutonomousMode:departToField()
     self.destinationID = self.vehicle.ad.stateModule:getFirstMarker().id
+    -- (15/11) déjà dans le champ de destination (partie rechargée pendant le ramassage des balles du champ 42 : il
+    -- ressortait par le réseau puis revenait) : pas de route, arrivée tout de suite, le travail reprend sur place
+    local okIn, inField = FarmPilotCall(AutonomousMode.alreadyInField, self.vehicle)
+    if okIn and inField then
+        ADAutonomousManager.log("%s : déjà dans le champ « %s » : pas de route, le travail reprend sur place", tostring(self.vehicle.ad.stateModule:getName()), tostring(self.vehicle.ad.stateModule:getFirstMarker().name))
+        self.driveToDestinationTask = { inField = true } -- arrivée sans trajet, voir handleFinishedTask
+        self:handleFinishedTask()
+        return
+    end
     ADAutonomousManager.log("%s : départ vers « %s »", tostring(self.vehicle.ad.stateModule:getName()), tostring(self.vehicle.ad.stateModule:getFirstMarker().name))
     self.driveToDestinationTask = DriveToDestinationTask:new(self.vehicle, self.destinationID)
     if ADDriveGoal ~= nil then ADDriveGoal.set(self.driveToDestinationTask, "AD_fpGoal_work", self.vehicle.ad.stateModule:getFirstMarker().name) end -- but affiché dans l'ATH, voir DriveGoal.lua
@@ -213,6 +222,29 @@ function AutonomousMode:departToField()
     if not ok then
         ADAutonomousManager.log("ERREUR lecture des parcours : %s", tostring(err))
     end
+end
+
+-- (15/11) le tracteur est sur le champ du point de destination (numéro du nom du point, champs regroupés compris)
+function AutonomousMode.alreadyInField(vehicle)
+    if ADAutonomousManager.markerFieldNumbers == nil or ADAutonomousManager.fieldAt == nil then
+        return false
+    end
+    local wanted = ADAutonomousManager.markerFieldNumbers(vehicle)
+    if wanted == nil then
+        return false
+    end
+    local x, _, z = getWorldTranslation(vehicle.components[1].node)
+    local f = ADAutonomousManager.fieldAt(x, z)
+    if f == nil then
+        return false
+    end
+    local num = tonumber(ADAutonomousManager.fieldNumber(f))
+    for _, n in ipairs(wanted) do
+        if num == n then
+            return true
+        end
+    end
+    return false
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -285,7 +317,7 @@ function AutonomousMode:handleFinishedTask()
     if vehicle.ad.isStoppingWithError == false and ADBaleCollect ~= nil and ADBaleCollect.onArrival(self) then return end -- remorque à balles : notre ramassage au lieu d'un parcours, voir AutonomousBales.lua
 
     if vehicle.ad.isStoppingWithError == false then
-        local ok, e, err, width, fieldNum, tool, count = FarmPilotCall(ADAutonomousManager.choose, ADAutonomousManager, vehicle)
+        local ok, e, err, width, fieldNum, tool, count, why = FarmPilotCall(ADAutonomousManager.choose, ADAutonomousManager, vehicle)
         if not ok then
             ADAutonomousManager.log("ERREUR choix du parcours : %s", tostring(e))
             e, err = nil, "error"
@@ -294,7 +326,12 @@ function AutonomousMode:handleFinishedTask()
         local f = tostring(fieldNum or "?")
         -- (07/11) Courseplay absent : selon le réglage « Autonome sans Courseplay », attente
         -- ou ouvrier du jeu (mode « Classique »). Avec Courseplay : parcours, ou arrêt et attente comme avant.
-        local useAI = e == nil and err == "noCp" and AutoDrive.getSetting("autonomousNoCp") == 2
+        -- (15/11) même réglage quand Courseplay est installé mais n'a aucun parcours de la largeur de l'outil sur ce
+        -- champ (« none ») : réglé sur « Ouvrier du jeu », l'ouvrier du jeu prend le champ ; « Attendre » (défaut) :
+        -- arrêt et attente comme avant. Plusieurs parcours possibles (« several ») ou stockage des parcours illisible
+        -- (why « unreadable ») : attente, comme avant.
+        local noCourse = err == "noCp" or (err == "none" and why ~= "unreadable")
+        local useAI = e == nil and noCourse and AutoDrive.getSetting("autonomousNoCp") == 2
         if useAI then
             local field = ADAutonomousManager.nearField(vehicle)
             if field == nil then
@@ -306,7 +343,11 @@ function AutonomousMode:handleFinishedTask()
         if useAI then
             -- lancé juste après l'arrêt de FarmPilot (stopAutoDrive)
             vehicle.ad.fpAutonomousAI = true
-            AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_aiNoCp", f)
+            if err == "none" then
+                AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_aiNoCourse", w, f)
+            else
+                AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_aiNoCp", f)
+            end
             ADAutonomousManager.log("%s : %s -> ouvrier du jeu sur le champ %s", tostring(name), tostring(err), f)
         elseif e ~= nil then
             -- le parcours est lancé juste après l'arrêt de FarmPilot (stopAutoDrive)

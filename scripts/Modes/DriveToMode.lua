@@ -22,6 +22,7 @@ function DriveToMode:start(user)
     if self.vehicle.ad.stateModule:getFirstMarker() == nil then
         return
     end
+    if ADTrailerHitch ~= nil and ADTrailerHitch.beforeStart(self, user) then return end -- (15/11) remorque ou outil choisi à atteler d'abord, voir TrailerHitch.lua
 
     self:reset()
     self.destinationID = self.vehicle.ad.stateModule:getFirstMarker().id
@@ -34,9 +35,11 @@ function DriveToMode:start(user)
 end
 
 function DriveToMode:monitorTasks(dt)
+    if ADTrailerHitch ~= nil then ADTrailerHitch.monitor(self, dt) end -- (15/11) route vers la remorque / l'outil choisi, voir TrailerHitch.lua
 end
 
 function DriveToMode:handleFinishedTask()
+    if ADTrailerHitch ~= nil and ADTrailerHitch.handleFinishedTask(self) then return end -- (15/11) attelage de la remorque / l'outil choisi, voir TrailerHitch.lua
     if self.driveToDestinationTask ~= nil then
         self.driveToDestinationTask = nil
         self.vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(self.vehicle), ADTaskModule.DONT_PROPAGATE)

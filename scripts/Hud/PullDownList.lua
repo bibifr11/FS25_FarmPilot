@@ -147,7 +147,7 @@ function ADPullDownList:createSelection_FpTool(vehicle)
     self.fpToolList = {}
     self.options = {}
     self.options[1] = {}
-    self.options[1][1] = {displayName = g_i18n:getText(self.fpHeader and "AD_header_listAuto" or (self.fpTrailer and "AD_trailer_listNone" or (self.fpNext and "AD_autonomous_nextToolListNone" or "AD_autonomous_toolListNone"))), returnValue = 0} -- fpHeader : lignes « Barre », voir HudHarvester.lua
+    self.options[1][1] = {displayName = g_i18n:getText(self.fpHeader and "AD_header_listAuto" or (self.fpTrailer and ADTrailerHitch.key(vehicle, "AD_trailer_listNone") or (self.fpNext and "AD_autonomous_nextToolListNone" or "AD_autonomous_toolListNone"))), returnValue = 0} -- fpHeader : lignes « Barre », voir HudHarvester.lua
     for i, e in ipairs(list) do
         self.fpToolList[i] = e
         self.options[1][i + 1] = {displayName = e.name, returnValue = i}
@@ -681,7 +681,7 @@ function ADPullDownList:getNewState_FillType(vehicle)
     if self:isFpTool(vehicle) then
         if self.state == ADPullDownList.STATE_COLLAPSED and self.fpTrailer then
             local trailer = self:fpGetTool(vehicle)
-            self.text = trailer ~= nil and string.format(g_i18n:getText("AD_trailer_row"), ADTrailerHitch.label(trailer)) or g_i18n:getText("AD_trailer_rowNone")
+            self.text = trailer ~= nil and string.format(g_i18n:getText(ADTrailerHitch.key(vehicle, "AD_trailer_row")), ADTrailerHitch.label(trailer)) or g_i18n:getText(ADTrailerHitch.key(vehicle, "AD_trailer_rowNone")) -- (15/11) Conduire : « Atteler : ... »
             if ADLoadPoint ~= nil then self.text = ADLoadPoint.trailerRowText(vehicle) or self.text end -- remorque adaptée aux produits choisis, voir HudLoadPoint.lua
         elseif self.state == ADPullDownList.STATE_COLLAPSED and self.fpHeader and ADHarvesterHud ~= nil then
             self.text = ADHarvesterHud.collapsedText(self, vehicle) -- lignes « Barre » (moissonneuse, ensileuse), voir HudHarvester.lua

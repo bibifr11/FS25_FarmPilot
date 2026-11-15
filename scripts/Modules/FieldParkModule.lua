@@ -62,7 +62,7 @@ ADFieldPark.FIELD_MARGIN = 0.5                      -- m kept between the footpr
 ADFieldPark.BORDER_SEARCH = 25                      -- m looked at around a ring position to find the field border
 ADFieldPark.BORDER_RAY_STEP = 15                    -- degrees between two rays cast to find the border
 ADFieldPark.BORDER_BASE = 12                        -- m between the two border points that give its direction
-ADFieldPark.HARVESTER_CLEARANCE = 20                -- m kept between the parked train and the standing crop: room for the harvester to turn on the headland
+ADFieldPark.HARVESTER_CLEARANCE = 15                -- m kept between the parked train and the standing crop: room for the harvester to turn on the headland ((15/11) 20 -> 15 m)
 ADFieldPark.CLEARANCE_STEP = 4                      -- m between two crop samples around the train
 ADFieldPark.PARALLEL_TOLERANCE_PARKED = 10       -- degrees, a train found parked (loaded savegame) within this angle of the border counts as parallel: the border curves a little along it
 --[==[ Mis de côté (09/11) : inutilisé
@@ -569,7 +569,16 @@ function ADFieldPark.isGoodWaitingPlace(vehicle)
     if math.abs(dx * tx + dz * tz) < math.cos(math.rad(ADFieldPark.PARALLEL_TOLERANCE_PARKED)) then
         return false, string.format("not parallel to the border (%.0f°)", math.deg(math.acos(math.min(1, math.abs(dx * tx + dz * tz)))))
     end
-    if (bx - cx) * nx + (bz - cz) * nz - halfW >= ADFieldPark.BORDER_GAPS[#ADFieldPark.BORDER_GAPS] + 0.5 then
+    -- (15/11) même limite que la recherche (FieldParkModuleSearch.lua) : pour la moissonneuse, la ligne médiane de
+    -- l'attelage peut être jusqu'au dernier COMBINE_CENTRE_OFFSETS du bord (8 m) ; une benne garée là reste à sa place
+    -- au rechargement de la partie. Jamais plus près qu'avant ; ensileuse inchangée
+    local fromBorder = (bx - cx) * nx + (bz - cz) * nz
+    local maxFromBorder = halfW + ADFieldPark.BORDER_GAPS[#ADFieldPark.BORDER_GAPS] + 0.5
+    local offsets = ADFieldPark.COMBINE_CENTRE_OFFSETS
+    if ADFieldPark.cutOnly and offsets ~= nil then
+        maxFromBorder = math.max(maxFromBorder, offsets[#offsets] + 0.5)
+    end
+    if fromBorder >= maxFromBorder then
         return false, "too far from the border"
     end
     return true, {x = x, y = py, z = z, dirX = dx, dirZ = dz, cx = cx, cz = cz, halfL = halfL, harvester = harvester}

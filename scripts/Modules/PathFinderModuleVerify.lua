@@ -197,6 +197,13 @@ end
 -- accroche de smoothResultingPPPath_Refined (fin du lissage) ; true = smoothResultingPPPath_Refined s'arrête là
 function PathFinderModule:checkSmoothedPath()
     -- the cells can be wider than a free strip: a path found on the grid may still cross crop or an obstacle
+    -- (15/11) benne de moissonneuse, strict, grille fine : escalier de la grille lissé le long du couloir, gain d'un
+    -- trajet partiel mesuré le long du trajet (PathFinderModuleCorners.lua, PathFinderModulePartial.lua)
+    local corridor = self:useCorridorSmoothing() and not self.chasingVehicle and not self.isSecondChasingVehicle
+    self.partialAlongRoute = corridor
+    if corridor then
+        self:smoothAlongCorridor()
+    end
     if self.gridScaleStep ~= nil and not self.chasingVehicle and not self.isSecondChasingVehicle then
         local badIndex, reason = self:findBlockedStretch()
         if badIndex ~= nil then
@@ -206,6 +213,9 @@ function PathFinderModule:checkSmoothedPath()
                 self.isFinished = false
                 self:shrinkGrid()
                 return true
+            end
+            if corridor then
+                print(string.format("[AD-Fin] %s: troncon refuse (%s vers %.0f,%.0f, %.0f m le long du trajet), trajet partiel jusqu'avant lui", self:getLogName(), tostring(reason), p.x, p.z, self:alongRouteGain(p)))
             end
             if (self.strictFruit or self.strictField) and self:usePartialPath(badIndex) then
                 -- the clean beginning of the route is kept, the task plans again on arrival
@@ -247,6 +257,20 @@ function PathFinderModule:checkSmoothedPath()
     if self.gridScaleStep ~= nil and self.gridScaleStep > 1 then
         local kept, sharp = self:roundCornersToTurnRadius()
         kept, sharp = kept or 0, sharp or 0
+        if corridor then
+            -- (15/11) virages jugés sur la courbure réelle, pas sur les pas de la grille
+            local tight, first, angle, length, places = self:findTightCurves()
+            -- (15/11) un vrai virage serré avec de la place à côté : virage au rayon du train, élargi dans l'espace libre
+            if tight > 0 and self:widenTightCurves() > 0 then
+                tight, first, angle, length, places = self:findTightCurves()
+            end
+            if tight ~= sharp or tight > 0 then
+                print(string.format("[AD-Fin] %s: courbure reelle : %d virage(s) trop serre(s) pour le rayon de %.1f m (au lieu de %d angle(s) de grille)%s", self:getLogName(), tight,
+                    self.realTurnRadius or self.minTurnRadius, sharp, tight > 0 and string.format(", le pire %.0f deg sur %.0f m, vers %s", angle, length, places) or ""))
+            end
+            sharp = tight
+            self.firstSharpIndex = first
+        end
         -- a corner too sharp for the train cannot be driven: finer grid, and on the finest one no route (strict)
         if sharp > 0 and self.gridScaleStep < PathFinderModule.GRID_STEPS then
             print(string.format("[AD-Fin] %s: %d virage(s) trop serre(s) en cases de %.1f m, recalcul plus fin", self:getLogName(), sharp, self.minTurnRadius))

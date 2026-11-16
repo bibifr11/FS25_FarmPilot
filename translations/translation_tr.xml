@@ -386,7 +386,7 @@
         <text name="AD_task_catch_up_with_combine"						text="Biçerdövere yetişiyor" />
         <text name="AD_task_clearcrop"									text="Ekin temizleniyor" />
         <text name="AD_task_drive_to_destination"						text="Hedefe sürülüyor" />
-        <text name="AD_fpGoal_drive" text="Sürüş:" />
+        <text name="AD_fpGoal_drive" text="Sürüş" />
         <text name="AD_fpGoal_to" text="%s hedefine gidiyor" />
         <text name="AD_fpGoal_to_short" text="hedefe gidiyor" />
         <text name="AD_fpGoal_load" text="%s noktasında yükleniyor" />
@@ -407,7 +407,7 @@
         <text name="AD_fpGoal_back_short" text="tarlaya dönüyor" />
         <text name="AD_fpGoal_back_tiny" text="tarlaya dönüş" />
         <text name="AD_fpGoal_toolPark" text="ekipmanı %s noktasına park ediyor" />
-        <text name="AD_fpGoal_toolPark_short" text="ekipmanı park ediyor" />
+        <text name="AD_fpGoal_toolPark_short" text="ekipman parkı" />
         <text name="AD_fpGoal_park" text="%s noktasına park ediyor" />
         <text name="AD_fpGoal_park_short" text="park ediyor" />
         <text name="AD_fpGoal_fetch" text="%s ekipmanını alıyor" />
@@ -424,7 +424,7 @@
         <text name="AD_fpGoal_bales_short" text="balyaları bırakıyor" />
         <text name="AD_fpGoal_bales_tiny" text="balya bırakma" />
         <text name="AD_fpGoal_swap" text="%s noktasında römork değiştiriyor" />
-        <text name="AD_fpGoal_swap_short" text="römork değiştiriyor" />
+        <text name="AD_fpGoal_swap_short" text="römork değişimi" />
         <text name="AD_fpGoal_drop" text="%s yerine bırakılıyor" />
         <text name="AD_fpGoal_drop_short" text="yerine bırakılıyor" />
         <text name="AD_fpGoal_hitch" text="%s römorkunu bağlıyor" />

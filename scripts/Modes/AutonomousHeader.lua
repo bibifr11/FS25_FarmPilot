@@ -50,6 +50,10 @@
 -- - (15/11) Départ au champ suivant avec une barre prise sur une remorque qui ne passe pas sur la route (ni entrée
 --   directe, ni route assez large : AutonomousHeaderEntry.lua, headerTravelOk) : reposée sur sa remorque et ré-amenée
 --   par le tracteur (flux du changement de barre).
+-- - (16/11) Champ suivant : la remorque porte-barre change de champ avec la moissonneuse, toujours (barre reposée
+--   dessus au champ fini, tracteur rappelé même garé, puis amenée) ; travail de la barre resté d'avant (amenée
+--   annulée, tracteur garé) réglé au départ, plus jamais pris pour « barre prise, attend que le tracteur ait dégagé »
+--   (AutonomousHeaderNextField.lua).
 -- - La barre est choisie seule (pas de ligne en plus dans le HUD). Le travail en cours n'est pas sauvegardé : partie
 --   rechargée pendant la récolte = remorque retrouvée à la fin du champ (celle du départ si elle est vide, sinon la
 --   remorque porte-barre vide la plus proche qui a une place pour cette barre).
@@ -445,6 +449,18 @@ function ADHeaderFlow.onStart(mode)
     end
     local header = ADHeaderFlow.attachedHeader(v)
     if header ~= nil then
+        -- (16/11) travail de la barre resté d'avant (amenée annulée, tracteur garé au bouton parking, champ fini
+        -- depuis) : la barre attelée compte comme prise sur sa remorque, le tracteur est libéré
+        -- (AutonomousHeaderNextField.lua : settleJob). Avant, au champ suivant, elle attendait que le tracteur garé
+        -- « ait dégagé » et ne partait jamais.
+        if job ~= nil and job.combine == v and ADHeaderFlow.settleJob ~= nil then
+            local okS, settled = FarmPilotCall(ADHeaderFlow.settleJob, mode, job, header)
+            if not okS then
+                log("ERREUR travail de la barre resté d'avant : %s", tostring(settled))
+            else
+                job = settled
+            end
+        end
         if job ~= nil and job.phase == "deliver" and job.header == header and not job.headerTaken then
             -- barre prise : le tracteur rentre (étape « wait » du tracteur), départ normal au champ
             job.headerTaken = true
@@ -473,6 +489,19 @@ function ADHeaderFlow.onStart(mode)
                 if ADHeaderFlow.startCollect(v, header, true) then
                     return true
                 end
+            end
+        end
+        -- (16/11) départ au champ suivant : la remorque porte-barre change de champ avec la moissonneuse (barre
+        -- reposée dessus au champ fini, tracteur rappelé du garage s'il le faut, puis amenée au champ suivant) ;
+        -- personne de libre : elle attend sur place avec un message (AutonomousHeaderNextField.lua : nextFieldCarry)
+        if changeable and v.ad.fpHeaderPrevField ~= nil and ADHeaderFlow.nextFieldCarry ~= nil then
+            local okC, handled = FarmPilotCall(ADHeaderFlow.nextFieldCarry, mode, header)
+            if not okC then
+                log("ERREUR remorque porte-barre au champ suivant : %s", tostring(handled))
+                handled = nil
+            end
+            if handled ~= nil then
+                return handled
             end
         end
         -- (15/11) départ au champ suivant (fpHeaderPrevField : AutonomousHarvesterUnloaders.lua) avec une barre prise
@@ -534,6 +563,17 @@ function ADHeaderFlow.onStart(mode)
     local tractor, why, chosenBusy = nil, nil, nil
     if found.trailer ~= nil then
         tractor, why, chosenBusy = ADHeaderFlow.tractorFor(found.trailer, v)
+        -- (16/11) changement de champ : le tracteur attend encore à côté ou part ranger la remorque où la barre vient
+        -- d'être posée ; il est arrêté et l'amène directement au champ suivant (comme startCollect pour la remorque
+        -- vide). Un tracteur qui amène cette remorque à une autre moissonneuse n'est pas touché.
+        local tJob = tractor ~= nil and tractor.ad.fpHeaderJob or nil
+        if tractor ~= nil and tractor.ad.stateModule:isActive() and attacherOf(found.trailer) ~= nil
+            and ((tJob ~= nil and (tJob.headerDropped or tJob.cancelled))
+                or (tJob == nil and ADHeaderFlow.isParkingTrailer ~= nil and ADHeaderFlow.isParkingTrailer(tractor, found.trailer))) then
+            log("%s : « %s » range encore « %s », il l'amène directement à « %s »", nameOf(v), nameOf(tractor), label(found.trailer),
+                tostring(sm:getFirstMarker().name))
+            tractor:stopAutoDrive()
+        end
         if tractor == nil then
             local key = why == "busy" and "AD_autonomous_headerBusy" or "AD_autonomous_headerNoTractor"
             AutonomousMode.message(v, ADMessagesManager.messageTypes.ERROR, 12000, key, label(found.trailer))
@@ -1268,7 +1308,12 @@ end
 function ADHeaderFlow.startCollect(vehicle, header, swap, near, quiet)
     local sm = vehicle.ad.stateModule
     local old = vehicle.ad.fpHeaderJob
-    local trailer = ADHeaderFlow.findEmptyTrailer(vehicle, header, old ~= nil and old.trailer or nil)
+    -- (16/11) la remorque du travail en cours, sinon celle d'où vient la barre (AutonomousHeaderGround.lua)
+    local preferred = old ~= nil and old.trailer or nil
+    if preferred == nil and ADHeaderGround ~= nil and ADHeaderGround.fromTrailer ~= nil and header ~= nil then
+        preferred = ADHeaderGround.fromTrailer[header]
+    end
+    local trailer = ADHeaderFlow.findEmptyTrailer(vehicle, header, preferred)
     if trailer == nil then
         if not quiet then
             log("%s : %s, aucune remorque porte-barre vide", nameOf(vehicle), swap and "changement de barre" or "champ fini")
@@ -1279,7 +1324,8 @@ function ADHeaderFlow.startCollect(vehicle, header, swap, near, quiet)
     if old ~= nil and old.tractor ~= nil and old.tractor.ad ~= nil and old.tractor.ad.fpHeaderJob == old then
         old.tractor.ad.fpHeaderJob = nil
     end
-    local tractor, why, chosenBusy = ADHeaderFlow.tractorFor(trailer, vehicle)
+    -- (16/11) d'abord le tracteur qui l'a amenée, s'il est libre (garé par le joueur pendant la récolte compris)
+    local tractor, why, chosenBusy = ADHeaderFlow.tractorFor(trailer, vehicle, nil, old ~= nil and old.trailer == trailer and old.tractor or nil)
     if tractor == nil then
         if not quiet then
             log("%s : %s, pas de tracteur pour « %s » (%s)", nameOf(vehicle), swap and "changement de barre" or "champ fini", label(trailer), tostring(why))

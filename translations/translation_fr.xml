@@ -804,6 +804,8 @@
 		<text name="AD_autonomous_unloadersWait" text="%d benne(s) suivront vers « %s » quand la moissonneuse aura repris le travail" />
 		<text name="AD_autonomous_unloadersStay" text="les bennes restent à « %s » (autre machine)" />
 		<text name="AD_autonomous_unloadersRecall" text="%d benne(s) de son équipe reprise(s) au garage, en route vers « %s »" />
+		<text name="AD_autonomous_unloaderNoPark" text="pas de place de parking (le P d'AutoDrive) : la benne reste au champ" />
+		<text name="AD_fpReturnPoint" text="là où elle a été prise" />
 		<text name="AD_fpFn_cutter" text="Coupe" />
 		<text name="AD_fpFn_cornHeader" text="Coupe à maïs" />
 		<text name="AD_fpFn_chopperHeader" text="Bec d'ensileuse" />
@@ -818,6 +820,9 @@
 		<text name="AD_task_autonomous_headerEmptyFirst" text="Attendre d'être vidée" />
 		<text name="AD_autonomous_headerCarry" text="« %s » ne passe pas sur la route jusqu'au champ suivant : reposée sur sa remorque, le tracteur la ramène" />
 		<text name="AD_autonomous_headerCarryStay" text="« %s » ne passe pas sur la route jusqu'au champ suivant et ne peut pas être reposée (pas de remorque vide ou pas de tracteur libre) : arrêt ici" />
+		<text name="AD_autonomous_headerNextNoTractor" text="champ suivant : aucun tracteur libre pour amener la remorque porte-barre « %s » : reste ici avec la barre (jamais de route avec), nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerNextNoTrailer" text="champ suivant : aucune remorque porte-barre vide pour « %s » : reste ici avec la barre (jamais de route avec), nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerNextStay" text="champ suivant : « %s » ne peut pas être reposée sur sa remorque pour l'instant : reste ici avec la barre, nouvel essai toutes les minutes" />
 		<text name="gui_ad_headerTractor_title" text="Transport de la barre" />
 		<text name="gui_ad_headerTractor_tooltip" text="Véhicule de la remorque porte-barre" />
 		<text name="gui_ad_headerTractor_auto" text="Tracteur libre le plus proche" />

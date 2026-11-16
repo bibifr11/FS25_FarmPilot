@@ -801,6 +801,8 @@
 		<text name="AD_autonomous_unloadersWait" text="%d Abfahrer folgen nach « %s », sobald der Mähdrescher wieder arbeitet" />
 		<text name="AD_autonomous_unloadersStay" text="die Abfahrer bleiben bei « %s » (andere Maschine)" />
 		<text name="AD_autonomous_unloadersRecall" text="%d Abfahrer ihres Teams vom Hof zurückgeholt, unterwegs nach « %s »" />
+		<text name="AD_autonomous_unloaderNoPark" text="kein Parkplatz (das P von AutoDrive): der Abfahrer bleibt am Feld" />
+		<text name="AD_fpReturnPoint" text="Abholort" />
 		<text name="AD_fpFn_cutter" text="Schneidwerk" />
 		<text name="AD_fpFn_cornHeader" text="Maisgebiss" />
 		<text name="AD_fpFn_chopperHeader" text="Häckslervorsatz" />
@@ -815,6 +817,9 @@
 		<text name="AD_task_autonomous_headerEmptyFirst" text="Auf das Abtanken warten" />
 		<text name="AD_autonomous_headerCarry" text="« %s » passt nicht über die Straße zum nächsten Feld: zurück auf den Wagen, der Traktor bringt es" />
 		<text name="AD_autonomous_headerCarryStay" text="« %s » passt nicht über die Straße zum nächsten Feld und kann nicht abgelegt werden (kein leerer Wagen oder kein freier Traktor): Halt hier" />
+		<text name="AD_autonomous_headerNextNoTractor" text="Nächstes Feld: kein freier Traktor für den Schneidwerkswagen « %s »: bleibt hier mit dem Schneidwerk (nie damit auf der Straße), neuer Versuch jede Minute" />
+		<text name="AD_autonomous_headerNextNoTrailer" text="Nächstes Feld: kein leerer Schneidwerkswagen für « %s »: bleibt hier mit dem Schneidwerk (nie damit auf der Straße), neuer Versuch jede Minute" />
+		<text name="AD_autonomous_headerNextStay" text="Nächstes Feld: « %s » kann gerade nicht auf seinen Wagen gelegt werden: bleibt hier mit dem Schneidwerk, neuer Versuch jede Minute" />
 		<text name="gui_ad_headerTractor_title" text="Schneidwerkstransport" />
 		<text name="gui_ad_headerTractor_tooltip" text="Fahrzeug für den Schneidwerkswagen" />
 		<text name="gui_ad_headerTractor_auto" text="Nächster freier Traktor" />

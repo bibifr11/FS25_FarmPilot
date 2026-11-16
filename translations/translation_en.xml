@@ -806,6 +806,8 @@
 		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
 		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
 		<text name="AD_autonomous_unloadersRecall" text="%d trailer(s) of its team called back from the yard, on the way to « %s »" />
+		<text name="AD_autonomous_unloaderNoPark" text="no park destination (AutoDrive's P): the trailer stays at the field" />
+		<text name="AD_fpReturnPoint" text="where it was picked up" />
 		<text name="AD_fpFn_cutter" text="Header" />
 		<text name="AD_fpFn_cornHeader" text="Corn header" />
 		<text name="AD_fpFn_chopperHeader" text="Forage harvester header" />
@@ -820,6 +822,9 @@
 		<text name="AD_task_autonomous_headerEmptyFirst" text="Wait to be emptied" />
 		<text name="AD_autonomous_headerCarry" text="« %s » does not fit on the road to the next field: put back on its trailer, the tractor brings it" />
 		<text name="AD_autonomous_headerCarryStay" text="« %s » does not fit on the road to the next field and cannot be put down (no empty trailer or no free tractor): stopping here" />
+		<text name="AD_autonomous_headerNextNoTractor" text="next field: no free tractor to bring the header trailer « %s »: staying here with the header (never on the road with it), new try every minute" />
+		<text name="AD_autonomous_headerNextNoTrailer" text="next field: no empty header trailer for « %s »: staying here with the header (never on the road with it), new try every minute" />
+		<text name="AD_autonomous_headerNextStay" text="next field: « %s » cannot be put back on its trailer for now: staying here with the header, new try every minute" />
 		<text name="gui_ad_headerTractor_title" text="Header transport" />
 		<text name="gui_ad_headerTractor_tooltip" text="Vehicle for the header trailer" />
 		<text name="gui_ad_headerTractor_auto" text="Nearest free tractor" />

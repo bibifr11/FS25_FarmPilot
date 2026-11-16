@@ -10,6 +10,7 @@
 --   (Modes/AutonomousHeader.lua : startCollect).
 --
 -- Règle (14/11) : les bennes changent de champ quand la moissonneuse est PRÊTE à recommencer, pas à son départ.
+-- (16/11) pour la moissonneuse, seulement les bennes sans parking ni point de départ connu (voir plus bas).
 -- - Champ fini et champ suivant prévu : ses bennes ne rentrent pas au parking. Vide, la benne attend à l'ancien
 --   champ ; chargée, elle part vider puis revient attendre.
 -- - La moissonneuse part (barre reposée, route, barre reprise) : les bennes ne bougent pas, elles ne gênent ni la
@@ -46,9 +47,23 @@
 --   pleines) puis la rejoignent comme ses autres bennes. Conduite par le joueur : laissée à l'arrêt.
 -- - La conduite des bennes d'ensileuse (CombineUnloaderModeChopperChase.lua, etc.) ne change pas.
 --
+-- Règle (16/11, « le champ est fini, la benne aurait dû aller au garage ») : bennes de MOISSONNEUSE, la règle du 14/11
+-- ne vaut plus pour elles (l'ensileuse la garde).
+-- - Champ fini : chaque benne vide ce qu'elle a si elle est chargée, puis va au garage (sa place de parking, le « P »
+--   d'AutoDrive). Elle reste dans l'équipe de la moissonneuse (notée au départ, rememberTeam).
+-- - Sans parking : elle retourne là où elle a été prise (point du réseau noté au choix automatique,
+--   AutonomousUnloaderAutoPick.lua, vehicle.ad.fpPickedFrom, gardé dans la sauvegarde #fpPickedFrom).
+-- - Ni parking ni point de départ connu : elle reste au champ comme avant (message au joueur « pas de place de
+--   parking ») et elle la suit au champ suivant quand elle a repris le travail (pending, moveUnloader).
+-- - Elle a repris le travail au champ suivant : son équipe est rappelée du garage (recallTeam). Une benne encore en
+--   route vers le garage (ou en train de vider) est rappelée à son arrivée (lateHome).
+-- - Le suivi « pending » ne prend plus pour elle que les bennes à l'arrêt (au garage : seule leur 1re destination
+--   change, ou elles repartent avec l'équipe) et celles qui restent au champ faute de parking.
+--
 -- Branché par : enveloppes posées au chargement sur AutonomousMode.goToNextField (plan),
--- CombineUnloaderMode:getParkAfterJobMarker (pas de parking tant qu'elle suit), CombineUnloaderMode:onHarvesterJobDone
--- (journal), ADHarvestManager:update (suivi), ADHarvestManager:fireUnloader (16/11, bennes d'ensileuse arrêtées au
+-- CombineUnloaderMode:getParkAfterJobMarker (pas de parking tant qu'elle suit ; (16/11) sinon le point où elle a été
+-- prise), CombineUnloaderMode:getParkAfterJobTask (16/11, retour à ce point), CombineUnloaderMode:onHarvesterJobDone
+-- (journal, message « pas de place de parking »), ADHarvestManager:update (suivi), ADHarvestManager:fireUnloader (16/11, bennes d'ensileuse arrêtées au
 -- départ) et ADSavegameResume.save / .load (équipe dans la sauvegarde ; clé #fpUnloaderTeam déclarée dans
 -- Specialization.lua). Chargé par register.lua après AutonomousHeaderChoice.lua.
 -- ============================================================================================================
@@ -69,6 +84,9 @@ ADHarvesterUnloaders.pending = {}
 -- (15/11) [moissonneuse] = { new = marqueur suivant, since } : partie sans benne qui la suit, son équipe est rappelée
 -- quand elle a repris le travail
 ADHarvesterUnloaders.recallWatch = {}
+-- (16/11) [moissonneuse] = { new = marqueur suivant, since, list = { [benne] = réglages } } : bennes de son équipe
+-- encore en route vers le garage quand elle a repris le travail, rappelées à leur arrivée
+ADHarvesterUnloaders.lateHome = {}
 ADHarvesterUnloaders.nextTeamScan = 0
 
 local function log(fmt, ...)
@@ -125,6 +143,32 @@ local function isWorking(harvester)
         return true
     end
     return harvester.getIsAIActive ~= nil and harvester:getIsAIActive() == true and not harvester.ad.stateModule:isActive()
+end
+
+-- (16/11, champ 52 → 7) « au travail » au nouveau champ seulement quand elle y est : Courseplay relancé sur l'ancien
+-- parcours au champ fini ne rappelle plus les bennes. Champ inconnu (pas de numéro pour sa 1re destination) : comme avant
+local function isWorkingAtNewField(harvester)
+    if not isWorking(harvester) then
+        return false
+    end
+    if AutonomousMode == nil or AutonomousMode.alreadyInField == nil or ADAutonomousManager == nil
+        or ADAutonomousManager.markerFieldNumbers == nil or ADAutonomousManager.fieldAt == nil then
+        return true
+    end
+    local okW, wanted = FarmPilotCall(ADAutonomousManager.markerFieldNumbers, harvester)
+    if not okW or wanted == nil then
+        return true
+    end
+    local okIn, inField = FarmPilotCall(AutonomousMode.alreadyInField, harvester)
+    if okIn and inField then
+        if harvester.ad ~= nil then harvester.ad.fpNotAtNewFieldLogged = nil end
+        return true
+    end
+    if harvester.ad ~= nil and harvester.ad.fpNotAtNewFieldLogged ~= true then
+        harvester.ad.fpNotAtNewFieldLogged = true
+        log("%s : au travail mais pas encore au nouveau champ, les bennes attendent", nameOf(harvester))
+    end
+    return false
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -279,12 +323,14 @@ end
 -- une benne est déjà pour ce champ : tracteur actif en « Décharger moissonneuse » vers ce champ ou vers elle, ou une
 -- de ses bennes notées encore en route
 local function hasUnloaderFor(harvester, marker, entry)
+    -- (16/11) moissonneuse : ses bennes restées au champ faute de parking n'empêchent pas le rappel de l'équipe
+    local crewCounts = entry ~= nil and isChopper(harvester)
     for _, v in pairs(vehicles()) do
         local sm = v.ad ~= nil and v.ad.stateModule or nil
         if v ~= harvester and sm ~= nil and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:isActive() then
             local mode = unloadModeOf(v)
             if sm:getFirstMarker() == marker or (mode ~= nil and mode.combine == harvester)
-                or (entry ~= nil and entry.crew[v] and sm:getFirstMarker() == entry.old) then
+                or (crewCounts and entry.crew[v] and sm:getFirstMarker() == entry.old) then
                 return true
             end
         end
@@ -304,6 +350,19 @@ local function otherToolOf(tractor, wanted)
         end
     end
     return false, own
+end
+
+-- (16/11) benne encore en fin de chantier : elle vide, ou roule vers le garage (ou dépose sa remorque à sa place)
+local function goingHome(v)
+    local sm = v.ad.stateModule
+    if not sm:isActive() then
+        return false
+    end
+    if v.ad.harvestJobDone or v.ad.fpJobDone ~= nil or v.ad.onRouteToPark or v.ad.fpTrailerDrop ~= nil then
+        return true
+    end
+    local auto = AutoDrive.MODE_AUTONOMOUS ~= nil and v.ad.modes ~= nil and v.ad.modes[AutoDrive.MODE_AUTONOMOUS] or nil
+    return sm:getMode() == AutoDrive.MODE_AUTONOMOUS and auto ~= nil and auto.parkStage ~= nil
 end
 
 -- nil = repris ; sinon la raison
@@ -392,22 +451,78 @@ function ADHarvesterUnloaders.recallTeam(harvester, marker, entry, exclude)
         end
     end
     table.sort(list, function(a, b) return nameOf(a.vehicle) < nameOf(b.vehicle) end)
-    local count = 0
+    local count, late = 0, nil
     for _, item in ipairs(list) do
-        local ok, why = FarmPilotCall(recallOne, harvester, item.vehicle, item.memo, marker)
-        if not ok then
-            log("ERREUR rappel de « %s » : %s", nameOf(item.vehicle), tostring(why))
-        elseif why ~= nil then
-            log("%s : « %s » pas rappelé (%s)", nameOf(harvester), nameOf(item.vehicle), why)
+        if goingHome(item.vehicle) then
+            -- (16/11) encore en route vers le garage (ou en train de vider) : rappelée à son arrivée
+            late = late or {}
+            late[item.vehicle] = item.memo
+            log("%s : « %s » de son équipe rentre encore au garage, rappelé à son arrivée", nameOf(harvester), nameOf(item.vehicle))
         else
-            count = count + 1
-            log("%s : aucune benne à « %s », « %s » de son équipe rappelé", nameOf(harvester), tostring(marker.name), nameOf(item.vehicle))
+            local ok, why = FarmPilotCall(recallOne, harvester, item.vehicle, item.memo, marker)
+            if not ok then
+                log("ERREUR rappel de « %s » : %s", nameOf(item.vehicle), tostring(why))
+            elseif why ~= nil then
+                log("%s : « %s » pas rappelé (%s)", nameOf(harvester), nameOf(item.vehicle), why)
+            else
+                count = count + 1
+                log("%s : aucune benne à « %s », « %s » de son équipe rappelé", nameOf(harvester), tostring(marker.name), nameOf(item.vehicle))
+            end
         end
     end
     if count > 0 then
         AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersRecall", count, tostring(marker.name))
     end
+    if late ~= nil then
+        ADHarvesterUnloaders.lateHome[harvester] = { new = marker, since = g_time, list = late, nextTry = 0 }
+    end
     return count
+end
+
+-- (16/11) bennes de son équipe rentrées au garage après qu'elle a repris le travail : rappelées une à une
+local function updateLate(harvester, watch)
+    if isGone(harvester) then
+        ADHarvesterUnloaders.lateHome[harvester] = nil
+        return
+    end
+    local sm = harvester.ad.stateModule
+    if sm:getFirstMarker() ~= watch.new then
+        ADHarvesterUnloaders.lateHome[harvester] = nil
+        log("%s : son champ a été changé, ses bennes rentrées au garage n'y sont pas rappelées", nameOf(harvester))
+        return
+    end
+    if g_time - watch.since > ADHarvesterUnloaders.FOLLOW_MAX_TIME then
+        ADHarvesterUnloaders.lateHome[harvester] = nil
+        log("%s : ses bennes ne sont pas rentrées au garage en %d min, pas rappelées", nameOf(harvester), ADHarvesterUnloaders.FOLLOW_MAX_TIME / 60000)
+        return
+    end
+    if g_time < watch.nextTry then
+        return
+    end
+    watch.nextTry = g_time + ADHarvesterUnloaders.RETRY_TIME
+    local done = {}
+    for v, memo in pairs(watch.list) do
+        if isGone(v) then
+            done[#done + 1] = v
+        elseif not goingHome(v) then
+            done[#done + 1] = v
+            local ok, why = FarmPilotCall(recallOne, harvester, v, memo, watch.new)
+            if not ok then
+                log("ERREUR rappel de « %s » : %s", nameOf(v), tostring(why))
+            elseif why ~= nil then
+                log("%s : « %s » rentré au garage, pas rappelé (%s)", nameOf(harvester), nameOf(v), why)
+            else
+                log("%s : « %s » rentré au garage, rappelé à « %s »", nameOf(harvester), nameOf(v), tostring(watch.new.name))
+                AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersRecall", 1, tostring(watch.new.name))
+            end
+        end
+    end
+    for _, v in ipairs(done) do
+        watch.list[v] = nil
+    end
+    if next(watch.list) == nil then
+        ADHarvesterUnloaders.lateHome[harvester] = nil
+    end
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -497,12 +612,46 @@ function ADHarvesterUnloaders.staysWithHarvester(unloader)
         return false
     end
     for _, v in pairs(vehicles()) do
-        if v ~= unloader and v.ad ~= nil and v.ad.stateModule ~= nil and ADHeaderFlow.isCombine(v)
+        -- (16/11) ensileuse seulement : les bennes de moissonneuse vident puis vont au garage
+        if v ~= unloader and v.ad ~= nil and v.ad.stateModule ~= nil and ADHeaderFlow.isCombine(v) and isChopper(v)
             and v.ad.stateModule:getFirstMarker() == marker and nextFieldOf(v) ~= nil then
             return true, v
         end
     end
     return false
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (16/11) Où rentre une benne de moissonneuse à la fin du chantier
+-- ------------------------------------------------------------------------------------------------------------
+-- point du réseau où elle a été prise (choix automatique), ou nil
+function ADHarvesterUnloaders.returnPoint(v)
+    local memo = v ~= nil and v.ad ~= nil and v.ad.fpPickedFrom or nil
+    if memo == nil or memo.wp == nil or ADGraphManager:getWayPointById(memo.wp) == nil then
+        return nil
+    end
+    return memo.wp
+end
+
+-- sa place de parking (le « P » d'AutoDrive), ou nil
+local function parkMarkerOf(v)
+    local sm = v.ad.stateModule
+    local park = sm.getParkDestinationAtJobFinished ~= nil and sm:getParkDestinationAtJobFinished() or nil
+    return park ~= nil and park >= 1 and ADGraphManager:getMapMarkerById(park) or nil
+end
+
+-- elle a où rentrer : son parking, sinon là où elle a été prise
+function ADHarvesterUnloaders.goesHome(v)
+    return not isGone(v) and (parkMarkerOf(v) ~= nil or ADHarvesterUnloaders.returnPoint(v) ~= nil)
+end
+
+-- suivi « pending » : l'ensileuse y met toutes ses bennes ; la moissonneuse seulement celles à l'arrêt et celles qui
+-- restent au champ faute de parking (les autres vident puis vont au garage, rappelées avec l'équipe)
+local function takesInCrew(harvester, v)
+    if isChopper(harvester) then
+        return true
+    end
+    return not (v.ad.stateModule:isActive() and ADHarvesterUnloaders.goesHome(v))
 end
 
 -- (départ au champ suivant) les bennes de l'ancien champ sont notées : elles suivront quand elle sera prête ;
@@ -514,7 +663,8 @@ function ADHarvesterUnloaders.plan(harvester, oldMarker, newMarker)
     -- repartie avant d'avoir repris le travail : ses bennes d'avant restent les siennes
     if before ~= nil then
         for v in pairs(before.crew) do
-            if not isGone(v) and v.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD and v.ad.stateModule:getFirstMarker() == before.old then
+            if not isGone(v) and v.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD and v.ad.stateModule:getFirstMarker() == before.old
+                and takesInCrew(harvester, v) then
                 crew[v] = true
                 count = count + 1
             end
@@ -529,11 +679,35 @@ function ADHarvesterUnloaders.plan(harvester, oldMarker, newMarker)
             AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersStay", tostring(oldMarker.name))
             return 0
         end
+        local home = {}
         for _, v in pairs(vehicles()) do
             local sm = v.ad ~= nil and v.ad.stateModule or nil
             if v ~= harvester and sm ~= nil and not crew[v] and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:getFirstMarker() == oldMarker then
-                crew[v] = true
-                count = count + 1
+                if takesInCrew(harvester, v) then
+                    crew[v] = true
+                    count = count + 1
+                else
+                    home[#home + 1] = v
+                end
+            end
+        end
+        if #home > 0 then
+            log("%s : champ fini, %d benne(s) de « %s » vident puis rentrent au garage ; son équipe sera rappelée à « %s » quand elle aura repris le travail",
+                name, #home, tostring(oldMarker.name), tostring(newMarker.name))
+        end
+        -- (16/11) les bennes en attente au champ fini ne sont plus vues par ADHarvestManager (sa 1re destination est
+        -- déjà le champ suivant) : elles rentrent tout de suite. Celle qui la sert est laissée à ADHarvestManager
+        -- (reste de la trémie d'abord, règle 7A+).
+        table.sort(home, function(a, b) return nameOf(a) < nameOf(b) end)
+        for _, v in ipairs(home) do
+            local mode = unloadModeOf(v)
+            local served = mode ~= nil and mode.combine == harvester and harvester.ad.combineJobTold ~= nil
+            if mode ~= nil and mode.onHarvesterJobDone ~= nil and not v.ad.harvestJobDone and not served then
+                log("%s : benne « %s » en attente au champ fini : elle rentre (vider si chargée, puis garage)", name, nameOf(v))
+                local ok, err = FarmPilotCall(mode.onHarvesterJobDone, mode, harvester)
+                if not ok then
+                    log("ERREUR benne renvoyée au garage : %s", tostring(err))
+                end
             end
         end
     end
@@ -628,7 +802,7 @@ local function updateEntry(harvester, entry)
         -- même attente que ADHarvestManager (depuis sa fin de champ) : les bennes changent de champ dans la même
         -- image que son « nouveau chantier », juste avant, pour qu'aucune ne soit vue réglée sur un autre champ
         local since = harvester.ad.combineJobSince or entry.since
-        if g_time - since < ADHarvesterUnloaders.READY_GUARD or not isWorking(harvester) then
+        if g_time - since < ADHarvesterUnloaders.READY_GUARD or not isWorkingAtNewField(harvester) then
             return
         end
         local other = otherHarvesterOn(harvester, entry.old)
@@ -649,7 +823,8 @@ local function updateEntry(harvester, entry)
         end
         -- (15/11) aucune benne pour le nouveau champ : son équipe et ses bennes à l'arrêt repartent (les bennes reprises
         -- ont alors le nouveau champ en 1re destination, moveUnloader les laisse)
-        local recalled = ADHarvesterUnloaders.recallTeam(harvester, entry.new, entry, nil)
+        -- (16/11) moissonneuse : ses bennes restées au champ suivent, son équipe rentrée au garage est rappelée aussi
+        local recalled = ADHarvesterUnloaders.recallTeam(harvester, entry.new, entry, (not isChopper(harvester)) and entry.crew or nil)
         if recalled == 0 then
             log("%s : au travail à « %s », ses %d benne(s) la rejoignent", nameOf(harvester), tostring(entry.new.name), count)
             AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersFollow", count, tostring(entry.new.name))
@@ -693,7 +868,7 @@ local function updateWatch(harvester, watch)
         return
     end
     local since = harvester.ad.combineJobSince or watch.since
-    if g_time - since < ADHarvesterUnloaders.READY_GUARD or not isWorking(harvester) then
+    if g_time - since < ADHarvesterUnloaders.READY_GUARD or not isWorkingAtNewField(harvester) then
         ADHarvesterUnloaders.recallWatch[harvester] = watch -- pas encore au travail : on attend
         return
     end
@@ -710,6 +885,15 @@ function ADHarvesterUnloaders.update(dt)
         end
         for _, w in ipairs(watched) do
             updateWatch(w.harvester, w.watch)
+        end
+    end
+    if next(ADHarvesterUnloaders.lateHome) ~= nil then
+        local lates = {}
+        for harvester, watch in pairs(ADHarvesterUnloaders.lateHome) do
+            lates[#lates + 1] = { harvester = harvester, watch = watch }
+        end
+        for _, l in ipairs(lates) do
+            updateLate(l.harvester, l.watch)
         end
     end
     if next(ADHarvesterUnloaders.pending) == nil then
@@ -761,8 +945,34 @@ function AutonomousMode.goToNextField(vehicle)
     return result
 end
 
--- fin de chantier d'une benne qui suivra sa moissonneuse : pas de parking (vide elle attend au champ, chargée elle
--- vide puis revient), voir CombineUnloaderModeJobDone.lua
+-- fin de chantier d'une benne qui suivra sa machine (ensileuse ; moissonneuse : seulement celle qui reste au champ
+-- faute de parking) : pas de parking (vide elle attend au champ, chargée elle vide puis revient), voir
+-- CombineUnloaderModeJobDone.lua.
+-- (16/11) benne de moissonneuse sans parking : elle retourne là où elle a été prise (ADHarvesterUnloaders.returnPoint).
+-- Le code est commun avec l'ensileuse : limité à la moissonneuse (machine du chantier, ou celle du choix automatique).
+local function jobIsCombine(mode)
+    local v = mode.vehicle
+    local harvester = mode.fpJobHarvester or (v.ad.fpJobDone ~= nil and v.ad.fpJobDone.harvester or nil) or mode.combine
+    if harvester ~= nil then
+        return not isChopper(harvester)
+    end
+    return v.ad.fpPickedFrom ~= nil and not v.ad.fpPickedFrom.chopper
+end
+
+-- son point de départ, comme un marqueur (id = point du réseau, nom affiché)
+local function returnMarkerOf(mode)
+    local wp = ADHarvesterUnloaders.returnPoint(mode.vehicle)
+    if wp == nil or not jobIsCombine(mode) then
+        return nil
+    end
+    local name = "point de départ"
+    if g_i18n ~= nil and g_i18n.hasText ~= nil and g_i18n:hasText("AD_fpReturnPoint") then
+        name = g_i18n:getText("AD_fpReturnPoint")
+    end
+    return { id = wp, name = name, fpReturn = true }
+end
+ADHarvesterUnloaders.returnMarkerOf = returnMarkerOf
+
 if CombineUnloaderMode ~= nil and CombineUnloaderMode.getParkAfterJobMarker ~= nil then
     local baseParkMarker = CombineUnloaderMode.getParkAfterJobMarker
     function CombineUnloaderMode:getParkAfterJobMarker()
@@ -770,18 +980,60 @@ if CombineUnloaderMode ~= nil and CombineUnloaderMode.getParkAfterJobMarker ~= n
         if ok and stays then
             return nil
         end
-        return baseParkMarker(self)
+        local marker = baseParkMarker(self)
+        if marker == nil then
+            local okR, back = FarmPilotCall(returnMarkerOf, self)
+            if okR and back ~= nil then
+                return back
+            end
+        end
+        return marker
     end
+
+    -- (16/11) retour au point de départ : pas de dépose de la remorque à sa place (il faudrait une place au tracteur),
+    -- le tracteur y rentre avec elle
+    local baseParkTask = CombineUnloaderMode.getParkAfterJobTask
+    if baseParkTask ~= nil then function CombineUnloaderMode:getParkAfterJobTask(reason)
+        local marker = self:getParkAfterJobMarker()
+        if marker == nil or not marker.fpReturn then
+            return baseParkTask(self, reason)
+        end
+        print(string.format("[AD-Chantier] %s: %s, pas de parking attribue : je retourne la ou j'ai ete prise (point %d du reseau)",
+            tostring(self.vehicle:getName()), tostring(reason), marker.id))
+        self.state = self.STATE_PARK
+        self.vehicle.ad.onRouteToPark = true
+        self.parkAfterJobName = marker.name
+        local task = DriveToDestinationTask:new(self.vehicle, marker.id)
+        if ADDriveGoal ~= nil then ADDriveGoal.set(task, "AD_fpGoal_park", marker.name) end
+        return task
+    end end
 
     local baseJobDone = CombineUnloaderMode.onHarvesterJobDone
     function CombineUnloaderMode:onHarvesterJobDone(harvester)
-        if not self.vehicle.ad.harvestJobDone then
-            local ok, stays, leader = FarmPilotCall(ADHarvesterUnloaders.staysWithHarvester, self.vehicle)
-            if ok and stays then
-                log("%s : champ fini, la benne « %s » ne rentre pas, elle la suivra au champ suivant", nameOf(leader), nameOf(self.vehicle))
+        if harvester ~= nil then
+            self.fpJobHarvester = harvester -- (16/11) moissonneuse ou ensileuse : voir jobIsCombine
+        end
+        local v = self.vehicle
+        local first = not v.ad.harvestJobDone
+        if first then
+            local ok, stays, leader = FarmPilotCall(ADHarvesterUnloaders.staysWithHarvester, v)
+            if ok and stays and leader ~= nil and isChopper(leader) then -- (16/11) moissonneuse : message plus bas
+                log("%s : champ fini, la benne « %s » ne rentre pas, elle la suivra au champ suivant", nameOf(leader), nameOf(v))
             end
         end
-        return baseJobDone(self, harvester)
+        local r = baseJobDone(self, harvester)
+        -- (16/11) benne de moissonneuse sans parking ni point de départ connu : elle reste au champ, le joueur est prévenu
+        if first and harvester ~= nil and not isChopper(harvester) and not ADHarvesterUnloaders.goesHome(v) then
+            local told = v.ad.fpNoParkTold
+            local field = v.ad.stateModule:getFirstMarker()
+            if told == nil or told.harvester ~= harvester or told.field ~= field then
+                v.ad.fpNoParkTold = { harvester = harvester, field = field }
+                log("%s : champ fini, la benne « %s » n'a pas de place de parking (ni de point de départ connu) : %s", nameOf(harvester), nameOf(v),
+                    v.ad.harvestJobDone and "elle vide puis revient au champ" or "elle reste au champ")
+                AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 10000, "AD_autonomous_unloaderNoPark")
+            end
+        end
+        return r
     end
 end
 
@@ -805,6 +1057,7 @@ if ADHarvestManager ~= nil and ADHarvestManager.update ~= nil then
         if not ok then
             ADHarvesterUnloaders.pending = {}
             ADHarvesterUnloaders.recallWatch = {}
+            ADHarvesterUnloaders.lateHome = {}
             log("ERREUR suivi des bennes au champ suivant : %s", tostring(err))
         end
         return baseUpdate(self, dt)
@@ -824,6 +1077,11 @@ if ADSavegameResume ~= nil then
             if text ~= nil then
                 xmlFile:setValue(key .. "#fpUnloaderTeam", text)
             end
+            -- (16/11) point du réseau où la benne a été prise (choix automatique)
+            local wp = vehicle ~= nil and ADHarvesterUnloaders.returnPoint(vehicle) or nil
+            if wp ~= nil then
+                xmlFile:setValue(key .. "#fpPickedFrom", wp)
+            end
         end)
         if not ok then
             log("ERREUR sauvegarde de l'équipe de bennes : %s", tostring(err))
@@ -839,6 +1097,8 @@ if ADSavegameResume ~= nil then
         if vehicle ~= nil and vehicle.ad ~= nil then
             local ok, text = FarmPilotCall(xmlFile.getValue, xmlFile, key .. "#fpUnloaderTeam")
             vehicle.ad.fpUnloaderTeam = ok and ADHarvesterUnloaders.teamFromString(text) or nil
+            local okP, wp = FarmPilotCall(xmlFile.getValue, xmlFile, key .. "#fpPickedFrom")
+            vehicle.ad.fpPickedFrom = (okP and type(wp) == "number" and wp >= 1) and { wp = wp } or nil
         end
     end
 end

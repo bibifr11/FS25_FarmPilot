@@ -10,6 +10,9 @@
 -- - Sinon le tracteur libre le plus proche de la remorque : un tracteur (catégorie du magasin : pas un automoteur,
 --   un camion ni un chargeur, Manager/RoadTypesVehicles.lua), à l'arrêt, rien d'attelé, qui peut atteler la remorque.
 -- - Une masse ne compte jamais comme un attelage.
+-- - (16/11) Rappel au champ suivant ou en fin de champ : le tracteur qui a amené la remorque passe avant le plus
+--   proche s'il est libre (même garé loin par le joueur) ; un travail de barre annulé ne retient plus un tracteur ;
+--   un tracteur où le joueur est assis n'est jamais pris.
 -- - Véhicule choisi refusé : le tracteur libre le plus proche, avec un message (Modes/AutonomousHeader.lua).
 -- - Aucun véhicule : le journal dit pourquoi chacun est refusé.
 -- - Fenêtre de la roue dentée (Gui/HeaderTractorGUI.lua) : les véhicules FarmPilot de la ferme qui ont un attelage
@@ -125,16 +128,30 @@ function ADHeaderFlow.isTractor(v)
 end
 
 -- véhicule FarmPilot à l'arrêt, sans ouvrier, pas déjà pris par une autre barre
+-- (16/11) un travail de barre annulé (amenée arrêtée, tracteur garé ensuite par le joueur) ne le retient plus
 local function isIdle(v, combine)
     local sm = v ~= nil and v.ad ~= nil and v.ad.stateModule or nil
+    local job = v ~= nil and v.ad ~= nil and v.ad.fpHeaderJob or nil
     return sm ~= nil and v ~= combine and v.spec_combine == nil and not isGone(v) and not sm:isActive()
-        and not (v.getIsAIActive ~= nil and v:getIsAIActive()) and v.ad.fpHeaderJob == nil
+        and not (v.getIsAIActive ~= nil and v:getIsAIActive()) and (job == nil or job.cancelled == true)
+end
+
+-- (16/11) le joueur est dedans
+local function isEntered(v)
+    if AutoDrive == nil or AutoDrive.getIsEntered == nil then
+        return false
+    end
+    local ok, entered = FarmPilotCall(AutoDrive.getIsEntered, AutoDrive, rootOf(v))
+    return ok and entered == true
 end
 
 -- pourquoi ce véhicule ne déplace pas la remorque (journal), ou nil s'il peut ; chosen : c'est le véhicule choisi
 function ADHeaderFlow.tractorRefusal(v, trailer, combine, chosen)
     if not isIdle(v, combine) then
         return "pas à l'arrêt (FarmPilot ou ouvrier en marche, ou déjà pris par une barre)"
+    end
+    if isEntered(v) then
+        return "conduit par le joueur"
     end
     if chosen then
         if not ADHeaderFlow.isRearFree(v) then
@@ -163,7 +180,9 @@ end
 -- part, qui peut atteler la remorque) ;
 -- nil, raison (« busy » : attelée à un véhicule sans FarmPilot ou qui roule, « none ») ; 3e valeur : le véhicule
 -- choisi n'était pas libre
-function ADHeaderFlow.tractorFor(trailer, combine, quiet)
+-- (16/11) prefer : le tracteur qui a amené cette remorque à la moissonneuse (son travail de barre), pris avant le plus
+-- proche quand il est libre, même garé loin (garé par le joueur pendant la récolte)
+function ADHeaderFlow.tractorFor(trailer, combine, quiet, prefer)
     local attacher = attacherOf(trailer)
     if attacher ~= nil then
         local root = rootOf(attacher)
@@ -184,6 +203,15 @@ function ADHeaderFlow.tractorFor(trailer, combine, quiet)
         end
         chosenBusy = chosen
         refused[#refused + 1] = string.format("« %s » (choisi) : %s", ADHeaderFlow.vehicleName(chosen), why)
+    end
+    if prefer ~= nil and prefer ~= chosen and prefer ~= combine and not isGone(prefer) and prefer.ad ~= nil and prefer.ad.stateModule ~= nil then
+        local why = ADHeaderFlow.tractorRefusal(prefer, trailer, combine, false)
+        if why == nil then
+            return prefer, nil, chosenBusy
+        end
+        if not quiet then
+            log("« %s » (celui qui a amené « %s ») pas libre : %s", ADHeaderFlow.vehicleName(prefer), label(trailer), why)
+        end
     end
     local best, bestD = nil, math.huge
     for _, v in pairs(vehicles()) do

@@ -212,6 +212,12 @@ function ADResumeHeader.stageOf(vehicle, mode)
     if hs == "tankWait" or hs == "fieldEndWait" or hs == "waitTractor" or hs == "park" then
         return joinFields({ "c", "-", hs })
     end
+    -- (16/11) champ suivant, personne de libre pour la remorque porte-barre (AutonomousHeaderNextField.lua) : le
+    -- champ fini est gardé, la remorque y viendra
+    local carry = vehicle.ad.fpHeaderCarry
+    if hs == "carryWait" and carry ~= nil and carry.prevField ~= nil then
+        return joinFields({ "c", "-", "carryWait", "-", "-", "-", "-", markerSave(carry.prevField) })
+    end
     if hs == "toHeader" and mode.headerGoal ~= nil then
         return joinFields({ "c", "-", "fetch", "-", "-", "-", uidOf(mode.headerGoal) })
     end
@@ -297,6 +303,20 @@ local function resumeCombine(mode, d, name)
             log("%s : partie rechargée, barre reposée : attend un tracteur libre pour la barre suivante", name)
             ADHeaderFlow.startWait(mode, "waitTractor", function() return ADHeaderFlow.readyToDeliver(v) end)
             return true
+        end
+        if d.stage == "carryWait" then
+            -- (16/11) champ suivant, en attente d'un tracteur ou d'une remorque porte-barre : nouvel essai tout de suite
+            local header = ADHeaderFlow.attachedHeader(v)
+            local done = markerLoad(d.field)
+            if header == nil or done == nil or ADHeaderFlow.startCarry == nil then
+                log("%s : partie rechargée en attente de la remorque pour le champ suivant, plus de barre ou de champ fini : départ habituel", name)
+                return false
+            end
+            log("%s : partie rechargée en attente de la remorque pour le champ suivant : nouvel essai (« %s » reposée à « %s »)", name, label(header), tostring(done.name))
+            v.ad.fpHeaderPrevField = done.markerIndex
+            local ok, started = FarmPilotCall(ADHeaderFlow.startCarry, v, header, false)
+            v.ad.fpHeaderPrevField = nil
+            return ok and started == true
         end
         if d.stage == "park" then
             local park = v.advd ~= nil and v.advd.parkDestination or -1

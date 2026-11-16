@@ -806,6 +806,8 @@
 		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
 		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
 		<text name="AD_autonomous_unloadersRecall" text="%d trailer(s) of its team called back from the yard, on the way to « %s »" />
+		<text name="AD_autonomous_unloaderNoPark" text="no park destination (AutoDrive's P): the trailer stays at the field" />
+		<text name="AD_fpReturnPoint" text="where it was picked up" />
 		<text name="AD_fpFn_cutter" text="Header" />
 		<text name="AD_fpFn_cornHeader" text="Corn header" />
 		<text name="AD_fpFn_chopperHeader" text="Forage harvester header" />
@@ -1032,6 +1034,9 @@
 		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
 		<text name="AD_autonomous_cpRestartFailed" text="Courseplay could not restart at the last waypoint, waiting" />
 		<text name="AD_autonomous_cpContinue" text='Courseplay course "%s" resumed where it stopped on field %s' />
+		<text name="AD_autonomous_headerNextNoTractor" text="next field: no free tractor to bring the header trailer « %s »: staying here with the header (never on the road with it), new try every minute" />
+		<text name="AD_autonomous_headerNextNoTrailer" text="next field: no empty header trailer for « %s »: staying here with the header (never on the road with it), new try every minute" />
+		<text name="AD_autonomous_headerNextStay" text="next field: « %s » cannot be put back on its trailer for now: staying here with the header, new try every minute" />
 		<text name="input_ADRestartFromStart" text="FP - Restart from the beginning" />
 		<text name="hud_fpEnDisable" text="FP - En/Disable: resumes where it stopped - Right click: restart from the beginning" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->

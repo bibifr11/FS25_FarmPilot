@@ -32,6 +32,8 @@
 -- - COMBINE_COUNT bennes pour une moissonneuse, CHOPPER_COUNT pour une ensileuse ; moins s'il n'y a pas assez de
 --   couples qui conviennent. Départ comme le rappel d'équipe : remorque choisie (allée chercher au départ,
 --   TrailerHitch.lua), parking du tracteur gardé. Une fois partis, ils entrent dans son équipe (scanTeams).
+-- - (16/11) Au départ, le point du réseau le plus proche du tracteur est noté (vehicle.ad.fpPickedFrom, gardé dans la
+--   sauvegarde) : sans parking, la benne de moissonneuse y retourne à la fin du chantier.
 -- - (16/11) Le joueur est dans une benne sur le champ (tracteur conduit par lui, remorque qui prend le produit, à
 --   moins de PLAYER_RANGE m) : elle compte comme une benne qui la sert, pas d'appel d'une autre.
 -- - Rien trouvé : message une fois par champ, nouvel essai au plus toutes les RETRY_TIME.
@@ -330,7 +332,8 @@ function ADUnloaderAutoPick.hasUnloader(h, marker)
     return false
 end
 
--- le rappel de son équipe est en cours (AutonomousHarvesterUnloaders.lua)
+-- le rappel de son équipe est en cours (AutonomousHarvesterUnloaders.lua ; (16/11) bennes encore en route vers le
+-- garage, rappelées à leur arrivée : lateHome)
 local function recallRunning(h)
     if ADHarvesterUnloaders == nil then
         return false
@@ -338,7 +341,8 @@ local function recallRunning(h)
     local drv = driverOf(h)
     for _, key in ipairs({ h, drv }) do
         if (ADHarvesterUnloaders.pending ~= nil and ADHarvesterUnloaders.pending[key] ~= nil)
-            or (ADHarvesterUnloaders.recallWatch ~= nil and ADHarvesterUnloaders.recallWatch[key] ~= nil) then
+            or (ADHarvesterUnloaders.recallWatch ~= nil and ADHarvesterUnloaders.recallWatch[key] ~= nil)
+            or (ADHarvesterUnloaders.lateHome ~= nil and ADHarvesterUnloaders.lateHome[key] ~= nil) then
             return true
         end
     end
@@ -912,6 +916,13 @@ function ADUnloaderAutoPick.launch(h, pair, fieldMarker)
         sm:setFpTrailer(pair.trailer)
     end
     -- parking : celui du tracteur, gardé tel quel
+    -- (16/11) point du réseau le plus proche de l'endroit où il est pris : sans parking, il y retourne à la fin du
+    -- chantier de la moissonneuse (AutonomousHarvesterUnloaders.lua : returnPoint)
+    local wp = v.getClosestWayPoint ~= nil and safe(v.getClosestWayPoint, v) or nil
+    if type(wp) == "number" and wp >= 1 then
+        v.ad.fpPickedFrom = { wp = wp, chopper = isChopper(h) }
+        trace("%s:   %s pris pres du point %d du reseau (retour la-bas en fin de chantier s'il n'a pas de parking)", nameOf(h), nameOf(v), wp)
+    end
     v.ad.harvestJobDone = nil
     mode:start(AutoDrive.USER_PLAYER)
     if not sm:isActive() then

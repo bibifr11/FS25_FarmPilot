@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.0.9.3): 91 files modified, 277 files added, 3 files removed.
+Summary (FarmPilot 1.0.9.4): 91 files modified, 278 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,13 +24,13 @@ Summary (FarmPilot 1.0.9.3): 91 files modified, 277 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+376 / -12)
+- register.lua (+377 / -12)
 - scripts/AutoDrive.lua (+66 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
 - scripts/Gui.lua (+38 / -0)
 - scripts/Gui/SettingsPage.lua (+2 / -0)
-- scripts/Hud.lua (+177 / -35)
+- scripts/Hud.lua (+185 / -35)
 - scripts/Hud/HudButton.lua (+50 / -1)
 - scripts/Hud/HudHarvesterInfo.lua (+1 / -1)
 - scripts/Hud/HudIcon.lua (+152 / -11)
@@ -262,6 +262,7 @@ Summary (FarmPilot 1.0.9.3): 91 files modified, 277 files added, 3 files removed
 - scripts/Modes/CombineUnloaderModeJobDone.lua
 - scripts/Modes/CombineUnloaderModeQueue.lua
 - scripts/Modes/CombineUnloaderModeTracks.lua
+- scripts/Modes/SiloCompactMode.lua
 - scripts/Modes/SiloCompactor.lua
 - scripts/Modes/SiloCompactorTask.lua
 - scripts/Modes/SprayerRestReturn.lua

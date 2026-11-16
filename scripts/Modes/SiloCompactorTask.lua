@@ -24,7 +24,7 @@
 -- - bloqué STUCK_TIME sur le tas : bout du couloir pris comme atteint ; benne à moins de APPROACH m : il sort tout
 --   droit puis va à sa place d'attente ; benne repartie : il reprend le couloir où il en était.
 -- Enveloppes posées au chargement : DriveToMode:start, :handleFinishedTask, :reset ; ADSavegameResume.save / load.
--- Mode « Tassage » (AutoDrive.MODE_COMPACT) : CompactMode, fils de DriveToMode (mêmes enveloppes).
+-- Mode « Tassage » (AutoDrive.MODE_COMPACT) : CompactMode, voir SiloCompactMode.lua.
 -- Une ligne dans Specialization.lua (AutoDrive:stopAutoDrive -> ADSiloJob.onStop).
 -- ============================================================================================================
 
@@ -316,6 +316,7 @@ function ADSiloTools.lower(vehicle, down, bladeUp)
     end
     for _, t in ipairs(tools) do
         setDown(t, down)
+        t.fpSiloDown = down
         local spec = t.spec_attacherJointControl
         if not down and spec ~= nil then
             spec.heightTargetAlpha = -1 -- plus de réglage de hauteur : le relevage reprend la main
@@ -324,6 +325,50 @@ function ADSiloTools.lower(vehicle, down, bladeUp)
     if #tools > 0 then
         log("%s : %s %s", nameOf(vehicle), down and "baisse" or "leve", #tools == 1 and nameOf(tools[1]) or (#tools .. " outils"))
     end
+end
+
+-- (16/11) une sorte d'outil seulement : « blade » (lame) ou « roller » (rouleau de silo) ; journal au changement
+function ADSiloTools.setKind(vehicle, kind, down)
+    local changed = {}
+    for _, t in ipairs(ADSiloTools.list(vehicle)) do
+        local isBlade = t.spec_leveler ~= nil
+        if (kind == "blade") == isBlade then
+            if t.fpSiloDown ~= down then
+                t.fpSiloDown = down
+                table.insert(changed, t)
+            end
+            setDown(t, down)
+            local spec = t.spec_attacherJointControl
+            if not down and spec ~= nil then
+                spec.heightTargetAlpha = -1
+            end
+        end
+    end
+    if #changed > 0 then
+        log("%s : %s %s", nameOf(vehicle), down and "baisse" or "leve", #changed == 1 and nameOf(changed[1]) or (#changed .. " outils"))
+    end
+end
+
+-- (16/11) lame devant (true) ou derrière (false) le tracteur ; nil sans lame. Les outils peuvent être inversés :
+-- lame derrière et rouleau devant
+function ADSiloTools.bladeAtFront(vehicle)
+    for _, t in ipairs(ADSiloTools.list(vehicle)) do
+        if t.spec_leveler ~= nil and t.rootNode ~= nil then
+            local x, y, z = getWorldTranslation(t.rootNode)
+            local _, _, lz = worldToLocal(vehicle.components[1].node, x, y, z)
+            return lz > 0
+        end
+    end
+    return nil
+end
+
+function ADSiloTools.hasRoller(vehicle)
+    for _, t in ipairs(ADSiloTools.list(vehicle)) do
+        if t.spec_bunkerSiloCompacter ~= nil and t.spec_leveler == nil then
+            return true
+        end
+    end
+    return false
 end
 
 -- lame à vérins réglables (attacherJointControl) : tenue à cfg.blade m au-dessus du sol sous elle
@@ -452,6 +497,8 @@ function SiloCompactTask:new(vehicle, silo)
     return o
 end
 
+SiloCompactTask.PUSH_DIFF = 0.3 -- m : tas plus haut côté entrée que côté fond = la lame pousse dans le fond
+
 function SiloCompactTask:setUp()
     local v = self.vehicle
     self.cfg = ADSiloJob.getCfg(v)
@@ -469,14 +516,18 @@ function SiloCompactTask:setUp()
     self.g = ADSiloCompactor.getEntryGeometry(self.silo, flip)
     self.hasWall = ADSiloCompactor.hasBackWall(self.silo)
     self.reverseIn = self.cfg.dir == ADSiloJob.DIR_REVERSE
-    -- pousser contre le fond : seulement avec une lame et un silo à fond, toujours lame devant (marche avant)
+    -- (16/11) travail autonome : aller lame en tête lame baissée (pousse au fond ou égalise, choisi
+    -- à chaque passage, voir decideBlade), retour en marche arrière lame levée ; le rouleau tasse dans les deux sens
     local blade = ADSiloTools.hasBlade(v)
-    self.push = blade and self.hasWall and self.cfg.push ~= ADSiloJob.PUSH_NONE
+    self.hasBladeTool = blade
+    self.hasRollerTool = ADSiloTools.hasRoller(v)
     if blade and not self.hasWall and self.cfg.push == ADSiloJob.PUSH_WALL then
-        log("%s : silo traversant, rien pour pousser contre : tasse sans pousser", nameOf(v))
+        log("%s : silo traversant, rien pour pousser contre : egalise seulement", nameOf(v))
     end
-    if self.push then
-        self.reverseIn = false
+    if blade and self.cfg.push ~= ADSiloJob.PUSH_NONE then
+        -- l'aller se fait lame en tête : marche avant lame devant, marche arrière lame derrière
+        self.bladeFront = ADSiloTools.bladeAtFront(v) ~= false
+        self.reverseIn = not self.bladeFront
     end
     -- bout de l'aller : mur moins outil et marge (silo à fond), bord du silo (traversant)
     if self.hasWall then
@@ -515,7 +566,7 @@ function SiloCompactTask:setUp()
     self:setState(alongNow > 5 and SiloCompactTask.STATE_OUT or SiloCompactTask.STATE_IN)
     log("%s : tasse le silo (%s, %.0f x %.0f m, %d couloirs de %.1f m, entree %s, lame %s, %.0f t, tassage %d %%)", nameOf(v),
         self.hasWall and "a fond" or "traversant", self.g.width, self.g.length, #self.lanes, w, self.reverseIn and "en marche arriere" or "en marche avant",
-        not blade and "aucune" or (self.push and "pousse contre le fond" or "levee (tasse sans pousser)"),
+        not blade and "aucune" or (self.cfg.push == ADSiloJob.PUSH_NONE and "levee (tasse sans pousser)" or "pousse ou egalise selon le tas") .. (self.hasRollerTool and ", rouleau" or ""),
         (v.getTotalMass ~= nil and v:getTotalMass(false) or 0), ADSiloCompactor.getCompactedPercent(self.silo))
 end
 
@@ -526,11 +577,69 @@ function SiloCompactTask:setState(state)
     self.stuckTimer = 0
     self.enteredLane = false
     self.leftSilo = false
+    local v = self.vehicle
     if state == SiloCompactTask.STATE_IN then
-        ADSiloTools.lower(self.vehicle, true, not self.push)
-    elseif old == SiloCompactTask.STATE_IN then
-        ADSiloTools.lower(self.vehicle, false)
+        self.bladeMode, self.bladeHeight = self:decideBlade()
+        ADSiloTools.setKind(v, "roller", true)
+        ADSiloTools.setKind(v, "blade", self.bladeMode == "push" or self.bladeMode == "level")
+    elseif state == SiloCompactTask.STATE_OUT then
+        ADSiloTools.setKind(v, "blade", false) -- retour : lame levée, le rouleau continue de tasser
+    elseif state == SiloCompactTask.STATE_TO_WAIT or state == SiloCompactTask.STATE_WAITING then
+        if old == SiloCompactTask.STATE_IN or old == SiloCompactTask.STATE_OUT then
+            ADSiloTools.lower(v, false)
+        end
     end
+end
+
+-- hauteur du tas (m au-dessus du sol du silo) en un point du couloir ; nil si inconnue
+function SiloCompactTask:heapAt(across, along)
+    if DensityMapHeightUtil == nil or DensityMapHeightUtil.getHeightAtWorldPos == nil then
+        return nil
+    end
+    local p = ADSiloCompactor.point(self.g, across, along)
+    local ground = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, p.x, 0, p.z)
+    local ok, y = pcall(DensityMapHeightUtil.getHeightAtWorldPos, p.x, ground, p.z)
+    if not ok or y == nil then
+        return nil
+    end
+    return math.max(0, y - ground)
+end
+
+-- passage lame baissée : « push » (pousser dans le fond), « level » (égaliser à la hauteur moyenne du tas), « up »
+-- (lame levée) ou nil (pas de lame) ; et la hauteur de la lame au-dessus du sol
+function SiloCompactTask:decideBlade()
+    if not self.hasBladeTool then
+        return nil, 0
+    end
+    if self.cfg.push == ADSiloJob.PUSH_NONE then
+        return "up", 0
+    end
+    local across = self.lanes[self.lane]
+    local L = self.inAlong
+    local front, back, all, nF, nB = 0, 0, 0, 0, 0
+    for i = 0, 4 do
+        local hf = self:heapAt(across, L * (0.10 + 0.08 * i))
+        local hb = self:heapAt(across, L * (0.58 + 0.08 * i))
+        if hf ~= nil then front, nF = front + hf, nF + 1 end
+        if hb ~= nil then back, nB = back + hb, nB + 1 end
+    end
+    local mode, height
+    if nF == 0 or nB == 0 then
+        -- hauteur du tas inconnue : comme avant (pousse si silo à fond)
+        mode = self.hasWall and "push" or "level"
+        height = self.cfg.blade
+    else
+        front, back = front / nF, back / nB
+        all = (front + back) / 2
+        if self.hasWall and (self.cfg.push == ADSiloJob.PUSH_WALL or front > back + SiloCompactTask.PUSH_DIFF) then
+            mode, height = "push", self.cfg.blade
+        else
+            mode, height = "level", math.max(self.cfg.blade, all)
+        end
+        log("%s : couloir %d, tas %.2f m cote entree / %.2f m cote fond : %s (lame a %.2f m)", nameOf(self.vehicle), self.lane, front, back,
+            mode == "push" and "pousse dans le fond" or "egalise", height)
+    end
+    return mode, height
 end
 
 -- dans le silo ou en train d'en sortir : les bennes attendent
@@ -613,8 +722,8 @@ function SiloCompactTask:update(dt)
         end
         local aim = self.enteredLane and far or entry
         local reached = self:go(dt, aim, self.reverseIn)
-        if self.push then
-            ADSiloTools.holdBlade(v, self.cfg.blade)
+        if self.bladeMode == "push" or self.bladeMode == "level" then
+            ADSiloTools.holdBlade(v, self.bladeHeight or self.cfg.blade)
         end
         if (self.enteredLane and (reached and aim == far or self:isStuck(dt))) or (not self.enteredLane and g_time - self.stateSince > ADSiloCompactor.LEG_MAX_TIME) then
             self:setState(SiloCompactTask.STATE_OUT)
@@ -708,7 +817,7 @@ end
 -- Enveloppes : « Conduire vers »
 -- ------------------------------------------------------------------------------------------------------------
 -- tassage demandé (fenêtre) ou repris au chargement : va au silo, ou tasse tout de suite s'il y est
-local function startJob(mode)
+function ADSiloJob.startJob(mode)
     local v = mode.vehicle
     local job = v.ad.fpSiloJob
     local silo = ADSiloJob.findSilo(job.x, job.z)
@@ -744,6 +853,7 @@ local function startJob(mode)
     log("%s : part au silo (point %s)", nameOf(v), tostring(wp))
     mode.destinationID = wp
     mode.driveToDestinationTask = DriveToDestinationTask:new(v, wp)
+    mode.fpSiloDrive = true -- mode « Tassage » : arrivée au silo, voir SiloCompactMode.lua
     v.ad.taskModule:addTask(mode.driveToDestinationTask)
 end
 
@@ -761,7 +871,7 @@ function DriveToMode:start(user)
         end
     end
     if v.ad.fpSiloJob ~= nil then
-        local ok, err = FarmPilotCall(startJob, self)
+        local ok, err = FarmPilotCall(ADSiloJob.startJob, self)
         if not ok then
             log("%s : ERREUR depart du tassage (%s)", nameOf(v), tostring(err))
             v.ad.fpSiloJob = nil
@@ -808,38 +918,6 @@ local baseDriveToReset = DriveToMode.reset
 function DriveToMode:reset()
     self.fpSiloTask = nil
     return baseDriveToReset(self)
-end
-
--- ------------------------------------------------------------------------------------------------------------
--- Mode « Tassage » (bouton de mode du HUD) : départ de n'importe où vers le silo choisi en 1re ligne
--- ------------------------------------------------------------------------------------------------------------
-CompactMode = ADInheritsFrom(DriveToMode)
-
-function CompactMode:new(vehicle)
-    local o = CompactMode:create()
-    o.vehicle = vehicle
-    DriveToMode.reset(o)
-    return o
-end
-
-function CompactMode:start(user)
-    local v = self.vehicle
-    if v.ad.fpSiloJob == nil and v.ad.stateModule.fpSiloJobText == nil then
-        local silo = ADSiloJob.selectedSilo(v)
-        local why = ADSiloJob.refusal(v, silo)
-        if why ~= nil then
-            log("%s : mode Tassage, depart refuse (%s)", nameOf(v), why)
-            AutoDriveMessageEvent.sendMessageOrNotification(v, ADMessagesManager.messageTypes.WARN, "$l10n_AD_Driver_of; %s: $l10n_" .. why .. ";", 5000, v.ad.stateModule:getName())
-            if v.ad.stateModule:isActive() then
-                v:stopAutoDrive()
-            end
-            return
-        end
-        local cx, cz = ADSiloJob.center(silo)
-        v.ad.fpSiloJob = { x = cx, z = cz }
-        log("%s : mode Tassage, silo %d (%.0f, %.0f)", nameOf(v), ADSiloJob.siloNumber(silo), cx, cz)
-    end
-    return DriveToMode.start(self, user) -- enveloppe ci-dessus : trajet jusqu'au silo puis tassage
 end
 
 -- arrêt (On/Off, fin, erreur) : le tassage demandé est oublié ; outils levés.

@@ -1,6 +1,6 @@
 -- ============================================================================================================
 -- FarmPilot : HudSilo.lua
--- HUD du mode « Tassage » (16/11) : 2 lignes, même cadre que « Conduire vers ».
+-- HUD du mode « Tassage » (16/11) : 4 lignes (Silo, Attente, Outil avant, Outil arrière).
 --
 -- - Bouton de mode : « Tassage » juste après « Autonome » (icône tracteur à lame, jaune quand il roule).
 -- - 1re ligne « Silo » : liste de TOUS les silos couloirs de la carte, « Silo N (P %) - distance ». Le tracteur
@@ -48,6 +48,19 @@ function ADSiloHud.addRows(hud)
     waitList.fpSilo = "wait"
     waitList.order = 2
     table.insert(hud.hudElements, waitList)
+    -- (16/11) outils de silo à aller atteler (lame, rouleau ; devant ou derrière selon le tracteur), listes du
+    -- mode Autonome (PullDownList.lua) limitées aux outils de silo (Modes/SiloCompactMode.lua)
+    if hud.rowSiloFront ~= nil then
+        local frontList = ADPullDownList:new(x, hud.rowSiloFront, w, hud.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+        frontList.fpFront = true
+        frontList.fpSiloTool = true
+        frontList.order = 3
+        table.insert(hud.hudElements, frontList)
+        local rearList = ADPullDownList:new(x, hud.rowSiloRear, w, hud.listItemHeight, ADPullDownList.TYPE_FILLTYPE, 1)
+        rearList.fpSiloTool = true
+        rearList.order = 4
+        table.insert(hud.hudElements, rearList)
+    end
     if hud.targetPullDownList ~= nil then
         hud.targetPullDownList.fpHidden = true -- même rangée que « Silo »
     end
@@ -168,8 +181,11 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 local baseIsFpTool = ADPullDownList.isFpTool
 function ADPullDownList:isFpTool(vehicle)
-    if self.fpSilo ~= nil then
+    if self.fpSilo ~= nil or self.fpSiloTool then
         return ADSiloHud.isSiloHud(vehicle)
+    end
+    if ADSiloHud.isSiloHud(vehicle) then
+        return false -- lignes des autres modes (Outil, Remorque...) : rien dans le HUD Tassage
     end
     return baseIsFpTool(self, vehicle)
 end

@@ -151,7 +151,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		pullDownRows = 6
 	end
 	if self.fpRowKind == "silo" then
-		pullDownRows = 2 -- (16/11) mode « Tassage » : Silo / Attente, voir Hud/HudSilo.lua
+		pullDownRows = 4 -- (16/11) mode « Tassage » : Silo / Attente / Outil avant / Outil arrière, voir Hud/HudSilo.lua
 	end
 
 	self.borderX, self.borderY = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
@@ -204,9 +204,17 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	end
 
 	if self.fpRowKind == "silo" then
-		-- (16/11) mode « Tassage », 2 lignes : Silo (rangée du haut, bouton marqueur) / Attente (roue dentée) ;
-		-- avant le bandeau du titre et la croix, sinon le titre reste une rangée trop haut (trou)
-		self.rowHeader, self.row4, self.row3 = self.row4, self.row3, self.row2
+		-- (16/11) mode « Tassage », 4 lignes de haut en bas : Silo (bouton marqueur) / Attente (roue dentée) /
+		-- Outil avant / Outil arrière ; avant le bandeau du titre et la croix, sinon le titre n'est pas collé aux lignes
+		local function rowAt(i)
+			return self.posY + (self.pullDownRowOffset + i) * self.borderY + (self.pullDownRowOffset + i - 1) * self.buttonHeight
+		end
+		self.rowSiloRear = rowAt(1)
+		self.rowSiloFront = rowAt(2)
+		self.row2 = rowAt(3)
+		self.row3 = rowAt(3)
+		self.row4 = rowAt(4)
+		self.rowHeader = rowAt(5)
 	end
 
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.posY - 0 * self.gapHeight, self.width, self.height + 5 * self.gapHeight, "ad_gui.Background", 0, "background"))

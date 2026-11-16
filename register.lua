@@ -412,6 +412,7 @@ source(Utils.getFilename("scripts/Utils/TrailerCoverField.lua", g_currentModDire
 source(Utils.getFilename("scripts/Modes/AutonomousYardZone.lua", g_currentModDirectory)) -- mode Autonome : un seul tracteur à la fois dans la zone d'une place d'outils
 source(Utils.getFilename("scripts/Modes/SiloCompactor.lua", g_currentModDirectory)) -- silo couloir : bennes réparties sur la largeur, tracteur tasseur, silo fermé respecté
 source(Utils.getFilename("scripts/Modes/SiloCompactorTask.lua", g_currentModDirectory)) -- (16/11) tasseur : fenêtre « Tassage », lame et rouleau, silo à fond ou traversant
+source(Utils.getFilename("scripts/Modes/SiloCompactMode.lua", g_currentModDirectory)) -- (16/11) mode « Tassage » : outils avant/arrière attelés, tassage autonome, retour des outils et garage
 source(Utils.getFilename("scripts/Manager/GraphManagerGrid.lua", g_currentModDirectory)) -- points du réseau par cases de 100 m : point le plus proche sans parcourir tout le réseau
 source(Utils.getFilename("scripts/Utils/FarmPilotPerf.lua", g_currentModDirectory)) -- commande console fpPerf : temps pris par FarmPilot dans log.txt
 source(Utils.getFilename("scripts/Modes/AutonomousResumeReturn.lua", g_currentModDirectory)) -- mode Autonome : le retour au garage reprend après le chargement de la partie et après la relance d'AutoDrive

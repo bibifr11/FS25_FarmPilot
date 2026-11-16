@@ -417,7 +417,11 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     if through > 0 and narrow > 0 then
         log("%s : route tertiaire prise en raccourci (%d points) : les autres routes ont un passage trop étroit pour l'attelage (%.1f m) ou n'existent pas, la tertiaire passe avant une route trop étroite", tostring(name), through, needed or 0)
     elseif through > 0 then
-        log("%s : route tertiaire prise en raccourci (%d points), plus rapide au total (%d km/h maxi dessus)", tostring(name), through, ADDirtRoads.getMaxSpeed())
+        if allowed then
+            log("%s : route tertiaire prise en raccourci (%d points), plus rapide au total (%d km/h maxi dessus)", tostring(name), through, ADDirtRoads.getMaxSpeed())
+        else
+            log("%s : routes tertiaires interdites (%s) : route tertiaire prise en raccourci (%d points), seulement parce qu'il n'y a pas d'autre route", tostring(name), why, through)
+        end
     elseif allowed then
         log("%s : route tertiaire pour accéder à la destination (%d points, %d km/h maxi dessus, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)
     else

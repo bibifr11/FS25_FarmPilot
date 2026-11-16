@@ -773,6 +773,9 @@
 		<text name="AD_autonomous_headerBackIn" text="recule la remorque porte-barre dans l'entrée du champ" />
 		<text name="AD_task_autonomous_headerRoadBack" text="Reculer la remorque jusqu'à la route" />
 		<text name="AD_autonomous_headerRoadBack" text="recule la remorque porte-barre tout droit jusqu'à la route" />
+		<text name="AD_task_autonomous_headerCross" text="Reculer la remorque en travers du chemin" />
+		<text name="AD_autonomous_headerCross" text="recule la remorque porte-barre en travers du chemin" />
+		<text name="AD_autonomous_headerStuck" text="bloqué par un objet fixe, la remorque va à un autre endroit" />
 		<text name="AD_task_autonomous_headerGateBack" text="Se ranger en face de l'entrée du champ" />
 		<text name="AD_task_autonomous_headerGateIn" text="Arrêter la barre devant la moissonneuse" />
 		<text name="AD_autonomous_headerGate" text="attend sa barre en face de l'entrée du champ, %s l'arrête devant elle" />

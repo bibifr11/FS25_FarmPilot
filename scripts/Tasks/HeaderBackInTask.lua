@@ -13,8 +13,13 @@
 -- - Fini quand l'essieu de la remorque est au bout de l'axe. Arrêt avant : tracteur et remorque trop de travers
 --   (BACKIN_MAX_HITCH), quelque chose derrière pendant BACKIN_BLOCKED ms, plus de BACKIN_TIMEOUT ms.
 -- - Le tracteur n'est pas où le plan l'attend (route recalculée en chemin) : rien n'est fait (« badStart »).
--- - Le résultat (self.result : « ok », « badStart », « noTrailer », « jackknife », « blocked », « timeout ») est lu
---   par Modes/AutonomousHeaderBackIn.lua (backInDone).
+-- - (16/11) Bloquée sans avancer : l'essieu ne gagne pas STUCK_PROGRESS m sur l'axe pendant
+--   ADHeaderFlow.BACKIN_STUCK ms (tracteur ou remorque contre un objet fixe que le capteur arrière ne voit pas :
+--   muret bas, nez du tracteur contre une clôture) : arrêt (« stuck »), sans attendre la fin du temps.
+-- - (16/11) Même tâche pour la barre reculée en travers du chemin (plan.cross, AutonomousHeaderCross.lua) : seul
+--   le texte de la tâche change.
+-- - Le résultat (self.result : « ok », « badStart », « noTrailer », « jackknife », « blocked », « timeout »,
+--   « stuck ») est lu par Modes/AutonomousHeaderBackIn.lua (backInDone).
 --
 -- Branché par : Modes/AutonomousHeaderBackIn.lua (startBackIn). Chargé par register.lua après HeaderDropTask.lua.
 -- ============================================================================================================
@@ -34,6 +39,7 @@ ADHeaderBackInTask.SETTLE_TIME = 1200      -- ms arrêté à la fin, avant de li
 ADHeaderBackInTask.START_SIDE = 2.5        -- m d'écart au chemin accepté pour l'essieu de la remorque, au départ
 ADHeaderBackInTask.START_ANGLE = 20        -- ° d'écart au chemin accepté pour la remorque, au départ
 ADHeaderBackInTask.START_ALONG = 5         -- m d'écart accepté le long du chemin, au départ
+ADHeaderBackInTask.STUCK_PROGRESS = 0.3    -- (16/11) m sur l'axe à gagner pendant ADHeaderFlow.BACKIN_STUCK ms
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Création
@@ -166,8 +172,9 @@ function ADHeaderBackInTask:update(dt)
             end
             self:lockDolly(true)
             self.timer = 0
+            self.progress, self.progressTime = nil, 0
             self.state = ADHeaderBackInTask.STATE_REVERSE
-            ADAutonomousManager.log("%s : recule la remorque dans l'entrée du champ (%.1f m sur l'axe)", name, self.plan.reach)
+            ADAutonomousManager.log("%s : recule la remorque %s (%.1f m sur l'axe)", name, self.plan.cross and "en travers du chemin" or "dans l'entrée du champ", self.plan.reach)
         end
     elseif self.state == ADHeaderBackInTask.STATE_REVERSE then
         self:updateReverse(dt, name)
@@ -195,7 +202,7 @@ function ADHeaderBackInTask:updateReverse(dt, name)
     end
     local along = (x - p.qx) * p.ax + (z - p.qz) * p.az
     if along >= p.reach then
-        ADAutonomousManager.log("%s : remorque reculée dans le champ (%.0f s)", name, self.timer / 1000)
+        ADAutonomousManager.log("%s : remorque reculée %s (%.0f s)", name, p.cross and "en travers du chemin" or "dans le champ", self.timer / 1000)
         self:settle("ok")
         return
     end
@@ -203,6 +210,17 @@ function ADHeaderBackInTask:updateReverse(dt, name)
         ADAutonomousManager.log("%s : marche arrière dans le champ pas finie en %.0f s (%.1f m sur %.1f)", name, self.timer / 1000, along, p.reach)
         self:settle("timeout")
         return
+    end
+    -- (16/11) l'essieu n'avance plus sur l'axe : bloquée (objet fixe)
+    if self.progress == nil or along > self.progress + ADHeaderBackInTask.STUCK_PROGRESS then
+        self.progress, self.progressTime = along, 0
+    else
+        self.progressTime = self.progressTime + dt
+        if self.progressTime >= (ADHeaderFlow.BACKIN_STUCK or 20000) then
+            ADAutonomousManager.log("%s : marche arrière bloquée depuis %.0f s sans avancer (%.1f m sur %.1f), arrêt", name, self.progressTime / 1000, along, p.reach)
+            self:settle("stuck")
+            return
+        end
     end
     -- point visé : sur l'axe, plus loin que l'essieu
     local aim = along + ADHeaderFlow.BACKIN_LOOK
@@ -244,5 +262,8 @@ function ADHeaderBackInTask:abort()
 end
 
 function ADHeaderBackInTask:getI18nInfo()
+    if self.plan ~= nil and self.plan.cross then
+        return "$l10n_AD_task_autonomous_headerCross;"
+    end
     return "$l10n_AD_task_autonomous_headerBackIn;"
 end

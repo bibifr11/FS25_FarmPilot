@@ -30,10 +30,33 @@
 -- - La moissonneuse lâche sa route dès que cette courbe existe d'où elle est (au plus tôt BACKIN_LEAD m avant le
 --   virage, recalculée toutes les BACKIN_RETRY ms), au plus tard au début du virage.
 --
+-- Règle (16/11, champ 52 : muret en pierre bas le long d'un chemin à une voie, le MF décalé de 1,5 m vers le champ
+-- s'est collé au muret et y est resté) : les objets fixes (muret, clôture, poteau, arbre, bâtiment) sont vus AVANT,
+-- pas seulement la culture (fixedHit : le masque des objets du capteur avant, qui voit un muret bas) :
+-- - Bande où le tracteur et la remorque roulent décalés de BACKIN_BIAS m après l'entrée : un objet fixe dessus
+--   (largeur de l'attelage plus BACKIN_BAND_MARGIN m de chaque côté), pas de décalage, le tracteur reste au milieu
+--   du chemin. Un objet fixe au milieu du chemin aussi : pas de marche arrière.
+-- - Entre le chemin et la place de la remorque reculée (la caisse de la remorque pendant la marche arrière, aux
+--   BACKIN_SWEEP de son trajet, et l'axe de la marche arrière) : un objet fixe là, le champ est FERMÉ (muret,
+--   clôture entre le chemin et le champ) : pas de marche arrière dans le champ, la barre est reculée en travers du
+--   chemin quand c'est possible (AutonomousHeaderCross.lua : crossTry), sinon l'endroit suivant.
+-- - De l'autre côté du chemin, là où le nez du tracteur passe pendant la marche arrière : pas d'objet fixe non plus.
+-- - Au début de la marche arrière le nez du tracteur part d'abord vers le champ (jusqu'à BACKIN_COUNTER_SWING m
+--   au-delà de sa largeur, mesuré hors jeu) : un objet fixe là (muret qui longe le chemin jusqu'à l'arrêt), le
+--   champ est fermé aussi.
+-- - Le cadre de la barre du côté du champ : pas de marche arrière dans le champ non plus, la barre en travers du
+--   chemin est essayée (c'est l'attelage qui convient pour elle).
+-- - Marche arrière bloquée BACKIN_STUCK ms sans avancer (objet fixe que le capteur arrière ne voit pas) : arrêt
+--   (« stuck »), endroit suivant (Tasks/HeaderBackInTask.lua).
+-- - La même marche arrière sert à la barre en travers du chemin (plan.cross : textes et contrôles de la courbe de la
+--   moissonneuse, culture des deux côtés).
+--
 -- Branché par : Modes/AutonomousHeaderSpot.lua (checkRouteStop : backInTry ; moveOn), Modes/AutonomousHeader.lua
 -- (tractorStage « toField » : startBackIn, « backIn » : backInDone ; goToHeader et monitor « toHeader » :
 -- backInBefore, backInHandover ; startFetchAttach : backInCurve), Tasks/FetchToolTask.lua (chemin tout prêt :
--- presetPath). Chargé par register.lua après AutonomousHeaderFollow.lua.
+-- presetPath), Modes/AutonomousHeaderCross.lua (backInRig, backInLaneInfo, backInStop, backInTrainHalf, fixedHit,
+-- backInBandHit, backInSweepHit, backInBoxHit, backInStraightBefore, backInLane, backInPath, backInRoute ; crossTry
+-- appelé ici). Chargé par register.lua après AutonomousHeaderFollow.lua.
 -- ============================================================================================================
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -76,6 +99,12 @@ ADHeaderFlow.BACKIN_FINAL_MIN = 1.5      -- m entre l'attelage de la moissonneus
 ADHeaderFlow.BACKIN_AXIS_EXTRA = 6       -- ° de plus pour l'axe de la marche arrière : la remorque finit un peu moins tournée que lui
 ADHeaderFlow.BACKIN_SLANTS = { 0, 5, 10 } -- ° : la moissonneuse arrive dans l'axe du cadre, sinon moins tournée de ça (l'approche accepte 15°)
 ADHeaderFlow.BACKIN_END_STRAIGHT = 4     -- m tout droit au bout de la courbe (ADNoseIn.END_STRAIGHT)
+ADHeaderFlow.BACKIN_BAND_MARGIN = 0.15   -- (16/11) m de chaque côté de l'attelage sur la bande où il roule après l'entrée (comme le balayage de la route)
+ADHeaderFlow.BACKIN_TRACTOR_FRONT = 4    -- (16/11) m devant le point suivi du tracteur à l'arrêt
+ADHeaderFlow.BACKIN_SWEEP = { 0.2, 0.4, 0.6, 0.8 } -- (16/11) parts de la marche arrière où la caisse de la remorque est contrôlée
+ADHeaderFlow.BACKIN_SWEEP_MARGIN = 0.25  -- (16/11) m de chaque côté de la caisse pendant la marche arrière (objets fixes)
+ADHeaderFlow.BACKIN_STUCK = 20000        -- (16/11) ms de marche arrière sans avancer : bloquée (objet fixe)
+ADHeaderFlow.BACKIN_COUNTER_SWING = 1.6  -- (16/11) m : au début de la marche arrière, le nez du tracteur part d'abord vers la place de la remorque, d'autant au-delà de sa largeur
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Petits outils
@@ -288,6 +317,9 @@ local function straightBefore(route, i, jx, jz, ux, uz)
     return back
 end
 
+-- (16/11) aussi pour AutonomousHeaderCross.lua (route du tracteur droite avant l'entrée)
+ADHeaderFlow.backInStraightBefore = straightBefore
+
 -- premier mètre de culture en s'écartant de (x, z) dans le sens (nx, nz), entre from et to m ; nil : aucune
 -- boîte (centre, sens, demi-largeur, demi-longueur), de 0,3 m à 3,3 m au-dessus du sol : un obstacle dedans ?
 -- (l'attelage du tracteur lui-même ne compte pas : ADTrafficYieldModule:overlapHit)
@@ -297,6 +329,102 @@ local function boxHit(t, cx, cz, dx, dz, halfWidth, halfLength)
         return false
     end
     return yield:overlapHit(cx, groundY(cx, cz) + 1.8, cz, MathUtil.getYRotationFromDirection(dx, dz), halfWidth, 1.5, halfLength) == true
+end
+
+-- (16/11) aussi pour AutonomousHeaderCross.lua
+ADHeaderFlow.backInBoxHit = boxHit
+
+-- (16/11) même boîte : un OBJET FIXE dedans (muret, clôture, poteau, arbre, bâtiment) ? Les véhicules ne comptent
+-- pas ; l'attelage du tracteur et la barre non plus. Le masque est celui des objets du capteur avant
+-- (ADCollSensorSplit.maskObjects) : le muret du champ 52 (« col02 », « col03 ») était vu par lui. 2e valeur : son nom
+function ADHeaderFlow.fixedHit(t, job, cx, cz, dx, dz, halfWidth, halfLength)
+    local yield = t ~= nil and t.ad ~= nil and t.ad.trafficYieldModule or nil
+    if yield == nil then
+        return false
+    end
+    local y, ry = groundY(cx, cz) + 1.8, MathUtil.getYRotationFromDirection(dx, dz)
+    local ignored = yield.overlapIgnoreVehicle
+    if job ~= nil and job.header ~= nil then
+        yield.overlapIgnoreVehicle = job.header
+    end
+    local hit, name = false, nil
+    if overlapBox ~= nil and CollisionFlag ~= nil and yield.overlapCallback ~= nil then
+        local mask = (ADCollSensorSplit ~= nil and ADCollSensorSplit.maskObjects)
+            or (CollisionFlag.DEFAULT + CollisionFlag.STATIC_OBJECT + CollisionFlag.TREE + CollisionFlag.BUILDING)
+        yield.overlapHitCount, yield.overlapHitName, yield.overlapHitVehicle = 0, nil, nil
+        overlapBox(cx, y, cz, 0, ry, 0, halfWidth, 1.5, halfLength, "overlapCallback", yield, mask, true, true, true, true)
+        hit = (yield.overlapHitCount or 0) > 0 and not yield.overlapHitVehicle
+        name = yield.overlapHitName
+    elseif yield.overlapHitStatic ~= nil then
+        hit = yield:overlapHitStatic(cx, y, cz, ry, halfWidth, 1.5, halfLength) == true
+        name = yield.overlapHitName
+    elseif yield.overlapHit ~= nil then
+        hit = yield:overlapHit(cx, y, cz, ry, halfWidth, 1.5, halfLength) == true
+        name = yield.overlapHitName
+    end
+    yield.overlapIgnoreVehicle = ignored
+    return hit, name
+end
+
+-- (16/11) bande du chemin entre from et to m (repère du chemin : jx, jz, ux, uz, nx, nz), décalée de offset m vers
+-- n, demi-largeur half : un objet fixe dessus ? (hit, nom)
+function ADHeaderFlow.backInBandHit(t, job, lane, offset, from, to, half)
+    if to - from < 0.5 then
+        return false
+    end
+    local mid = (from + to) / 2
+    local cx, cz = lane.jx + lane.ux * mid + lane.nx * offset, lane.jz + lane.uz * mid + lane.nz * offset
+    return ADHeaderFlow.fixedHit(t, job, cx, cz, lane.ux, lane.uz, half, (to - from) / 2)
+end
+
+-- (16/11) l'attelage après l'entrée (s : backInStop), sur une demi-largeur half : la bande du milieu du chemin (de
+-- from m jusqu'au décalage), celle du décalage, celle où il roule décalé jusqu'au nez du tracteur à l'arrêt, puis la
+-- place où le nez du tracteur part d'abord au début de la marche arrière (vers la place de la remorque,
+-- swing m au-delà de sa largeur, BACKIN_COUNTER_SWING par défaut) : un objet fixe ? (hit, nom, true si c'est cette
+-- dernière place)
+function ADHeaderFlow.backInTrainHit(t, job, lane, s, from, half, swing)
+    local front = ADHeaderFlow.BACKIN_TRACTOR_FRONT
+    local hit, name
+    if s.bias > 0 then
+        hit, name = ADHeaderFlow.backInBandHit(t, job, lane, 0, from, s.shiftFrom, half)
+        if not hit then
+            hit, name = ADHeaderFlow.backInBandHit(t, job, lane, s.bias / 2, s.shiftFrom, s.shiftTo, half + s.bias / 2)
+        end
+        if not hit then
+            hit, name = ADHeaderFlow.backInBandHit(t, job, lane, s.bias, s.shiftTo, s.stop + front, half)
+        end
+    else
+        hit, name = ADHeaderFlow.backInBandHit(t, job, lane, 0, from, s.stop + front, half)
+    end
+    if hit then
+        return true, name, false
+    end
+    swing = swing or ADHeaderFlow.BACKIN_COUNTER_SWING
+    hit, name = ADHeaderFlow.backInBandHit(t, job, lane, s.bias + swing / 2, s.stop - 4, s.stop + front, half + swing / 2)
+    return hit, name, hit
+end
+
+-- (16/11) la caisse de la remorque pendant la marche arrière : l'essieu sur l'axe (q + a x reach x f), la caisse
+-- tournée peu à peu du sens du chemin (f = 0) à celui de la remorque à la fin (theta vers n, f = 1). Un objet fixe
+-- dans une de ces caisses, ou sur l'axe entre le chemin et l'essieu : (true, nom)
+function ADHeaderFlow.backInSweepHit(t, job, s)
+    local rig = s.rig
+    local trailerWidth = (job.trailer.size ~= nil and job.trailer.size.width) or 3
+    local trailerLength = (job.trailer.size ~= nil and job.trailer.size.length) or 12
+    local half = trailerWidth / 2 + ADHeaderFlow.BACKIN_SWEEP_MARGIN
+    for _, f in ipairs(ADHeaderFlow.BACKIN_SWEEP) do
+        local phi = s.theta * f
+        local tfx, tfz = math.cos(phi) * s.ux - math.sin(phi) * s.nx, math.cos(phi) * s.uz - math.sin(phi) * s.nz
+        local tlx, tlz = tfz, -tfx
+        local axX, axZ = s.qx + s.ax * s.reach * f, s.qz + s.az * s.reach * f
+        local rootX, rootZ = axX - rig.rx * tlx - rig.rz * tfx, axZ - rig.rx * tlz - rig.rz * tfz
+        local hit, name = ADHeaderFlow.fixedHit(t, job, rootX, rootZ, tfx, tfz, half, trailerLength / 2)
+        if hit then
+            return true, name
+        end
+    end
+    local hit, name = ADHeaderFlow.fixedHit(t, job, s.qx + s.ax * s.reach / 2, s.qz + s.az * s.reach / 2, s.ax, s.az, half, s.reach / 2 + 1)
+    return hit, name
 end
 
 local function cropEdge(x, z, nx, nz, from, to)
@@ -350,7 +478,12 @@ local function groundOk(lane, points)
                 return false
             end
             local across = (sx - lane.jx) * lane.nx + (sz - lane.jz) * lane.nz
-            if across < 0 and hasCrop(sx, sz) then
+            -- (16/11) barre en travers du chemin (lane.anyCrop) : la culture ne compte d'aucun côté, et pas de champ
+            -- (même sans culture) du côté de la barre
+            if (across < 0 or lane.anyCrop) and hasCrop(sx, sz) then
+                return false
+            end
+            if lane.anyCrop and across > 0.5 and AutoDrive ~= nil and AutoDrive.checkIsOnField ~= nil and AutoDrive.checkIsOnField(sx, groundY(sx, sz), sz) == true then
                 return false
             end
         end
@@ -404,8 +537,8 @@ function ADHeaderFlow.backInPath(lane, x, z, fx, fz, hitch)
 end
 
 -- le chemin et le cadre de la barre (prévu ou vrai) vus par la moissonneuse : { jx, jz, ux, uz, nx, nz, cw, dj, rc,
--- handover (m après le point du chemin où elle lâche la route), targetId (point du réseau où elle va), turn (°) } ;
--- nil, raison
+-- handover (m après le point du chemin où elle lâche la route), targetId (point du réseau où elle va), turn (°),
+-- anyCrop (16/11 : barre en travers du chemin, la culture ne compte d'aucun côté) } ; nil, raison
 function ADHeaderFlow.backInLane(plan, hitch)
     if hitch == nil then
         return nil, "cadre de la barre introuvable"
@@ -427,7 +560,7 @@ function ADHeaderFlow.backInLane(plan, hitch)
         turn = uF - (rig.dj + endStraight() + ADHeaderFlow.BACKIN_FINAL) - rig.rc
     end
     local lane = { jx = plan.jx, jz = plan.jz, ux = plan.ux, uz = plan.uz, nx = plan.nx, nz = plan.nz,
-        cw = rig.cw, dj = rig.dj, rc = rig.rc, turn = math.deg(beta) }
+        cw = rig.cw, dj = rig.dj, rc = rig.rc, turn = math.deg(beta), anyCrop = plan.cross == true }
     -- où elle lâche la route : avant le virage, pas avant d'être sur le chemin droit
     local earliest = -plan.before + 2
     for _, lead in ipairs({ ADHeaderFlow.BACKIN_LEAD, 2 * ADHeaderFlow.BACKIN_LEAD }) do
@@ -460,15 +593,14 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Le plan : où la remorque entre dans le champ, d'où le tracteur recule
 -- ------------------------------------------------------------------------------------------------------------
--- wayPoints : la route du tracteur vers le point du champ ; nil, raison quand la marche arrière ne se fait pas ici
-function ADHeaderFlow.backInPlan(t, job, wayPoints, current)
+-- (16/11) le chemin vu de la route du tracteur, sans la remorque (aussi pour AutonomousHeaderCross.lua) :
+-- { j, J (point du chemin d'où le réseau continue tout droit), points, lengths (la suite), ux, uz (sens du chemin),
+-- available (m de chemin droit après J), E (bout de la route), uE, leftE, ex, ez, side (+1 champ à gauche, -1 à
+-- droite), nx, nz (vers le champ), before (m de route droite de la moissonneuse avant J) } ; nil, raison
+function ADHeaderFlow.backInLaneInfo(t, job, wayPoints, current)
     local n = wayPoints ~= nil and #wayPoints or 0
     if n < 3 then
         return nil, "route trop courte"
-    end
-    local rig, why = ADHeaderFlow.backInRig(t, job)
-    if rig == nil then
-        return nil, why
     end
     local j, hx, hz, first = findJunction(wayPoints, current)
     if j == nil then
@@ -523,10 +655,6 @@ function ADHeaderFlow.backInPlan(t, job, wayPoints, current)
     if side == nil then
         return nil, "côté du champ pas trouvé"
     end
-    if rig.side == side then
-        return nil, "le cadre de la barre est du côté du champ"
-    end
-    local nx, nz = side * uz, -side * ux
     -- la moissonneuse arrive par le même chemin, dans le même sens
     local route = ADGraphManager:getPathTo(job.combine, J.id)
     local rn = route ~= nil and #route or 0
@@ -537,7 +665,62 @@ function ADHeaderFlow.backInPlan(t, job, wayPoints, current)
     if cx == nil or cx * ux + cz * uz < math.cos(math.rad(ADHeaderFlow.BACKIN_STRAIGHT)) then
         return nil, "la moissonneuse arrive par un autre côté"
     end
-    local before = straightBefore(route, rn, J.x, J.z, ux, uz)
+    return { j = j, J = J, points = points, lengths = lengths, ux = ux, uz = uz, available = available, E = E, uE = uE,
+        leftE = leftE, ex = ex, ez = ez, side = side, nx = side * uz, nz = -side * ux,
+        before = straightBefore(route, rn, J.x, J.z, ux, uz) }
+end
+
+-- (16/11) le point d'arrêt du tracteur pour une remorque dont l'essieu finit en (axleX, axleZ), à axleN m du milieu
+-- du chemin vers lane.nx, lane.nz, l'axe de la marche arrière (ax, az) à sinA du chemin, le tracteur décalé de bias
+-- m vers ce côté : { reach, qx, qz, uQ, stop, shiftFrom, shiftTo, bias } (décalage annulé s'il n'a pas la place de
+-- se faire). from : m du chemin où le décalage peut commencer (BACKIN_BIAS_FROM par défaut)
+function ADHeaderFlow.backInStop(lane, rig, axleX, axleZ, axleN, ax, az, sinA, bias, from)
+    local s
+    for _ = 1, 2 do
+        local reach = (axleN - bias) / sinA
+        local qx, qz = axleX - ax * reach, axleZ - az * reach
+        local uQ = (qx - lane.jx) * lane.ux + (qz - lane.jz) * lane.uz
+        local uStop = uQ + ADHeaderFlow.BACKIN_START + rig.dra
+        -- décalage fini assez tôt pour que la remorque soit droite derrière le tracteur à l'arrêt
+        local shiftTo = uStop - 1.5 * rig.lt
+        local shiftFrom = math.max(from or ADHeaderFlow.BACKIN_BIAS_FROM, shiftTo - ADHeaderFlow.BACKIN_BIAS_SHIFT)
+        s = { reach = reach, qx = qx, qz = qz, uQ = uQ, stop = uStop, shiftFrom = shiftFrom, shiftTo = shiftTo, bias = bias }
+        if bias == 0 or shiftTo - shiftFrom >= ADHeaderFlow.BACKIN_BIAS_SHIFT * 0.6 then
+            break
+        end
+        bias = 0
+    end
+    return s
+end
+
+-- (16/11) demi-largeur de l'attelage (tracteur ou remorque, le plus large) sur la bande où il roule
+function ADHeaderFlow.backInTrainHalf(t, job)
+    local trailerWidth = (job.trailer.size ~= nil and job.trailer.size.width) or 3
+    local tractorWidth = (t.size ~= nil and t.size.width) or 2.6
+    return math.max(trailerWidth, tractorWidth) / 2 + ADHeaderFlow.BACKIN_BAND_MARGIN
+end
+
+-- wayPoints : la route du tracteur vers le point du champ ; nil, raison quand la marche arrière ne se fait pas ici.
+-- (16/11) 3e valeur quand la barre peut encore être reculée en travers du chemin : « closed » (champ fermé par un
+-- objet fixe) ou « frameSide » (cadre de la barre du côté du champ)
+function ADHeaderFlow.backInPlan(t, job, wayPoints, current)
+    local n = wayPoints ~= nil and #wayPoints or 0
+    if n < 3 then
+        return nil, "route trop courte"
+    end
+    local rig, why = ADHeaderFlow.backInRig(t, job)
+    if rig == nil then
+        return nil, why
+    end
+    local info, infoWhy = ADHeaderFlow.backInLaneInfo(t, job, wayPoints, current)
+    if info == nil then
+        return nil, infoWhy
+    end
+    if rig.side == info.side then
+        return nil, "le cadre de la barre est du côté du champ", "frameSide"
+    end
+    local J, ux, uz, nx, nz = info.J, info.ux, info.uz, info.nx, info.nz
+    local uE, leftE, ex, ez, before = info.uE, info.leftE, info.ex, info.ez, info.before
     -- la remorque reculée : son avant, sa gauche, vers où regarde le cadre de la barre
     local theta = math.rad(ADHeaderFlow.BACKIN_ANGLE)
     local sinT, cosT = math.sin(theta), math.cos(theta)
@@ -574,31 +757,56 @@ function ADHeaderFlow.backInPlan(t, job, wayPoints, current)
     -- l'autre côté pendant la marche arrière) ; l'axe de la marche arrière la coupe en q
     local trailerWidth = (job.trailer.size ~= nil and job.trailer.size.width) or 3
     local bias = math.max(0, math.min(ADHeaderFlow.BACKIN_BIAS, edge - trailerWidth / 2 - ADHeaderFlow.BACKIN_BIAS_EDGE))
-    local reach, qx, qz, uQ, uStop, shiftFrom, shiftTo
-    for _ = 1, 2 do
-        reach = (axleN - bias) / sinA
-        qx, qz = axleX - ax * reach, axleZ - az * reach
-        uQ = (qx - J.x) * ux + (qz - J.z) * uz
-        uStop = uQ + ADHeaderFlow.BACKIN_START + rig.dra
-        -- décalage fini assez tôt pour que la remorque soit droite derrière le tracteur à l'arrêt
-        shiftTo = uStop - 1.5 * rig.lt
-        shiftFrom = math.max(ADHeaderFlow.BACKIN_BIAS_FROM, shiftTo - ADHeaderFlow.BACKIN_BIAS_SHIFT)
-        if bias == 0 or shiftTo - shiftFrom >= ADHeaderFlow.BACKIN_BIAS_SHIFT * 0.6 then
-            break
+    local lane = { jx = J.x, jz = J.z, ux = ux, uz = uz, nx = nx, nz = nz }
+    local s = ADHeaderFlow.backInStop(lane, rig, axleX, axleZ, axleN, ax, az, sinA, bias)
+    -- (16/11) objets fixes sur la bande où l'attelage roule après l'entrée : décalé, sinon au milieu du chemin
+    local half = ADHeaderFlow.backInTrainHalf(t, job)
+    local front = ADHeaderFlow.BACKIN_TRACTOR_FRONT
+    if s.bias > 0 then
+        local hit, name = ADHeaderFlow.backInTrainHit(t, job, lane, s, ADHeaderFlow.BACKIN_ROUTE_STEP, half)
+        if hit then
+            log("%s : objet fixe (%s) sur la bande décalée de %.1f m vers le champ : pas de décalage, arrêt au milieu du chemin", nameOf(t), tostring(name), s.bias)
+            s = ADHeaderFlow.backInStop(lane, rig, axleX, axleZ, axleN, ax, az, sinA, 0)
         end
-        bias = 0
     end
+    if s.bias == 0 then
+        local hit, name, swing = ADHeaderFlow.backInTrainHit(t, job, lane, s, ADHeaderFlow.BACKIN_ROUTE_STEP, half)
+        if hit and swing then
+            -- le muret longe le chemin jusqu'à l'arrêt : le nez du tracteur le toucherait en partant
+            return nil, string.format("champ fermé : objet fixe là où le nez du tracteur part au début de la marche arrière (%s)", tostring(name)), "closed"
+        elseif hit then
+            return nil, string.format("objet fixe sur le chemin après l'entrée (%s)", tostring(name))
+        end
+    end
+    local reach, qx, qz, uQ, uStop = s.reach, s.qx, s.qz, s.uQ, s.stop
+    bias = s.bias
     if reach < 2 or reach > ADHeaderFlow.BACKIN_MAX_REACH then
         return nil, string.format("remorque à reculer de %.0f m dans le champ", reach)
     end
-    if uStop + 1 > available then
-        return nil, string.format("chemin trop court après l'entrée (%.0f m, il en faut %.0f)", available, uStop + 1)
+    if uStop + 1 > info.available then
+        return nil, string.format("chemin trop court après l'entrée (%.0f m, il en faut %.0f)", info.available, uStop + 1)
     end
     -- l'autre côté du chemin : le nez du tracteur y passe pendant la marche arrière
     for _, along in ipairs({ uQ - 6, uQ, uQ + ADHeaderFlow.BACKIN_START }) do
         if not isClear(J.x + ux * along, J.z + uz * along, -nx, -nz, ADHeaderFlow.BACKIN_OTHER_MIN) then
             return nil, "pas assez de place de l'autre côté du chemin"
         end
+    end
+    -- (16/11) ... et pas d'objet fixe là non plus
+    local otherHit, otherName = ADHeaderFlow.backInBandHit(t, job, lane, -ADHeaderFlow.BACKIN_OTHER_MIN / 2, uQ - 6, uQ + ADHeaderFlow.BACKIN_START,
+        ADHeaderFlow.BACKIN_OTHER_MIN / 2)
+    if otherHit then
+        return nil, string.format("objet fixe de l'autre côté du chemin, là où passe le nez du tracteur (%s)", tostring(otherName))
+    end
+    -- (16/11) entre le chemin et la place de la remorque reculée : un objet fixe (muret, clôture) ferme le champ
+    local closed, closedName = ADHeaderFlow.backInSweepHit(t, job, { rig = rig, theta = theta, ux = ux, uz = uz, nx = nx, nz = nz,
+        qx = qx, qz = qz, ax = ax, az = az, reach = reach })
+    if not closed then
+        closed, closedName = ADHeaderFlow.fixedHit(t, job, rootX, rootZ, tfx, tfz, trailerWidth / 2 + ADHeaderFlow.BACKIN_SWEEP_MARGIN,
+            ((job.trailer.size ~= nil and job.trailer.size.length) or 12) / 2)
+    end
+    if closed then
+        return nil, string.format("champ fermé : objet fixe entre le chemin et la place de la remorque (%s)", tostring(closedName)), "closed"
     end
     -- obstacle (arbre, clôture, bâtiment, véhicule) là où la remorque recule et finit, ou devant le cadre de la barre
     local trailerLength = (job.trailer.size ~= nil and job.trailer.size.length) or 12
@@ -608,23 +816,24 @@ function ADHeaderFlow.backInPlan(t, job, wayPoints, current)
     if hit then
         return nil, "obstacle dans l'entrée du champ (arbre, clôture, véhicule...)"
     end
-    local plan = { j = j, jid = J.id, jx = J.x, jz = J.z, ux = ux, uz = uz, nx = nx, nz = nz, points = points, lengths = lengths,
+    local plan = { j = info.j, jid = J.id, jx = J.x, jz = J.z, ux = ux, uz = uz, nx = nx, nz = nz, points = info.points, lengths = info.lengths,
         qx = qx, qz = qz, ax = ax, az = az, reach = reach, start = ADHeaderFlow.BACKIN_START, stop = uStop,
         frame = { x = frameX, y = groundY(frameX, frameZ), z = frameZ, dirX = fx, dirZ = fz }, past = uFrame - uE, depth = nFrame,
-        edge = edge, before = before, rig = rig, entrance = { x = E.x, z = E.z }, bias = bias, shiftFrom = shiftFrom, shiftTo = shiftTo }
+        edge = edge, before = before, rig = rig, entrance = { x = info.E.x, z = info.E.z }, bias = bias, shiftFrom = s.shiftFrom, shiftTo = s.shiftTo }
     -- la moissonneuse a sa courbe jusqu'au cadre prévu
-    local lane, laneWhy = ADHeaderFlow.backInLane(plan, plan.frame)
-    if lane == nil then
+    local laneC, laneWhy = ADHeaderFlow.backInLane(plan, plan.frame)
+    if laneC == nil then
         return nil, laneWhy
     end
-    plan.turn = lane.turn
+    plan.turn = laneC.turn
     return plan
 end
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Tracteur : la route passe l'entrée, puis la marche arrière
 -- ------------------------------------------------------------------------------------------------------------
--- la route du tracteur après l'entrée : dans l'axe du chemin, décalée peu à peu vers le champ, jusqu'au point d'arrêt
+-- la route du tracteur après l'entrée : dans l'axe du chemin, décalée peu à peu vers le champ, jusqu'au point d'arrêt.
+-- (16/11) plan.routeFrom : m du chemin où elle commence (barre en travers du chemin : avant l'entrée)
 function ADHeaderFlow.backInRoute(plan)
     local points = {}
     local function add(d)
@@ -635,7 +844,7 @@ function ADHeaderFlow.backInRoute(plan)
         local x, z = plan.jx + plan.ux * d + plan.nx * side, plan.jz + plan.uz * d + plan.nz * side
         points[#points + 1] = { x = x, y = groundY(x, z), z = z, isPathFinderPoint = true }
     end
-    local d = ADHeaderFlow.BACKIN_ROUTE_STEP
+    local d = plan.routeFrom or ADHeaderFlow.BACKIN_ROUTE_STEP
     while d < plan.stop - 2 do
         add(d)
         d = d + ADHeaderFlow.BACKIN_ROUTE_STEP
@@ -651,13 +860,18 @@ function ADHeaderFlow.backInTry(mode, job, wayPoints, current)
         return false
     end
     local t = mode.vehicle
-    local ok, plan, why = FarmPilotCall(ADHeaderFlow.backInPlan, t, job, wayPoints, current)
+    local ok, plan, why, code = FarmPilotCall(ADHeaderFlow.backInPlan, t, job, wayPoints, current)
     if not ok then
         log("ERREUR marche arrière dans l'entrée du champ : %s", tostring(plan))
         return false
     end
     if plan == nil then
         log("%s : pas de marche arrière dans l'entrée du champ (%s)", nameOf(t), tostring(why))
+        -- (16/11) champ fermé par un objet fixe, ou cadre de la barre du côté du champ : la barre en travers du chemin
+        -- (AutonomousHeaderCross.lua)
+        if (code == "closed" or code == "frameSide") and ADHeaderFlow.crossTry ~= nil then
+            return ADHeaderFlow.crossTry(mode, job, wayPoints, current)
+        end
         return false
     end
     for k = #wayPoints, plan.j + 1, -1 do
@@ -685,12 +899,14 @@ function ADHeaderFlow.startBackIn(mode, job)
     mode.headerStage = "backIn"
     mode.headerTask = ADHeaderBackInTask:new(t, job.trailer, plan)
     t.ad.taskModule:addTask(mode.headerTask)
-    AutonomousMode.message(t, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_headerBackIn")
+    -- (16/11) même marche arrière pour la barre en travers du chemin (AutonomousHeaderCross.lua), autre message
+    AutonomousMode.message(t, ADMessagesManager.messageTypes.INFO, 8000, plan.cross and "AD_autonomous_headerCross" or "AD_autonomous_headerBackIn")
     return true
 end
 
 local REASONS = { noTrailer = "pas de remorque à pousser", jackknife = "tracteur et remorque trop de travers",
-    blocked = "quelque chose derrière la remorque", timeout = "pas finie à temps", badStart = "tracteur pas en place sur le chemin" }
+    blocked = "quelque chose derrière la remorque", timeout = "pas finie à temps", badStart = "tracteur pas en place sur le chemin",
+    stuck = "bloquée sans avancer (objet fixe)" }
 
 -- marche arrière finie (result : voir Tasks/HeaderBackInTask.lua)
 function ADHeaderFlow.backInDone(mode, job, result)
@@ -712,19 +928,26 @@ function ADHeaderFlow.backInDone(mode, job, result)
         else
             job.backIn = lane
             job.sideBlocked = nil
-            log("%s : remorque reculée dans l'entrée du champ, cadre de la barre à %.0f° du chemin ; la moissonneuse lâchera la route %.0f m %s l'entrée",
-                nameOf(t), lane.turn, math.abs(lane.handover), lane.handover < 0 and "avant" or "après")
+            log("%s : remorque reculée %s, cadre de la barre à %.0f° du chemin ; la moissonneuse lâchera la route %.0f m %s l'entrée",
+                nameOf(t), plan.cross and "en travers du chemin" or "dans l'entrée du champ", lane.turn, math.abs(lane.handover), lane.handover < 0 and "avant" or "après")
         end
     end
     if why ~= nil then
-        log("%s : marche arrière dans l'entrée du champ pas réussie (%s)", nameOf(t), why)
+        local what = plan.cross and "barre en travers du chemin" or "marche arrière dans l'entrée du champ"
+        log("%s : %s pas réussie (%s)", nameOf(t), what, why)
         if result == "badStart" then
             -- rien n'a bougé : l'endroit est jugé comme d'habitude
             if ADHeaderFlow.onArrival(mode, job) then
                 return
             end
-        elseif ADHeaderFlow.moveOn(mode, job, "marche arrière dans l'entrée du champ pas réussie", true) then
-            return
+        else
+            -- (16/11) l'endroit est encombré : la place prévue de la remorque aussi (bloquée par un objet fixe)
+            if result == "stuck" and ADHeaderFlow.rejectPlace ~= nil then
+                ADHeaderFlow.rejectPlace(job, plan.frame.x, plan.frame.z)
+            end
+            if ADHeaderFlow.moveOn(mode, job, what .. " pas réussie", true) then
+                return
+            end
         end
     end
     ADHeaderFlow.tractorWait(mode, job)

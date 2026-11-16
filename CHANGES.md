@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.0.2): 91 files modified, 287 files added, 3 files removed.
+Summary (FarmPilot 1.1.0.3): 91 files modified, 289 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,7 +24,7 @@ Summary (FarmPilot 1.1.0.2): 91 files modified, 287 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+386 / -12)
+- register.lua (+388 / -12)
 - scripts/AutoDrive.lua (+67 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
@@ -81,24 +81,24 @@ Summary (FarmPilot 1.1.0.2): 91 files modified, 287 files added, 3 files removed
 - scripts/XML.lua (+46 / -12)
 - textures/ad_gui.dds (binary, replaced)
 - textures/ad_gui.xml (+17 / -0)
-- translations/translation_br.xml (+1091 / -90)
-- translations/translation_cs.xml (+1092 / -91)
-- translations/translation_ct.xml (+1093 / -92)
-- translations/translation_cz.xml (+1091 / -90)
-- translations/translation_da.xml (+1092 / -91)
-- translations/translation_de.xml (+1101 / -95)
-- translations/translation_ea.xml (+1093 / -92)
-- translations/translation_en.xml (+1103 / -92)
-- translations/translation_es.xml (+1093 / -92)
-- translations/translation_fr.xml (+1155 / -146)
-- translations/translation_hu.xml (+1092 / -91)
-- translations/translation_it.xml (+1084 / -83)
-- translations/translation_nl.xml (+1093 / -92)
-- translations/translation_pl.xml (+1092 / -91)
-- translations/translation_pt.xml (+1093 / -92)
-- translations/translation_ru.xml (+1093 / -92)
-- translations/translation_tr.xml (+1195 / -184)
-- translations/translation_uk.xml (+1093 / -92)
+- translations/translation_br.xml (+1094 / -90)
+- translations/translation_cs.xml (+1095 / -91)
+- translations/translation_ct.xml (+1096 / -92)
+- translations/translation_cz.xml (+1094 / -90)
+- translations/translation_da.xml (+1095 / -91)
+- translations/translation_de.xml (+1104 / -95)
+- translations/translation_ea.xml (+1096 / -92)
+- translations/translation_en.xml (+1106 / -92)
+- translations/translation_es.xml (+1096 / -92)
+- translations/translation_fr.xml (+1158 / -146)
+- translations/translation_hu.xml (+1095 / -91)
+- translations/translation_it.xml (+1087 / -83)
+- translations/translation_nl.xml (+1096 / -92)
+- translations/translation_pl.xml (+1095 / -91)
+- translations/translation_pt.xml (+1096 / -92)
+- translations/translation_ru.xml (+1096 / -92)
+- translations/translation_tr.xml (+1198 / -184)
+- translations/translation_uk.xml (+1096 / -92)
 
 ## New files (written for FarmPilot)
 
@@ -231,6 +231,7 @@ Summary (FarmPilot 1.1.0.2): 91 files modified, 287 files added, 3 files removed
 - scripts/Modes/AutonomousHeaderChoice.lua
 - scripts/Modes/AutonomousHeaderClear.lua
 - scripts/Modes/AutonomousHeaderCollect.lua
+- scripts/Modes/AutonomousHeaderCross.lua
 - scripts/Modes/AutonomousHeaderEntry.lua
 - scripts/Modes/AutonomousHeaderFollow.lua
 - scripts/Modes/AutonomousHeaderGate.lua
@@ -241,6 +242,7 @@ Summary (FarmPilot 1.1.0.2): 91 files modified, 287 files added, 3 files removed
 - scripts/Modes/AutonomousHeaderReturn.lua
 - scripts/Modes/AutonomousHeaderRoadBack.lua
 - scripts/Modes/AutonomousHeaderSpot.lua
+- scripts/Modes/AutonomousHeaderStuck.lua
 - scripts/Modes/AutonomousHeaderTractor.lua
 - scripts/Modes/AutonomousHeaderYard.lua
 - scripts/Modes/AutonomousMode.lua

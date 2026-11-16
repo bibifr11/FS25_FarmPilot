@@ -38,9 +38,14 @@
 --
 -- - (15/11) Rien de dégagé le long de la route : place hors de la route près du bout, avant le demi-tour et
 --   l'endroit plus loin (AutonomousHeaderYard.lua).
+-- - (16/11) Champ fermé par un objet fixe (muret, clôture) ou cadre de la barre côté champ : la barre est reculée
+--   en travers du chemin, côté herbe (AutonomousHeaderCross.lua, essayé par la marche arrière en biais).
+-- - (16/11) Tracteur bloqué par un objet fixe avant d'arriver (ou marche arrière bloquée) : la place prévue est
+--   écartée comme un endroit encombré (rejectPlace), REJECT_RADIUS m autour, puis l'endroit suivant (moveOn).
 --
 -- Branché par : Modes/AutonomousHeader.lua (monitor : checkRouteStop ; tractorStage « toField » et « turn » :
--- onArrival ; tractorStage « wait » : moveOn). Tâche du demi-tour : Tasks/HeaderDropTask.lua (ADHeaderTurnTask).
+-- onArrival ; tractorStage « wait » : moveOn), Modes/AutonomousHeaderBackIn.lua (backInDone : rejectPlace),
+-- Modes/AutonomousHeaderStuck.lua (rejectPlace, moveOn). Tâche du demi-tour : Tasks/HeaderDropTask.lua (ADHeaderTurnTask).
 -- Chargé par register.lua après AutonomousHeader.lua.
 -- ============================================================================================================
 
@@ -464,6 +469,12 @@ end
 -- l'endroit où le tracteur est arrêté maintenant ne sera plus proposé
 function ADHeaderFlow.rejectSpot(job, t)
     local x, _, z = getWorldTranslation(refNode(t))
+    job.rejected = job.rejected or {}
+    table.insert(job.rejected, { x = x, z = z })
+end
+
+-- (16/11) un endroit où la remorque devait aller (le tracteur est resté bloqué avant d'y être) ne sera plus proposé
+function ADHeaderFlow.rejectPlace(job, x, z)
     job.rejected = job.rejected or {}
     table.insert(job.rejected, { x = x, z = z })
 end

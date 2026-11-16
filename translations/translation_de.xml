@@ -770,6 +770,9 @@
 		<text name="AD_autonomous_headerBackIn" text="setzt den Schneidwerkswagen rückwärts in die Feldeinfahrt" />
 		<text name="AD_task_autonomous_headerRoadBack" text="Anhänger gerade bis zur Straße zurücksetzen" />
 		<text name="AD_autonomous_headerRoadBack" text="setzt den Schneidwerkswagen gerade bis zur Straße zurück" />
+		<text name="AD_task_autonomous_headerCross" text="Anhänger quer über den Weg zurücksetzen" />
+		<text name="AD_autonomous_headerCross" text="setzt den Schneidwerkswagen quer über den Weg zurück" />
+		<text name="AD_autonomous_headerStuck" text="von einem festen Hindernis blockiert, bringt den Wagen an eine andere Stelle" />
 		<text name="AD_task_autonomous_headerGateBack" text="Gegenüber der Feldeinfahrt aufstellen" />
 		<text name="AD_task_autonomous_headerGateIn" text="Schneidwerk vor dem Mähdrescher anhalten" />
 		<text name="AD_autonomous_headerGate" text="wartet gegenüber der Feldeinfahrt auf das Schneidwerk, %s hält es vor ihm an" />

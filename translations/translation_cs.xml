@@ -775,6 +775,9 @@
 		<text name="AD_autonomous_headerBackIn" text="backing the header trailer into the field entrance" />
 		<text name="AD_task_autonomous_headerRoadBack" text="Back the trailer up to the road" />
 		<text name="AD_autonomous_headerRoadBack" text="backing the header trailer straight back to the road" />
+		<text name="AD_task_autonomous_headerCross" text="Back the trailer across the lane" />
+		<text name="AD_autonomous_headerCross" text="backing the header trailer across the lane" />
+		<text name="AD_autonomous_headerStuck" text="blocked by a fixed object, taking the trailer to another place" />
 		<text name="AD_task_autonomous_headerGateBack" text="Line up opposite the field entrance" />
 		<text name="AD_task_autonomous_headerGateIn" text="Stop the header in front of the combine" />
 		<text name="AD_autonomous_headerGate" text="waiting for its header opposite the field entrance, %s stops it in front" />

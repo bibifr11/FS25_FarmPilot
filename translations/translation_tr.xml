@@ -775,6 +775,9 @@
 		<text name="AD_autonomous_headerBackIn" text="tabla römorku tarla girişine geri geri yanaştırılıyor" />
 		<text name="AD_task_autonomous_headerRoadBack" text="Römorku yola kadar geri geri çıkar" />
 		<text name="AD_autonomous_headerRoadBack" text="tabla römorku düz bir şekilde yola doğru geri çıkarılıyor" />
+		<text name="AD_task_autonomous_headerCross" text="Back the trailer across the lane" />
+		<text name="AD_autonomous_headerCross" text="backing the header trailer across the lane" />
+		<text name="AD_autonomous_headerStuck" text="blocked by a fixed object, taking the trailer to another place" />
 		<text name="AD_task_autonomous_headerGateBack" text="Tablayı tarla girişinin karşısına hizala" />
 		<text name="AD_task_autonomous_headerGateIn" text="Tablayı biçerdöverin önünde durdur" />
 		<text name="AD_autonomous_headerGate" text="tablası tarla girişinin karşısında bekleniyor, %s aracı önünde durduruyor" />

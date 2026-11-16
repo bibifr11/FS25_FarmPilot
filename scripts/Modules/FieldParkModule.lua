@@ -97,7 +97,7 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Sol : culture debout, petite plaque oubliée, bande laissée au bord, champ de la machine
 -- ------------------------------------------------------------------------------------------------------------
--- growing crop at a world position (cut, withered, grass and meadow do not count)
+-- growing crop at a world position (cut, withered, crushed by the wheels, grass and meadow do not count)
 function ADFieldPark.hasGrowingCrop(x, z)
     if FSDensityMapUtil == nil or FSDensityMapUtil.getFruitTypeIndexAtWorldPos == nil then
         return false
@@ -117,7 +117,79 @@ function ADFieldPark.hasGrowingCrop(x, z)
     if fruit == nil then
         return false
     end
-    return not (fruit:getIsCut(growthState) or fruit:getIsWithered(growthState)), fruitTypeIndex
+    if fruit:getIsCut(growthState) or fruit:getIsWithered(growthState) then
+        return false
+    end
+    -- (16/11) culture déjà écrasée par les roues : plus rien à abîmer, la benne peut s'y garer et y rouler
+    if ADFieldPark.isCrushedState(fruit, growthState) then
+        return false
+    end
+    return true, fruitTypeIndex
+end
+
+-- (16/11) Champ 52 : bande le long du muret écrasée par les roues (blé d'hiver état 11 « tireTracks » de la carte,
+-- ni coupé ni fané pour le jeu) comptée comme blé debout : aucune place pour la benne alors que la bande était libre.
+-- État écrasé par les roues : ni en croissance, ni prêt à récolter, ni coupé, ni fané. Lu par les fonctions du jeu
+-- quand elles existent, sinon par les numéros d'état du fruit. Seulement pour la place de la benne et le chemin
+-- jusqu'à elle (FieldParkModule*.lua) ; le calcul des routes (PathFinderModule) ne change pas.
+ADFieldPark.crushedCache = {}
+
+local function callState(fruit, names, state)
+    for _, name in ipairs(names) do
+        local f = fruit[name]
+        if type(f) == "function" then
+            local ok, r = pcall(f, fruit, state)
+            if ok and r ~= nil then
+                return r == true, name
+            end
+        end
+    end
+    return nil
+end
+
+function ADFieldPark.classifyCrushed(fruit, state)
+    -- 1. le jeu sait que cet état vient des roues
+    local wheel, how = callState(fruit, {"getIsDestructedByWheel", "getIsDestroyedByWheel", "getIsTireTracks"}, state)
+    if wheel ~= nil then
+        return wheel, how
+    end
+    -- 2. ni en croissance, ni prêt à récolter
+    local ready, howReady = callState(fruit, {"getIsHarvestReady", "getIsHarvestable"}, state)
+    local growing, howGrowing = callState(fruit, {"getIsGrowing"}, state)
+    if ready ~= nil and growing ~= nil then
+        return not ready and not growing, howReady .. "+" .. howGrowing
+    end
+    -- 3. état de destruction des roues du fruit
+    local destruction = type(fruit.destruction) == "table" and fruit.destruction or nil
+    if destruction ~= nil and type(destruction.state) == "number" then
+        return destruction.state == state, "destruction.state"
+    end
+    -- 4. après le dernier état de récolte (ni coupé ni fané, vu plus haut)
+    local maxHarvest = fruit.maxHarvestingGrowthState
+    if type(maxHarvest) == "number" and maxHarvest > 0 then
+        return state > maxHarvest, "maxHarvestingGrowthState " .. tostring(maxHarvest)
+    end
+    return false, "inconnu"
+end
+
+function ADFieldPark.isCrushedState(fruit, state)
+    local key = tostring(fruit.index or fruit.name)
+    local cache = ADFieldPark.crushedCache[key]
+    if cache == nil then
+        cache = {}
+        ADFieldPark.crushedCache[key] = cache
+    end
+    local crushed = cache[state]
+    if crushed == nil then
+        local ok, r, how = pcall(ADFieldPark.classifyCrushed, fruit, state)
+        crushed = ok and r == true
+        cache[state] = crushed
+        if crushed then
+            print(string.format("[AD-Place] %s état %s : écrasé par les roues (%s), compté sans culture pour la place de la benne",
+                tostring(fruit.name), tostring(state), tostring(how)))
+        end
+    end
+    return crushed
 end
 
 -- crop strip the harvester left along the field edge (its header does not reach the edge): off field within

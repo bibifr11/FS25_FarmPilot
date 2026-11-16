@@ -58,6 +58,50 @@ function ADHudButton:updateState(vehicle)
     self.state = newState
 end
 
+-- (16/11) icône du mode Autonome selon la machine : 1re image (blanche, à l'arrêt) de input_silomode_N, la jaune
+-- (en marche) est la suivante ; slices dans textures/ad_gui.xml
+ADHudButton.HARVESTER_ICON = { combine = 13, chopper = 15, root = 17 }
+ADHudButton.ROOT_CROP_WORDS = { "BEET", "POTATO" } -- catégories de la boutique des récolteuses (betteraves, pommes de terre)
+
+-- « combine » (moissonneuse), « chopper » (ensileuse), « root » (récolteuse) ou false ; gardé sur le véhicule
+function ADHudButton.harvesterIcon(vehicle)
+    if vehicle.fpHarvesterIcon ~= nil then
+        return vehicle.fpHarvesterIcon
+    end
+    local kind = false
+    local spec = vehicle.spec_combine
+    if spec ~= nil then
+        if (vehicle.ad ~= nil and vehicle.ad.isChopper == true) or spec.isBufferCombine == true then
+            kind = "chopper"
+        else
+            kind = "combine"
+            local category = ""
+            if g_storeManager ~= nil and vehicle.configFileName ~= nil then
+                local ok, item = FarmPilotCall(g_storeManager.getItemByXMLFilename, g_storeManager, vehicle.configFileName)
+                if ok and item ~= nil and type(item.categoryName) == "string" then
+                    category = string.upper(item.categoryName)
+                end
+            end
+            for _, w in ipairs(ADHudButton.ROOT_CROP_WORDS) do
+                if string.find(category, w, 1, true) ~= nil then
+                    kind = "root"
+                end
+            end
+            if kind == "combine" and vehicle.getFillUnitSupportedFillTypes ~= nil and spec.fillUnitIndex ~= nil and FillType ~= nil then
+                -- catégorie d'un mod : la trémie prend des pommes de terre ou des betteraves
+                local ok, types = FarmPilotCall(vehicle.getFillUnitSupportedFillTypes, vehicle, spec.fillUnitIndex)
+                if ok and type(types) == "table" and ((FillType.POTATO ~= nil and types[FillType.POTATO]) or (FillType.SUGARBEET ~= nil and types[FillType.SUGARBEET])) then
+                    kind = "root"
+                end
+            end
+        end
+        print(string.format("[FP-Hud] %s : icone du mode Autonome = %s", tostring(vehicle.getName ~= nil and vehicle:getName() or "?"),
+            ({ combine = "moissonneuse", chopper = "ensileuse", root = "recolteuse" })[kind]))
+    end
+    vehicle.fpHarvesterIcon = kind
+    return kind
+end
+
 function ADHudButton:getNewState(vehicle)
     local newState = self.state
     if self.primaryAction == "input_silomode" then
@@ -76,8 +120,10 @@ function ADHudButton:getNewState(vehicle)
         elseif AutoDrive.MODE_LOADER ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOADER then
             newState = vehicle.ad.stateModule:isActive() and 12 or 11 -- (16/11) mode « Chargeur » : chargeuse « A » (jaune en marche)
         elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
-            -- FarmPilot : tracteur « A » blanc, jaune quand le chauffeur roule
-            newState = vehicle.ad.stateModule:isActive() and 8 or 7
+            -- FarmPilot : tracteur « A » blanc, jaune quand le chauffeur roule ; (16/11) moissonneuse, ensileuse ou
+            -- récolteuse « A » quand le véhicule conduit en est une (voir ADHudButton.harvesterIcon)
+            local base = ADHudButton.HARVESTER_ICON[ADHudButton.harvesterIcon(vehicle)] or 7
+            newState = vehicle.ad.stateModule:isActive() and base + 1 or base
         else
             newState = 1
         end

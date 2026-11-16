@@ -58,6 +58,12 @@
         <slice id="input_silomode_10" uvs="660px 1188px 128px 128px"/>
         <slice id="input_silomode_11" uvs="792px 1188px 128px 128px"/>
         <slice id="input_silomode_12" uvs="924px 1188px 128px 128px"/>
+        <slice id="input_silomode_13" uvs="1056px 1188px 128px 128px"/>
+        <slice id="input_silomode_14" uvs="1188px 1188px 128px 128px"/>
+        <slice id="input_silomode_15" uvs="1320px 1188px 128px 128px"/>
+        <slice id="input_silomode_16" uvs="1452px 1188px 128px 128px"/>
+        <slice id="input_silomode_17" uvs="1584px 1188px 128px 128px"/>
+        <slice id="input_silomode_18" uvs="1716px 1188px 128px 128px"/>
         <slice id="input_fpSeederSettings_1" uvs="396px 1188px 128px 128px"/>
         <slice id="input_fpSeederSettings_2" uvs="1848px 396px 128px 128px"/>
         <slice id="input_startHelper_1" uvs="660px 660px 128px 128px"/>

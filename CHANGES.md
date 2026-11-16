@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.0.9.6): 91 files modified, 285 files added, 3 files removed.
+Summary (FarmPilot 1.0.9.7): 91 files modified, 285 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -31,7 +31,7 @@ Summary (FarmPilot 1.0.9.6): 91 files modified, 285 files added, 3 files removed
 - scripts/Gui.lua (+38 / -0)
 - scripts/Gui/SettingsPage.lua (+2 / -0)
 - scripts/Hud.lua (+204 / -35)
-- scripts/Hud/HudButton.lua (+53 / -1)
+- scripts/Hud/HudButton.lua (+99 / -1)
 - scripts/Hud/HudHarvesterInfo.lua (+1 / -1)
 - scripts/Hud/HudIcon.lua (+152 / -11)
 - scripts/Hud/PullDownList.lua (+167 / -10)
@@ -80,7 +80,7 @@ Summary (FarmPilot 1.0.9.6): 91 files modified, 285 files added, 3 files removed
 - scripts/Utils/UtilFuncs.lua (+2 / -18)
 - scripts/XML.lua (+46 / -12)
 - textures/ad_gui.dds (binary, replaced)
-- textures/ad_gui.xml (+11 / -0)
+- textures/ad_gui.xml (+17 / -0)
 - translations/translation_br.xml (+1091 / -90)
 - translations/translation_cs.xml (+1092 / -91)
 - translations/translation_ct.xml (+1093 / -92)

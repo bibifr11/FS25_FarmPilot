@@ -21,8 +21,8 @@
 -- - Autorisés : le chemin de terre est pris seulement s'il fait gagner du temps (ou si la route est trop étroite).
 -- - Jamais : un chemin de terre coûte 100 fois plus ; il n'est pris que s'il n'y a pas d'autre route (ou si la seule
 --   autre route est trop étroite pour l'attelage). Le log le dit.
--- - (15/11) Route trop étroite pour l'attelage contre tertiaire en raccourci : la tertiaire passe (NARROW_WEIGHT,
---   PathCalculationWidth.lua, plus cher que ACCESS_WEIGHT). Le journal le dit.
+-- - (15/11) Route trop étroite pour l'attelage contre tertiaire : la tertiaire passe (NARROW_WEIGHT,
+--   PathCalculationWidth.lua). Le journal le dit.
 -- - Un segment est « chemin de terre » quand l'un de ses deux points l'est (comme les routes secondaires).
 -- - Nom affiché « route tertiaire » (principale, secondaire, tertiaire ; le code garde « dirt »). Même option
 --   pour les secondaires (Auto, Jamais ou Autorisé) :
@@ -31,10 +31,11 @@
 --   pas le cas avant) ; camions et semis : comme AutoDrive d'origine (secondaire 20 fois
 --   plus chère) ; Autorisées = au temps de trajet, comme une principale ; Jamais = 100 fois plus chère, seulement
 --   s'il n'y a pas d'autre route.
--- - Une route tertiaire ne sert qu'à accéder à une destination, jamais autrement :
---   elle n'est permise que si elle touche le départ ou l'arrivée (la destination est
---   dessus ou au bout, ou le véhicule en repart). Jamais comme raccourci entre deux autres routes : ce passage coûte
---   ACCESS_WEIGHT, donc seulement s'il n'existe vraiment aucune autre route (le log le dit).
+-- - (16/11) Une route tertiaire est une route normale, limitée à sa vitesse (25 km/h par défaut) : elle est prise,
+--   raccourci compris, dès qu'elle fait gagner du temps au total. « Seulement pour aller à son point » est la règle
+--   des routes d'accès (AccessRoadManager.lua), pas des tertiaires. Avant, une tertiaire en raccourci entre deux
+--   autres routes coûtait ACCESS_WEIGHT (1 000 000) et n'était prise que s'il n'existait aucune autre route.
+--   ACCESS_WEIGHT reste à 0 ; la zone d'accès (accessPoints) sert encore au journal et aux routes d'accès.
 -- - (12/11) Auto des réglages véhicule « Routes secondaires » et « Routes tertiaires » : selon le type de véhicule
 --   (roue dentée de chaque ligne : tracteurs, camions et semis, voitures et pick-up, chargeurs et télescopiques,
 --   automoteurs ; Oui / Non pour tous les véhicules), voir RoadTypesVehicles.lua. Non = seulement s'il n'y a pas
@@ -57,7 +58,7 @@ ADDirtRoads.DEFAULT_ROUTE_SPEED = 40        -- km/h : vitesse sur route quand le
 ADDirtRoads.TRUCK_SPEED = 75                -- km/h : au-delà, un véhicule hors catégorie tracteur compte comme camion
 ADDirtRoads.LOOK_AHEAD = 30                 -- m : ralentir avant d'entrer sur un chemin de terre
 
-ADDirtRoads.ACCESS_WEIGHT = 1000000       -- tertiaire qui ne mène ni au départ ni à la destination : jamais (sauf seule route)
+ADDirtRoads.ACCESS_WEIGHT = 0             -- (16/11) tertiaire en raccourci : plus de pénalité, au temps comme une route normale
 ADDirtRoads.SECONDARY_FACTOR_AUTO = 20      -- coût d'une route secondaire dans AutoDrive d'origine (PathCalculation.lua)
 
 ADDirtRoads.MODE_AUTO = 1
@@ -399,7 +400,7 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     vehicle.fpDirtRouteLog = key
     local name = (vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil) and vehicle.ad.stateModule:getName() or tostring(vehicle.getName ~= nil and vehicle:getName() or "?")
     local allowed, why = ADDirtRoads.isAllowed(vehicle)
-    -- tertiaire prise ailleurs qu'à l'accès au départ / à la destination : seulement faute d'autre route
+    -- tertiaire prise ailleurs qu'à l'accès au départ / à la destination : raccourci (au temps depuis le 16/11)
     local firstWp = wayPoints[1]
     local okA, access = FarmPilotCall(ADDirtRoads.accessPoints, firstWp ~= nil and firstWp.id or nil, lastWp ~= nil and lastWp.id or nil)
     local through = 0
@@ -416,7 +417,7 @@ function ADDirtRoads.logRoute(vehicle, wayPoints)
     if through > 0 and narrow > 0 then
         log("%s : route tertiaire prise en raccourci (%d points) : les autres routes ont un passage trop étroit pour l'attelage (%.1f m) ou n'existent pas, la tertiaire passe avant une route trop étroite", tostring(name), through, needed or 0)
     elseif through > 0 then
-        log("%s : route tertiaire prise en raccourci (%d points), seulement parce qu'il n'y a pas d'autre route", tostring(name), through)
+        log("%s : route tertiaire prise en raccourci (%d points), plus rapide au total (%d km/h maxi dessus)", tostring(name), through, ADDirtRoads.getMaxSpeed())
     elseif allowed then
         log("%s : route tertiaire pour accéder à la destination (%d points, %d km/h maxi dessus, %s)", tostring(name), count, ADDirtRoads.getMaxSpeed(), why)
     else

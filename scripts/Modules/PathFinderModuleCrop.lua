@@ -11,6 +11,10 @@
 --
 -- Historique : 24/10 13:34, même en poursuite les îlots sont ignorés (getFruitRatio :
 -- seule compte une culture qui n'est ni un plant isolé ni une bande étroite).
+-- (16/11) champ 52 du Mechet : culture écrasée par les roues (blé d'hiver état 11) comptée comme culture debout par
+-- getFruitRatio : aucune sortie pour la benne de moissonneuse, même sur ses propres traces. Elle compte maintenant
+-- comme coupée (pas pour l'ensileuse, PathFinderModule.crushedIsCrop). Zone mêlée (le jeu ne rend qu'un état) :
+-- relevés tous les 0,5 m, seul le blé debout compte ; une trace fine dans le blé ne rend jamais la zone libre.
 --
 -- Règle : en strict, toute culture debout compte, pas seulement celle trouvée dans la trémie ; la case de départ
 -- (où le train est déjà) ne bloque pas la sortie.
@@ -194,7 +198,41 @@ function PathFinderModule.getFruitRatio(fruitTypeIndex, c1X, c1Z, c2X, c2Z, c3X,
     if fruitValue == nil or totalPixels == nil or totalPixels <= 0 then
         return 0
     end
+    -- (16/11) le jeu rend l'état écrasé par les roues : la zone peut mêler traces et blé debout, relue point par point
+    if fruitValue > 0 and not PathFinderModule.crushedIsCrop and PathFinderModule.isCrushedFruitState ~= nil
+        and PathFinderModule.isCrushedFruitState(fruit, growthState) then
+        return PathFinderModule.getStandingRatio(fruitTypeIndex, fruit, c1X, c1Z, c2X, c2Z, c3X, c3Z)
+    end
     return fruitValue / totalPixels
+end
+
+-- (16/11) share of an area (start, width, height corners) with this crop standing: neither cut, withered nor crushed by
+-- the wheels. Samples CRUSHED_SAMPLE_STEP m apart (wheel tracks are 0.5-0.8 m wide), CRUSHED_SAMPLE_MAX at most
+PathFinderModule.CRUSHED_SAMPLE_STEP = 0.5
+PathFinderModule.CRUSHED_SAMPLE_MAX = 400
+function PathFinderModule.getStandingRatio(fruitTypeIndex, fruit, c1X, c1Z, c2X, c2Z, c3X, c3Z)
+    local uX, uZ = c2X - c1X, c2Z - c1Z
+    local vX, vZ = c3X - c1X, c3Z - c1Z
+    local step = PathFinderModule.CRUSHED_SAMPLE_STEP
+    local nu = math.max(1, math.ceil(math.sqrt(uX * uX + uZ * uZ) / step))
+    local nv = math.max(1, math.ceil(math.sqrt(vX * vX + vZ * vZ) / step))
+    local scale = math.sqrt(nu * nv / PathFinderModule.CRUSHED_SAMPLE_MAX)
+    if scale > 1 then
+        nu, nv = math.max(1, math.floor(nu / scale)), math.max(1, math.floor(nv / scale))
+    end
+    local standing = 0
+    for i = 0, nu - 1 do
+        local fu = (i + 0.5) / nu
+        for j = 0, nv - 1 do
+            local fv = (j + 0.5) / nv
+            local f, g = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(c1X + uX * fu + vX * fv, c1Z + uZ * fu + vZ * fv)
+            if f == fruitTypeIndex and g ~= nil and g > 0 and not fruit:getIsCut(g) and not fruit:getIsWithered(g)
+                and not PathFinderModule.isCrushedFruitState(fruit, g) then
+                standing = standing + 1
+            end
+        end
+    end
+    return standing / (nu * nv)
 end
 
 -- ------------------------------------------------------------------------------------------------------------

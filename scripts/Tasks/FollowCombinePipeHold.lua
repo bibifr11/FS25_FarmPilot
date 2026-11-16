@@ -100,7 +100,10 @@ function FollowCombineTask:holdUnderCombinePipe(dt)
     end
     if math.abs(combine.lastSpeedReal or 0) > FollowCombineTask.TURN_STOPPED_SPEED and self.chasePos ~= nil then
         local _, _, ahead = AutoDrive.worldToLocal(self.vehicle, self.chasePos.x, self.chasePos.y or 0, self.chasePos.z)
-        if ahead > -1 then
+        -- (16/11) nez à la ligne de coupe, culture debout devant : arrêt (stopAtCutLine), voir CombineUnloaderModeCutLine.lua
+        if ahead > -1 and self.stopAtCutLine ~= nil and self:stopAtCutLine(dt) then
+            return true
+        elseif ahead > -1 then
             self.vehicle.ad.specialDrivingModule:driveToPoint(dt, self.chasePos, speed, false, 1, math.max(speed + 5, 6))
             return true
         end

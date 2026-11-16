@@ -237,6 +237,7 @@ source(Utils.getFilename("scripts/Tasks/ExitFieldTaskStuck.lua", g_currentModDir
 source(Utils.getFilename("scripts/Tasks/FollowVehicleTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/StepAsideTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/ReverseFromBadLocationTask.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Tasks/CropBackTask.lua", g_currentModDirectory)) -- (16/11) benne de moissonneuse : recul sur son tracé, sortie de la culture debout après le déchargement
 source(Utils.getFilename("scripts/Tasks/ParkTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/RepairTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/HandleHarvesterTurnTask.lua", g_currentModDirectory))
@@ -333,6 +334,7 @@ source(Utils.getFilename("scripts/Modes/CombineUnloaderModeFillNode.lua", g_curr
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeTracks.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeCourseplay.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeChopperChase.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/CombineUnloaderModeCutLine.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant (outils frontaux, masses)
 source(Utils.getFilename("scripts/Modes/AutonomousNoseIn.lua", g_currentModDirectory)) -- mode Autonome : entrée le nez en avant dans une place prise en marche arrière

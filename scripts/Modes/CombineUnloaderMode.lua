@@ -80,6 +80,7 @@ function CombineUnloaderMode:monitorTasks(dt)
     end
     self:recordTrack() -- ensileuse : traces de la benne et de l'ensileuse, voir CombineUnloaderModeTracks.lua
     self:recordCombineTrail()
+    CropBackTask.recordTrail(self.vehicle) -- (16/11) moissonneuse : tracé du tracteur pour le recul hors de la culture, voir CropBackTask.lua
     --We are stuck
     if self.failedPathFinder >= 5 or ((self.vehicle.ad.specialDrivingModule:shouldStopMotor() or self.vehicle.ad.specialDrivingModule.stoppedTimer:done()) and self.vehicle.ad.specialDrivingModule.isBlocked) then
         CombineUnloaderMode.debugMsg(self.vehicle, "CombineUnloaderMode:monitorTasks() - detected stuck vehicle - try reversing out of it now")
@@ -449,8 +450,20 @@ function CombineUnloaderMode:getTaskAfterUnload(filledToUnload)
             local inCrop = AutoDrive.isVehicleOrTrailerInCrop(self.vehicle, true)
             local strictCombine = inCrop and AutoDrive.getSetting("avoidFruit", self.vehicle) == "strict"
                 and not (self.combine ~= nil and self.combine.ad ~= nil and self.combine.ad.isChopper)
+            -- (16/11) champ 52 du Mechet : le 7R, nez dans le blé, n'a jamais reculé (6 calculs « pas de chemin »). Il
+            -- recule maintenant sur son tracé, dans l'axe, par pas, jusqu'à sortir de la culture debout, puis recalcule
+            local backTask, why = nil, nil
             if strictCombine then
-                print(string.format("[AD-Fin] %s: decharge fini dans la culture, strict : pas de destruction de la culture, il attend la et ne repart que par un trajet propre", tostring(self.vehicle:getName())))
+                backTask, why = CropBackTask.newIfNeeded(self.vehicle, self.combine)
+            end
+            if backTask ~= nil then
+                print(string.format("[AD-Fin] %s: decharge fini dans la culture (%s), strict : pas de destruction de la culture, il recule sur son trace (pas de %d m, %d m au plus) puis recalcule",
+                    tostring(self.vehicle:getName()), tostring(why), CropBackTask.STEP, CropBackTask.MAX))
+                nextTask = backTask
+                self.state = self.STATE_LEAVE_CROP
+            elseif strictCombine then
+                print(string.format("[AD-Fin] %s: decharge fini dans la culture, strict : pas de destruction de la culture, %s : il attend la et ne repart que par un trajet propre",
+                    tostring(self.vehicle:getName()), tostring(why)))
                 self:setToWaitForCall()
             elseif inCrop then
                 CombineUnloaderMode.debugMsg(self.vehicle, "CombineUnloaderMode:getTaskAfterUnload ClearCropTask...")
@@ -887,6 +900,7 @@ function CombineUnloaderMode:getPipeChasePosition(planningPhase)
             sideIndex = AutoDrive.CHASEPOS_REAR
             chaseNode = rearChasePos
          end
+        if self.boundChaseToCutLine ~= nil then chaseNode = self:boundChaseToCutLine(chaseNode, sideIndex, planningPhase) end -- (16/11) nez derrière la ligne de coupe, voir CombineUnloaderModeCutLine.lua
     end
 
     self.chasePosIndex = sideIndex

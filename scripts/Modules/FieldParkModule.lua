@@ -39,6 +39,8 @@
 -- CatchCombinePipeTask:update (holdForExit), ExitFieldTaskExitPoints.lua (setFieldExit, isExitPointTaken),
 -- ADHarvestManager:update (trackHarvester), PathFinderModulePark.lua et CombineUnloaderModeTracks.lua (getPassWidth,
 -- isInHarvesterWay). Réglage général « fieldParkWhileWaiting » (isEnabled).
+-- (16/11) isCrushedState (culture écrasée par les roues) est lue aussi par PathFinderModuleCropMap.lua et
+-- PathFinderModuleCrop.lua (chargés après ce fichier) pour les bennes de moissonneuse.
 -- ============================================================================================================
 
 ADFieldPark = {}
@@ -130,8 +132,10 @@ end
 -- (16/11) Champ 52 : bande le long du muret écrasée par les roues (blé d'hiver état 11 « tireTracks » de la carte,
 -- ni coupé ni fané pour le jeu) comptée comme blé debout : aucune place pour la benne alors que la bande était libre.
 -- État écrasé par les roues : ni en croissance, ni prêt à récolter, ni coupé, ni fané. Lu par les fonctions du jeu
--- quand elles existent, sinon par les numéros d'état du fruit. Seulement pour la place de la benne et le chemin
--- jusqu'à elle (FieldParkModule*.lua) ; le calcul des routes (PathFinderModule) ne change pas.
+-- quand elles existent, sinon par les numéros d'état du fruit. D'abord pour la place de la benne et le chemin
+-- jusqu'à elle (FieldParkModule*.lua).
+-- (16/11) Même fonction pour la carte des cultures des bennes de moissonneuse (PathFinderModule.isCrushedFruitState,
+-- PathFinderModuleCropMap.lua) : chemins, reculs, poursuite et sortie après le déchargement. Pas pour l'ensileuse.
 ADFieldPark.crushedCache = {}
 
 local function callState(fruit, names, state)
@@ -185,7 +189,7 @@ function ADFieldPark.isCrushedState(fruit, state)
         crushed = ok and r == true
         cache[state] = crushed
         if crushed then
-            print(string.format("[AD-Place] %s état %s : écrasé par les roues (%s), compté sans culture pour la place de la benne",
+            print(string.format("[AD-Place] %s état %s : écrasé par les roues (%s), compté sans culture pour la place et les trajets des bennes de moissonneuse",
                 tostring(fruit.name), tostring(state), tostring(how)))
         end
     end

@@ -16,8 +16,15 @@
 --   champ ne sont pas son champ.
 --
 -- - 14/11 : luzerne, trèfle et prairie temporaire (sol de prairie) comptent comme l'herbe (isMeadowGround).
+-- - (16/11) champ 52 du Mechet : le 7R, le nez dans le blé après le déchargement, voyait ses propres traces derrière
+--   lui comme du blé debout (blé d'hiver état 11 « tireTracks », ni coupé ni fané pour le jeu) : aucune sortie, même
+--   en arrière. La culture écrasée par les roues compte comme « pas de culture » pour les bennes de moissonneuse
+--   (ADFieldPark.isCrushedState, FieldParkModule.lua). Gardée à part dans chaque case : l'ensileuse
+--   (crushedIsCrop, mis par Specialization.lua) la voit toujours comme avant. Une trace fine dans le blé debout ne
+--   libère que ses relevés : les contrôles sur la largeur du train voient le blé autour.
 --
--- Règle : culture coupée ou fanée, herbe et prairie comptent comme « pas de culture ».
+-- Règle : culture coupée, fanée ou écrasée par les roues (sauf ensileuse), herbe et prairie comptent comme « pas de
+-- culture ».
 --
 -- Branché par PathFinderModule.lua (startPathPlanningToPipe : setHarvestField ; cases de la grille :
 -- getMapOnFieldAt ; lissage : getMapCropRatio, getCropFilter) et AutoDrive.lua (refreshFieldMap à chaque image).
@@ -46,6 +53,9 @@ PathFinderModule.FINE_BAND_WIDTH = 2000
 PathFinderModule.FINE_STEP = 0.5
 PathFinderModule.fineBand = {}       -- key of a 2 m cell -> true when it lies in the band (set by the field scan)
 PathFinderModule.fineReads = 0
+-- (16/11) crop crushed by the wheels counts as standing crop only while a forage harvester unloader updates
+-- (set and cleared around its task update in Specialization.lua): the forage harvester rules do not change
+PathFinderModule.crushedIsCrop = false
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Sol de prairie
@@ -76,8 +86,28 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- Lecture d'une case
 -- ------------------------------------------------------------------------------------------------------------
--- standing crop at one position: fruit type index, 0 if none (cut, withered, grass and meadow count as none)
+-- (16/11) state of a fruit crushed by the wheels (neither growing, ready, cut nor withered): the classification of the
+-- parking place (FieldParkModule.lua, cache per fruit and state), never duplicated
+function PathFinderModule.isCrushedFruitState(fruit, growthState)
+    if fruit == nil or growthState == nil or ADFieldPark == nil or ADFieldPark.isCrushedState == nil then
+        return false
+    end
+    return ADFieldPark.isCrushedState(fruit, growthState) == true
+end
+
+-- standing crop at one position: fruit type index, 0 if none (cut, withered, grass and meadow count as none);
+-- crushed by the wheels: as none too, unless a forage harvester unloader updates (crushedIsCrop)
 function PathFinderModule.readCropAt(x, z)
+    local crop, grass, crushed = PathFinderModule.readCropSample(x, z)
+    if crushed ~= nil and PathFinderModule.crushedIsCrop then
+        return crushed, grass
+    end
+    return crop, grass
+end
+
+-- one sample as kept in the map: standing crop (0 if none), grass ground, and the fruit crushed by the wheels there
+-- (third value, nil if none; then the first value is 0)
+function PathFinderModule.readCropSample(x, z)
     local fruitTypeIndex, growthState = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(x, z)
     if fruitTypeIndex == nil or fruitTypeIndex == 0 or growthState == nil or growthState == 0 then
         return 0
@@ -90,6 +120,10 @@ function PathFinderModule.readCropAt(x, z)
     local fruit = g_fruitTypeManager:getFruitTypeByIndex(fruitTypeIndex)
     if fruit == nil or fruit:getIsCut(growthState) or fruit:getIsWithered(growthState) then
         return 0
+    end
+    -- (16/11) écrasé par les roues (blé d'hiver état 11 du Mechet) : gardé à part, compté sans culture
+    if PathFinderModule.isCrushedFruitState(fruit, growthState) then
+        return 0, nil, fruitTypeIndex
     end
     -- the stubble behind the harvester can still answer with the crop above: confirm with the same reading as
     -- the checks of this morning (fruit area of a 0.5 m square, cut or withered counts as none)
@@ -112,8 +146,12 @@ function PathFinderModule.getMapCell(ix, iz)
     cell = {t = now, field = {}, grass = {}}
     local cx, cz = ix * PathFinderModule.MAP_CELL, iz * PathFinderModule.MAP_CELL
     for k, offset in ipairs(PathFinderModule.MAP_SAMPLE_OFFSETS) do
-        local crop, grass = PathFinderModule.readCropAt(cx + offset[1], cz + offset[2])
+        local crop, grass, crushed = PathFinderModule.readCropSample(cx + offset[1], cz + offset[2])
         cell[k] = crop
+        if crushed ~= nil then
+            cell.crushed = cell.crushed or {}
+            cell.crushed[k] = crushed
+        end
         cell.grass[k] = grass == true
         cell.field[k] = AutoDrive.checkIsOnField(cx + offset[1], 0, cz + offset[2]) == true
         cell.onField = cell.onField or cell.field[k]
@@ -143,8 +181,12 @@ function PathFinderModule.getFineCell(cell, ix, iz)
         for i = 0, n - 1 do
             local k = j * n + i + 1
             local x, z = x0 + i * step, z0 + j * step
-            local crop, grass = PathFinderModule.readCropAt(x, z)
+            local crop, grass, crushed = PathFinderModule.readCropSample(x, z)
             fine.crop[k] = crop
+            if crushed ~= nil then
+                fine.crushed = fine.crushed or {}
+                fine.crushed[k] = crushed
+            end
             fine.grass[k] = grass == true
             fine.field[k] = AutoDrive.checkIsOnField(x, 0, z) == true
         end
@@ -298,7 +340,12 @@ function PathFinderModule.getMapCropRawAt(x, z)
     local cell = PathFinderModule.getMapCell(ix, iz)
     local fk = PathFinderModule.getFineIndex(ix, iz, x, z)
     if fk ~= nil then
-        return PathFinderModule.getFineCell(cell, ix, iz).crop[fk]
+        local fine = PathFinderModule.getFineCell(cell, ix, iz)
+        local crop = fine.crop[fk]
+        if crop == 0 and PathFinderModule.crushedIsCrop and fine.crushed ~= nil and fine.crushed[fk] ~= nil then
+            return fine.crushed[fk]
+        end
+        return crop
     end
     local k = 1
     if x >= ix * size then
@@ -307,7 +354,25 @@ function PathFinderModule.getMapCropRawAt(x, z)
     if z >= iz * size then
         k = k + 2
     end
+    if cell[k] == 0 and PathFinderModule.crushedIsCrop and cell.crushed ~= nil and cell.crushed[k] ~= nil then
+        return cell.crushed[k]
+    end
     return cell[k]
+end
+
+-- (16/11) cells around a position read again at the next use: the tracks a train just left behind it
+function PathFinderModule.forgetMapAround(x, z, radius)
+    local size = PathFinderModule.MAP_CELL
+    local r = math.ceil(radius / size)
+    local cx, cz = math.floor(x / size + 0.5), math.floor(z / size + 0.5)
+    for ix = cx - r, cx + r do
+        for iz = cz - r, cz + r do
+            local cell = PathFinderModule.fieldMap[(ix + 50000) * 100000 + (iz + 50000)]
+            if cell ~= nil then
+                cell.t = -math.huge
+            end
+        end
+    end
 end
 
 -- field ground at a position from the map (nearest of the 4 samples of its cell, 0.5 m sample in the border band)

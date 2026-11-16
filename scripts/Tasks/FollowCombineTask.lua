@@ -32,6 +32,7 @@ FollowCombineTask.WAIT_BEFORE_FINISH_TIME = 8000
 --   moissonneuse (la benne reste sous la goulotte) :
 --     FollowCombinePipeHold.lua          rester sous la goulotte tant qu'elle vide dans la remorque
 --     FollowCombineCropGuard.lua         ne pas entrer dans la culture debout
+--     CombineUnloaderModeCutLine.lua     (16/11) nez du tracteur derrière la ligne de coupe pendant la vidange
 -- Lignes d'origine modifiées sur place (update) : virage lu dans self.combineInTurn au lieu de
 -- AutoDrive.combineIsTurning, poursuite (décrochement, rouler à côté), attente du virage (machine qui recule,
 -- fin du virage, machine arrêtée) ; textes d'état réécrits (getI18nInfo).
@@ -507,6 +508,7 @@ function FollowCombineTask:followChasePoint(dt)
             totalSpeedLimit = math.max(combineSpeed + 20, 10)
         end
         if self:driveChopperCurve(dt, combineSpeed, acc) then return end -- ensileuse : courbe vers nous, voir FollowCombineTaskChopperDrive.lua
+        if self.stopAtCutLine ~= nil and self:stopAtCutLine(dt) then return end -- (16/11) moissonneuse : nez à la ligne de coupe, voir CombineUnloaderModeCutLine.lua
         self.vehicle.ad.specialDrivingModule:driveToPoint(dt, self.chasePos, combineSpeed, false, acc, totalSpeedLimit)
     end
 end

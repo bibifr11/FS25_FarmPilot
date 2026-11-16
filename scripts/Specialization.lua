@@ -485,8 +485,11 @@ function AutoDrive:onUpdate(dt)
         if allowTaskUpdate then
             -- forage harvester unloader: isolated plants are forgotten by every strict crop check of this update
             PathFinderModule.ignoreIsolatedCrop = AutoDrive.isChopperUnloading(self)
+            -- (16/11) culture écrasée par les roues : libre pour les bennes de moissonneuse, culture pour l'ensileuse (inchangé)
+            PathFinderModule.crushedIsCrop = PathFinderModule.ignoreIsolatedCrop
             self.ad.taskModule:update(dt)
             PathFinderModule.ignoreIsolatedCrop = false
+            PathFinderModule.crushedIsCrop = false
         else
             if AutoDrive.getSetting("FoldImplements", self) then
                 -- should fold implements

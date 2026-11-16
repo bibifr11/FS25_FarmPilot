@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.0.1): 91 files modified, 285 files added, 3 files removed.
+Summary (FarmPilot 1.1.0.2): 91 files modified, 287 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,7 +24,7 @@ Summary (FarmPilot 1.1.0.1): 91 files modified, 285 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+384 / -12)
+- register.lua (+386 / -12)
 - scripts/AutoDrive.lua (+67 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
@@ -40,7 +40,7 @@ Summary (FarmPilot 1.1.0.1): 91 files modified, 285 files added, 3 files removed
 - scripts/Manager/InputManager.lua (+28 / -2)
 - scripts/Manager/RoutesManager.lua (+1 / -1)
 - scripts/Manager/Scheduler.lua (+25 / -0)
-- scripts/Modes/CombineUnloaderMode.lua (+100 / -70)
+- scripts/Modes/CombineUnloaderMode.lua (+114 / -70)
 - scripts/Modes/DriveToMode.lua (+4 / -0)
 - scripts/Modes/LoadMode.lua (+3 / -0)
 - scripts/Modes/PickupAndDeliverMode.lua (+4 / -0)
@@ -54,15 +54,15 @@ Summary (FarmPilot 1.1.0.1): 91 files modified, 285 files added, 3 files removed
 - scripts/Modules/TrailerModule.lua (+0 / -8)
 - scripts/PathCalculation.lua (+39 / -10)
 - scripts/Settings.lua (+180 / -12)
-- scripts/Specialization.lua (+189 / -37)
+- scripts/Specialization.lua (+192 / -37)
 - scripts/Sync.lua (+1 / -1)
 - scripts/Tasks/AbstractTask.lua (+26 / -0)
 - scripts/Tasks/CatchCombinePipeTask.lua (+107 / -12)
 - scripts/Tasks/DriveToDestinationTask.lua (+10 / -2)
 - scripts/Tasks/DriveToVehicleTask.lua (+26 / -56)
-- scripts/Tasks/EmptyHarvesterTask.lua (+75 / -3)
+- scripts/Tasks/EmptyHarvesterTask.lua (+79 / -3)
 - scripts/Tasks/ExitFieldTask.lua (+27 / -67)
-- scripts/Tasks/FollowCombineTask.lua (+96 / -45)
+- scripts/Tasks/FollowCombineTask.lua (+98 / -45)
 - scripts/Tasks/FollowVehicleTask.lua (+16 / -1)
 - scripts/Tasks/HandleHarvesterTurnTask.lua (+59 / -20)
 - scripts/Tasks/LoadAtDestinationTask.lua (+1 / -2)
@@ -260,6 +260,7 @@ Summary (FarmPilot 1.1.0.1): 91 files modified, 285 files added, 3 files removed
 - scripts/Modes/CombineUnloaderModeBlocked.lua
 - scripts/Modes/CombineUnloaderModeChopperChase.lua
 - scripts/Modes/CombineUnloaderModeCourseplay.lua
+- scripts/Modes/CombineUnloaderModeCutLine.lua
 - scripts/Modes/CombineUnloaderModeFillNode.lua
 - scripts/Modes/CombineUnloaderModeJobDone.lua
 - scripts/Modes/CombineUnloaderModeQueue.lua
@@ -342,6 +343,7 @@ Summary (FarmPilot 1.1.0.1): 91 files modified, 285 files added, 3 files removed
 - scripts/Tasks/CatchCombinePipeTaskChopperUTurn.lua
 - scripts/Tasks/CatchCombinePipeTaskClear.lua
 - scripts/Tasks/CatchCombinePipeTaskHandover.lua
+- scripts/Tasks/CropBackTask.lua
 - scripts/Tasks/DetachToolTask.lua
 - scripts/Tasks/DriveToDestinationTaskArrival.lua
 - scripts/Tasks/DriveToDestinationTaskFieldEntrance.lua

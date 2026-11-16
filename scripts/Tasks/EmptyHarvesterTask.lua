@@ -229,6 +229,10 @@ function EmptyHarvesterTask:update(dt)
                     EmptyHarvesterTask.debugMsg(self.vehicle, "EmptyHarvesterTask:update distanceToCombine > 30")
                     self:finished()
                     return
+                elseif self.stopAtCutLine ~= nil and self:stopAtCutLine(dt) then
+                    -- (16/11) moissonneuse : nez à la ligne de coupe, culture debout devant, il n'avance plus
+                    -- (remplissage moins régulier accepté), voir CombineUnloaderModeCutLine.lua
+                    return
                 else
                     EmptyHarvesterTask.debugMsg(self.vehicle, "EmptyHarvesterTask:update driveForward")
                     self.vehicle.ad.specialDrivingModule:driveForward(dt)

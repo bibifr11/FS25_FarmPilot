@@ -653,6 +653,32 @@
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonom" />
 		<text name="AD_MODE_COMPACT" text="Verdichten" />
+		<text name="AD_MODE_LOADER" text="Loader" />
+		<text name="gui_ad_loader_srcSilo" text="Silo %d: %s (%s)" />
+		<text name="gui_ad_loader_srcHeap" text="Heap: %s (%s)" />
+		<text name="gui_ad_loader_point" text="Unloading point" />
+		<text name="gui_ad_loader_hudSrc" text="Take: %s" />
+		<text name="gui_ad_loader_hudSrcNone" text="Take: none (choose)" />
+		<text name="gui_ad_loader_hudDst" text="Unload: %s" />
+		<text name="gui_ad_loader_trailer" text="Trailer" />
+		<text name="gui_ad_loader_pointGone" text="point gone (choose)" />
+		<text name="gui_ad_loader_hudQty" text="Quantity: %s" />
+		<text name="gui_ad_loader_qtyAll" text="All" />
+		<text name="gui_ad_loader_hudTool" text="Tool: %s (attached)" />
+		<text name="gui_ad_loader_hudToolFetch" text="Tool: %s (will attach it)" />
+		<text name="gui_ad_loader_hudToolNone" text="Tool: no shovel (choose)" />
+		<text name="gui_ad_loader_noSource" text="no source selected (Take row)" />
+		<text name="gui_ad_loader_siloClosed" text="silo covered, not opened yet" />
+		<text name="gui_ad_loader_empty" text="the source is empty" />
+		<text name="gui_ad_loader_noPoint" text="unloading point not found (Unload row)" />
+		<text name="gui_ad_loader_noTool" text="no shovel attached or selected (Tool row)" />
+		<text name="gui_ad_loader_noRoute" text="no route near the source" />
+		<text name="gui_ad_loader_noRoutePoint" text="no route near the unloading point" />
+		<text name="gui_ad_loader_doneEmpty" text="source empty, loading finished" />
+		<text name="gui_ad_loader_doneQty" text="quantity unloaded, loading finished" />
+		<text name="gui_ad_loader_waitPoint" text="Loader: waiting for room at the unloading point" />
+		<text name="gui_ad_loader_waitTrailer" text="Loader: waiting for a trailer near the source" />
+		<text name="gui_ad_loader_working" text="Loader: working" />
 		<text name="input_ADAutonomousCourses" text="FP - Autonome Kurse (Wahl je Feld)" />
 		<text name="AD_autonomous_start" text="Courseplay-Kurs „%s“ auf Feld %s gestartet" />
 		<text name="AD_autonomous_none" text="kein Courseplay-Kurs mit %s m auf Feld %s, wartet" />

@@ -20,6 +20,8 @@
 -- Le 1er essai vient vite (QUICK_DELAY) et sans recul ; le suivant après le délai réglé, avec recul. Un véhicule
 -- devant : on attend d'abord, il peut repartir (contourné après VEHICLE_STILL_TIME à l'arrêt, DRIVERLESS_STILL_TIME
 -- s'il est garé moteur coupé). Un portail devant s'ouvre tout seul : pas de contournement.
+-- Obstacle fixe sur le réseau de routes (16/11) : un écart d'abord (AvoidModuleSensor.lua, côté libre, recul si
+-- besoin) ; le contournement seulement si l'écart est impossible ou a échoué au même endroit.
 -- Tout tourne sur le serveur, appelé à chaque image depuis ADDrivePathModule:followWaypoints.
 --
 -- Branché par : Specialization.lua (new) ; DrivePathModuleObstacles.lua (reset, handle) ; DrivePathModuleStuck.lua
@@ -146,6 +148,10 @@ function ADObstacleDetourModule:handle(dt, obstacleDetected)
     end
 
     local blockedByStaticObstacle = obstacleDetected and ADObstacleDetourModule.isEnabled() and self:isBlockedByStaticObstacle()
+    -- écart lancé par le capteur avant (AvoidModuleSensor.lua) : abandonné s'il reste arrêté, le contournement suit
+    if self.vehicle.ad.avoidModule ~= nil and self.vehicle.ad.avoidModule.checkSensorShift ~= nil then
+        self.vehicle.ad.avoidModule:checkSensorShift(dt, blockedByStaticObstacle)
+    end
     -- a lane change beside a stopped traffic car (ADAvoidModule) comes first
     if self.vehicle.ad.avoidModule ~= nil and self.vehicle.ad.avoidModule:isActive() then
         blockedByStaticObstacle = false
@@ -181,12 +187,25 @@ function ADObstacleDetourModule:handle(dt, obstacleDetected)
             self:log("obstacle is a vehicle, keep waiting (%.0f s)", stillTime / 1000)
             return false
         end
+        -- 16/11 18:59 (Patriot 4450, muret et bord de toit à côté de la ligne) : obstacle fixe sur le réseau, un écart
+        -- d'abord (AvoidModuleSensor.lua) ; jamais pour un véhicule devant
+        local avoidReason = nil
+        if not vehicleInFront and avoid ~= nil and avoid.startFromFrontSensor ~= nil then
+            local started
+            started, avoidReason = avoid:startFromFrontSensor()
+            if started then
+                return false
+            end
+        end
         if not self:mayTryHere() then
             return false
         end
         if self:findTarget() == nil then
             self:log("no network point to rejoin (or obstacle at the destination), keep waiting")
             return false
+        end
+        if avoidReason ~= nil then
+            avoid:log("capteur avant : écart impossible (%s), contournement", avoidReason)
         end
         self:start()
         return true

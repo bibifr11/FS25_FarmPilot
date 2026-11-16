@@ -11,12 +11,16 @@
 -- lentement là où les capteurs avant font encore l'arrêt final. Un véhicule plus lent devant est suivi à sa propre
 -- vitesse, sans arrêts et redémarrages. Derrière un autre véhicule AutoDrive, arrêt à VEHICLE_GAP m (shouldStop).
 -- Couloir décalé (écart, S8 28/10) : véhicules cherchés sur toute la hauteur (roues, plateaux bas).
+-- Objets fixes (16/11) : le balayage voit tout ce que l'attelage va toucher, sur sa largeur réelle (rampes repliées
+-- comprises) et sur sa hauteur réelle, du sol au-dessus de l'herbe et des bordures basses jusqu'à son point le plus
+-- haut (bord de toit, coin de muret à côté de la ligne) ; boîte inclinée comme la route (pas de sol vu en côte).
+-- Mesures dans ApproachModuleWidth.lua. L'objet trouvé est donné avec son côté : AvoidModule lance l'écart vers 25 m.
 -- Tout tourne sur le serveur, appelé à chaque image depuis ADDrivePathModule:followWaypoints.
 --
 -- Branché par : Specialization.lua (new) ; DrivePathModuleObstacles.lua (reset, getSpeedLimit, shouldStop) ; lu par
 -- AvoidModule.lua (getHit, getEstimatedDistance, isCorridorClear), ObstacleDetourModule.lua (getHit,
 -- getEstimatedDistance, shouldStop), IntersectionModule.lua (getHit) et TrafficYieldModule.lua (getTrainWidth,
--- SIDE_MARGIN).
+-- SIDE_MARGIN). Complété par ApproachModuleWidth.lua (getObjectScanShape : largeur et hauteur des objets fixes).
 -- ============================================================================================================
 
 ADApproachModule = {}
@@ -41,8 +45,9 @@ ADApproachModule.BOX_HALF_HEIGHT = 0.4   -- m
 ADApproachModule.TALL_BOX_BOTTOM = 0.4   -- m
 ADApproachModule.TALL_BOX_TOP = 3.6      -- m
 ADApproachModule.SIDE_MARGIN = 0.3       -- m added on each side of the train width (vehicles)
-ADApproachModule.OBJECT_WIDTH_FACTOR = 0.75 -- static objects: same corridor as the front sensor (vehicle width * 0.75),
-                                            -- a wider one would crawl along every pylon or hedge close to the road
+-- objets fixes (16/11) : largeur et hauteur réelles de l'attelage, réglages dans ApproachModuleWidth.lua
+-- (avant : largeur du véhicule * 0,75 et bande de 0,8 m à la hauteur du capteur, le bord de toit et le coin de muret
+-- à côté de la ligne n'étaient pas vus)
 ADApproachModule.SCAN_FRAMES = 8         -- one scan every n frames
 ADApproachModule.SLOW_SCAN_FRAMES = 24   -- one scan every n frames when stopped or creeping (multiple of SCAN_FRAMES)
 ADApproachModule.SLOW_SPEED = 3          -- km/h, below this the slow scan rate is used
@@ -165,7 +170,9 @@ function ADApproachModule:buildBoxes(range, offset)
         return boxes
     end
     local halfWidth = self:getTrainWidth() * 0.5 + ADApproachModule.SIDE_MARGIN
-    local halfWidthObjects = (self.vehicle.size ~= nil and self.vehicle.size.width or 3) * ADApproachModule.OBJECT_WIDTH_FACTOR * 0.5
+    local halfWidthObjects, objectBottom, objectTop = self:getObjectScanShape()
+    local objectHalfHeight = (objectTop - objectBottom) * 0.5
+    local terrainRoot = g_currentMission.terrainRootNode
     local heightOffset = (AutoDrive.getSetting("collisionHeigth", self.vehicle) or 1) + ADApproachModule.BOX_HALF_HEIGHT
 
     local ax, ay, az = self:getFrontPosition()
@@ -224,6 +231,12 @@ function ADApproachModule:buildBoxes(range, offset)
             local n = math.max(1, math.ceil(usable / ADApproachModule.BOX_MAX_LENGTH))
             local ry = math.atan2(bx - ax, bz - az)
             local dirX, dirZ = (bx - ax) / len, (bz - az) / len
+            -- sol (route ou terrain, le plus haut) à <d> m le long du tronçon : pente de la boîte des objets
+            local function groundAt(d)
+                local px, pz = ax + dirX * d, az + dirZ * d
+                return math.max(getTerrainHeightAtWorldPos(terrainRoot, px, 300, pz), ay + (by - ay) * (d / len))
+            end
+            local groundStart = groundAt(0)
             for k = 0, n - 1 do
                 local d0 = usable * k / n
                 local d1 = usable * (k + 1) / n
@@ -232,10 +245,17 @@ function ADApproachModule:buildBoxes(range, offset)
                 local cx, cz = ax + dirX * mid, az + dirZ * mid
                 -- route height (bridges) or terrain, whichever is higher, like the front sensors
                 local routeY = ay + (by - ay) * (mid / len)
-                local cy = math.max(getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, cx, 300, cz), routeY) + heightOffset
+                local cy = math.max(getTerrainHeightAtWorldPos(terrainRoot, cx, 300, cz), routeY) + heightOffset
+                -- boîte des objets : du sol + objectBottom à objectTop, inclinée selon la pente du morceau (rx < 0 en
+                -- montée, comme les capteurs) ; dans un creux, la base suit le sol des deux bouts
+                local groundEnd = groundAt(d1)
+                local base = math.max(cy - heightOffset, (groundStart + groundEnd) * 0.5)
+                local rx = -math.atan2(groundEnd - groundStart, d1 - d0)
+                groundStart = groundEnd
                 table.insert(boxes, {
                     x = cx, y = cy, z = cz, ry = ry, nx = dirZ, nz = -dirX, groundY = cy - heightOffset,
                     halfWidth = halfWidth, halfWidthObjects = halfWidthObjects, halfLength = (d1 - d0) * 0.5,
+                    rx = rx, objectY = base + objectBottom + objectHalfHeight, objectHalfHeight = objectHalfHeight,
                     distance = travelled + d0
                 })
             end
@@ -316,12 +336,16 @@ function ADApproachModule:overlapCallback(node)
 end
 
 -- which half of the box holds the obstacle: -1 (side of -normal), 1 (side of +normal), 0 (both or unknown)
-function ADApproachModule:findSide(b, halfWidth, mask)
+-- y, halfHeight, rx : hauteur de la boîte qui a trouvé l'obstacle (bande du capteur par défaut)
+function ADApproachModule:findSide(b, halfWidth, mask, y, halfHeight, rx)
+    y = y or b.y
+    halfHeight = halfHeight or ADApproachModule.BOX_HALF_HEIGHT
+    rx = rx or 0
     local sides = {}
     for _, sign in ipairs({-1, 1}) do
         self.scanHit = false
         local cx, cz = b.x + b.nx * sign * halfWidth * 0.5, b.z + b.nz * sign * halfWidth * 0.5
-        overlapBox(cx, b.y, cz, 0, b.ry, 0, halfWidth * 0.5, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
+        overlapBox(cx, y, cz, rx, b.ry, 0, halfWidth * 0.5, halfHeight, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
         sides[sign] = self.scanHit
     end
     if sides[-1] and not sides[1] then
@@ -352,18 +376,19 @@ function ADApproachModule:scan()
         self.scanHitName = nil
         self.scanHitObject = nil
         self.scanHitNode = nil
-        -- vehicles: the whole train width; static objects: the narrower corridor of the front sensor
+        -- vehicles: the whole train width; static objects (16/11): real width and height of the train
         local isVehicle, halfWidth, mask = true, b.halfWidth, ADCollSensorSplit.maskVehicles
+        local boxY, boxHalfHeight, boxRx = b.y, ADApproachModule.BOX_HALF_HEIGHT, 0
         if offset ~= 0 then
             -- S8: while shifted beside an obstacle, vehicles are watched over the whole height
-            local tallY, tallHalf = ADApproachModule.getTallBox(b)
-            overlapBox(b.x, tallY, b.z, 0, b.ry, 0, b.halfWidth, tallHalf, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
-        else
-            overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
+            boxY, boxHalfHeight = ADApproachModule.getTallBox(b)
         end
+        overlapBox(b.x, boxY, b.z, boxRx, b.ry, 0, b.halfWidth, boxHalfHeight, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
         if not self.scanHit then
+            -- objets fixes : largeur de l'attelage + marge, du sol (au-dessus des bordures) à son point le plus haut
             isVehicle, halfWidth, mask = false, b.halfWidthObjects, ADCollSensorSplit.maskObjects
-            overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidthObjects, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
+            boxY, boxHalfHeight, boxRx = b.objectY, b.objectHalfHeight, b.rx
+            overlapBox(b.x, boxY, b.z, boxRx, b.ry, 0, halfWidth, boxHalfHeight, b.halfLength, "overlapCallback", self, mask, true, true, true, true)
         end
         if self.scanHit then
             found = b.distance
@@ -373,7 +398,8 @@ function ADApproachModule:scan()
             -- a vehicle node without a game object is an AI traffic car (it only waits for us, never for long)
             self.hit = {distance = b.distance, name = self.scanHitName, object = object, isVehicle = isVehicle,
                         isTraffic = isVehicle and object == nil, node = self.scanHitNode,
-                        x = b.x, z = b.z, nx = b.nx, nz = b.nz, side = self:findSide(b, halfWidth, mask), time = g_time}
+                        x = b.x, z = b.z, nx = b.nx, nz = b.nz, side = self:findSide(b, halfWidth, mask, boxY, boxHalfHeight, boxRx),
+                        time = g_time}
             break
         end
     end
@@ -391,16 +417,13 @@ function ADApproachModule:isCorridorClear(offset, range)
     local clear, reason = true, nil
     for _, b in ipairs(boxes) do
         self.scanHit = false
-        if offset ~= nil and offset ~= 0 then
-            -- S8: vehicles over the whole height (wheels, decks, ramps), static objects in the usual band
-            local tallY, tallHalf = ADApproachModule.getTallBox(b)
-            overlapBox(b.x, tallY, b.z, 0, b.ry, 0, b.halfWidth, tallHalf, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskVehicles, true, true, true, true)
-            if not self.scanHit then
-                overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskObjects, true, true, true, true)
-            end
-        else
-            overlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, "overlapCallback", self, ADCollSensorSplit.maskVehicles + ADCollSensorSplit.maskObjects, true, true, true, true)
-        end
+        -- S8 et 16/11 : une seule boîte, véhicules et objets fixes sur toute la hauteur de l'attelage (roues, plateaux
+        -- bas, bord de toit), du bas de la boîte des objets au plus haut des deux boîtes
+        local tallY, tallHalf = ADApproachModule.getTallBox(b)
+        local bottom = math.min(b.objectY - b.objectHalfHeight, tallY - tallHalf)
+        local top = math.max(b.objectY + b.objectHalfHeight, tallY + tallHalf)
+        overlapBox(b.x, (bottom + top) * 0.5, b.z, b.rx, b.ry, 0, b.halfWidth, (top - bottom) * 0.5, b.halfLength, "overlapCallback", self,
+            ADCollSensorSplit.maskVehicles + ADCollSensorSplit.maskObjects, true, true, true, true)
         if self.scanHit then
             clear, reason = false, string.format("'%s' at %.0f m", tostring(self.scanHitName), b.distance)
             break
@@ -466,8 +489,10 @@ function ADApproachModule:getSpeedLimit(dt)
     if self.state ~= ADApproachModule.STATE_SLOWING then
         self.state = ADApproachModule.STATE_SLOWING
         self.lastLogTime = g_time
-        self:log("'%s' %.1f m ahead on the route (range %.0f m): speed limited to %.0f km/h (driving %.0f km/h)",
-            tostring(self.hitName), distance, self.scanRange or 0, limit, math.abs(self.vehicle.lastSpeedReal or 0) * 3600)
+        local hit = self.hit
+        self:log("'%s' %.1f m ahead on the route (range %.0f m, %s, side %s): speed limited to %.0f km/h (driving %.0f km/h)",
+            tostring(self.hitName), distance, self.scanRange or 0, hit ~= nil and (hit.isVehicle and "vehicle" or "object") or "?",
+            hit ~= nil and tostring(hit.side) or "?", limit, math.abs(self.vehicle.lastSpeedReal or 0) * 3600)
     elseif g_time - self.lastLogTime > ADApproachModule.LOG_INTERVAL then
         self.lastLogTime = g_time
         self:log("'%s' %.1f m ahead: speed limited to %.0f km/h (driving %.0f km/h)",
@@ -488,7 +513,7 @@ function ADApproachModule:drawDebug()
             DebugUtil.drawOverlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, 1, 0.5, 0)
         else
             DebugUtil.drawOverlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidth, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, 0, 1, 1)
-            DebugUtil.drawOverlapBox(b.x, b.y, b.z, 0, b.ry, 0, b.halfWidthObjects, ADApproachModule.BOX_HALF_HEIGHT, b.halfLength, 0, 0.6, 0.6)
+            DebugUtil.drawOverlapBox(b.x, b.objectY, b.z, b.rx, b.ry, 0, b.halfWidthObjects, b.objectHalfHeight, b.halfLength, 0, 0.6, 0.6)
         end
     end
 end

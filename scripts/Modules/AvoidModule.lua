@@ -19,11 +19,14 @@
 --   seule, sans rien devant elle, est doublée après QUEUE_TIMEOUT).
 -- - Attelage qui pousse sans avancer contre un obstacle que les capteurs ne voient pas (08/11) : recul, puis
 --   passage à côté (startFromPush).
+-- - Capteur avant qui arrête le véhicule sur un obstacle fixe du réseau (16/11) : écart du côté libre après un
+--   recul, avant tout contournement (AvoidModuleSensor.lua : startFromFrontSensor).
 -- Tout tourne sur le serveur, appelé à chaque image depuis ADDrivePathModule:followWaypoints.
 --
 -- Branché par : Specialization.lua (new) ; DrivePathModuleObstacles.lua (reset, update, handle, lateralOffset) ;
 -- DrivePathModuleStuck.lua (isControlling, startFromPush) ; lu par ApproachModule.lua (getOffset, getScanRange,
--- isActive) et ObstacleDetourModule.lua (isActive, isQueuing). ObstacleDetourQueue.lua (chargé avant) enveloppe
+-- isActive) et ObstacleDetourModule.lua (isActive, isQueuing, startFromFrontSensor et checkSensorShift posés par
+-- AvoidModuleSensor.lua, chargé après). ObstacleDetourQueue.lua (chargé avant) enveloppe
 -- isWaitingMyWay : dernière ligne de ce fichier.
 -- ============================================================================================================
 
@@ -614,7 +617,8 @@ end
 -- renvoie true tant que ce module conduit)
 -- ------------------------------------------------------------------------------------------------------------
 -- kind: "lane" (lane change beside a stopped car: the lane is chosen again after backing up), "side" (shift beside an
--- object seen too late: the same shift if still free, another one otherwise), "push" (pushing against something unseen)
+-- object seen too late: the same shift if still free, another one otherwise), "push" (pushing against something unseen),
+-- "sensor" (stopped by the front sensor: the same side only, AvoidModuleSensor.lua)
 function ADAvoidModule:startBacking(kind, backNeeded, hitDistance, hitName)
     self.backKind = kind
     self.backNeeded = backNeeded
@@ -648,7 +652,11 @@ function ADAvoidModule:handle(dt)
         local distance = (self.hitDistance or 0) + reversed
         -- the lane must still be free from here
         local target
-        if self.backKind == "side" or self.backKind == "push" then
+        if self.backKind == "sensor" and self.retargetAfterSensorBacking ~= nil then
+            -- arrêté par le capteur avant (AvoidModuleSensor.lua) : du même côté seulement
+            local range = math.max(ADAvoidModule.CLEAR_RANGE, distance + self:getTrainLength() + ADAvoidModule.PASS_MARGIN)
+            target = self:retargetAfterSensorBacking(range)
+        elseif self.backKind == "side" or self.backKind == "push" then
             local range = math.max(ADAvoidModule.CLEAR_RANGE, distance + self:getTrainLength() + ADAvoidModule.PASS_MARGIN)
             if self.backKind == "side" and self.vehicle.ad.approachModule:isCorridorClear(self.target, range) then
                 target = self.target

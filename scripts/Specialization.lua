@@ -162,6 +162,8 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloaderFollow", "FarmPilot: unloaders following a combine to its next field, see AutonomousResumeHeader.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSiloCfg", "FarmPilot: silo compactor settings (direction;width;blade;stop;wait;marker), see SiloCompactorTask.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSiloJob", "FarmPilot: silo being compacted when saved (x;z of the silo), see SiloCompactorTask.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpLoaderCfg", "FarmPilot: loader settings (source;x:z;target;x:z;quantity), see LoaderJob.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpLoaderJob", "FarmPilot: loader job running when saved (liters already unloaded), see LoaderJob.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloaderTeam", "FarmPilot: unloaders team of a combine (unique id|trailer|park;...), see AutonomousHarvesterUnloaders.lua")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#selectedFillTypes", "selectedFillTypes")
@@ -240,6 +242,7 @@ function AutoDrive:onLoad(savegame)
     self.ad.modes[AutoDrive.MODE_UNLOAD] = CombineUnloaderMode:new(self)
     self.ad.modes[AutoDrive.MODE_AUTONOMOUS] = AutonomousMode:new(self)
     if CompactMode ~= nil then self.ad.modes[AutoDrive.MODE_COMPACT] = CompactMode:new(self) end -- (16/11) mode « Tassage », voir SiloCompactorTask.lua
+    if LoaderMode ~= nil then self.ad.modes[AutoDrive.MODE_LOADER] = LoaderMode:new(self) end -- (16/11) mode « Chargeur », voir LoaderMode.lua
 
     self.ad.onRouteToPark = false
     self.ad.onRouteToRefuel = false
@@ -1271,6 +1274,7 @@ function AutoDrive:stopAutoDrive()
         if self.ad.stateModule:isActive() then
             if ADAutonomousManager ~= nil and ADAutonomousManager.journalStop ~= nil then FarmPilotCall(ADAutonomousManager.journalStop, self) end -- arrêt écrit au journal, voir AutonomousManager.lua
             if ADSiloJob ~= nil then FarmPilotCall(ADSiloJob.onStop, self) end -- tasseur : tassage oublié, lame / rouleau levés, voir SiloCompactorTask.lua
+            if ADLoaderJob ~= nil and ADLoaderJob.onStop ~= nil then FarmPilotCall(ADLoaderJob.onStop, self) end -- chargeur : travail oublié, godet ne vide plus, voir LoaderMode.lua
             self.ad.drivePathModule:reset()
             self.ad.specialDrivingModule:reset()
             self.ad.trailerModule:reset()

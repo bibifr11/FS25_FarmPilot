@@ -123,6 +123,7 @@ source(Utils.getFilename("scripts/Events/AutonomousToolEvent.lua", g_currentModD
 source(Utils.getFilename("scripts/Events/TrailerSwapEvent.lua", g_currentModDirectory)) -- dossier des places de l'échange de bennes
 source(Utils.getFilename("scripts/Events/HeaderTractorEvent.lua", g_currentModDirectory)) -- véhicule de la remorque porte-barre
 source(Utils.getFilename("scripts/Events/SiloCompactEvent.lua", g_currentModDirectory)) -- fenêtre « Tassage du silo » : réglages, Démarrer / Arrêter
+source(Utils.getFilename("scripts/Events/LoaderEvent.lua", g_currentModDirectory)) -- (16/11) mode « Chargeur » : réglages du HUD
 source(Utils.getFilename("scripts/Events/DebugSettingsEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/StartStopEvent.lua", g_currentModDirectory))
 
@@ -270,11 +271,13 @@ source(Utils.getFilename("scripts/Modules/ObstacleDetourQueue.lua", g_currentMod
 source(Utils.getFilename("scripts/Modules/ObstacleDetourEscape.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ObstacleDetourModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ApproachModule.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/ApproachModuleWidth.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/CornerModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/CornerModuleBends.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/CornerModuleEndRoute.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/CornerModuleEndManoeuvre.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/AvoidModule.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/AvoidModuleSensor.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModuleHarvester.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModuleMemo.lua", g_currentModDirectory))
@@ -365,6 +368,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousHarvesterUnloaders.lua", g_cur
 source(Utils.getFilename("scripts/Modes/AutonomousUnloaderAutoPick.lua", g_currentModDirectory)) -- (16/11) machine au travail sans benne : tracteurs et remorques choisis et envoyés au champ
 source(Utils.getFilename("scripts/Hud/HudHarvester.lua", g_currentModDirectory)) -- HUD Autonome moissonneuse / ensileuse : Champ, Barre, Champ suivant, Barre suivante
 source(Utils.getFilename("scripts/Hud/HudSilo.lua", g_currentModDirectory)) -- (16/11) HUD du mode « Tassage » : lignes Silo et Attente
+source(Utils.getFilename("scripts/Hud/HudLoader.lua", g_currentModDirectory)) -- (16/11) HUD du mode « Chargeur » : Prendre, Vider, Outil, Quantité
 source(Utils.getFilename("scripts/Modes/SprayerRestReturn.lua", g_currentModDirectory)) -- épandeurs : reste rendu à la zone de plein ou vendu, jamais en big bags
 source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory)) -- épandeurs : vider le reste (fin de champ, bouton parking)
 source(Utils.getFilename("scripts/Manager/RefillSources.lua", g_currentModDirectory)) -- zones de plein filtrées selon le produit
@@ -413,6 +417,9 @@ source(Utils.getFilename("scripts/Modes/AutonomousYardZone.lua", g_currentModDir
 source(Utils.getFilename("scripts/Modes/SiloCompactor.lua", g_currentModDirectory)) -- silo couloir : bennes réparties sur la largeur, tracteur tasseur, silo fermé respecté
 source(Utils.getFilename("scripts/Modes/SiloCompactorTask.lua", g_currentModDirectory)) -- (16/11) tasseur : fenêtre « Tassage », lame et rouleau, silo à fond ou traversant
 source(Utils.getFilename("scripts/Modes/SiloCompactMode.lua", g_currentModDirectory)) -- (16/11) mode « Tassage » : outils avant/arrière attelés, tassage autonome, retour des outils et garage
+source(Utils.getFilename("scripts/Modes/LoaderJob.lua", g_currentModDirectory)) -- (16/11) mode « Chargeur » : sources (silos, tas), points de vidage, réglages
+source(Utils.getFilename("scripts/Tasks/LoaderTask.lua", g_currentModDirectory)) -- (16/11) mode « Chargeur » : prendre et vider (fils de UnloadBGATask)
+source(Utils.getFilename("scripts/Modes/LoaderMode.lua", g_currentModDirectory)) -- (16/11) mode « Chargeur » : godet à atteler, trajets par la route, fin et garage
 source(Utils.getFilename("scripts/Manager/GraphManagerGrid.lua", g_currentModDirectory)) -- points du réseau par cases de 100 m : point le plus proche sans parcourir tout le réseau
 source(Utils.getFilename("scripts/Utils/FarmPilotPerf.lua", g_currentModDirectory)) -- commande console fpPerf : temps pris par FarmPilot dans log.txt
 source(Utils.getFilename("scripts/Modes/AutonomousResumeReturn.lua", g_currentModDirectory)) -- mode Autonome : le retour au garage reprend après le chargement de la partie et après la relance d'AutoDrive

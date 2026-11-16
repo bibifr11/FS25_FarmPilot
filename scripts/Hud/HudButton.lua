@@ -73,6 +73,8 @@ function ADHudButton:getNewState(vehicle)
             newState = 6
         elseif AutoDrive.MODE_COMPACT ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_COMPACT then
             newState = vehicle.ad.stateModule:isActive() and 10 or 9 -- (16/11) mode « Tassage » : tracteur à lame (jaune en marche)
+        elseif AutoDrive.MODE_LOADER ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOADER then
+            newState = vehicle.ad.stateModule:isActive() and 12 or 11 -- (16/11) mode « Chargeur » (icône provisoire : chargeuse BGA)
         elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
             -- FarmPilot : tracteur « A » blanc, jaune quand le chauffeur roule
             newState = vehicle.ad.stateModule:isActive() and 8 or 7
@@ -248,6 +250,7 @@ function ADHudButton:getNewState(vehicle)
             or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_UNLOAD
             or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_DRIVETO
             or vehicle.ad.stateModule:getMode() == AutoDrive.MODE_COMPACT -- (16/11) mode « Tassage » : marqueur devant la ligne Silo
+            or (AutoDrive.MODE_LOADER ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOADER) -- (16/11) mode « Chargeur » : marqueur devant « Prendre »
             then
             newState = 1
         elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_PICKUPANDDELIVER then

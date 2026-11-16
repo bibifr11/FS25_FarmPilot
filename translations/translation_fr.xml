@@ -656,6 +656,32 @@
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonome" />
 		<text name="AD_MODE_COMPACT" text="Tassage" />
+		<text name="AD_MODE_LOADER" text="Chargeur" />
+		<text name="gui_ad_loader_srcSilo" text="Silo %d : %s (%s)" />
+		<text name="gui_ad_loader_srcHeap" text="Tas : %s (%s)" />
+		<text name="gui_ad_loader_point" text="Point de vidage" />
+		<text name="gui_ad_loader_hudSrc" text="Prendre : %s" />
+		<text name="gui_ad_loader_hudSrcNone" text="Prendre : aucun (choisir)" />
+		<text name="gui_ad_loader_hudDst" text="Vider : %s" />
+		<text name="gui_ad_loader_trailer" text="Benne" />
+		<text name="gui_ad_loader_pointGone" text="point disparu (choisir)" />
+		<text name="gui_ad_loader_hudQty" text="Quantité : %s" />
+		<text name="gui_ad_loader_qtyAll" text="Tout" />
+		<text name="gui_ad_loader_hudTool" text="Outil : %s (attelé)" />
+		<text name="gui_ad_loader_hudToolFetch" text="Outil : %s (va l'atteler)" />
+		<text name="gui_ad_loader_hudToolNone" text="Outil : aucun godet (choisir)" />
+		<text name="gui_ad_loader_noSource" text="aucune source choisie (ligne Prendre)" />
+		<text name="gui_ad_loader_siloClosed" text="silo bâché, pas encore ouvert" />
+		<text name="gui_ad_loader_empty" text="la source est vide" />
+		<text name="gui_ad_loader_noPoint" text="point de vidage introuvable (ligne Vider)" />
+		<text name="gui_ad_loader_noTool" text="pas de godet attelé ni choisi (ligne Outil)" />
+		<text name="gui_ad_loader_noRoute" text="aucune route près de la source" />
+		<text name="gui_ad_loader_noRoutePoint" text="aucune route près du point de vidage" />
+		<text name="gui_ad_loader_doneEmpty" text="source vide, chargement fini" />
+		<text name="gui_ad_loader_doneQty" text="quantité vidée, chargement fini" />
+		<text name="gui_ad_loader_waitPoint" text="Chargeur : attend de la place au point de vidage" />
+		<text name="gui_ad_loader_waitTrailer" text="Chargeur : attend une benne près de la source" />
+		<text name="gui_ad_loader_working" text="Chargeur : au travail" />
 		<text name="input_ADAutonomousCourses" text="FP - Parcours Autonome (choix par champ)" />
 		<text name="AD_autonomous_start" text="parcours Courseplay « %s » lancé sur le champ %s" />
 		<text name="AD_autonomous_none" text="aucun parcours Courseplay de %s m sur le champ %s, en attente" />

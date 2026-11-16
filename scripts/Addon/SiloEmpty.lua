@@ -72,6 +72,7 @@ function ADAddonSiloEmpty.install(autoDrive)
     local originalUpdate = loadTask.update
     loadTask.update = function(self, dt)
         if self.fpKeepLoading then return originalUpdate(self, dt) end -- plein du semoir FarmPilot : attend plein ou Continuer (Modes/AutonomousRefill.lua)
+        if ADLoaderJob ~= nil and ADLoaderJob.isServed ~= nil and ADLoaderJob.isServed(self.vehicle) then return originalUpdate(self, dt) end -- (16/11) un chargeur la remplit : pas de départ entre deux godets (Tasks/LoaderTask.lua)
         local vehicle = self.vehicle
         if self.state == loadTask.STATE_DRIVING and self.trailers ~= nil and #self.trailers > 0
             and vehicle.ad ~= nil and not vehicle.ad.hasAL

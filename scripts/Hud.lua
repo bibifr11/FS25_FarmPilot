@@ -143,7 +143,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		fpKind = AutoDriveHud.fpRowKind(vehicle) or false
 	end
 	self.fpRowKind = fpKind
-	self.fpNextToolRow = self.fpRowKind ~= false and self.fpRowKind ~= "drive" and self.fpRowKind ~= "silo" -- (15/11) Conduire : ligne « Atteler » à la place d'une ligne vide, HUD de même taille
+	self.fpNextToolRow = self.fpRowKind ~= false and self.fpRowKind ~= "drive" and self.fpRowKind ~= "silo" and self.fpRowKind ~= "loader" -- (15/11) Conduire : ligne « Atteler » à la place d'une ligne vide, HUD de même taille
 	local pullDownRows = self.fpNextToolRow and 4 or 3
 	-- (10/11) mode Autonome : lignes « Outil avant » et « Outil avant suivant » en plus (6 lignes)
 	self.fpFrontRows = self.fpRowKind == "next"
@@ -152,6 +152,9 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	end
 	if self.fpRowKind == "silo" then
 		pullDownRows = 4 -- (16/11) mode « Tassage » : Silo / Attente / Outil avant / Outil arrière, voir Hud/HudSilo.lua
+	end
+	if self.fpRowKind == "loader" then
+		pullDownRows = 4 -- (16/11) mode « Chargeur » : Prendre / Vider / Outil / Quantité, voir Hud/HudLoader.lua
 	end
 
 	self.borderX, self.borderY = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
@@ -211,6 +214,18 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		end
 		self.rowSiloRear = rowAt(1)
 		self.rowSiloFront = rowAt(2)
+		self.row2 = rowAt(3)
+		self.row3 = rowAt(3)
+		self.row4 = rowAt(4)
+		self.rowHeader = rowAt(5)
+	end
+	if self.fpRowKind == "loader" then
+		-- (16/11) mode « Chargeur », 4 lignes de haut en bas : Prendre / Vider / Outil / Quantité
+		local function rowAt(i)
+			return self.posY + (self.pullDownRowOffset + i) * self.borderY + (self.pullDownRowOffset + i - 1) * self.buttonHeight
+		end
+		self.rowLoaderQty = rowAt(1)
+		self.rowLoaderTool = rowAt(2)
 		self.row2 = rowAt(3)
 		self.row3 = rowAt(3)
 		self.row4 = rowAt(4)
@@ -294,6 +309,8 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		driveList.fpTrailer = true
 		driveList.order = 3
 		table.insert(self.hudElements, driveList)
+	elseif self.fpRowKind == "loader" then
+		if ADLoaderHud ~= nil then ADLoaderHud.addRows(self) end -- (16/11) mode « Chargeur » : 4 lignes, voir Hud/HudLoader.lua
 	elseif self.fpRowKind == "silo" then
 		if ADSiloHud ~= nil then ADSiloHud.addRows(self) end -- (16/11) mode « Tassage » : lignes Silo et Attente, voir Hud/HudSilo.lua
 	elseif self.fpRowKind == "harvester" and ADHarvesterHud ~= nil then
@@ -1096,6 +1113,8 @@ function AutoDriveHud:getModeName(vehicle)
 		return g_i18n:getText("AD_MODE_AUTONOMOUS")
 	elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_COMPACT then
 		return g_i18n:getText("AD_MODE_COMPACT")
+	elseif AutoDrive.MODE_LOADER ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_LOADER then
+		return g_i18n:getText("AD_MODE_LOADER")
 	end
 
 	return ""

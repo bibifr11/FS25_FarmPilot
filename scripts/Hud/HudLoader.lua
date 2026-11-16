@@ -2,7 +2,7 @@
 -- FarmPilot : HudLoader.lua
 -- HUD du mode « Chargeur » (16/11) : 4 lignes (Prendre, Vider, Outil, Quantité).
 --
--- - Bouton de mode : « Chargeur » juste après « Tassage » (icône provisoire : chargeuse du mode BGA d'origine).
+-- - Bouton de mode : « Chargeur » juste après « Tassage » (chargeuse « A », jaune quand il roule).
 -- - « Prendre » : tous les silos couloirs de la carte (« Silo N : produit (litres) ») puis les tas au sol trouvés
 --   autour du chargeur et des marqueurs (« Tas : produit (litres) - distance »).
 -- - « Vider » : « Benne » puis les points du jeu qui prennent le produit de la source, le plus proche d'abord.

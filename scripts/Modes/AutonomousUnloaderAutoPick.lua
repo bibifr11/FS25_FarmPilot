@@ -32,6 +32,8 @@
 -- - COMBINE_COUNT bennes pour une moissonneuse, CHOPPER_COUNT pour une ensileuse ; moins s'il n'y a pas assez de
 --   couples qui conviennent. Départ comme le rappel d'équipe : remorque choisie (allée chercher au départ,
 --   TrailerHitch.lua), parking du tracteur gardé. Une fois partis, ils entrent dans son équipe (scanTeams).
+-- - (16/11) Le joueur est dans une benne sur le champ (tracteur conduit par lui, remorque qui prend le produit, à
+--   moins de PLAYER_RANGE m) : elle compte comme une benne qui la sert, pas d'appel d'une autre.
 -- - Rien trouvé : message une fois par champ, nouvel essai au plus toutes les RETRY_TIME.
 -- - Tracteur parti d'ici qui s'est arrêté sans avoir attelé sa remorque : pas repris avant LAUNCH_GUARD.
 -- - Serveur seulement, relevé toutes les SCAN_TIME. Traces [AD-Chantier] : chaque couple, chaque refus.
@@ -58,6 +60,7 @@ ADUnloaderAutoPick.FIELD_MARKER_RANGE = 300     -- m : champ sans numéro, sa 1r
 ADUnloaderAutoPick.KW_TO_HP = 1.36              -- ch par kW
 ADUnloaderAutoPick.MIN_LITERS = 1               -- l : moins = vide
 ADUnloaderAutoPick.DEFAULT_MASS_PER_LITER = 0.001 -- t/l si le produit n'a pas de masse connue
+ADUnloaderAutoPick.PLAYER_RANGE = 300          -- m : benne conduite par le joueur sur le champ, à moins de ça de la machine
 
 -- [machine] = { since = début de la récolte vue, nextTry, field = champ du dernier message, told = { [clé] = true } }
 ADUnloaderAutoPick.watch = {}
@@ -643,6 +646,34 @@ local function hitchedOf(v)
     return list
 end
 
+-- (16/11) le joueur est dans une benne sur le champ (tracteur conduit par lui, remorque attelée qui prend le produit,
+-- sur un champ à moins de PLAYER_RANGE m de la machine) : elle compte comme une benne qui la sert, pas d'appel d'une
+-- autre. Renvoie le tracteur et sa remorque, ou nil
+function ADUnloaderAutoPick.playerUnloader(h, ft)
+    if AutoDrive.getIsEntered == nil then
+        return nil
+    end
+    local hx, hz = posOf(driverOf(h))
+    local drv = driverOf(h)
+    for _, v in pairs(vehicles()) do
+        if v ~= h and v ~= drv and v.getAttachedImplements ~= nil and v.spec_motorized ~= nil
+            and not (ADHeaderFlow ~= nil and ADHeaderFlow.isCombine ~= nil and ADHeaderFlow.isCombine(v))
+            and safe(AutoDrive.getIsEntered, AutoDrive, rootOf(v)) == true then
+            local x, z, y = posOf(v)
+            local onField = x ~= nil and AutoDrive.checkIsOnField ~= nil and safe(AutoDrive.checkIsOnField, x, y or 0, z) == true
+            if onField and dist(x, z, hx, hz) <= ADUnloaderAutoPick.PLAYER_RANGE then
+                for _, o in ipairs(hitchedOf(v)) do
+                    local info, why = ADUnloaderAutoPick.trailerInfo(o, ft)
+                    if info ~= nil or why == "pleine" then
+                        return v, o
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
 -- tracteurs réservés : équipe d'une autre machine, tracteur d'une remorque porte-barre ; remorques choisies
 local function reservations(h)
     local teamOf, headerTractor, chosenBy = {}, {}, {}
@@ -954,6 +985,17 @@ function ADUnloaderAutoPick.check(h)
     if ft == nil then
         return -- rien encore dans la trémie ni dans la coupe
     end
+    -- (16/11) le joueur est dans une benne sur le champ : pas d'appel d'une autre
+    local playerTractor, playerTrailer = ADUnloaderAutoPick.playerUnloader(h, ft)
+    if playerTractor ~= nil then
+        if w.playerTold ~= playerTractor then
+            w.playerTold = playerTractor
+            trace("%s: le joueur est dans la benne « %s » (%s) sur le champ, pas de benne choisie automatiquement", name, nameOf(playerTractor), trailerName(playerTrailer))
+        end
+        w.nextTry = g_time + ADUnloaderAutoPick.SCAN_TIME
+        return
+    end
+    w.playerTold = nil
     w.nextTry = g_time + ADUnloaderAutoPick.RETRY_TIME
     local chopper = isChopper(h)
     local wanted = chopper and ADUnloaderAutoPick.CHOPPER_COUNT or ADUnloaderAutoPick.COMBINE_COUNT

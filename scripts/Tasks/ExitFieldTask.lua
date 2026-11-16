@@ -37,7 +37,7 @@ function ExitFieldTask:update(dt)
     if self.state == ExitFieldTask.STATE_PATHPLANNING then
         if self.vehicle.ad.pathFinderModule:hasFinished() then
             self.wayPoints = self.vehicle.ad.pathFinderModule:getPath()
-            if self.wayPoints == nil or #self.wayPoints == 0 then
+            if self.wayPoints == nil or #self.wayPoints == 0 or self:isStayOnFieldPartial() then
                 self:handleNoExitRoute() -- FarmPilot : bande coupée, puis point de sortie suivant, voir ExitFieldTaskExitPoints.lua
             else
                 self.vehicle.ad.drivePathModule:setWayPoints(self.wayPoints)

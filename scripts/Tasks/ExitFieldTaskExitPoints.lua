@@ -25,7 +25,10 @@
 -- jamais un autre point au plus court (remplace l'exception du 27/10 pour elle), sauf réglage « Sortie de champ » sur
 -- « Le plus proche » ; pas de trajet = attente et nouvel essai de l'entrée toutes les RETRY_DELAY ms.
 --
--- Branché par une ligne dans ExitFieldTask.lua : update (4 accroches), abort, finished, startPathPlanning, getI18nInfo.
+-- (16/11, champ 52) Benne de moissonneuse pleine : trajet de sortie dans le champ d'abord, demi-tour compris (herbe du
+-- bord seulement près du départ et de l'arrivée) ; pas de trajet ainsi = même point avec l'herbe du bord.
+--
+-- Branché par une ligne dans ExitFieldTask.lua : update (5 accroches), abort, finished, startPathPlanning, getI18nInfo.
 -- ============================================================================================================
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -289,6 +292,9 @@ function ExitFieldTask:startExitPlanning()
     pf.allowCrop = self.directExit == true
     -- the end of the route is judged for obstacles too (a wall between the field and the road)
     pf.exitToNetwork = true
+    -- (16/11, champ 52) benne de moissonneuse : d'abord un trajet qui reste dans le champ (demi-tour compris)
+    pf.stayOnField = self:shouldStayOnField(candidate)
+    self.stayOnFieldUsed = pf.stayOnField
     local approach, appended = self:buildApproach(candidate)
     if approach ~= nil then
         -- 25/10: the point is reached along the axis of the network (the gate), the grid only has to
@@ -376,6 +382,10 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- aucun trajet trouvé par la grille
 function ExitFieldTask:handleNoExitRoute()
+    -- (16/11) pas de trajet en restant dans le champ : même point, l'herbe du bord permise (règle du 15/11)
+    if self:retryWithGrass() then
+        return
+    end
     -- 27/10 17:18 (field 13): the grid found nothing toward the entrance three times while a 343 m route
     -- along the cut strip existed: that route is taken, as the second unloader does on its way to the first
     if self:tryBandExit() then
@@ -387,8 +397,57 @@ function ExitFieldTask:handleNoExitRoute()
     end
 end
 
+-- (16/11, champ 52 : la Krampe pleine est sortie sur l'herbe du bord pour faire son demi-tour) benne de moissonneuse
+-- pleine qui sort du champ : le trajet reste dans le champ, demi-tour compris, l'herbe seulement près du départ et de
+-- l'arrivée ; pas de trajet ainsi vers ce point = même point avec l'herbe du bord. Ensileuse, sortie directe par la
+-- culture et benne déjà hors du champ : comme avant.
+ExitFieldTask.STAY_ON_FIELD = true
+
+function ExitFieldTask:shouldStayOnField(candidate)
+    if not ExitFieldTask.STAY_ON_FIELD or self.directExit or candidate == nil or candidate.wp == nil then
+        return false
+    end
+    local v = self.vehicle
+    if v.ad == nil or v.ad.stateModule == nil or v.ad.stateModule.getMode == nil or AutoDrive.MODE_UNLOAD == nil or v.ad.stateModule:getMode() ~= AutoDrive.MODE_UNLOAD then
+        return false
+    end
+    if AutoDrive.isChopperUnloading ~= nil and AutoDrive.isChopperUnloading(v) then
+        return false
+    end
+    if self.grassAllowed ~= nil and self.grassAllowed[candidate.wp.id] then
+        return false
+    end
+    local x, y, z = getWorldTranslation(v.components[1].node)
+    return AutoDrive.checkIsOnField(x, y, z)
+end
+
+-- un trajet partiel en restant dans le champ ne mène pas à la sortie : refait avec l'herbe du bord
+function ExitFieldTask:isStayOnFieldPartial()
+    return self.stayOnFieldUsed == true and self.vehicle.ad.pathFinderModule.partialPath == true
+end
+
+function ExitFieldTask:retryWithGrass()
+    if not self.stayOnFieldUsed then
+        return false
+    end
+    self.stayOnFieldUsed = false
+    local candidate = self.candidates ~= nil and self.candidates[self.candidateIndex] or nil
+    if candidate == nil or candidate.wp == nil then
+        return false
+    end
+    self.grassAllowed = self.grassAllowed or {}
+    self.grassAllowed[candidate.wp.id] = true
+    print(string.format("[AD-Exit] %s: pas de trajet vers le point %s en restant dans le champ, nouveau calcul avec l'herbe du bord", tostring(self.vehicle:getName()), tostring(candidate.wp.id)))
+    self.candidateIndex = self.candidateIndex - 1
+    self:startPathPlanning()
+    return true
+end
+
 -- trajet trouvé, donné au conducteur
 function ExitFieldTask:onExitRouteSet()
+    if self.stayOnFieldUsed then
+        print(string.format("[AD-Exit] %s: trajet de sortie dans le champ, demi-tour compris (herbe seulement pres du depart et de l'arrivee)", tostring(self.vehicle:getName())))
+    end
     self.vehicle.ad.exitStuckFull = nil
     -- partial route (guided departure, part of the way): not out of the field at its end
     self.routeIsPartial = self.vehicle.ad.pathFinderModule.partialPath == true

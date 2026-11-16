@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.0.3): 91 files modified, 289 files added, 3 files removed.
+Summary (FarmPilot 1.1.0.4): 91 files modified, 289 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -47,7 +47,7 @@ Summary (FarmPilot 1.1.0.3): 91 files modified, 289 files added, 3 files removed
 - scripts/Modes/UnloadAtMode.lua (+3 / -0)
 - scripts/Modules/CollisionDetectionModule.lua (+3 / -0)
 - scripts/Modules/DrivePathModule.lua (+71 / -33)
-- scripts/Modules/PathFinderModule.lua (+203 / -115)
+- scripts/Modules/PathFinderModule.lua (+204 / -115)
 - scripts/Modules/SpecialDrivingModule.lua (+10 / -7)
 - scripts/Modules/StateModule.lua (+65 / -79)
 - scripts/Modules/TaskModule.lua (+78 / -1)
@@ -61,7 +61,7 @@ Summary (FarmPilot 1.1.0.3): 91 files modified, 289 files added, 3 files removed
 - scripts/Tasks/DriveToDestinationTask.lua (+10 / -2)
 - scripts/Tasks/DriveToVehicleTask.lua (+26 / -56)
 - scripts/Tasks/EmptyHarvesterTask.lua (+79 / -3)
-- scripts/Tasks/ExitFieldTask.lua (+27 / -67)
+- scripts/Tasks/ExitFieldTask.lua (+28 / -68)
 - scripts/Tasks/FollowCombineTask.lua (+98 / -45)
 - scripts/Tasks/FollowVehicleTask.lua (+16 / -1)
 - scripts/Tasks/HandleHarvesterTurnTask.lua (+59 / -20)

@@ -269,9 +269,30 @@ end
 PathFinderModule.OFF_FIELD_NEAR_ENDS = 12
 PathFinderModule.OFF_FIELD_MAX_DISTANCE = 8
 
+-- (16/11, champ 52) sortie d'une benne de moissonneuse pleine : le trajet reste dans le champ, demi-tour compris ;
+-- l'herbe et les chemins du bord seulement près du départ et de l'arrivée. Pas de trajet ainsi : ExitFieldTask
+-- refait le calcul avec l'herbe du bord (règle du 15/11), voir ExitFieldTaskExitPoints.lua
+PathFinderModule.STAY_ON_FIELD_TARGET = 25
+
+function PathFinderModule:isOffFieldRefusedToStay(x, z)
+    if not self.stayOnField then
+        return false
+    end
+    if self.startX ~= nil and MathUtil.vector2Length(x - self.startX, z - self.startZ) < PathFinderModule.OFF_FIELD_NEAR_ENDS then
+        return false
+    end
+    if self.target ~= nil and MathUtil.vector2Length(x - self.target.x, z - self.target.z) < PathFinderModule.STAY_ON_FIELD_TARGET then
+        return false
+    end
+    return true
+end
+
 function PathFinderModule:isFieldPositionAllowed(x, z, isOnField)
     if isOnField == nil then
         isOnField = PathFinderModule.getMapOnFieldAt(x, z)
+    end
+    if not isOnField and self.stayOnField and PathFinderModule.isOffFieldRefusedToStay(self, x, z) then
+        return false
     end
     if not self.strictField then
         return isOnField or self.parkOnGrass == true
@@ -317,6 +338,9 @@ end
 -- the centre line of the route is checked by isFieldPositionAllowed. Returns allowed, onOtherField
 function PathFinderModule:isTrainSideAllowed(x, z)
     local isOnField = PathFinderModule.getMapOnFieldAt(x, z)
+    if not isOnField and self.stayOnField and PathFinderModule.isOffFieldRefusedToStay(self, x, z) then
+        return false, false -- (16/11) sortie de la benne : pas de côté du train sur l'herbe en tournant
+    end
     if self.strictField and not isOnField then
         return true, false
     end

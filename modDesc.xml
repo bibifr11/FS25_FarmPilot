@@ -93,7 +93,7 @@ Basiert auf AutoDrive 3.0.1.4 (MIT-Lizenz, Copyright (c) 2024 Stephan Schlosser)
 Quellcode: https://github.com/bibifr11/FS25_FarmPilot]]>
 		</de>
 	</description>
-	<version>1.0.9.2</version>
+	<version>1.0.9.3</version>
 	<multiplayer supported="true" />
 	<iconFilename>icon_FarmPilot.dds</iconFilename>
 	<extraSourceFiles>

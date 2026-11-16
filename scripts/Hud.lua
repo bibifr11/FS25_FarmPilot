@@ -203,6 +203,12 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		self.rowHeader = rowAt(7)
 	end
 
+	if self.fpRowKind == "silo" then
+		-- (16/11) mode « Tassage », 2 lignes : Silo (rangée du haut, bouton marqueur) / Attente (roue dentée) ;
+		-- avant le bandeau du titre et la croix, sinon le titre reste une rangée trop haut (trou)
+		self.rowHeader, self.row4, self.row3 = self.row4, self.row3, self.row2
+	end
+
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.posY - 0 * self.gapHeight, self.width, self.height + 5 * self.gapHeight, "ad_gui.Background", 0, "background"))
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.rowHeader, self.width, self.headerHeight, "ad_gui.Header", 1, "header"))
 
@@ -218,11 +224,6 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	table.insert(self.hudElements, ADHudButton:new(posX, posY, closeWidth, closeHeight, "input_toggleHudExtension", nil, nil, nil, nil, nil, nil, nil, "", 1, true))
 
 	
-	if self.fpRowKind == "silo" then
-		-- (16/11) mode « Tassage », 2 lignes : Silo (rangée du haut, bouton marqueur) / Attente (roue dentée)
-		self.rowHeader, self.row4, self.row3 = self.row4, self.row3, self.row2
-	end
-
 	-- (08/11, chaque champ avec son outil, sinon ils sont décalés) mode Autonome, de haut en bas :
 	-- Champ / Outil / Champ suivant / Outil suivant. Rang (order) = place depuis le haut, pour les listes ouvertes
 	local rowUnload, rowFill, rowNextTool = self.row3, self.row2, self.rowFpNextTool

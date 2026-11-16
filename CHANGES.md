@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed.
+Summary (FarmPilot 1.0.9.0): 91 files modified, 276 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,14 +24,14 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+366 / -12)
+- register.lua (+375 / -12)
 - scripts/AutoDrive.lua (+65 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
-- scripts/Gui.lua (+37 / -0)
+- scripts/Gui.lua (+38 / -0)
 - scripts/Gui/SettingsPage.lua (+2 / -0)
 - scripts/Hud.lua (+164 / -35)
-- scripts/Hud/HudButton.lua (+45 / -1)
+- scripts/Hud/HudButton.lua (+47 / -1)
 - scripts/Hud/HudHarvesterInfo.lua (+1 / -1)
 - scripts/Hud/HudIcon.lua (+152 / -11)
 - scripts/Hud/PullDownList.lua (+167 / -10)
@@ -54,7 +54,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Modules/TrailerModule.lua (+0 / -8)
 - scripts/PathCalculation.lua (+39 / -10)
 - scripts/Settings.lua (+180 / -12)
-- scripts/Specialization.lua (+181 / -37)
+- scripts/Specialization.lua (+184 / -37)
 - scripts/Sync.lua (+1 / -1)
 - scripts/Tasks/AbstractTask.lua (+26 / -0)
 - scripts/Tasks/CatchCombinePipeTask.lua (+107 / -12)
@@ -81,24 +81,24 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/XML.lua (+46 / -12)
 - textures/ad_gui.dds (binary, replaced)
 - textures/ad_gui.xml (+7 / -0)
-- translations/translation_br.xml (+1007 / -90)
-- translations/translation_cs.xml (+1008 / -91)
-- translations/translation_ct.xml (+1009 / -92)
-- translations/translation_cz.xml (+1007 / -90)
-- translations/translation_da.xml (+1008 / -91)
-- translations/translation_de.xml (+1017 / -95)
-- translations/translation_ea.xml (+1009 / -92)
-- translations/translation_en.xml (+1019 / -92)
-- translations/translation_es.xml (+1009 / -92)
-- translations/translation_fr.xml (+1071 / -146)
-- translations/translation_hu.xml (+1008 / -91)
-- translations/translation_it.xml (+1000 / -83)
-- translations/translation_nl.xml (+1009 / -92)
-- translations/translation_pl.xml (+1008 / -91)
-- translations/translation_pt.xml (+1009 / -92)
-- translations/translation_ru.xml (+1009 / -92)
-- translations/translation_tr.xml (+1098 / -181)
-- translations/translation_uk.xml (+1009 / -92)
+- translations/translation_br.xml (+1060 / -90)
+- translations/translation_cs.xml (+1061 / -91)
+- translations/translation_ct.xml (+1062 / -92)
+- translations/translation_cz.xml (+1060 / -90)
+- translations/translation_da.xml (+1061 / -91)
+- translations/translation_de.xml (+1070 / -95)
+- translations/translation_ea.xml (+1062 / -92)
+- translations/translation_en.xml (+1072 / -92)
+- translations/translation_es.xml (+1062 / -92)
+- translations/translation_fr.xml (+1124 / -146)
+- translations/translation_hu.xml (+1061 / -91)
+- translations/translation_it.xml (+1053 / -83)
+- translations/translation_nl.xml (+1062 / -92)
+- translations/translation_pl.xml (+1061 / -91)
+- translations/translation_pt.xml (+1062 / -92)
+- translations/translation_ru.xml (+1062 / -92)
+- translations/translation_tr.xml (+1151 / -181)
+- translations/translation_uk.xml (+1062 / -92)
 
 ## New files (written for FarmPilot)
 
@@ -113,6 +113,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - gui/helpLine.xml
 - gui/roadTypesGUI.xml
 - gui/seederSettingsGUI.xml
+- gui/siloCompactGUI.xml
 - gui/sprayerSettingsGUI.xml
 - gui/trailerSwapGUI.xml
 - help/fp_help_c01.dds
@@ -170,6 +171,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Addon/Weighing.lua
 - scripts/Events/AutonomousToolEvent.lua
 - scripts/Events/HeaderTractorEvent.lua
+- scripts/Events/SiloCompactEvent.lua
 - scripts/Events/TrailerSwapEvent.lua
 - scripts/Gui/AutonomousCoursesGUI.lua
 - scripts/Gui/BaleLoaderSettingsGUI.lua
@@ -177,6 +179,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Gui/HeaderTractorGUI.lua
 - scripts/Gui/RoadTypesGUI.lua
 - scripts/Gui/SeederSettingsGUI.lua
+- scripts/Gui/SiloCompactGUI.lua
 - scripts/Gui/SprayerSettingsGUI.lua
 - scripts/Gui/TrailerSwapGUI.lua
 - scripts/Hud/DriveGoal.lua
@@ -194,6 +197,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Manager/AutonomousManagerTools.lua
 - scripts/Manager/BaleLoaderManager.lua
 - scripts/Manager/BaleWrapperManager.lua
+- scripts/Manager/BalerControl.lua
 - scripts/Manager/BalerManager.lua
 - scripts/Manager/ChaseDisplay.lua
 - scripts/Manager/DirtRoadAccessZone.lua
@@ -212,6 +216,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Manager/SeederManager.lua
 - scripts/Manager/SprayerManager.lua
 - scripts/Manager/TireChangeManager.lua
+- scripts/Manager/WindrowScan.lua
 - scripts/Modes/AutonomousBalerRefill.lua
 - scripts/Modes/AutonomousBales.lua
 - scripts/Modes/AutonomousFieldExit.lua
@@ -245,6 +250,8 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Modes/AutonomousResumeReturn.lua
 - scripts/Modes/AutonomousResumeStage.lua
 - scripts/Modes/AutonomousSprayerDump.lua
+- scripts/Modes/AutonomousUnloaderAutoPick.lua
+- scripts/Modes/AutonomousWindrow.lua
 - scripts/Modes/AutonomousYardZone.lua
 - scripts/Modes/CombineUnloaderJobDoneGuard.lua
 - scripts/Modes/CombineUnloaderModeBlocked.lua
@@ -254,6 +261,8 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Modes/CombineUnloaderModeJobDone.lua
 - scripts/Modes/CombineUnloaderModeQueue.lua
 - scripts/Modes/CombineUnloaderModeTracks.lua
+- scripts/Modes/SiloCompactor.lua
+- scripts/Modes/SiloCompactorTask.lua
 - scripts/Modes/SprayerRestReturn.lua
 - scripts/Modes/TrailerHitch.lua
 - scripts/Modes/TrailerSwap.lua
@@ -358,6 +367,7 @@ Summary (FarmPilot 1.0.8.4): 91 files modified, 266 files added, 3 files removed
 - scripts/Tasks/UnloadAtDestinationRetry.lua
 - scripts/Tasks/WaitForCallTaskFieldPark.lua
 - scripts/Tasks/WaitForCallTaskRoadside.lua
+- scripts/Tasks/WindrowBaleTask.lua
 - scripts/Utils/AutoDriveFoldGround.lua
 - scripts/Utils/AutoDriveFoldGuard.lua
 - scripts/Utils/AutoDriveReglages.lua

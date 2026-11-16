@@ -498,6 +498,7 @@ function ADAutonomousManager:choose(vehicle)
     if not ADAutonomousManager.hasWorkTool(vehicle) then
         return nil, "noTool"
     end
+    if ADBalerManager ~= nil and ADBalerManager.windrowBaler ~= nil and ADBalerManager.windrowBaler(vehicle) ~= nil then return ADBalerManager.noCourse(vehicle) end -- (15/11) presse : jamais Courseplay, FarmPilot presse les andains lui-même, voir AutonomousWindrow.lua
     if not ADAutonomousManager.hasCp(vehicle) then
         -- (15/11) Courseplay installé mais absent de ce véhicule : attente avec le message « Courseplay introuvable
         -- sur ce véhicule », jamais l'ouvrier du jeu (« noCp » seulement quand Courseplay n'est pas installé)
@@ -541,12 +542,6 @@ function ADAutonomousManager:choose(vehicle)
     local fieldTxt = table.concat(g.members, " + ")
     log("champ %s (groupe %s : %s), outil %s, largeur %.1f m : %d parcours enregistré(s), %d à cette largeur sur ce champ",
         tostring(fieldNum), g.key, fieldTxt, tool.key, width, #courses, #list)
-    if ADBalerManager ~= nil and ADBalerManager.baler(vehicle) ~= nil then
-        -- presse : le parcours du champ qui tombe sur les andains, toutes largeurs, voir BalerManager.lua
-        local e, err = ADBalerManager.choose(vehicle, courses, g)
-        return e, err, width, fieldTxt, tool
-    end
-
     -- 1) choix mémorisé ou fixé dans la fenêtre : repris s'il est toujours valable
     --    (ligne de ce champ d'abord, puis lignes de parcours qui couvrent ce champ et d'autres)
     local rowKeys, seen = {g.key}, {[g.key] = true}

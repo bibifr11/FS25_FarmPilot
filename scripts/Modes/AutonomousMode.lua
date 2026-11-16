@@ -12,7 +12,8 @@
 --   Chargement ; vide au champ (Courseplay s'arrête) : sortie du champ, plein, retour, Courseplay repart au dernier
 --   point.
 -- - À l'arrivée : le parcours choisi (AutonomousManager.lua), ou l'ouvrier du jeu si Courseplay est absent (réglage
---   « Autonome sans Courseplay »), sinon arrêt et attente avec un message.
+--   « Autonome sans Courseplay »), sinon arrêt et attente avec un message. (15/11) Presse attelée : jamais Courseplay,
+--   FarmPilot cherche les andains et les presse lui-même (AutonomousWindrow.lua).
 -- - (07/11) champ fini : champ suivant s'il y en a un (outil suivant changé d'abord si besoin) ; sinon l'outil est
 --   posé à sa place de parking, puis le tracteur va à la sienne.
 --
@@ -21,7 +22,9 @@
 -- « Continuer »), AutonomousParkButton.lua (parkWithToolDrop). AutonomousRefill.lua, chargé après ce fichier,
 -- enveloppe startRefill, startRefillLoad, monitorRefill, continue, handleRefillStage et onCpEmpty.
 -- SprayerManager.lua et AutonomousSprayerDump.lua sont appelés par une ligne chacun, de même que
--- BaleLoaderManager.lua et AutonomousBales.lua (remorque à balles : notre ramassage à l'arrivée au champ).
+-- BaleLoaderManager.lua et AutonomousBales.lua (remorque à balles : notre ramassage à l'arrivée au champ), et
+-- AutonomousWindrow.lua (15/11, presse : recherche des andains et pressage sans Courseplay, à l'arrivée et au retour
+-- de la recharge de la ficelle / du filet).
 -- ============================================================================================================
 
 AutonomousMode = ADInheritsFrom(AbstractMode)
@@ -40,6 +43,11 @@ AutonomousMode.FETCH_STUCK_RANGE = 30   -- m
 AutonomousMode.FETCH_PLACE_LATERAL = 2.5  -- m : point d'attelage de l'outil à moins de ça de l'axe de sa place
 AutonomousMode.FETCH_PLACE_ANGLE = 30     -- ° : outil dans l'axe de sa place à moins de ça (dans un sens ou dans l'autre)
 AutonomousMode.FETCH_PLACE_AXIS = 6       -- m de route avant le point de la place pour en prendre l'axe
+-- (15/11) outil de travers dans sa place prise en marche arrière (semoir à 35°, 2,8 m de l'axe) : jusque-là, la route
+-- de sa place quand même, puis marche arrière qui vise son point d'attelage (le jeu attelle jusqu'à 70°) ; au-delà,
+-- comme avant (point du réseau devant l'outil, dans son axe)
+AutonomousMode.FETCH_PLACE_NEAR_LATERAL = 4  -- m : point d'attelage de l'outil à moins de ça de l'axe de sa place
+AutonomousMode.FETCH_PLACE_NEAR_ANGLE = 40   -- ° : outil tourné de moins de ça (ADFetchToolTask.DIRECT_ANGLE), attelage vers la sortie
 -- plein du semoir (voir startRefill) ; AutonomousRefill.lua le met à math.huge (plus d'étape « exit »)
 AutonomousMode.REFILL_EXIT_DISTANCE = 30   -- m : au champ et plus loin que ça de son marqueur = sortie du champ d'abord (mode Chargement)
 
@@ -97,6 +105,7 @@ function AutonomousMode:reset()
     self.refillTask = nil
     self.dumpStage = nil -- épandeur : rendre ou vendre le reste, voir AutonomousSprayerDump.lua
     if ADBaleCollect ~= nil then ADBaleCollect.reset(self) end -- remorque à balles : étapes du ramassage, voir AutonomousBales.lua
+    if ADWindrowMode ~= nil then ADWindrowMode.reset(self) end -- (15/11) presse : recherche et pressage des andains, voir AutonomousWindrow.lua
     if ADFuelRun ~= nil then ADFuelRun.reset(self) end -- plein de carburant, voir AutonomousFuel.lua
     if ADFrontFlow ~= nil then ADFrontFlow.reset(self) end -- attelage avant, voir AutonomousFront.lua
     if ADParkUnload ~= nil then ADParkUnload.reset(self) end -- bouton parking, benne à vider d'abord, voir AutonomousParkUnload.lua
@@ -220,6 +229,7 @@ function AutonomousMode:departToField()
     self.driveToDestinationTask = DriveToDestinationTask:new(self.vehicle, self.destinationID)
     if ADDriveGoal ~= nil then ADDriveGoal.set(self.driveToDestinationTask, "AD_fpGoal_work", self.vehicle.ad.stateModule:getFirstMarker().name) end -- but affiché dans l'ATH, voir DriveGoal.lua
     self.vehicle.ad.taskModule:addTask(self.driveToDestinationTask)
+    if ADWindrowMode ~= nil and ADWindrowMode.isBaler(self.vehicle) then return end -- (15/11) presse : pas de parcours Courseplay à lire, voir AutonomousWindrow.lua
     -- parcours Courseplay lus pendant le trajet (un par image), pas tous d'un coup à l'arrivée
     local ok, err = FarmPilotCall(ADAutonomousManager.startPrefetch)
     if not ok then
@@ -321,6 +331,7 @@ function AutonomousMode:handleFinishedTask()
     if self.dumpStage ~= nil and ADSprayerDump ~= nil then ADSprayerDump.handleStage(self) return end -- épandeur : vider le reste, voir AutonomousSprayerDump.lua
     if self.parkUnloadStage ~= nil and ADParkUnload ~= nil then ADParkUnload.handleStage(self) return end -- bouton parking : benne vidée, la suite, voir AutonomousParkUnload.lua
     if self.baleStage ~= nil and ADBaleCollect ~= nil then ADBaleCollect.handleStage(self) return end -- remorque à balles : ramassage, dépôt, retour, voir AutonomousBales.lua
+    if self.windrowStage ~= nil and ADWindrowMode ~= nil then ADWindrowMode.handleStage(self) return end -- (15/11) presse : recherche des andains, pressage, voir AutonomousWindrow.lua
     if self.driveToDestinationTask == nil then
         return
     end
@@ -328,6 +339,7 @@ function AutonomousMode:handleFinishedTask()
     local vehicle = self.vehicle
     local name = vehicle.ad.stateModule:getName()
     if vehicle.ad.isStoppingWithError == false and ADBaleCollect ~= nil and ADBaleCollect.onArrival(self) then return end -- remorque à balles : notre ramassage au lieu d'un parcours, voir AutonomousBales.lua
+    if vehicle.ad.isStoppingWithError == false and ADWindrowMode ~= nil and ADWindrowMode.onArrival(self) then return end -- (15/11) presse : recherche des andains puis pressage, sans Courseplay, voir AutonomousWindrow.lua
 
     if vehicle.ad.isStoppingWithError == false then
         local ok, e, err, width, fieldNum, tool, count, why = FarmPilotCall(ADAutonomousManager.choose, ADAutonomousManager, vehicle)
@@ -375,7 +387,8 @@ function AutonomousMode:handleFinishedTask()
         elseif err == "noField" then
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_noField")
         elseif err == "noWindrow" then
-            -- presse : aucun parcours du champ ne tombe sur les andains, voir BalerManager.lua
+            -- presse : la presse ne passe pas par Courseplay (AutonomousWindrow.lua) ; ici seulement si la recherche des
+            -- andains n'est pas branchée (BalerManager.noCourse)
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_noWindrow", f)
         elseif err == "noWidth" then
             AutonomousMode.message(vehicle, ADMessagesManager.messageTypes.ERROR, 15000, "AD_autonomous_noWidth")
@@ -777,6 +790,20 @@ function AutonomousMode.toolInPlace(mwp, hitch)
     return lateral <= AutonomousMode.FETCH_PLACE_LATERAL and angle <= AutonomousMode.FETCH_PLACE_ANGLE, lateral, angle
 end
 
+-- (15/11) outil de travers dans sa place, mais assez près pour la route de la place : place prise en marche arrière,
+-- point d'attelage à moins de FETCH_PLACE_NEAR_LATERAL m de son axe, outil tourné de moins de FETCH_PLACE_NEAR_ANGLE°,
+-- son attelage vers la sortie de la place
+function AutonomousMode.toolNearPlace(mwp, hitch)
+    local hx, hz, reverse = AutonomousMode.placeAxis(mwp)
+    if hx == nil or not reverse then
+        return false
+    end
+    local ox, oz = hitch.x - mwp.x, hitch.z - mwp.z
+    local lateral = math.abs(ox * hz - oz * hx)
+    local out = -(hitch.dirX * hx + hitch.dirZ * hz)
+    return lateral <= AutonomousMode.FETCH_PLACE_NEAR_LATERAL and out >= math.cos(math.rad(AutonomousMode.FETCH_PLACE_NEAR_ANGLE))
+end
+
 -- (10/11) la place prise en marche arrière où un outil est rangé, même si elle ne lui est pas attribuée (faucheuse
 -- arrière au fond d'une travée, faucheuse avant devant elle) : le marqueur, ou nil. L'outil est dans l'axe de la
 -- place (toolInPlace), pas au-delà du fond, son point d'attelage tourné vers la sortie. hitch : son point d'attelage
@@ -822,14 +849,24 @@ function AutonomousMode.fetchRoutePoint(vehicle, tool)
     local park = tool.advd ~= nil and tool.advd.parkDestination or -1
     local marker = park ~= nil and park >= 1 and ADGraphManager:getMapMarkerById(park) or nil
     local mwp = marker ~= nil and ADGraphManager:getWayPointById(marker.id) or nil
+    local placeFallback = nil
     if mwp ~= nil and MathUtil.vector2Length(mwp.x - hitch.x, mwp.z - hitch.z) <= AutonomousMode.FETCH_MARKER_NEAR and not startHere(mwp) then
         -- (09/11) seulement si l'outil y est rangé dans l'axe : en travers, la route de la place bute sur l'outil
         local inPlace, lateral, angle = AutonomousMode.toolInPlace(mwp, hitch)
         if inPlace then
             return mwp, "marker", marker.name
         end
+        -- (15/11) de travers, mais pas trop, dans une place prise en marche arrière : sa route quand même, la marche
+        -- arrière lâche la route et vise le point d'attelage (monitorFetchRoute, ADFetchToolTask direct)
+        local okN, near = FarmPilotCall(AutonomousMode.toolNearPlace, mwp, hitch)
+        if okN and near then
+            ADAutonomousManager.log("%s : « %s » de travers dans sa place « %s » (écart %.1f m, angle %.0f°) : route de sa place, puis marche arrière vers son point d'attelage",
+                tostring(vehicle.ad.stateModule:getName()), ADAutonomousManager.toolLabel(tool), tostring(marker.name), lateral or -1, angle or -1)
+            return mwp, "marker", marker.name
+        end
         ADAutonomousManager.log("%s : « %s » pas rangé dans l'axe de sa place « %s » (écart %.1f m, angle %.0f°) : route vers le point du réseau devant l'outil",
             tostring(vehicle.ad.stateModule:getName()), ADAutonomousManager.toolLabel(tool), tostring(marker.name), lateral or -1, angle or -1)
+        placeFallback = marker
     end
     -- (10/11) pas à sa place (ou pas de place à lui), mais rangé au fond d'une place prise en marche arrière : par la
     -- route de cette place, qui amène le tracteur en marche arrière devant lui (pas de demi-tour devant la place)
@@ -841,8 +878,19 @@ function AutonomousMode.fetchRoutePoint(vehicle, tool)
         return pwp, "marker", place.name
     end
     -- 2) le point du réseau le plus proche de l'avant de l'outil
+    -- (15/11) couloir de la marche arrière contrôlé (FetchToolTask.lua, frontDistance) : tracteur placé plus près si
+    -- un autre outil est dans le couloir ; pas la place : la route de la place de l'outil s'il en a une
     local length = (vehicle.size ~= nil and vehicle.size.length) or 6
     local d = length + ADFetchToolTask.FRONT_MARGIN
+    local okD, dd, who, blocked, at = FarmPilotCall(ADFetchToolTask.frontDistance, vehicle, tool, hitch)
+    if okD and dd ~= nil then
+        d = dd
+        if blocked and placeFallback ~= nil then
+            ADAutonomousManager.log("%s : couloir de marche arrière devant « %s » gêné par « %s » (à %.1f m de son attelage) : route de sa place « %s »",
+                tostring(vehicle.ad.stateModule:getName()), ADAutonomousManager.toolLabel(tool), tostring(who), at or -1, tostring(placeFallback.name))
+            return mwp, "marker", placeFallback.name
+        end
+    end
     local fx, fz = hitch.x + hitch.dirX * d, hitch.z + hitch.dirZ * d
     local best, bestDistance = nil, AutonomousMode.FETCH_ROUTE_RANGE
     -- (14/11) seulement les cases de 100 m autour (GraphManagerGrid.lua), pas tout le réseau
@@ -1073,6 +1121,7 @@ function AutonomousMode:handleRefillStage()
         self.refillStage = nil
         self.refillPlan = nil
         self.refillThen = nil
+        if ADWindrowMode ~= nil and ADWindrowMode.afterRefill(self) then return end -- (15/11) presse : nouvelle recherche des andains et nouvelle tâche, jamais Courseplay, voir AutonomousWindrow.lua
         ADAutonomousManager.log("%s : de retour au champ, Courseplay repart où il s'était arrêté", name)
         vehicle.ad.fpRestartCp = true
         vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))

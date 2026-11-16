@@ -3,16 +3,11 @@
 -- Mode Autonome : la presse à balles (09/11).
 --
 -- Règle :
--- - Une presse ne travaille pas à sa propre largeur : elle ramasse les andains laissés par la machine passée avant
---   (moissonneuse : paille ; andaineur : herbe, foin). Courseplay ne cherche pas les andains, il suit le parcours
---   chargé.
--- - Au champ, au lieu du parcours à la largeur de l'outil, on prend le parcours Courseplay du champ (toutes
---   largeurs) qui tombe le mieux sur les andains au sol : chaque parcours qui couvre le groupe du champ est lu en
---   entier, des points de contrôle sont pris le long de son tracé (au plus MAX_PROBES, tous les PROBE_STEP_MIN m au
---   moins) et on compte ceux qui ont un andain sous eux (hauteur de tas du jeu, produits que la presse ramasse).
---   Le meilleur gagne s'il en touche au moins MIN_SCORE ; sinon arrêt et attente (« noWindrow »).
--- - Courseplay conduit ensuite le parcours choisi et gère la presse (balles, enrubannage, décalage du pick-up).
--- - Le choix n'est pas retenu : les andains changent à chaque récolte, il est refait à chaque arrivée au champ.
+-- - (15/11) Une presse en mode Autonome n'utilise plus Courseplay : FarmPilot cherche lui-même les andains au sol
+--   (WindrowScan.lua) et les presse (WindrowBaleTask.lua, presse mise au travail par BalerControl.lua), voir
+--   AutonomousWindrow.lua. Ici : la presse attelée (windrowBaler : pas une moissonneuse à coton), les produits qu'elle
+--   ramasse, l'andain sous un point (hasWindrow), et « pas de parcours Courseplay » au champ (noCourse). L'ancien choix
+--   du parcours Courseplay qui tombait sur les andains (lecture des fichiers de parcours) est retiré.
 -- - (15/11) Ficelle / filet, comme le semoir : roue dentée à gauche de la ligne « Outil » (ou « Outil suivant »), qui
 --   ouvre la fenêtre « Réglages de la presse » (BalerSettingsGUI.lua) avec un seul choix : « Zone de recharge
 --   (ficelle / filet) » (marqueurs près d'une palette de ficelle ou de filet : RefillSources.lua ; sinon tous).
@@ -21,16 +16,17 @@
 --   roue dentée, départ comme avant.
 -- - (15/11) La recharge passe par le même chemin que le plein du semoir (AutonomousMode:startRefill / monitorRefill /
 --   handleRefillStage, LoadAtDestinationTask) : avant le champ si la ficelle / le filet est sous REFILL_BELOW de la
---   contenance ; quand Courseplay s'arrête faute de ficelle / filet (BalerController : stopCurrentAIJob
---   AIMessageErrorOutOfFill -> événement onCpEmpty), sortie du champ, recharge à la zone, retour, et Courseplay repart
---   au dernier point. Les palettes de ficelle / filet près du marqueur remplissent la cuve du consommable de la presse
---   par leur zone de remplissage (FillTriggerVehicle), comme les big bags du semoir ; « plein » = plus de place dans
---   cette cuve (getFillUnitFreeCapacity du jeu : rouleaux de réserve pleins).
+--   contenance ; pendant le pressage, quand la tâche s'arrête faute de ficelle / filet (résultat « refill »,
+--   ADBalerControl.twineEmpty), sortie du champ, recharge à la zone, retour, puis nouvelle recherche des andains et
+--   nouvelle tâche (AutonomousWindrow.lua : afterRefill). Les palettes de ficelle / filet près du marqueur remplissent
+--   la cuve du consommable de la presse par leur zone de remplissage (FillTriggerVehicle), comme les big bags du
+--   semoir ; « plein » = plus de place dans cette cuve (getFillUnitFreeCapacity du jeu : rouleaux de réserve pleins).
+--   Le réglage Courseplay « plein dans le champ » n'est plus touché.
 --
--- Branché par : AutonomousManager.lua (choose : presse attelée), AutonomousMode.lua (message « noWindrow » ; une
--- ligne chacun : start -> refuseStart et preparePlan, onCpEmpty -> preparePlan), HudButton.lua (hudGear),
--- AutoDrive.lua (saveToXml), AutonomousResumeStage.lua (étape « refill » : preparePlan). Lu aussi par
--- BalerSettingsGUI.lua et AutonomousBalerRefill.lua.
+-- Branché par : AutonomousManager.lua (choose : presse attelée -> noCourse), AutonomousWindrow.lua (presse, produits,
+-- recharge), AutonomousMode.lua (une ligne chacun : start -> refuseStart et preparePlan, onCpEmpty -> preparePlan),
+-- HudButton.lua (hudGear), AutoDrive.lua (saveToXml), AutonomousResumeStage.lua (étape « refill » : preparePlan). Lu
+-- aussi par BalerSettingsGUI.lua, AutonomousBalerRefill.lua et BalerControl.lua.
 -- ============================================================================================================
 
 ADBalerManager = {}
@@ -38,12 +34,8 @@ ADBalerManager = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADBalerManager.MAX_PROBES = 300          -- points de contrôle au plus par parcours
-ADBalerManager.PROBE_STEP_MIN = 3        -- m entre deux points de contrôle, au moins
 ADBalerManager.PROBE_HALF_LENGTH = 0.5   -- m : demi-longueur de la zone regardée sous un point (le long du tracé)
 ADBalerManager.PROBE_HALF_WIDTH = 0.75   -- m : demi-largeur (en travers) : un andain fait 1,5 à 2 m de large
-ADBalerManager.MIN_SCORE = 0.25          -- part des points sur un andain pour retenir un parcours
-ADBalerManager.MAX_WAYPOINTS = 20000     -- garde-fou : points lus par fichier de parcours
 -- produits d'andain si la presse ne dit pas ce qu'elle ramasse
 ADBalerManager.FALLBACK_FILLTYPES = { "STRAW", "GRASS_WINDROW", "DRYGRASS_WINDROW" }
 -- (15/11) ficelle / filet : zone de recharge, comme le semoir
@@ -103,6 +95,16 @@ function ADBalerManager.baler(vehicle)
     return findBaler(vehicle, 0)
 end
 
+-- (15/11) presse qui presse les andains en mode Autonome (sans Courseplay, voir AutonomousWindrow.lua) : celle de
+-- baler(), sauf une moissonneuse (récolteuse de coton : spec_baler et spec_combine, elle garde son parcours)
+function ADBalerManager.windrowBaler(vehicle)
+    local b = findBaler(vehicle, 0)
+    if b == nil or b.spec_combine ~= nil or b.isDeleted or b.isDeleting then
+        return nil
+    end
+    return b
+end
+
 -- produits d'andain que la presse ramasse (seulement ceux qui peuvent être au sol en tas)
 function ADBalerManager.windrowTypes(baler)
     local list, seen = {}, {}
@@ -157,112 +159,17 @@ function ADBalerManager.hasWindrow(x, z, dx, dz, types)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- Tracé complet d'un parcours Courseplay
+-- Au champ (hook AutonomousManager:choose) : pas de parcours Courseplay pour une presse
 -- ------------------------------------------------------------------------------------------------------------
--- tous les points du fichier (x, z), dans l'ordre
-function ADBalerManager.readLine(path)
-    if path == nil or not fileExists(path) then
-        return nil
-    end
-    local xml = loadXMLFile("fpCpBalerCourse", path)
-    if xml == nil or xml == 0 then
-        return nil
-    end
-    local pts = {}
-    local base = "Courses.Course(0)"
-    local i = 0
-    while i < ADBalerManager.MAX_WAYPOINTS do
-        local key = string.format("%s.wp(%d)", base, i)
-        if not hasXMLProperty(xml, key) then
-            break
-        end
-        local pos = getXMLString(xml, key .. "#position")
-        if pos ~= nil then
-            local x, _, z = pos:match("^%s*(%S+)%s+(%S+)%s+(%S+)")
-            x, z = tonumber(x), tonumber(z)
-            if x ~= nil and z ~= nil then
-                pts[#pts + 1] = { x, z }
-            end
-        end
-        i = i + 1
-    end
-    delete(xml)
-    return pts
-end
-
--- part du tracé posée sur un andain : touchés, contrôlés
-function ADBalerManager.score(pts, types)
-    if pts == nil or #pts < 2 then
-        return 0, 0
-    end
-    local total = 0
-    for i = 2, #pts do
-        total = total + MathUtil.vector2Length(pts[i][1] - pts[i - 1][1], pts[i][2] - pts[i - 1][2])
-    end
-    if total <= 0 then
-        return 0, 0
-    end
-    local step = math.max(ADBalerManager.PROBE_STEP_MIN, total / ADBalerManager.MAX_PROBES)
-    local hits, probes = 0, 0
-    local nextAt = step / 2
-    local done = 0
-    for i = 2, #pts do
-        local ax, az, bx, bz = pts[i - 1][1], pts[i - 1][2], pts[i][1], pts[i][2]
-        local len = MathUtil.vector2Length(bx - ax, bz - az)
-        if len > 0 then
-            local dx, dz = (bx - ax) / len, (bz - az) / len
-            while nextAt <= done + len do
-                local t = nextAt - done
-                probes = probes + 1
-                if ADBalerManager.hasWindrow(ax + dx * t, az + dz * t, dx, dz, types) then
-                    hits = hits + 1
-                end
-                nextAt = nextAt + step
-            end
-            done = done + len
-        end
-    end
-    return hits, probes
-end
-
--- ------------------------------------------------------------------------------------------------------------
--- Choix du parcours (fonction principale)
--- ------------------------------------------------------------------------------------------------------------
--- courses : liste de listCourses ; g : groupe du champ (groupOf). Renvoie e, ou nil + "noWindrow".
-function ADBalerManager.choose(vehicle, courses, g)
-    local baler = ADBalerManager.baler(vehicle)
-    local types = ADBalerManager.windrowTypes(baler)
-    local names = {}
-    for _, ft in ipairs(types) do
-        names[#names + 1] = g_fillTypeManager ~= nil and tostring(g_fillTypeManager:getFillTypeNameByIndex(ft)) or tostring(ft)
-    end
-    log("presse : recherche des andains (%s) sur le groupe %s", table.concat(names, ", "), tostring(g ~= nil and g.key or "?"))
-    if g == nil or #types == 0 then
-        return nil, "noWindrow"
-    end
-    local best, bestScore, tested = nil, 0, 0
-    for _, e in ipairs(courses or {}) do
-        if e.groupKeys ~= nil and e.groupKeys[g.key] then
-            local okR, pts = FarmPilotCall(ADBalerManager.readLine, e.path)
-            if okR and pts ~= nil then
-                local hits, probes = ADBalerManager.score(pts, types)
-                local s = probes > 0 and hits / probes or 0
-                tested = tested + 1
-                log("  parcours « %s » (%s m) : %d / %d points sur un andain (%.0f %%)", ADAutonomousManager.courseLabel(e),
-                    tostring(e.w), hits, probes, s * 100)
-                if s > bestScore then
-                    best, bestScore = e, s
-                end
-            end
-        end
-    end
-    if best ~= nil and bestScore >= ADBalerManager.MIN_SCORE then
-        log("presse : parcours « %s » retenu (%.0f %% sur les andains, %d parcours regardés)", ADAutonomousManager.courseLabel(best),
-            bestScore * 100, tested)
-        return best
-    end
-    log("presse : aucun parcours ne tombe sur les andains (%d parcours regardés, meilleur %.0f %%)", tested, bestScore * 100)
-    return nil, "noWindrow"
+-- (15/11) presse attelée : FarmPilot presse lui-même les andains (AutonomousWindrow.lua, à l'arrivée au champ), donc
+-- aucun parcours n'est choisi ni lu. Si on arrive quand même ici (recherche des andains pas branchée) : arrêt et
+-- attente avec le message « noWindrow », comme avant. Renvoie nil, "noWindrow", nil (largeur), numéro du champ.
+function ADBalerManager.noCourse(vehicle)
+    local field = safe(ADAutonomousManager.nearField, vehicle)
+    local fieldNum = field ~= nil and safe(ADAutonomousManager.fieldNumber, field) or nil
+    log("%s : presse attelée, champ %s : pas de parcours Courseplay (FarmPilot presse les andains lui-même)",
+        tostring(vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule:getName() or "?"), tostring(fieldNum or "?"))
+    return nil, "noWindrow", nil, fieldNum
 end
 
 -- ============================================================================================================
@@ -550,20 +457,8 @@ end
 -- Plan de recharge (hooks AutonomousMode:start, onCpEmpty, AutonomousResumeStage « refill ») : même forme que le
 -- plan du semoir
 -- ------------------------------------------------------------------------------------------------------------
--- Courseplay : plus de ficelle / filet = il s'arrête et le signale (onCpEmpty), au lieu d'attendre sur place
-function ADBalerManager.applyCpSettings(vehicle)
-    if vehicle.getCpSettings == nil then
-        return
-    end
-    local okS, settings = FarmPilotCall(vehicle.getCpSettings, vehicle)
-    local refill = okS and settings ~= nil and settings.refillOnTheField or nil
-    if refill ~= nil and refill.getValue ~= nil and refill:getValue() ~= 0 then
-        FarmPilotCall(refill.setValue, refill, 0)
-        log("Courseplay : « plein dans le champ » remis sur désactivé (FarmPilot va recharger la presse à la zone)")
-    end
-end
-
--- after = « field » (départ : recharge sous REFILL_BELOW) ou « back » (Courseplay arrêté : recharge si pas plein) ;
+-- after = « field » (départ : recharge sous REFILL_BELOW) ou « back » (pressage arrêté faute de ficelle / filet, ou
+-- Courseplay arrêté : recharge si pas plein) ;
 -- renvoie { kind, tool, settings, marker, fillTypes, field, needsFill, fillUnit, consumable, levelBefore, fillKey,
 -- emptyKey } ou nil (pas de presse réglée attelée)
 function ADBalerManager.plan(vehicle, after)
@@ -579,7 +474,6 @@ function ADBalerManager.plan(vehicle, after)
     if info == nil or info.fillType == nil then
         return nil
     end
-    FarmPilotCall(ADBalerManager.applyCpSettings, vehicle)
     local name = tostring(vehicle.ad.stateModule:getName())
     local full = ADBalerManager.isFull(info)
     local needsFill

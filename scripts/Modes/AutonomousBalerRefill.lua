@@ -5,15 +5,16 @@
 -- d'AutonomousRefill.lua).
 --
 -- Règle (15/11) : plus de ficelle / filet (ou presque plus avant le champ), la presse va recharger à la zone choisie
--- dans sa fenêtre (roue dentée, BalerManager.lua), comme le semoir ; puis elle revient au champ et Courseplay repart
--- au dernier point. Rien ne change pour le semoir ni l'épandeur ; pour la presse (plan « baler ») :
+-- dans sa fenêtre (roue dentée, BalerManager.lua), comme le semoir ; puis elle revient au champ, cherche de nouveau
+-- les andains et repart avec une nouvelle tâche de pressage (AutonomousWindrow.lua : afterRefill, jamais Courseplay).
+-- Rien ne change pour le semoir ni l'épandeur ; pour la presse (plan « baler ») :
 --   1. « plein » = plus de place dans la cuve du consommable (getFillUnitFreeCapacity du jeu : rouleaux de réserve
 --      pleins). La règle du semoir (niveau de la cuve >= contenance) n'est jamais vraie ici : le niveau de la cuve ne
 --      compte pas le rouleau en cours, qui est dans la contenance ;
 --   2. niveau en rouleaux (réserve + rouleau en cours) pour le suivi du plein d'AutonomousRefill.lua (niveau au
 --      départ, arrivée au point, fin refusée si rien n'est entré) ; une cuve de 2 rouleaux n'est plus « ignorée » ;
 --   3. journal [FarmPilot Presse] : route vers la zone (niveau), recharge faite (niveau avant / après), retour au
---      champ et Courseplay au dernier point.
+--      champ (la suite, nouvelle recherche des andains, est dans le journal d'AutonomousWindrow.lua).
 --
 -- Branché par : register.lua (source, après AutonomousRefill.lua). Enveloppes posées au chargement de ce fichier sur
 -- ADSeederManager.productsFull / fillText, ADSeederRefill.productsFull / planLevel / unitsText, AutonomousMode:startRefill et
@@ -155,12 +156,14 @@ function ADBalerRefill.afterStage(mode, plan, stage, after)
             log("%s : presse : recharge à « %s » arrêtée au point (%.2f -> %.2f rouleaux), voir les lignes du plein", name, markerName(plan), before, now)
         end
     elseif stage == "back" then
-        if vehicle.ad.fpRestartCp == true then
+        if vehicle.ad.isStoppingWithError then
+            log("%s : presse : retour au champ « %s » arrêté (erreur d'AutoDrive)", name, fieldName(vehicle))
+        elseif vehicle.ad.fpRestartCp == true then
             local info = ADBalerManager.consumable(plan.tool)
             log("%s : presse de retour au champ « %s » (%s) : Courseplay repart au dernier point", name, fieldName(vehicle), ADBalerManager.levelText(info))
-        else
-            log("%s : presse : retour au champ « %s » arrêté (erreur d'AutoDrive)", name, fieldName(vehicle))
         end
+        -- (15/11) sinon : presse sans Courseplay, la suite (nouvelle recherche des andains) est dans le journal
+        -- d'AutonomousWindrow.lua (afterRefill)
     end
 end
 

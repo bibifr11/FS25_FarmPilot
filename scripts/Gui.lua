@@ -81,6 +81,7 @@ function AutoDrive:loadGUI()
 	if ADBalerSettingsGui ~= nil then ADBalerSettingsGui.load() end -- (15/11) fenêtre « Réglages de la presse », voir BalerSettingsGUI.lua
 	if ADTrailerSwapGui ~= nil then ADTrailerSwapGui.load() end -- fenêtre « Échange de bennes », voir TrailerSwapGUI.lua
 	if ADHeaderTractorGui ~= nil then ADHeaderTractorGui.load() end -- fenêtre « Transport de la barre », voir HeaderTractorGUI.lua
+	if ADSiloCompactGui ~= nil then ADSiloCompactGui.load() end -- (16/11) fenêtre « Tassage du silo », voir SiloCompactGUI.lua
 	if ADRoadTypesGui ~= nil then ADRoadTypesGui.load() end -- fenêtre « types de véhicules » des routes, voir RoadTypesGUI.lua
 
 	AutoDrive.gui.ADGlobalSettingsPage = ADSettingsPage.new()

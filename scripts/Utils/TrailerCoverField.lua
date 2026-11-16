@@ -49,7 +49,6 @@
 -- ============================================================================================================
 
 ADCoverField = {}
-ADCoverField.DEBUG = false
 
 ADCoverField.STABLE_IN = 2000     -- ms dans le champ avant d'ouvrir
 ADCoverField.STABLE_OUT = 5000    -- ms hors du champ avant de fermer (pas d'allers-retours en longeant le bord)
@@ -150,7 +149,7 @@ local baseSetTrailerCoverOpen = AutoDrive.setTrailerCoverOpen
 function ADCoverField.apply(vehicle, open, why, units)
     local trailers = units or AutoDrive.getAllUnits(vehicle)
     if AutoDrive.getSetting("autoTrailerCover", vehicle) == true then
-        if ADCoverField.DEBUG then print(string.format("[FarmPilot Bâche] %s : %s, bâche %s", vehicleName(vehicle), why, open and "ouverte" or "fermée")) end
+        print(string.format("[FarmPilot Bâche] %s : %s, bâche %s", vehicleName(vehicle), why, open and "ouverte" or "fermée"))
     end
     baseSetTrailerCoverOpen(vehicle, trailers, open)
 end
@@ -207,7 +206,7 @@ function ADCoverField.update(vehicle, dt)
             -- hors du champ en suivant la machine (bande d'herbe de la 1re tournière...) : gardée ouverte
             if ad.fpCoverKeptLog == nil and AutoDrive.getSetting("autoTrailerCover", vehicle) == true then
                 ad.fpCoverKeptLog = true
-                if ADCoverField.DEBUG then print(string.format("[FarmPilot Bâche] %s : hors du champ mais pas au départ (suit la machine ou attend), bâche gardée ouverte", vehicleName(vehicle))) end
+                print(string.format("[FarmPilot Bâche] %s : hors du champ mais pas au départ (suit la machine ou attend), bâche gardée ouverte", vehicleName(vehicle)))
             end
             return
         end
@@ -217,7 +216,7 @@ function ADCoverField.update(vehicle, dt)
         if AutoDrive.isInRangeToLoadUnloadTarget ~= nil and AutoDrive.isInRangeToLoadUnloadTarget(vehicle) == true then
             -- déjà au déchargement (silo tout près du champ) : AutoDrive l'ouvre pour vider, comme avant
             if AutoDrive.getSetting("autoTrailerCover", vehicle) == true then
-                if ADCoverField.DEBUG then print(string.format("[FarmPilot Bâche] %s : sortie du champ déjà au déchargement, bâche laissée à AutoDrive", vehicleName(vehicle))) end
+                print(string.format("[FarmPilot Bâche] %s : sortie du champ déjà au déchargement, bâche laissée à AutoDrive", vehicleName(vehicle)))
             end
             return
         end

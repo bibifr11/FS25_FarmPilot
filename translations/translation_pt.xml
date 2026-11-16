@@ -500,6 +500,46 @@
 		<text name="AD_ty_toClear" text="to clear the track" />
 		<text name="AD_ty_leaveTrack" text="to leave the track" />
 		<text name="AD_ty_toLeaveYard" text="to clear the tool area" />
+		<text name="AD_fp_silo_closed" text="silo covered or fermenting, waiting in front" />
+		<text name="AD_fp_silo_compactDone" text="silo no longer filling, compacting finished" />
+		<text name="AD_fp_silo_canCover" text="silo 100 % compacted, ready to be covered" />
+		<text name="AD_fp_silo_waiting" text="Compactor: waiting at the side" />
+		<text name="AD_fp_silo_compacting" text="Compacting the silo" />
+		<text name="gui_ad_silo_title" text="Silo compaction" />
+		<text name="gui_ad_silo_tooltip" text="Silo compaction (tractor without trailer, blade or roller)" />
+		<text name="gui_ad_silo_head" text="%s: %s" />
+		<text name="gui_ad_silo_running" text="working" />
+		<text name="gui_ad_silo_stopped" text="stopped" />
+		<text name="gui_ad_silo_noVehicle" text="No vehicle" />
+		<text name="gui_ad_silo_silo" text="Silo" />
+		<text name="gui_ad_silo_desc" text="%s, %.0f x %.0f m, %.0f m away" />
+		<text name="gui_ad_silo_typeWall" text="with back wall" />
+		<text name="gui_ad_silo_typeThrough" text="drive-through" />
+		<text name="gui_ad_silo_none" text="no silo within 1 km" />
+		<text name="gui_ad_silo_compaction" text="Compaction" />
+		<text name="gui_ad_silo_dir" text="Driving into the silo" />
+		<text name="gui_ad_silo_dirFwd" text="Forwards" />
+		<text name="gui_ad_silo_dirRev" text="Reverse" />
+		<text name="gui_ad_silo_width" text="Working width" />
+		<text name="gui_ad_silo_auto" text="Auto" />
+		<text name="gui_ad_silo_blade" text="Blade height" />
+		<text name="gui_ad_silo_push" text="Blade work" />
+		<text name="gui_ad_silo_pushAuto" text="Auto (by silo)" />
+		<text name="gui_ad_silo_pushWall" text="Push against the back wall" />
+		<text name="gui_ad_silo_pushNone" text="Compact only, no pushing" />
+		<text name="gui_ad_silo_wait" text="Waiting when a trailer arrives" />
+		<text name="gui_ad_silo_waitSide" text="Beside the entrance" />
+		<text name="gui_ad_silo_pickMarker" text="Choose the waiting place (markers within 150 m of the silo)" />
+		<text name="gui_ad_silo_full" text="At 100 % compaction" />
+		<text name="gui_ad_silo_fullGo" text="Keep going" />
+		<text name="gui_ad_silo_fullStop" text="Stop" />
+		<text name="gui_ad_silo_start" text="Start" />
+		<text name="gui_ad_silo_stop" text="Stop" />
+		<text name="gui_ad_silo_noSilo" text="no silo selected" />
+		<text name="gui_ad_silo_closed" text="silo covered or fermenting" />
+		<text name="gui_ad_silo_hasTrailer" text="detach the trailer (blade or roller only)" />
+		<text name="gui_ad_silo_busy" text="another tractor is already compacting this silo" />
+		<text name="gui_ad_silo_noRoute" text="no marker in the silo and no route in front of the entrance" />
 		<text name="AD_ty_reverseFor" text="Backing up for" />
 		<text name="AD_ty_parkFor" text="Pulling over for" />
 		<text name="AD_ty_crossing" text="Junction, waiting:" />
@@ -618,7 +658,7 @@
 		<text name="AD_autonomous_none" text="no Courseplay course of %s m on field %s, waiting" />
 		<text name="AD_autonomous_several" text="%s courses of %s m on field %s, pick one in the Autonomous courses window (Ctrl+Alt+Numpad 5), waiting" />
 		<text name="AD_autonomous_noField" text="no field here, waiting" />
-		<text name="AD_autonomous_noWindrow" text="baler: no Courseplay course of field %s lies on the windrows, waiting" />
+		<text name="AD_autonomous_noWindrow" text="baler: no windrow on field %s, waiting" />
 		<text name="gui_ad_baler_title" text="Baler settings" />
 		<text name="gui_ad_baler_head" text="Baler: %s · Field: %s · %s on the baler: %s rolls" />
 		<text name="gui_ad_baler_noBaler" text="No baler with twine or net on this row." />
@@ -633,6 +673,12 @@
 		<text name="AD_autonomous_balerTodo" text="refill point of the baler « %s » to validate for « %s » (orange gear), start refused" />
 		<text name="AD_autonomous_balerFill" text="baler: twine / net almost empty, refill at « %s » before the field" />
 		<text name="AD_autonomous_balerEmpty" text="baler: out of twine / net, refill at « %s », then back to the field" />
+		<text name="AD_autonomous_windrowStart" text="baler: field %s, %d windrow(s) to bale" />
+		<text name="AD_autonomous_windrowDone" text="baler: field %s done, no windrow left to bale" />
+		<text name="AD_autonomous_windrowBlocked" text="baler: the windrows of field %s cannot be reached, waiting" />
+		<text name="AD_autonomous_windrowDetached" text="baler detached, waiting" />
+		<text name="AD_autonomous_windrowNoRefill" text="baler: out of twine / net and no refill point found (gear wheel), waiting" />
+		<text name="AD_autonomous_windrowNotReady" text="baler « %s » not ready (unfolding / turning on refused), waiting" />
 		<text name="AD_autonomous_noWidth" text="tool width unknown, waiting" />
 		<text name="AD_autonomous_noTool" text="Autonomous mode: no work tool attached" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay not found: base game worker started on field %s" />
@@ -718,6 +764,10 @@
 		<text name="AD_header_homePlace" text="where it was" />
 		<text name="AD_autonomous_headerChosenGone" text="chosen header not available, start refused" />
 		<text name="AD_autonomous_headerNoCrop" text="no header can cut « %s », start refused" />
+		<text name="AD_autonomous_unloadersAuto" text="%d trailer(s) picked automatically for « %s »" />
+		<text name="AD_autonomous_unloadersAutoNone" text="no free trailer that fits for « %s » (tractor powerful enough, empty trailer): new try every minute" />
+		<text name="AD_autonomous_unloadersAutoNoField" text="no marker for field %s: no trailer picked automatically" />
+		<text name="AD_autonomous_unloadersAutoNoDest" text="no unloading place for %s (farm silo or selling point near a marker): no trailer picked automatically" />
 		<text name="AD_autonomous_unloadersFollow" text="%d trailer(s) follow to « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
 		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
@@ -940,6 +990,9 @@
 		<text name="AD_autonomous_wrapDetached" text="bale wrapper detached, waiting" />
 		<text name="AD_task_autonomous_bales" text="Collecting bales" />
 		<text name="AD_task_autonomous_wrap" text="Wrapping bales" />
+		<text name="AD_task_autonomous_windrow" text="Baling windrows" />
+		<text name="AD_task_autonomous_windrowScan" text="Looking for windrows" />
+		<text name="AD_task_autonomous_windrowEmpty" text="Dropping the bale before the road" />
 		<text name="AD_task_fpMotorStart" text="Starting" />
 		<text name="AD_task_autonomous_baleUnload" text="Dropping off bales" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="the tank still holds %s (%.0f L) and the chosen product is %s: empty the tank, start refused" />
@@ -1143,10 +1196,10 @@
 		<text name="fp_help_c7_3_title" text="P button with product left" />
 		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
 		<text name="fp_help_c8_title" text="Baler" />
-		<text name="fp_help_c8_1_title" text="The course that follows the windrows" />
-		<text name="fp_help_c8_1_text" text="With a baler, FarmPilot does not look for the implement width: it reads the windrows on the ground and takes the field's Courseplay course, whatever its width, that runs best over them (usually the combine's or the windrower's). Courseplay handles the baler as usual (bales, wrapping)." />
-		<text name="fp_help_c8_2_title" text="No course on the windrows" />
-		<text name="fp_help_c8_2_text" text="If no course has at least 25 % of its waypoints on a windrow: message « baler: no Courseplay course of field X lies on the windrows, waiting ». This happens if the field is already baled, if the straw was chopped, or if the harvest did not follow a saved course. The choice is made again on each arrival." />
+		<text name="fp_help_c8_1_title" text="Windrows, without Courseplay" />
+		<text name="fp_help_c8_1_text" text="With a baler, FarmPilot does not use Courseplay: on arrival at the field the tractor stops, looks for the windrows on the ground (field and joined fields), then bales them one by one. The baler is unfolded, turned on, pick-up lowered, bales dropped automatically; the tractor slows down before the bale and stops while it is ejected or wrapped. Out of twine / net: refill at the chosen point (gear wheel), back to the field, new search and on it goes. Field done: baler folded, next field (otherwise the yard)." />
+		<text name="fp_help_c8_2_title" text="No windrow" />
+		<text name="fp_help_c8_2_text" text="If there is no windrow of the baler's crop on the field: message « baler: no windrow on field X, waiting ». This happens if the field is already baled or if the straw was chopped. Game reloaded or On / Off button while baling: new search on the spot, baling resumes." />
 		<text name="fp_help_c9_title" text="Bale loader" />
 		<text name="fp_help_c9_1_title" text="Settings" />
 		<text name="fp_help_c9_1_text" text="Cog on the loader's row, « Bale loader settings » window:&#10;- Bales to collect: All, Wrapped only, Unwrapped only.&#10;- Drop-off point: at the top, the markers less than 60 m from a selling point that takes bales (« sale · name »); then all the other markers for storage.&#10;- Validate (Space key; refused until a point is chosen)." />

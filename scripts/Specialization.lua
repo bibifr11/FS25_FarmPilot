@@ -160,6 +160,8 @@ function AutoDrive.initSpecialization()
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloadStage", "FarmPilot: unloader of a combine going to unload or to park when saved, see AutonomousResumeHeader.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpHeaderFrom", "FarmPilot Autonome: header taken from a header trailer (unique id|unique id), see AutonomousResumeHeader.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloaderFollow", "FarmPilot: unloaders following a combine to its next field, see AutonomousResumeHeader.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSiloCfg", "FarmPilot: silo compactor settings (direction;width;blade;stop;wait;marker), see SiloCompactorTask.lua")
+    schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpSiloJob", "FarmPilot: silo being compacted when saved (x;z of the silo), see SiloCompactorTask.lua")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#fpUnloaderTeam", "FarmPilot: unloaders team of a combine (unique id|trailer|park;...), see AutonomousHarvesterUnloaders.lua")
     schemaSavegame:register(XMLValueType.INT, "vehicles.vehicle(?).AutoDrive#fillType", "fillType")
     schemaSavegame:register(XMLValueType.STRING, "vehicles.vehicle(?).AutoDrive#selectedFillTypes", "selectedFillTypes")
@@ -1267,6 +1269,7 @@ function AutoDrive:stopAutoDrive()
 
         if self.ad.stateModule:isActive() then
             if ADAutonomousManager ~= nil and ADAutonomousManager.journalStop ~= nil then FarmPilotCall(ADAutonomousManager.journalStop, self) end -- arrêt écrit au journal, voir AutonomousManager.lua
+            if ADSiloJob ~= nil then FarmPilotCall(ADSiloJob.onStop, self) end -- tasseur : tassage oublié, lame / rouleau levés, voir SiloCompactorTask.lua
             self.ad.drivePathModule:reset()
             self.ad.specialDrivingModule:reset()
             self.ad.trailerModule:reset()

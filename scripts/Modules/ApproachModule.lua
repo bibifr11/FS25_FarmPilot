@@ -24,7 +24,7 @@ ADApproachModule = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADApproachModule.DEBUG = false
+ADApproachModule.DEBUG = true -- temporary diagnostic logs for the tests
 
 ADApproachModule.DECEL = 1.8             -- m/s², comfortable deceleration
 ADApproachModule.STOP_DISTANCE = 4       -- m kept in front of the obstacle (the front sensors stop earlier if needed)

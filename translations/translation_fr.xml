@@ -498,6 +498,46 @@
 		<text name="AD_ty_toClear" text="libère le chemin" />
 		<text name="AD_ty_leaveTrack" text="sorte du chemin" />
 		<text name="AD_ty_toLeaveYard" text="libère la zone des outils" />
+		<text name="AD_fp_silo_closed" text="silo bâché ou en fermentation, attend devant" />
+		<text name="AD_fp_silo_compactDone" text="silo plus en remplissage, tassage terminé" />
+		<text name="AD_fp_silo_canCover" text="silo tassé à 100 %, bâchage possible" />
+		<text name="AD_fp_silo_waiting" text="Tasseur : attend sur le côté" />
+		<text name="AD_fp_silo_compacting" text="Tasse le silo" />
+		<text name="gui_ad_silo_title" text="Tassage du silo" />
+		<text name="gui_ad_silo_tooltip" text="Tassage du silo (tracteur sans benne, lame ou rouleau)" />
+		<text name="gui_ad_silo_head" text="%s : %s" />
+		<text name="gui_ad_silo_running" text="au travail" />
+		<text name="gui_ad_silo_stopped" text="arrêté" />
+		<text name="gui_ad_silo_noVehicle" text="Aucun véhicule" />
+		<text name="gui_ad_silo_silo" text="Silo" />
+		<text name="gui_ad_silo_desc" text="%s, %.0f x %.0f m, à %.0f m" />
+		<text name="gui_ad_silo_typeWall" text="à fond" />
+		<text name="gui_ad_silo_typeThrough" text="traversant" />
+		<text name="gui_ad_silo_none" text="aucun silo à moins de 1 km" />
+		<text name="gui_ad_silo_compaction" text="Tassage" />
+		<text name="gui_ad_silo_dir" text="Entrée dans le silo" />
+		<text name="gui_ad_silo_dirFwd" text="Marche avant" />
+		<text name="gui_ad_silo_dirRev" text="Marche arrière" />
+		<text name="gui_ad_silo_width" text="Largeur de travail" />
+		<text name="gui_ad_silo_auto" text="Auto" />
+		<text name="gui_ad_silo_blade" text="Hauteur de la lame" />
+		<text name="gui_ad_silo_push" text="Travail de la lame" />
+		<text name="gui_ad_silo_pushAuto" text="Auto (selon le silo)" />
+		<text name="gui_ad_silo_pushWall" text="Pousser contre le fond" />
+		<text name="gui_ad_silo_pushNone" text="Tasser sans pousser" />
+		<text name="gui_ad_silo_wait" text="Attente quand une benne arrive" />
+		<text name="gui_ad_silo_waitSide" text="Sur le côté de l'entrée" />
+		<text name="gui_ad_silo_pickMarker" text="Choisissez la place d'attente (marqueurs à moins de 150 m du silo)" />
+		<text name="gui_ad_silo_full" text="À 100 % de tassage" />
+		<text name="gui_ad_silo_fullGo" text="Continuer" />
+		<text name="gui_ad_silo_fullStop" text="S'arrêter" />
+		<text name="gui_ad_silo_start" text="Démarrer" />
+		<text name="gui_ad_silo_stop" text="Arrêter" />
+		<text name="gui_ad_silo_noSilo" text="aucun silo choisi" />
+		<text name="gui_ad_silo_closed" text="silo bâché ou en fermentation" />
+		<text name="gui_ad_silo_hasTrailer" text="dételez la benne (lame ou rouleau seulement)" />
+		<text name="gui_ad_silo_busy" text="un autre tracteur tasse déjà ce silo" />
+		<text name="gui_ad_silo_noRoute" text="aucun marqueur dans le silo ni route devant l'entrée" />
 		<text name="AD_ty_reverseFor" text="Recule pour laisser passer" />
 		<text name="AD_ty_parkFor" text="Se gare pour laisser passer" />
 		<text name="AD_ty_crossing" text="Intersection, attend :" />
@@ -616,7 +656,7 @@
 		<text name="AD_autonomous_none" text="aucun parcours Courseplay de %s m sur le champ %s, en attente" />
 		<text name="AD_autonomous_several" text="%s parcours de %s m sur le champ %s, choisissez-en un dans la fenêtre Parcours Autonome (Ctrl+Alt+5 du pavé numérique), en attente" />
 		<text name="AD_autonomous_noField" text="aucun champ ici, en attente" />
-		<text name="AD_autonomous_noWindrow" text="presse : aucun parcours Courseplay du champ %s ne tombe sur les andains, en attente" />
+		<text name="AD_autonomous_noWindrow" text="presse : aucun andain sur le champ %s, en attente" />
 		<text name="gui_ad_baler_title" text="Réglages de la presse" />
 		<text name="gui_ad_baler_head" text="Presse : %s · Champ : %s · %s sur la presse : %s rouleaux" />
 		<text name="gui_ad_baler_noBaler" text="Pas de presse à ficelle ou à filet sur cette ligne." />
@@ -631,6 +671,12 @@
 		<text name="AD_autonomous_balerTodo" text="zone de recharge de la presse « %s » à valider pour « %s » (roue dentée orange), départ refusé" />
 		<text name="AD_autonomous_balerFill" text="presse : ficelle / filet presque vide, recharge à « %s » avant le champ" />
 		<text name="AD_autonomous_balerEmpty" text="presse : plus de ficelle / filet, recharge à « %s », puis retour au champ" />
+		<text name="AD_autonomous_windrowStart" text="presse : champ %s, %d andain(s) à presser" />
+		<text name="AD_autonomous_windrowDone" text="presse : champ %s fini, plus d'andain à presser" />
+		<text name="AD_autonomous_windrowBlocked" text="presse : les andains du champ %s ne sont pas atteignables, en attente" />
+		<text name="AD_autonomous_windrowDetached" text="presse dételée, en attente" />
+		<text name="AD_autonomous_windrowNoRefill" text="presse : plus de ficelle / filet et zone de recharge introuvable (roue dentée), en attente" />
+		<text name="AD_autonomous_windrowNotReady" text="presse « %s » pas prête (dépli / mise en route refusés), en attente" />
 		<text name="AD_autonomous_noWidth" text="largeur de l'outil inconnue, en attente" />
 		<text name="AD_autonomous_noTool" text="mode Autonome : aucun outil de travail attelé" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay introuvable : ouvrier du jeu lancé sur le champ %s" />
@@ -716,6 +762,10 @@
 		<text name="AD_header_homePlace" text="là où elle était" />
 		<text name="AD_autonomous_headerChosenGone" text="barre choisie pas disponible, départ refusé" />
 		<text name="AD_autonomous_headerNoCrop" text="aucune barre pour couper « %s », départ refusé" />
+		<text name="AD_autonomous_unloadersAuto" text="%d benne(s) choisie(s) automatiquement pour « %s »" />
+		<text name="AD_autonomous_unloadersAutoNone" text="aucune benne libre qui convient pour « %s » (tracteur assez puissant, remorque vide) : nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_unloadersAutoNoField" text="aucun marqueur pour le champ %s : pas de benne choisie automatiquement" />
+		<text name="AD_autonomous_unloadersAutoNoDest" text="aucun lieu de déchargement pour %s (silo de la ferme ou point de vente près d'un marqueur) : pas de benne choisie automatiquement" />
 		<text name="AD_autonomous_unloadersFollow" text="%d benne(s) suivent vers « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d benne(s) suivront vers « %s » quand la moissonneuse aura repris le travail" />
 		<text name="AD_autonomous_unloadersStay" text="les bennes restent à « %s » (autre machine)" />
@@ -948,6 +998,9 @@
 		<text name="AD_autonomous_wrapDetached" text="enrubanneuse dételée, en attente" />
 		<text name="AD_task_autonomous_bales" text="Ramasse les balles" />
 		<text name="AD_task_autonomous_wrap" text="Enrubanne les balles" />
+		<text name="AD_task_autonomous_windrow" text="Presse les andains" />
+		<text name="AD_task_autonomous_windrowScan" text="Cherche les andains" />
+		<text name="AD_task_autonomous_windrowEmpty" text="Pose la balle avant la route" />
 		<text name="AD_task_fpMotorStart" text="Démarre" />
 		<text name="AD_task_autonomous_baleUnload" text="Dépose les balles" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="la cuve contient encore %s (%.0f L) et le produit choisi est %s : videz la cuve, départ refusé" />
@@ -1151,10 +1204,10 @@
 		<text name="fp_help_c7_3_title" text="Bouton P avec du produit" />
 		<text name="fp_help_c7_3_text" text="Bouton Garer sur un épandeur ou pulvé qui a encore plus de 20 L : il se débarrasse d'abord du reste, puis se gare (outil posé à sa place s'il en a une). Zone utilisée : celle du champ en cours, sinon la dernière réglée pour cette machine et ce produit, sinon le marqueur le plus proche qui a ce produit." />
 		<text name="fp_help_c8_title" text="Presse à balles" />
-		<text name="fp_help_c8_1_title" text="Le parcours qui suit les andains" />
-		<text name="fp_help_c8_1_text" text="Avec une presse, FarmPilot ne cherche pas la largeur de l'outil : il lit les andains au sol et prend le parcours Courseplay du champ, quelle que soit sa largeur, qui passe le mieux dessus (en général celui de la moissonneuse ou de l'andaineur). Courseplay gère la presse comme d'habitude (balles, enrubannage)." />
-		<text name="fp_help_c8_2_title" text="Aucun parcours sur les andains" />
-		<text name="fp_help_c8_2_text" text="Si aucun parcours n'a au moins 25 % de ses points sur un andain : message « presse : aucun parcours Courseplay du champ X ne tombe sur les andains, en attente ». Ça arrive si le champ est déjà pressé, si la paille a été broyée, ou si la récolte n'a pas suivi un parcours enregistré. Le choix est refait à chaque arrivée." />
+		<text name="fp_help_c8_1_title" text="Les andains, sans Courseplay" />
+		<text name="fp_help_c8_1_text" text="Avec une presse, FarmPilot n'utilise pas Courseplay : à l'arrivée au champ, le tracteur s'arrête, cherche les andains au sol (champ et champs réunis), puis les presse un par un. La presse est dépliée, mise en route, pick-up baissé, balles posées automatiquement ; le tracteur ralentit avant la balle et s'arrête le temps de l'éjecter ou de l'enrubanner. Plus de ficelle / filet : recharge à la zone choisie (roue dentée), retour au champ, nouvelle recherche et la suite. Champ fini : presse repliée, champ suivant (sinon garage)." />
+		<text name="fp_help_c8_2_title" text="Aucun andain" />
+		<text name="fp_help_c8_2_text" text="S'il n'y a aucun andain du produit de la presse sur le champ : message « presse : aucun andain sur le champ X, en attente ». Ça arrive si le champ est déjà pressé ou si la paille a été broyée. Partie rechargée ou bouton Marche / Arrêt pendant le pressage : nouvelle recherche sur place, le pressage reprend." />
 		<text name="fp_help_c9_title" text="Remorque à balles" />
 		<text name="fp_help_c9_1_title" text="Réglages" />
 		<text name="fp_help_c9_1_text" text="Roue dentée sur la ligne de la remorque, fenêtre « Réglages de la remorque à balles » :&#10;- Balles à ramasser : Toutes, Enrubannées seulement, Non enrubannées seulement.&#10;- Zone de dépôt : en haut, les marqueurs à moins de 60 m d'un point de vente qui prend les balles (« vente · nom ») ; puis tous les autres marqueurs pour stocker.&#10;- Valider (touche Espace ; refusé tant qu'aucune zone n'est choisie)." />

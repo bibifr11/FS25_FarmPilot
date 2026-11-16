@@ -122,6 +122,7 @@ source(Utils.getFilename("scripts/Events/HudInputEvent.lua", g_currentModDirecto
 source(Utils.getFilename("scripts/Events/AutonomousToolEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/TrailerSwapEvent.lua", g_currentModDirectory)) -- dossier des places de l'échange de bennes
 source(Utils.getFilename("scripts/Events/HeaderTractorEvent.lua", g_currentModDirectory)) -- véhicule de la remorque porte-barre
+source(Utils.getFilename("scripts/Events/SiloCompactEvent.lua", g_currentModDirectory)) -- fenêtre « Tassage du silo » : réglages, Démarrer / Arrêter
 source(Utils.getFilename("scripts/Events/DebugSettingsEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/StartStopEvent.lua", g_currentModDirectory))
 
@@ -339,7 +340,7 @@ source(Utils.getFilename("scripts/Manager/AutonomousManagerTools.lua", g_current
 source(Utils.getFilename("scripts/Manager/AutonomousManagerFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant (outils frontaux, masses)
 source(Utils.getFilename("scripts/Manager/AutonomousManagerCourses.lua", g_currentModDirectory)) -- mode Autonome : parcours enregistrés de Courseplay
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
-source(Utils.getFilename("scripts/Manager/BalerManager.lua", g_currentModDirectory)) -- presse : parcours qui tombe sur les andains
+source(Utils.getFilename("scripts/Manager/BalerManager.lua", g_currentModDirectory)) -- presse : presse attelée, andains, ficelle / filet
 source(Utils.getFilename("scripts/Modes/AutonomousRefill.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousBalerRefill.lua", g_currentModDirectory)) -- (15/11) presse : recharge de la ficelle / du filet par le plein du semoir
 source(Utils.getFilename("scripts/Manager/SprayerManager.lua", g_currentModDirectory)) -- épandeurs et pulvés en Autonome, voir SprayerManager.lua
@@ -361,6 +362,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousHeaderReturn.lua", g_currentMo
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderGate.lua", g_currentModDirectory)) -- la moissonneuse attend en face de l'entrée du champ, la barre est arrêtée devant elle
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderHookup.lua", g_currentModDirectory)) -- gestes du chauffeur : brancher la barre, la verrouiller sur sa remorque
 source(Utils.getFilename("scripts/Modes/AutonomousHarvesterUnloaders.lua", g_currentModDirectory)) -- bennes qui suivent le champ de la moissonneuse
+source(Utils.getFilename("scripts/Modes/AutonomousUnloaderAutoPick.lua", g_currentModDirectory)) -- (16/11) machine au travail sans benne : tracteurs et remorques choisis et envoyés au champ
 source(Utils.getFilename("scripts/Hud/HudHarvester.lua", g_currentModDirectory)) -- HUD Autonome moissonneuse / ensileuse : Champ, Barre, Champ suivant, Barre suivante
 source(Utils.getFilename("scripts/Modes/SprayerRestReturn.lua", g_currentModDirectory)) -- épandeurs : reste rendu à la zone de plein ou vendu, jamais en big bags
 source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory)) -- épandeurs : vider le reste (fin de champ, bouton parking)
@@ -368,6 +370,10 @@ source(Utils.getFilename("scripts/Manager/RefillSources.lua", g_currentModDirect
 source(Utils.getFilename("scripts/Manager/BaleLoaderManager.lua", g_currentModDirectory)) -- remorque à balles en Autonome : réglages, balles du champ
 source(Utils.getFilename("scripts/Manager/BaleWrapperManager.lua", g_currentModDirectory)) -- enrubanneuse en Autonome : bras, film, recharge du film
 source(Utils.getFilename("scripts/Modes/AutonomousBales.lua", g_currentModDirectory)) -- remorque à balles : dépôt, retour, fin de champ
+source(Utils.getFilename("scripts/Manager/WindrowScan.lua", g_currentModDirectory)) -- (15/11) presse : recherche des andains au sol
+source(Utils.getFilename("scripts/Manager/BalerControl.lua", g_currentModDirectory)) -- (15/11) presse : mise au travail, vitesse, arrêts (balle, enrubannage), ficelle
+source(Utils.getFilename("scripts/Tasks/WindrowBaleTask.lua", g_currentModDirectory)) -- (15/11) presse : tâche qui presse les andains, sans Courseplay
+source(Utils.getFilename("scripts/Modes/AutonomousWindrow.lua", g_currentModDirectory)) -- (15/11) presse en Autonome : arrivée, recherche, pressage, recharge, fin de champ
 source(Utils.getFilename("scripts/Modes/AutonomousFuel.lua", g_currentModDirectory)) -- plein de carburant : Courseplay à sec, avant le champ suivant
 source(Utils.getFilename("scripts/Modes/TrailerHitch.lua", g_currentModDirectory)) -- modes avec benne : remorque à atteler, reposée à sa place
 source(Utils.getFilename("scripts/Hud/HudLoadPoint.lua", g_currentModDirectory)) -- chargement : produits du point de chargement, remorque adaptée
@@ -395,6 +401,7 @@ source(Utils.getFilename("scripts/Gui/BaleLoaderSettingsGUI.lua", g_currentModDi
 source(Utils.getFilename("scripts/Gui/BalerSettingsGUI.lua", g_currentModDirectory)) -- (15/11) fenêtre de la presse, voir BalerSettingsGUI.lua
 source(Utils.getFilename("scripts/Gui/TrailerSwapGUI.lua", g_currentModDirectory)) -- fenêtre « Échange de bennes », voir TrailerSwapGUI.lua
 source(Utils.getFilename("scripts/Gui/HeaderTractorGUI.lua", g_currentModDirectory)) -- fenêtre « Transport de la barre », voir HeaderTractorGUI.lua
+source(Utils.getFilename("scripts/Gui/SiloCompactGUI.lua", g_currentModDirectory)) -- (16/11) fenêtre « Tassage du silo », voir SiloCompactGUI.lua
 
 source(Utils.getFilename("scripts/Gui/EnterDestinationFilterGUI.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Gui/SettingsPage.lua", g_currentModDirectory))
@@ -402,6 +409,8 @@ source(Utils.getFilename("scripts/Manager/TireChangeManager.lua", g_currentModDi
 source(Utils.getFilename("scripts/Utils/RootHarvester.lua", g_currentModDirectory)) -- bennes des arracheuses : côté de la goulotte, sortie du champ, file du calcul
 source(Utils.getFilename("scripts/Utils/TrailerCoverField.lua", g_currentModDirectory)) -- bâche des remorques : ouverte à l'entrée du champ, fermée à la sortie (15/11 : tous les modes)
 source(Utils.getFilename("scripts/Modes/AutonomousYardZone.lua", g_currentModDirectory)) -- mode Autonome : un seul tracteur à la fois dans la zone d'une place d'outils
+source(Utils.getFilename("scripts/Modes/SiloCompactor.lua", g_currentModDirectory)) -- silo couloir : bennes réparties sur la largeur, tracteur tasseur, silo fermé respecté
+source(Utils.getFilename("scripts/Modes/SiloCompactorTask.lua", g_currentModDirectory)) -- (16/11) tasseur : fenêtre « Tassage », lame et rouleau, silo à fond ou traversant
 source(Utils.getFilename("scripts/Manager/GraphManagerGrid.lua", g_currentModDirectory)) -- points du réseau par cases de 100 m : point le plus proche sans parcourir tout le réseau
 source(Utils.getFilename("scripts/Utils/FarmPilotPerf.lua", g_currentModDirectory)) -- commande console fpPerf : temps pris par FarmPilot dans log.txt
 source(Utils.getFilename("scripts/Modes/AutonomousResumeReturn.lua", g_currentModDirectory)) -- mode Autonome : le retour au garage reprend après le chargement de la partie et après la relance d'AutoDrive

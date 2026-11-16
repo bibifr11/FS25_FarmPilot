@@ -56,10 +56,7 @@ ADRootHarvester.ROOT_FOLLOW_PLAN_MAX = 90000  -- ms de calculs sans rouler vers 
 ADRootHarvester.STATE_ROOT_WAIT = 20          -- DriveToVehicleTask : attend sur place sans calculer
 ADRootHarvester.IDLE_TIME = 8000              -- ms sans calcul : retiré de la file du calcul
 
-ADRootHarvester.DEBUG = false
-
 local function log(fmt, ...)
-    if not ADRootHarvester.DEBUG then return end
     print(string.format("[FarmPilot Arracheuse] " .. fmt, ...))
 end
 
@@ -507,7 +504,7 @@ function ADRootHarvester.dropIdle(scheduler)
             if pf.fpLastUpdate == nil then
                 pf.fpLastUpdate = t
             elseif t - pf.fpLastUpdate > ADRootHarvester.IDLE_TIME then
-                if ADRootHarvester.DEBUG then print(string.format("[AD-File] %s ne calcule plus depuis %d s, retiré de la file du calcul", vehicleName(vehicle), math.floor((t - pf.fpLastUpdate) / 1000))) end
+                print(string.format("[AD-File] %s ne calcule plus depuis %d s, retiré de la file du calcul", vehicleName(vehicle), math.floor((t - pf.fpLastUpdate) / 1000)))
                 pf.fpDropped = true
                 if scheduler.activePathFinderVehicle == vehicle then
                     scheduler.activePathFinderVehicle = nil

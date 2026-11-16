@@ -208,6 +208,7 @@ function ADHudButton:getNewState(vehicle)
         if ADBalerManager ~= nil and ADBalerManager.hudGear ~= nil then status, self.toolTip = ADBalerManager.hudGear(vehicle, self.fpNext == true, status, self.toolTip) end -- (15/11) presse : même roue dentée (zone de recharge), voir BalerManager.lua
         if self.fpTrailer and ADTrailerSwap ~= nil then status, self.toolTip = ADTrailerSwap.hudGear(vehicle) end -- ligne « Remorque » : échange de bennes, voir TrailerSwap.lua
         if not self.fpTrailer and not self.fpNext and ADHeaderFlow ~= nil then status, self.toolTip = ADHeaderFlow.hudGear(vehicle, status, self.toolTip) end -- moissonneuse : véhicule de la remorque porte-barre, voir AutonomousHeader.lua
+        if not self.fpTrailer and not self.fpNext and ADSiloJob ~= nil then local okS2, st2, tt2 = FarmPilotCall(ADSiloJob.hudGear, vehicle, status, self.toolTip) if okS2 then status, self.toolTip = st2, tt2 end end -- (16/11) Conduire vers : roue « Tassage du silo », voir SiloCompactorTask.lua
         self.isVisible = status ~= "none"
         newState = status == "ok" and 2 or 1
     end
@@ -301,6 +302,7 @@ function ADHudButton:act(vehicle, posX, posY, isDown, isUp, button)
             -- (08/11) fenêtre « Réglages du semoir » pour la ligne de cette roue dentée
             if self.fpTrailer and ADTrailerSwap ~= nil then return ADTrailerSwap.onGear(vehicle, button, isDown, isUp) end -- ligne « Remorque » : fenêtre « Échange de bennes », voir TrailerSwap.lua
             if not self.fpTrailer and not self.fpNext and ADHeaderFlow ~= nil and ADHeaderFlow.gearShown(vehicle) then return ADHeaderFlow.onGear(vehicle, button, isDown, isUp) end -- moissonneuse : fenêtre « Transport de la barre », voir AutonomousHeader.lua
+            if not self.fpTrailer and not self.fpNext and ADSiloJob ~= nil and ADSiloJob.gearShown(vehicle) then return ADSiloJob.onGear(vehicle, button, isDown, isUp) end -- (16/11) fenêtre « Tassage du silo », voir SiloCompactorTask.lua
             if button == 1 and isUp then
                 AutoDrive.onOpenSeederSettings(vehicle, self.fpNext == true)
                 return true

@@ -23,7 +23,11 @@
 --   suivant, comme avant) ; plein fait, en route vers le champ = il y retourne et Courseplay repart au dernier point.
 -- - Plein du semoir ou de l'épandeur vidé pendant le champ (« refill ») : pas encore plein = le plein reprend, puis
 --   retour au champ et Courseplay au dernier point ; déjà plein = retour au champ et Courseplay au dernier point.
---   (Plein avant le départ au champ : le départ habituel le refait déjà.)
+--   (Plein avant le départ au champ : le départ habituel le refait déjà.) (15/11) Presse (recharge de la ficelle / du
+--   filet) : même étape, mais au retour au champ, nouvelle recherche des andains et nouvelle tâche, jamais Courseplay.
+-- - (15/11) Presse en train de presser ou de chercher les andains (« windrow:bale », « windrow:scan ») : sur place,
+--   nouvelle recherche des andains (ce qui est pressé a disparu), puis la tâche de pressage repart
+--   (AutonomousWindrow.lua) ; pressage commencé et plus d'andain au sol = la suite d'un champ fini.
 -- - Reste de l'épandeur en fin de champ (« dump ») : il retourne le rendre ; déjà rendu = la suite d'un champ fini.
 --   (Reste rendu avant le garage : AutonomousResumeReturn.lua.)
 -- - Changement d'outil avant le champ suivant (« swap ») : l'outil attelé va à sa place, puis l'outil suivant ;
@@ -315,7 +319,8 @@ ADResumeStage.register("refill", {
         mode.refillThen = "back"
         mode.refillStage = "back"
         mode.refillTask = driveBackToField(mode)
-        log("%s : partie rechargée après le plein : retour au champ, Courseplay repartira au dernier point", name)
+        local baler = ADWindrowMode ~= nil and ADWindrowMode.isBaler(vehicle) -- (15/11) presse : nouvelle recherche des andains au retour, voir AutonomousWindrow.lua
+        log("%s : partie rechargée après le plein : retour au champ, %s", name, baler and "puis nouvelle recherche des andains et nouvelle tâche de la presse" or "Courseplay repartira au dernier point")
         return true
     end,
 })
@@ -389,6 +394,42 @@ ADResumeStage.register("swap", {
         local field = sm:getFirstMarker()
         log("%s : partie rechargée pendant le changement d'outil : l'outil attelé va à sa place, puis « %s »", name, label)
         return AutonomousMode.startToolSwap(vehicle, plan, nextTool, { name = field ~= nil and field.name or "?" }, "?") == true
+    end,
+})
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Presse : recherche des andains / pressage (AutonomousWindrow.lua) : « scan » (pas encore pressé), « bale »
+-- ------------------------------------------------------------------------------------------------------------
+ADResumeStage.register("windrow", {
+    stage = function(vehicle, mode)
+        if mode.windrowStage ~= nil and mode.windrowCtx ~= nil then
+            return mode.windrowCtx.started and "bale" or "scan"
+        end
+        return nil
+    end,
+    resume = function(mode, data)
+        if ADWindrowMode == nil then
+            return false
+        end
+        local vehicle = mode.vehicle
+        local name = nameOf(vehicle)
+        local ok, ctx = FarmPilotCall(ADWindrowMode.makeContext, vehicle)
+        if not ok or ctx == nil then
+            log("%s : partie rechargée pendant le pressage, mais plus de presse attelée : départ habituel", name)
+            return false
+        end
+        if ctx.fieldNum == nil then
+            -- pas sur un champ : le départ habituel le ramène au champ, la recherche se fera à l'arrivée
+            log("%s : partie rechargée pendant le pressage, pas de champ ici : départ habituel", name)
+            return false
+        end
+        if not ADResumeStage.activate(mode) then
+            return false
+        end
+        log("%s : partie rechargée pendant %s (champ %s) : nouvelle recherche des andains sur place, puis la presse repart", name,
+            data == "bale" and "le pressage" or "la recherche des andains", tostring(ctx.fieldText))
+        ADWindrowMode.resumeAt(mode, ctx, data == "bale")
+        return true
     end,
 })
 

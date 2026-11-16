@@ -56,7 +56,7 @@ ADCornerModule = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages communs
 -- ------------------------------------------------------------------------------------------------------------
-ADCornerModule.DEBUG = false
+ADCornerModule.DEBUG = true -- temporary diagnostic logs for the tests
 ADCornerModule.TRACE = false -- (09/11) chaque essai de virage dans le journal (bestPath, CornerModuleBends.lua) : coupé
 
 local atan2 = math.atan2 or math.atan

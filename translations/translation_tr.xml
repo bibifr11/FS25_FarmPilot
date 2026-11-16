@@ -500,6 +500,46 @@
 		<text name="AD_ty_toClear" text="yolu açması" />
 		<text name="AD_ty_leaveTrack" text="raydan/rottan çıkması" />
 		<text name="AD_ty_toLeaveYard" text="to clear the tool area" />
+		<text name="AD_fp_silo_closed" text="silo covered or fermenting, waiting in front" />
+		<text name="AD_fp_silo_compactDone" text="silo no longer filling, compacting finished" />
+		<text name="AD_fp_silo_canCover" text="silo 100 % compacted, ready to be covered" />
+		<text name="AD_fp_silo_waiting" text="Compactor: waiting at the side" />
+		<text name="AD_fp_silo_compacting" text="Compacting the silo" />
+		<text name="gui_ad_silo_title" text="Silo compaction" />
+		<text name="gui_ad_silo_tooltip" text="Silo compaction (tractor without trailer, blade or roller)" />
+		<text name="gui_ad_silo_head" text="%s: %s" />
+		<text name="gui_ad_silo_running" text="working" />
+		<text name="gui_ad_silo_stopped" text="stopped" />
+		<text name="gui_ad_silo_noVehicle" text="No vehicle" />
+		<text name="gui_ad_silo_silo" text="Silo" />
+		<text name="gui_ad_silo_desc" text="%s, %.0f x %.0f m, %.0f m away" />
+		<text name="gui_ad_silo_typeWall" text="with back wall" />
+		<text name="gui_ad_silo_typeThrough" text="drive-through" />
+		<text name="gui_ad_silo_none" text="no silo within 1 km" />
+		<text name="gui_ad_silo_compaction" text="Compaction" />
+		<text name="gui_ad_silo_dir" text="Driving into the silo" />
+		<text name="gui_ad_silo_dirFwd" text="Forwards" />
+		<text name="gui_ad_silo_dirRev" text="Reverse" />
+		<text name="gui_ad_silo_width" text="Working width" />
+		<text name="gui_ad_silo_auto" text="Auto" />
+		<text name="gui_ad_silo_blade" text="Blade height" />
+		<text name="gui_ad_silo_push" text="Blade work" />
+		<text name="gui_ad_silo_pushAuto" text="Auto (by silo)" />
+		<text name="gui_ad_silo_pushWall" text="Push against the back wall" />
+		<text name="gui_ad_silo_pushNone" text="Compact only, no pushing" />
+		<text name="gui_ad_silo_wait" text="Waiting when a trailer arrives" />
+		<text name="gui_ad_silo_waitSide" text="Beside the entrance" />
+		<text name="gui_ad_silo_pickMarker" text="Choose the waiting place (markers within 150 m of the silo)" />
+		<text name="gui_ad_silo_full" text="At 100 % compaction" />
+		<text name="gui_ad_silo_fullGo" text="Keep going" />
+		<text name="gui_ad_silo_fullStop" text="Stop" />
+		<text name="gui_ad_silo_start" text="Start" />
+		<text name="gui_ad_silo_stop" text="Stop" />
+		<text name="gui_ad_silo_noSilo" text="no silo selected" />
+		<text name="gui_ad_silo_closed" text="silo covered or fermenting" />
+		<text name="gui_ad_silo_hasTrailer" text="detach the trailer (blade or roller only)" />
+		<text name="gui_ad_silo_busy" text="another tractor is already compacting this silo" />
+		<text name="gui_ad_silo_noRoute" text="no marker in the silo and no route in front of the entrance" />
 		<text name="AD_ty_reverseFor" text="Geri gitme nedeni:" />
 		<text name="AD_ty_parkFor" text="Kenara çekme nedeni:" />
 		<text name="AD_ty_crossing" text="Kavşak, bekleniyor:" />
@@ -618,7 +658,7 @@
 		<text name="AD_autonomous_none" text="%s tarlasında %s m boyutunda Courseplay rotası yok, bekleniyor" />
 		<text name="AD_autonomous_several" text="%s tarlasında %s m boyutunda birden fazla (%s) rota var, Otonom rotalar penceresinden (Ctrl+Alt+Numpad 5) birini seçin, bekleniyor" />
 		<text name="AD_autonomous_noField" text="burada tarla yok, bekleniyor" />
-		<text name="AD_autonomous_noWindrow" text="baler: no Courseplay course of field %s lies on the windrows, waiting" />
+		<text name="AD_autonomous_noWindrow" text="balya makinesi: %s tarlasında namlu yok, bekliyor" />
 		<text name="gui_ad_baler_title" text="Balya makinesi ayarları" />
 		<text name="gui_ad_baler_head" text="Balya makinesi: %s · Tarla: %s · Makinedeki %s: %s rulo" />
 		<text name="gui_ad_baler_noBaler" text="Bu satırda ip veya file kullanan balya makinesi yok." />
@@ -633,6 +673,12 @@
 		<text name="AD_autonomous_balerTodo" text="« %s » balya makinesinin dolum noktası « %s » için onaylanmalı (turuncu dişli), başlatma reddedildi" />
 		<text name="AD_autonomous_balerFill" text="balya makinesi: ip / file neredeyse bitti, tarladan önce « %s » noktasında dolum" />
 		<text name="AD_autonomous_balerEmpty" text="balya makinesi: ip / file bitti, « %s » noktasında dolum, sonra tarlaya dönüş" />
+		<text name="AD_autonomous_windrowStart" text="balya makinesi: %s tarlası, balyalanacak %d namlu" />
+		<text name="AD_autonomous_windrowDone" text="balya makinesi: %s tarlası bitti, balyalanacak namlu kalmadı" />
+		<text name="AD_autonomous_windrowBlocked" text="balya makinesi: %s tarlasının namlularına ulaşılamıyor, bekliyor" />
+		<text name="AD_autonomous_windrowDetached" text="balya makinesi söküldü, bekliyor" />
+		<text name="AD_autonomous_windrowNoRefill" text="balya makinesi: ip / file bitti ve doldurma noktası bulunamadı (dişli çark), bekliyor" />
+		<text name="AD_autonomous_windrowNotReady" text="balya makinesi « %s » hazır değil (açma / çalıştırma reddedildi), bekliyor" />
 		<text name="AD_autonomous_noWidth" text="ekipman genişliği bilinmiyor, bekleniyor" />
 		<text name="AD_autonomous_noTool" text="Otonom mod: takılı çalışma ekipmanı yok" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay bulunamadı: yapayzeka işçisi %s tarlasında başlatıldı" />
@@ -718,6 +764,10 @@
 		<text name="AD_header_homePlace" text="where it was" />
 		<text name="AD_autonomous_headerChosenGone" text="chosen header not available, start refused" />
 		<text name="AD_autonomous_headerNoCrop" text="no header can cut « %s », start refused" />
+		<text name="AD_autonomous_unloadersAuto" text="%d trailer(s) picked automatically for « %s »" />
+		<text name="AD_autonomous_unloadersAutoNone" text="no free trailer that fits for « %s » (tractor powerful enough, empty trailer): new try every minute" />
+		<text name="AD_autonomous_unloadersAutoNoField" text="no marker for field %s: no trailer picked automatically" />
+		<text name="AD_autonomous_unloadersAutoNoDest" text="no unloading place for %s (farm silo or selling point near a marker): no trailer picked automatically" />
 		<text name="AD_autonomous_unloadersFollow" text="%d trailer(s) follow to « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
 		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
@@ -940,6 +990,9 @@
 		<text name="AD_autonomous_wrapDetached" text="balya sarma makinesi ayrılmış, bekleniyor" />
 		<text name="AD_task_autonomous_bales" text="Balyalar toplanıyor" />
 		<text name="AD_task_autonomous_wrap" text="Balyalar sarılıyor" />
+		<text name="AD_task_autonomous_windrow" text="Namlular balyalanıyor" />
+		<text name="AD_task_autonomous_windrowScan" text="Namlular aranıyor" />
+		<text name="AD_task_autonomous_windrowEmpty" text="Yola çıkmadan önce balya bırakılıyor" />
 		<text name="AD_task_fpMotorStart" text="Çalıştırılıyor" />
 		<text name="AD_task_autonomous_baleUnload" text="Balyalar boşaltılıyor." />
 		<text name="AD_autonomous_sprayerOtherProduct" text="tankta hâlâ %s (%.0f L) var ve seçilen ürün %s: tankı boşaltın, başlatma reddedildi" />
@@ -1143,10 +1196,10 @@
 		<text name="fp_help_c7_3_title" text="P button with product left" />
 		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
 		<text name="fp_help_c8_title" text="Baler" />
-		<text name="fp_help_c8_1_title" text="The course that follows the windrows" />
-		<text name="fp_help_c8_1_text" text="With a baler, FarmPilot does not look for the implement width: it reads the windrows on the ground and takes the field's Courseplay course, whatever its width, that runs best over them (usually the combine's or the windrower's). Courseplay handles the baler as usual (bales, wrapping)." />
-		<text name="fp_help_c8_2_title" text="No course on the windrows" />
-		<text name="fp_help_c8_2_text" text="If no course has at least 25 % of its waypoints on a windrow: message « baler: no Courseplay course of field X lies on the windrows, waiting ». This happens if the field is already baled, if the straw was chopped, or if the harvest did not follow a saved course. The choice is made again on each arrival." />
+		<text name="fp_help_c8_1_title" text="Namlular, Courseplay olmadan" />
+		<text name="fp_help_c8_1_text" text="Balya makinesiyle FarmPilot Courseplay kullanmaz: tarlaya varınca traktör durur, yerdeki namluları arar (tarla ve birleştirilmiş tarlalar), sonra onları tek tek balyalar. Makine açılır, çalıştırılır, toplayıcı indirilir, balyalar otomatik bırakılır; traktör balyadan önce yavaşlar ve balya atılırken ya da sarılırken durur. İp / file bitince: seçilen noktada doldurma (dişli çark), tarlaya dönüş, yeni arama ve devam. Tarla bitince: makine katlanır, sonraki tarla (yoksa çiftlik)." />
+		<text name="fp_help_c8_2_title" text="Namlu yok" />
+		<text name="fp_help_c8_2_text" text="Tarlada makinenin ürününden namlu yoksa: « balya makinesi: X tarlasında namlu yok, bekliyor » mesajı. Tarla zaten balyalandıysa ya da saman doğrandıysa olur. Oyun yeniden yüklendi ya da balyalama sırasında Aç / Kapat düğmesi: yerinde yeni arama, balyalama devam eder." />
 		<text name="fp_help_c9_title" text="Bale loader" />
 		<text name="fp_help_c9_1_title" text="Settings" />
 		<text name="fp_help_c9_1_text" text="Cog on the loader's row, « Bale loader settings » window:&#10;- Bales to collect: All, Wrapped only, Unwrapped only.&#10;- Drop-off point: at the top, the markers less than 60 m from a selling point that takes bales (« sale · name »); then all the other markers for storage.&#10;- Validate (Space key; refused until a point is chosen)." />

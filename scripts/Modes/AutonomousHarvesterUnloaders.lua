@@ -21,10 +21,11 @@
 --   plus.
 --
 -- Règle (15/11) : aucune benne au changement de champ (toutes au garage) : son équipe de la session d'avant revient.
--- - Équipe de la moissonneuse (pas l'ensileuse) : les tracteurs en mode « Décharger moissonneuse » qui l'ont servie
---   (même 1re destination, ou servant cette moissonneuse), notés pendant qu'elle travaille et à son départ, avec
---   leur remorque choisie (ligne « Remorque ») et leur parking. Un tracteur n'est que dans une équipe. Gardée dans
---   la sauvegarde de la moissonneuse (#fpUnloaderTeam, identifiants uniques des véhicules).
+-- - Équipe de la moissonneuse, et de l'ensileuse depuis le 16/11 (voir plus bas) : les tracteurs en mode
+--   « Décharger moissonneuse » qui l'ont servie (même 1re destination, ou servant cette machine), notés pendant
+--   qu'elle travaille et à son départ, avec leur remorque choisie (ligne « Remorque ») et leur parking. Un tracteur
+--   n'est que dans une équipe. Gardée dans la sauvegarde de la machine (#fpUnloaderTeam, identifiants uniques des
+--   véhicules).
 -- - Elle a repris le travail au champ suivant (même moment que plus haut) et aucune benne n'est pour ce champ (aucun
 --   tracteur actif en « Décharger moissonneuse » vers ce champ ou vers elle, aucune de ses bennes en route) : chaque
 --   tracteur de son équipe à l'arrêt, et chaque benne notée à l'arrêt, repasse en « Décharger moissonneuse », 1re
@@ -34,10 +35,22 @@
 --   attelé (sa benne ou une masse seulement), sans benne à atteler, sans destination de déchargement.
 -- - Équipe vide (première fois) : comme avant.
 --
+-- Règle (16/11) : l'ensileuse a la même équipe et le même rappel que la moissonneuse.
+-- - Ses bennes (attelée à côté d'elle, suiveuse, en attente, même 1re destination) sont notées comme celles de la
+--   moissonneuse ; entre deux champs elles rentrent au garage, elles sont rappelées au champ suivant quand elle a
+--   repris le travail (Courseplay ou l'ouvrier du jeu, jamais pendant la route ni à l'arrivée avant le travail).
+-- - Remorque posée à sa place à la fin de son chantier (TrailerHitch.lua) : rappelée avec la même remorque, allée
+--   chercher au départ, comme pour la moissonneuse.
+-- - Champ suivant prévu : quand elle part, ADHarvestManager arrête sur place sa benne attelée et la suiveuse (1re
+--   destination plus la même : fireUnloader). Notées ; quand elle a repris le travail elles repartent (vider si
+--   pleines) puis la rejoignent comme ses autres bennes. Conduite par le joueur : laissée à l'arrêt.
+-- - La conduite des bennes d'ensileuse (CombineUnloaderModeChopperChase.lua, etc.) ne change pas.
+--
 -- Branché par : enveloppes posées au chargement sur AutonomousMode.goToNextField (plan),
 -- CombineUnloaderMode:getParkAfterJobMarker (pas de parking tant qu'elle suit), CombineUnloaderMode:onHarvesterJobDone
--- (journal), ADHarvestManager:update (suivi) et ADSavegameResume.save / .load (équipe dans la sauvegarde ; clé
--- #fpUnloaderTeam déclarée dans Specialization.lua). Chargé par register.lua après AutonomousHeaderChoice.lua.
+-- (journal), ADHarvestManager:update (suivi), ADHarvestManager:fireUnloader (16/11, bennes d'ensileuse arrêtées au
+-- départ) et ADSavegameResume.save / .load (équipe dans la sauvegarde ; clé #fpUnloaderTeam déclarée dans
+-- Specialization.lua). Chargé par register.lua après AutonomousHeaderChoice.lua.
 -- ============================================================================================================
 
 ADHarvesterUnloaders = {}
@@ -50,7 +63,8 @@ ADHarvesterUnloaders.READY_GUARD = 5000               -- ms après la fin du cha
 ADHarvesterUnloaders.RETRY_TIME = 1000                -- ms entre deux essais pour une benne occupée
 ADHarvesterUnloaders.TEAM_SCAN_TIME = 5000            -- ms entre deux relevés de l'équipe des moissonneuses au travail (15/11)
 
--- [moissonneuse] = { old = marqueur fini, new = marqueur suivant, crew = { [benne] = true }, since, ready, nextTry }
+-- [moissonneuse] = { old = marqueur fini, new = marqueur suivant, crew = { [benne] = true }, since, ready, nextTry,
+-- fired = { [benne] = true } (16/11, arrêtées au départ par ADHarvestManager) }
 ADHarvesterUnloaders.pending = {}
 -- (15/11) [moissonneuse] = { new = marqueur suivant, since } : partie sans benne qui la suit, son équipe est rappelée
 -- quand elle a repris le travail
@@ -116,13 +130,18 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- (15/11) Son équipe de bennes, gardée dans la sauvegarde
 -- ------------------------------------------------------------------------------------------------------------
--- ensileuse (sans trémie) : rien de cette règle ne la concerne
+-- ensileuse (sans trémie)
 local function isChopper(v)
     return v.ad ~= nil and v.ad.isChopper == true or (v.spec_combine ~= nil and v.spec_combine.isBufferCombine == true)
 end
 
+-- (16/11) moissonneuse ou ensileuse : même équipe, même rappel
 local function isTeamHarvester(v)
-    return not isGone(v) and ADHeaderFlow.isCombine(v) and not isChopper(v)
+    return not isGone(v) and ADHeaderFlow.isCombine(v)
+end
+
+local function kindOf(harvester)
+    return isChopper(harvester) and "ensileuse" or "moissonneuse"
 end
 
 -- identifiant stable du véhicule (le même d'une partie à l'autre), ou nil
@@ -331,12 +350,13 @@ local function recallOne(harvester, tractor, memo, marker)
         sm:setParkDestinationAtJobFinished(memo.park)
     end
     tractor.ad.harvestJobDone = nil
+    tractor.ad.workingForChopper = nil -- (16/11) ensileuse ou moissonneuse : revu d'après la machine du nouveau champ
     mode:start(AutoDrive.USER_PLAYER)
     if not sm:isActive() then
         return "départ refusé"
     end
-    print(string.format("[AD-Chantier] %s: equipe de %s, rappele vers %s (remorque %s)", tostring(tractor:getName()), tostring(harvester:getName()),
-        tostring(marker.name), ((wanted or own) ~= nil and ADTrailerHitch ~= nil) and ADTrailerHitch.label(wanted or own) or "?"))
+    print(string.format("[AD-Chantier] %s: equipe de %s (%s), rappele vers %s (remorque %s)", tostring(tractor:getName()), tostring(harvester:getName()),
+        kindOf(harvester), tostring(marker.name), ((wanted or own) ~= nil and ADTrailerHitch ~= nil) and ADTrailerHitch.label(wanted or own) or "?"))
     return nil
 end
 
@@ -386,6 +406,75 @@ function ADHarvesterUnloaders.recallTeam(harvester, marker, entry, exclude)
     end
     if count > 0 then
         AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersRecall", count, tostring(marker.name))
+    end
+    return count
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (16/11) Bennes de l'ensileuse arrêtées sur place à son départ
+-- ------------------------------------------------------------------------------------------------------------
+-- (crochet de ADHarvestManager:fireUnloader) sa 1re destination a changé : la benne attelée et sa suiveuse sont
+-- arrêtées sur place ; une benne qui la suivra est notée pour repartir quand elle aura repris le travail
+function ADHarvesterUnloaders.noteFired(unloader, harvester)
+    if isGone(unloader) then
+        return
+    end
+    local entry = harvester ~= nil and ADHarvesterUnloaders.pending[harvester] or nil
+    if entry == nil or not entry.crew[unloader] then
+        local _, leader = ADHarvesterUnloaders.staysWithHarvester(unloader)
+        entry = leader ~= nil and ADHarvesterUnloaders.pending[leader] or nil
+        harvester = leader
+    end
+    if entry == nil then
+        return
+    end
+    local mode = unloadModeOf(unloader)
+    local follower = mode ~= nil and mode.getFollowingUnloader ~= nil and mode:getFollowingUnloader() or nil
+    for _, v in ipairs({ unloader, follower }) do
+        if v ~= nil and entry.crew[v] and not (entry.fired ~= nil and entry.fired[v]) then
+            entry.fired = entry.fired or {}
+            entry.fired[v] = true
+            log("%s : partie vers « %s », benne « %s » arrêtée sur place, elle repartira quand elle aura repris le travail",
+                nameOf(harvester), tostring(entry.new.name), nameOf(v))
+        end
+    end
+end
+
+-- elle a repris le travail : ses bennes arrêtées à son départ redémarrent (1re destination encore l'ancien champ :
+-- moveUnloader les envoie ensuite au nouveau, comme ses bennes qui attendaient) ; renvoie leur nombre
+local function restartFired(harvester, entry)
+    local fired = entry.fired
+    entry.fired = nil
+    if fired == nil then
+        return 0
+    end
+    local count = 0
+    for v in pairs(fired) do
+        local sm = not isGone(v) and v.ad.stateModule or nil
+        local mode = sm ~= nil and unloadModeOf(v) or nil
+        if entry.crew[v] and mode ~= nil and not sm:isActive() and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:getFirstMarker() == entry.old then
+            local why = nil
+            if AutoDrive.getIsEntered ~= nil and AutoDrive:getIsEntered(v:getRootVehicle()) then
+                why = "conduite par le joueur"
+            elseif (AutoDrive.getIsCPActive ~= nil and AutoDrive:getIsCPActive(v)) or (v.getIsAIActive ~= nil and v:getIsAIActive()) then
+                why = "au travail ailleurs"
+            else
+                v.ad.harvestJobDone = nil
+                local ok, err = FarmPilotCall(mode.start, mode, AutoDrive.USER_PLAYER)
+                if not ok then
+                    why = "ERREUR " .. tostring(err)
+                elseif not sm:isActive() then
+                    why = "départ refusé"
+                end
+            end
+            if why ~= nil then
+                log("%s : benne « %s » arrêtée à son départ, pas redémarrée (%s)", nameOf(harvester), nameOf(v), why)
+            else
+                count = count + 1
+                print(string.format("[AD-Chantier] %s: arretee au depart de %s (%s), redemarre pour %s", tostring(v:getName()), tostring(harvester:getName()),
+                    kindOf(harvester), tostring(entry.new.name)))
+            end
+        end
     end
     return count
 end
@@ -545,6 +634,7 @@ local function updateEntry(harvester, entry)
         local other = otherHarvesterOn(harvester, entry.old)
         if other ~= nil then
             ADHarvesterUnloaders.pending[harvester] = nil
+            restartFired(harvester, entry) -- (16/11) ses bennes arrêtées à son départ reprennent là-bas, pour l'autre machine
             log("%s : « %s » récolté par « %s », les bennes y restent", nameOf(harvester), tostring(entry.old.name), nameOf(other))
             AutonomousMode.message(harvester, ADMessagesManager.messageTypes.INFO, 8000, "AD_autonomous_unloadersStay", tostring(entry.old.name))
             ADHarvesterUnloaders.recallTeam(harvester, entry.new, nil, entry.crew) -- (15/11) son équipe à l'arrêt, sans ces bennes-là
@@ -552,6 +642,7 @@ local function updateEntry(harvester, entry)
         end
         entry.ready = true
         entry.nextTry = 0
+        restartFired(harvester, entry) -- (16/11) d'abord ses bennes arrêtées à son départ : elles la suivent, l'équipe n'est pas rappelée
         local count = 0
         for _ in pairs(entry.crew) do
             count = count + 1
@@ -691,6 +782,18 @@ if CombineUnloaderMode ~= nil and CombineUnloaderMode.getParkAfterJobMarker ~= n
             end
         end
         return baseJobDone(self, harvester)
+    end
+end
+
+-- (16/11) benne arrêtée sur place par ADHarvestManager (ensileuse partie au champ suivant) : notée
+if ADHarvestManager ~= nil and ADHarvestManager.fireUnloader ~= nil then
+    local baseFire = ADHarvestManager.fireUnloader
+    function ADHarvestManager:fireUnloader(unloader, harvester)
+        local ok, err = FarmPilotCall(ADHarvesterUnloaders.noteFired, unloader, harvester)
+        if not ok then
+            log("ERREUR benne arrêtée au départ : %s", tostring(err))
+        end
+        return baseFire(self, unloader, harvester)
     end
 end
 

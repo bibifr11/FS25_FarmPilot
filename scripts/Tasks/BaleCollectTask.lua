@@ -18,6 +18,11 @@
 --   prise : arrêt jusqu'à la fin du chargement, puis la balle suivante.
 -- - Bras passé PASS_BEYOND m après la balle sans la prendre (ou délai dépassé) : raté, nouvel essai ; après
 --   MAX_TRIES essais la balle est laissée (log).
+-- - (15/11) Trop près pour s'aligner (champ 77 : balle à 3 m, de biais, pas de chemin, approche directe ratée puis
+--   balle collée contre la roue avant, laissée après 2 essais) : il recule pour repartir mieux. Pas de chemin jusqu'à
+--   la ligne d'approche et balle à moins d'ALIGN_CLOSE m : recul tout droit d'ALIGN_BACKOFF m puis nouveau calcul,
+--   une fois par balle, avant l'approche directe. Balle ratée à moins d'ALIGN_CLOSE m : même recul avant le nouvel
+--   essai. MAX_TRIES passe de 2 à 3 (la remorque doit enlever toutes les balles).
 -- - Fin : « full » (pleine), « noBales » (plus de balle à ramasser), ou une erreur (« noLoader », « noWork »).
 --   La remorque repasse en position transport avant de rendre la main (route vers le dépôt).
 -- - (09/11) Départ bloqué : une balle juste devant le tracteur (la suivante d'un rang, celle que le bras charge) bloque
@@ -97,7 +102,9 @@ ADBaleCollectTask.ON_LINE_ARM_MIN = 4       -- m : bras au moins à ça avant la
 ADBaleCollectTask.ON_LINE_ANGLE = 12        -- degrés : tracteur et remorque dans l'axe à moins de ça
 ADBaleCollectTask.ON_LINE_LATERAL_COST = 5  -- m de coût par mètre d'écart du bras ou du tracteur à la ligne (tout droit)
 ADBaleCollectTask.PASS_BEYOND = 3           -- m : bras passé de ça après la balle sans l'attraper = raté
-ADBaleCollectTask.MAX_TRIES = 2             -- essais par balle
+ADBaleCollectTask.MAX_TRIES = 3             -- essais par balle (2 avant le 15/11)
+ADBaleCollectTask.ALIGN_CLOSE = 15          -- m (15/11) : balle plus près que ça, pas de chemin ou ratée = recul d'abord
+ADBaleCollectTask.ALIGN_BACKOFF = 15        -- m (15/11) de recul tout droit pour repartir dans l'axe
 ADBaleCollectTask.PREPARE_TIMEOUT = 20000   -- ms pour sortir ou rentrer le bras
 ADBaleCollectTask.REQUEST_INTERVAL = 5000   -- ms entre deux demandes de sortie du bras
 ADBaleCollectTask.APPROACH_TIMEOUT = 60000  -- ms sur la ligne d'approche (+ le temps de rouler jusqu'à la balle)
@@ -159,6 +166,7 @@ function ADBaleCollectTask:new(vehicle, ctx)
     o.wrap = ctx.settings ~= nil and ctx.settings.wrap or ADBaleLoaderManager.WRAP_ALL
     o.tries = {}         -- [balle] = essais ratés
     o.left = {}          -- [balle] = true : laissée
+    o.alignBackOff = {}  -- [balle] = true : (15/11) déjà reculé pour s'aligner sur elle (pas de chemin)
     o.picked = 0
     o.result = nil
     return o
@@ -604,6 +612,7 @@ end
 -- balle visée ratée : nouvel essai, ou laissée après MAX_TRIES
 function ADBaleCollectTask:missed(why)
     local bale = self.target ~= nil and self.target.bale or nil
+    local close = nil
     if bale ~= nil then
         self.tries[bale] = (self.tries[bale] or 0) + 1
         if self.tries[bale] >= ADBaleCollectTask.MAX_TRIES then
@@ -611,11 +620,19 @@ function ADBaleCollectTask:missed(why)
             log("%s : balle laissée après %d essais (%s)", self:name(), self.tries[bale], tostring(why))
         else
             log("%s : balle ratée (%s), nouvel essai", self:name(), tostring(why))
+            -- (15/11) ratée tout près (collée contre le tracteur, de biais) : recul pour repartir dans l'axe
+            local d = self:distanceTo(self.target)
+            if d < ADBaleCollectTask.ALIGN_CLOSE then
+                close = d
+            end
         end
     end
     self.target = nil
     self:claim(nil)
     self:setState("find")
+    if close ~= nil then
+        self:startBackOff("find", string.format("balle ratée à %.0f m du tracteur, trop près pour reprendre l'axe", close), false, ADBaleCollectTask.ALIGN_BACKOFF)
+    end
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -821,6 +838,14 @@ function ADBaleCollectTask:updatePlanning(dt)
         self.lastStartObstructed = pf.startObstructed == true
         if self.lastStartObstructed and self:startBackOff("find", "départ du chemin bloqué juste devant le tracteur") then
             return
+        end
+        -- (15/11) balle trop près pour s'aligner : recul d'abord (une fois par balle), puis nouveau calcul
+        local tb = self.target ~= nil and self.target.bale or nil
+        if tb ~= nil and not self.alignBackOff[tb] and self:distanceTo(self.target) < ADBaleCollectTask.ALIGN_CLOSE then
+            self.alignBackOff[tb] = true
+            if self:startBackOff("find", string.format("pas de chemin jusqu'à la ligne d'approche, balle à %.0f m : trop près pour s'aligner", self:distanceTo(self.target)), false, ADBaleCollectTask.ALIGN_BACKOFF) then
+                return
+            end
         end
         if self:startDirect("pas de chemin jusqu'à la ligne d'approche") then
             return
@@ -1221,7 +1246,7 @@ function ADBaleCollectTask:baleInFront()
 end
 
 -- after = "find" (balle suivante) ou "done" (rendre la main pour le dépôt) ; force : sans limite de nombre
-function ADBaleCollectTask:startBackOff(after, why, force)
+function ADBaleCollectTask:startBackOff(after, why, force, distance)
     local tx, _, tz = self:tractorPose()
     -- compte remis à zéro quand le tracteur a roulé ailleurs depuis la fin du dernier recul
     if self.backOffEnd == nil or MathUtil.vector2Length(tx - self.backOffEnd.x, tz - self.backOffEnd.z) > ADBaleCollectTask.BACKOFF_SAME_PLACE then
@@ -1234,13 +1259,14 @@ function ADBaleCollectTask:startBackOff(after, why, force)
     self.backOffCount = self.backOffCount + 1
     self.backOffStart = { x = tx, z = tz }
     self.backOffAfter = after
+    self.backOffDistance = distance or ADBaleCollectTask.BACKOFF_DISTANCE
     self.rearBlockedTime = 0
     local rx, ry, rz = AutoDrive.localToWorld(self.vehicle, 0, 0, -100)
     self.backOffTarget = { x = rx, y = ry, z = rz }
     self.target = nil
     self:claim(nil)
     self.vehicle.ad.specialDrivingModule:reset()
-    log("%s : %s, recul de %d m puis nouveau calcul (recul %d)", self:name(), tostring(why), ADBaleCollectTask.BACKOFF_DISTANCE, self.backOffCount)
+    log("%s : %s, recul de %d m puis nouveau calcul (recul %d)", self:name(), tostring(why), self.backOffDistance, self.backOffCount)
     self:setState("backoff")
     return true
 end
@@ -1253,7 +1279,7 @@ function ADBaleCollectTask:updateBackOff(dt)
     self.rearBlockedTime = rearBlocked and (self.rearBlockedTime + dt) or 0
     local rearStop = self.rearBlockedTime >= ADBaleCollectTask.BACKOFF_REAR_BLOCKED
     local timedOut = self.timer >= ADBaleCollectTask.BACKOFF_TIMEOUT
-    if done >= ADBaleCollectTask.BACKOFF_DISTANCE or rearStop or timedOut then
+    if done >= (self.backOffDistance or ADBaleCollectTask.BACKOFF_DISTANCE) or rearStop or timedOut then
         log("%s : recul fini (%.1f m%s)", self:name(), done, rearStop and ", arrêté par le capteur arrière" or (timedOut and ", délai dépassé" or ""))
         self.backOffEnd = { x = tx, z = tz }
         sdm:reset()

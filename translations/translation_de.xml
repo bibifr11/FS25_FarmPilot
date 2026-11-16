@@ -480,6 +480,46 @@
 		<text name="AD_ty_toClear" text="den Weg frei macht" />
 		<text name="AD_ty_leaveTrack" text="den Weg verlassen hat" />
 		<text name="AD_ty_toLeaveYard" text="den Gerätebereich freigibt" />
+		<text name="AD_fp_silo_closed" text="Silo abgedeckt oder in Gärung, wartet davor" />
+		<text name="AD_fp_silo_compactDone" text="Silo wird nicht mehr befüllt, Verdichten beendet" />
+		<text name="AD_fp_silo_canCover" text="Silo zu 100 % verdichtet, Abdecken möglich" />
+		<text name="AD_fp_silo_waiting" text="Verdichter: wartet seitlich" />
+		<text name="AD_fp_silo_compacting" text="Verdichtet das Silo" />
+		<text name="gui_ad_silo_title" text="Silo verdichten" />
+		<text name="gui_ad_silo_tooltip" text="Silo verdichten (Traktor ohne Anhänger, Schild oder Walze)" />
+		<text name="gui_ad_silo_head" text="%s: %s" />
+		<text name="gui_ad_silo_running" text="arbeitet" />
+		<text name="gui_ad_silo_stopped" text="angehalten" />
+		<text name="gui_ad_silo_noVehicle" text="Kein Fahrzeug" />
+		<text name="gui_ad_silo_silo" text="Silo" />
+		<text name="gui_ad_silo_desc" text="%s, %.0f x %.0f m, %.0f m entfernt" />
+		<text name="gui_ad_silo_typeWall" text="mit Rückwand" />
+		<text name="gui_ad_silo_typeThrough" text="Durchfahrsilo" />
+		<text name="gui_ad_silo_none" text="kein Silo im Umkreis von 1 km" />
+		<text name="gui_ad_silo_compaction" text="Verdichtung" />
+		<text name="gui_ad_silo_dir" text="Einfahrt ins Silo" />
+		<text name="gui_ad_silo_dirFwd" text="Vorwärts" />
+		<text name="gui_ad_silo_dirRev" text="Rückwärts" />
+		<text name="gui_ad_silo_width" text="Arbeitsbreite" />
+		<text name="gui_ad_silo_auto" text="Auto" />
+		<text name="gui_ad_silo_blade" text="Schildhöhe" />
+		<text name="gui_ad_silo_push" text="Arbeit des Schilds" />
+		<text name="gui_ad_silo_pushAuto" text="Auto (je nach Silo)" />
+		<text name="gui_ad_silo_pushWall" text="Gegen die Rückwand schieben" />
+		<text name="gui_ad_silo_pushNone" text="Nur verdichten, nicht schieben" />
+		<text name="gui_ad_silo_wait" text="Warten, wenn ein Anhänger kommt" />
+		<text name="gui_ad_silo_waitSide" text="Neben der Einfahrt" />
+		<text name="gui_ad_silo_pickMarker" text="Warteplatz wählen (Markierungen bis 150 m vom Silo)" />
+		<text name="gui_ad_silo_full" text="Bei 100 % Verdichtung" />
+		<text name="gui_ad_silo_fullGo" text="Weitermachen" />
+		<text name="gui_ad_silo_fullStop" text="Anhalten" />
+		<text name="gui_ad_silo_start" text="Starten" />
+		<text name="gui_ad_silo_stop" text="Stoppen" />
+		<text name="gui_ad_silo_noSilo" text="kein Silo gewählt" />
+		<text name="gui_ad_silo_closed" text="Silo abgedeckt oder in Gärung" />
+		<text name="gui_ad_silo_hasTrailer" text="Anhänger abkoppeln (nur Schild oder Walze)" />
+		<text name="gui_ad_silo_busy" text="ein anderer Traktor verdichtet dieses Silo bereits" />
+		<text name="gui_ad_silo_noRoute" text="keine Markierung im Silo und keine Route vor der Einfahrt" />
 		<text name="AD_ty_reverseFor" text="Setzt zurück für" />
 		<text name="AD_ty_parkFor" text="Weicht aus für" />
 		<text name="AD_ty_crossing" text="Kreuzung, wartet:" />
@@ -613,7 +653,7 @@
 		<text name="AD_autonomous_none" text="kein Courseplay-Kurs mit %s m auf Feld %s, wartet" />
 		<text name="AD_autonomous_several" text="%s Kurse mit %s m auf Feld %s, bitte im Fenster Autonome Kurse wählen (Strg+Alt+Num 5), wartet" />
 		<text name="AD_autonomous_noField" text="hier ist kein Feld, wartet" />
-		<text name="AD_autonomous_noWindrow" text="Ballenpresse: kein Courseplay-Kurs auf Feld %s liegt auf den Schwaden, wartet" />
+		<text name="AD_autonomous_noWindrow" text="Ballenpresse: kein Schwad auf Feld %s, wartet" />
 		<text name="gui_ad_baler_title" text="Ballenpressen-Einstellungen" />
 		<text name="gui_ad_baler_head" text="Presse: %s · Feld: %s · %s auf der Presse: %s Rollen" />
 		<text name="gui_ad_baler_noBaler" text="Keine Ballenpresse mit Garn oder Netz in dieser Zeile." />
@@ -628,6 +668,12 @@
 		<text name="AD_autonomous_balerTodo" text="Nachfüllpunkt der Presse « %s » für « %s » bestätigen (oranges Zahnrad), Start verweigert" />
 		<text name="AD_autonomous_balerFill" text="Presse: Garn / Netz fast leer, Nachfüllen bei « %s » vor dem Feld" />
 		<text name="AD_autonomous_balerEmpty" text="Presse: kein Garn / Netz mehr, Nachfüllen bei « %s », dann zurück zum Feld" />
+		<text name="AD_autonomous_windrowStart" text="Ballenpresse: Feld %s, %d Schwad(e) zu pressen" />
+		<text name="AD_autonomous_windrowDone" text="Ballenpresse: Feld %s fertig, kein Schwad mehr zu pressen" />
+		<text name="AD_autonomous_windrowBlocked" text="Ballenpresse: die Schwaden von Feld %s sind nicht erreichbar, wartet" />
+		<text name="AD_autonomous_windrowDetached" text="Ballenpresse abgekuppelt, wartet" />
+		<text name="AD_autonomous_windrowNoRefill" text="Ballenpresse: kein Garn / Netz mehr und keine Nachfüllstelle gefunden (Zahnrad), wartet" />
+		<text name="AD_autonomous_windrowNotReady" text="Ballenpresse « %s » nicht bereit (Ausklappen / Einschalten abgelehnt), wartet" />
 		<text name="AD_autonomous_noWidth" text="Arbeitsbreite unbekannt, wartet" />
 		<text name="AD_autonomous_noTool" text="Autonom-Modus: kein Arbeitsgerät angehängt" />
 		<text name="AD_autonomous_aiNoCp" text="Courseplay nicht gefunden: Helfer des Spiels auf Feld %s gestartet" />
@@ -713,6 +759,10 @@
 		<text name="AD_header_homePlace" text="am alten Platz" />
 		<text name="AD_autonomous_headerChosenGone" text="gewähltes Schneidwerk nicht verfügbar, Start abgelehnt" />
 		<text name="AD_autonomous_headerNoCrop" text="kein Schneidwerk für « %s », Start abgelehnt" />
+		<text name="AD_autonomous_unloadersAuto" text="%d Abfahrer automatisch für « %s » ausgewählt" />
+		<text name="AD_autonomous_unloadersAutoNone" text="kein passender freier Abfahrer für « %s » (Traktor stark genug, leerer Anhänger): neuer Versuch jede Minute" />
+		<text name="AD_autonomous_unloadersAutoNoField" text="kein Marker für Feld %s: kein Abfahrer automatisch ausgewählt" />
+		<text name="AD_autonomous_unloadersAutoNoDest" text="kein Abladeort für %s (Hofsilo oder Verkaufsstelle bei einem Marker): kein Abfahrer automatisch ausgewählt" />
 		<text name="AD_autonomous_unloadersFollow" text="%d Abfahrer folgen nach « %s »" />
 		<text name="AD_autonomous_unloadersWait" text="%d Abfahrer folgen nach « %s », sobald der Mähdrescher wieder arbeitet" />
 		<text name="AD_autonomous_unloadersStay" text="die Abfahrer bleiben bei « %s » (andere Maschine)" />
@@ -945,6 +995,9 @@
 		<text name="AD_autonomous_wrapDetached" text="Ballenwickler abgekoppelt, wartet" />
 		<text name="AD_task_autonomous_bales" text="Sammelt Ballen" />
 		<text name="AD_task_autonomous_wrap" text="Wickelt Ballen" />
+		<text name="AD_task_autonomous_windrow" text="Presst die Schwaden" />
+		<text name="AD_task_autonomous_windrowScan" text="Sucht die Schwaden" />
+		<text name="AD_task_autonomous_windrowEmpty" text="Ballen vor der Straße ablegen" />
 		<text name="AD_task_fpMotorStart" text="Startet" />
 		<text name="AD_task_autonomous_baleUnload" text="Lädt Ballen ab" />
 		<text name="AD_autonomous_sprayerOtherProduct" text="der Tank enthält noch %s (%.0f L) und das gewählte Produkt ist %s: Tank leeren, Start verweigert" />
@@ -1148,10 +1201,10 @@
 		<text name="fp_help_c7_3_title" text="P button with product left" />
 		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
 		<text name="fp_help_c8_title" text="Baler" />
-		<text name="fp_help_c8_1_title" text="The course that follows the windrows" />
-		<text name="fp_help_c8_1_text" text="With a baler, FarmPilot does not look for the implement width: it reads the windrows on the ground and takes the field's Courseplay course, whatever its width, that runs best over them (usually the combine's or the windrower's). Courseplay handles the baler as usual (bales, wrapping)." />
-		<text name="fp_help_c8_2_title" text="No course on the windrows" />
-		<text name="fp_help_c8_2_text" text="If no course has at least 25 % of its waypoints on a windrow: message « baler: no Courseplay course of field X lies on the windrows, waiting ». This happens if the field is already baled, if the straw was chopped, or if the harvest did not follow a saved course. The choice is made again on each arrival." />
+		<text name="fp_help_c8_1_title" text="Schwaden, ohne Courseplay" />
+		<text name="fp_help_c8_1_text" text="Mit einer Ballenpresse nutzt FarmPilot Courseplay nicht: bei der Ankunft am Feld hält der Traktor an, sucht die Schwaden am Boden (Feld und zusammengelegte Felder) und presst sie dann einen nach dem anderen. Die Presse wird ausgeklappt, eingeschaltet, Pick-up abgesenkt, Ballen automatisch abgelegt; der Traktor bremst vor dem Ballen ab und hält, während er ausgeworfen oder gewickelt wird. Kein Garn / Netz mehr: Nachfüllen an der gewählten Stelle (Zahnrad), zurück zum Feld, neue Suche und weiter. Feld fertig: Presse eingeklappt, nächstes Feld (sonst der Hof)." />
+		<text name="fp_help_c8_2_title" text="Kein Schwad" />
+		<text name="fp_help_c8_2_text" text="Liegt kein Schwad des Presseguts auf dem Feld: Meldung « Ballenpresse: kein Schwad auf Feld X, wartet ». Das passiert, wenn das Feld schon gepresst oder das Stroh gehäckselt wurde. Spielstand neu geladen oder Ein / Aus während des Pressens: neue Suche vor Ort, das Pressen geht weiter." />
 		<text name="fp_help_c9_title" text="Bale loader" />
 		<text name="fp_help_c9_1_title" text="Settings" />
 		<text name="fp_help_c9_1_text" text="Cog on the loader's row, « Bale loader settings » window:&#10;- Bales to collect: All, Wrapped only, Unwrapped only.&#10;- Drop-off point: at the top, the markers less than 60 m from a selling point that takes bales (« sale · name »); then all the other markers for storage.&#10;- Validate (Space key; refused until a point is chosen)." />

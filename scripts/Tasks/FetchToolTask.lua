@@ -15,6 +15,14 @@
 --   s'approche jusqu'à CARRIED_RANGE m (au lieu d'ATTACH_RANGE) et l'outil est attelé relevé : il est soulevé du
 --   porteur au lieu d'être tiré vers le bas contre lui (isCarried, attachRange, attachRaised).
 -- - Le résultat (self.result = "ok" ou la raison de l'échec) est lu par AutonomousMode:handleFinishedTask.
+-- - (15/11) Couloir de marche arrière : semoir rangé de travers (35°) dans sa travée, le tracteur se plaçait 18 m
+--   devant lui dans cet axe, donc devant la travée voisine, et en reculant butait sur l'outil rangé là (« le jeu
+--   propose un autre attelage », raté 3 fois). Avant de se placer devant l'outil, le couloir de la marche arrière
+--   (de l'attelage de l'outil à l'avant du tracteur placé devant, largeur du tracteur + CORRIDOR_MARGIN m de chaque
+--   côté) est contrôlé : un autre véhicule ou outil dedans = le tracteur se place plus près (son avant
+--   CORRIDOR_FRONT_GAP m avant ce véhicule, son arrière au moins FRONT_MIN_REAR m devant l'attelage) ; pas la
+--   place = couloir gêné (frontDistance), la route de la place de l'outil est prise si elle existe
+--   (AutonomousMode.fetchRoutePoint), sinon comme avant. Journal : « couloir de marche arrière ... ».
 --
 -- Branché par : AutonomousMode.lua (startFetchAttach : ADFetchToolTask:new ; fetchRoutePoint et monitorFetchRoute :
 -- isReady, readyFor, FRONT_MARGIN).
@@ -35,6 +43,10 @@ ADFetchToolTask.STATE_FORWARD = 7
 ADFetchToolTask.STATE_ROOM = 8
 
 ADFetchToolTask.FRONT_MARGIN = 12         -- m entre l'avant de l'outil et l'arrière du tracteur placé devant
+ADFetchToolTask.FRONT_MIN_REAR = 4        -- m (15/11) : couloir gêné, l'arrière du tracteur placé devant au moins à ça de l'attelage de l'outil
+ADFetchToolTask.CORRIDOR_MARGIN = 0.5     -- m (15/11) de chaque côté du tracteur : couloir de la marche arrière
+ADFetchToolTask.CORRIDOR_FRONT_GAP = 1    -- m (15/11) entre l'avant du tracteur placé devant et un autre véhicule dans le couloir
+ADFetchToolTask.CORRIDOR_STEP = 0.5       -- m (15/11) entre deux points lus sur un autre véhicule
 ADFetchToolTask.LOOK_AHEAD = 5            -- m : la marche arrière vise un point de l'axe de l'outil, à cette distance derrière le tracteur
 ADFetchToolTask.AIM_BEHIND = 3            -- m : ce point ne va pas plus loin que ça dans l'outil
 ADFetchToolTask.READY_LATERAL = 1.5       -- m d'écart à l'axe de l'outil accepté pour reculer tout de suite
@@ -161,9 +173,110 @@ end
 
 -- point devant l'outil, dans son axe, où le tracteur se place avant de reculer
 function ADFetchToolTask:getFrontPoint(hitch)
-    local length = (self.vehicle.size ~= nil and self.vehicle.size.length) or 6
-    local d = length + ADFetchToolTask.FRONT_MARGIN
+    local d, who, blocked, at = ADFetchToolTask.frontDistance(self.vehicle, self.tool, hitch)
+    if who ~= nil and self.corridorLogged ~= who then
+        self.corridorLogged = who
+        local length = (self.vehicle.size ~= nil and self.vehicle.size.length) or 6
+        if blocked then
+            ADAutonomousManager.log("%s : couloir de marche arrière gêné par « %s » à %.1f m de l'attelage de « %s », pas la place de se mettre devant : placé comme avant (%.1f m)",
+                tostring(self.vehicle.ad.stateModule:getName()), tostring(who), at or -1, ADAutonomousManager.toolLabel(self.tool), d)
+        else
+            ADAutonomousManager.log("%s : couloir de marche arrière : « %s » à %.1f m de l'attelage de « %s », tracteur placé plus près (%.1f m au lieu de %.1f m)",
+                tostring(self.vehicle.ad.stateModule:getName()), tostring(who), at or -1, ADAutonomousManager.toolLabel(self.tool), d, length + ADFetchToolTask.FRONT_MARGIN)
+        end
+    end
     return { x = hitch.x + hitch.dirX * d, y = hitch.y, z = hitch.z + hitch.dirZ * d }
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (15/11) Couloir de la marche arrière
+-- ------------------------------------------------------------------------------------------------------------
+-- le tracteur, l'outil et tout ce qui y est attelé : jamais un obstacle
+local function ownTrain(vehicle, tool)
+    local set = {}
+    for _, root in ipairs({ vehicle, tool }) do
+        if root ~= nil then
+            set[root] = true
+            local ok, list = FarmPilotCall(AutoDrive.getAllImplements, root, true)
+            if ok and type(list) == "table" then
+                for _, v in pairs(list) do
+                    set[v] = true
+                end
+            end
+        end
+    end
+    return set
+end
+
+-- partie d'un véhicule dans le couloir (axe de l'outil, de fromAlong à toAlong m devant son attelage, halfWidth m de
+-- chaque côté) : la plus petite distance le long de l'axe, ou nil
+function ADFetchToolTask.corridorAlong(v, hitch, fromAlong, toAlong, halfWidth)
+    if v == nil or v.isDeleted == true or v.components == nil or v.components[1] == nil or v.components[1].node == nil
+        or v.size == nil or v.size.length == nil or v.size.width == nil then
+        return nil
+    end
+    local node = v.components[1].node
+    local length, width = v.size.length, v.size.width
+    local cx, _, cz = localToWorld(node, 0, 0, v.size.lengthOffset or 0)
+    local dx, _, dz = localDirectionToWorld(node, 0, 0, 1)
+    local len = MathUtil.vector2Length(dx, dz)
+    if len < 0.001 then
+        return nil
+    end
+    dx, dz = dx / len, dz / len
+    -- loin du couloir : pas lu
+    local radius = 0.5 * math.sqrt(length * length + width * width)
+    local u0 = (cx - hitch.x) * hitch.dirX + (cz - hitch.z) * hitch.dirZ
+    local w0 = (cx - hitch.x) * hitch.dirZ - (cz - hitch.z) * hitch.dirX
+    if u0 + radius < fromAlong or u0 - radius > toAlong or math.abs(w0) - radius > halfWidth then
+        return nil
+    end
+    local nl = math.max(1, math.ceil(length / ADFetchToolTask.CORRIDOR_STEP))
+    local nw = math.max(1, math.ceil(width / ADFetchToolTask.CORRIDOR_STEP))
+    local best = nil
+    for i = 0, nl do
+        local a = -length / 2 + length * i / nl
+        for j = 0, nw do
+            local b = -width / 2 + width * j / nw
+            local px, pz = cx + dx * a + dz * b, cz + dz * a - dx * b
+            local u = (px - hitch.x) * hitch.dirX + (pz - hitch.z) * hitch.dirZ
+            local w = (px - hitch.x) * hitch.dirZ - (pz - hitch.z) * hitch.dirX
+            if u >= fromAlong and u <= toAlong and math.abs(w) <= halfWidth and (best == nil or u < best) then
+                best = u
+            end
+        end
+    end
+    return best
+end
+
+-- distance de l'attelage de l'outil où se place le tracteur (son centre) avant de reculer, et ce qui gêne :
+-- d, nom du véhicule dans le couloir (nil : couloir libre), couloir gêné (pas la place de se mettre plus près),
+-- distance de ce véhicule le long de l'axe
+function ADFetchToolTask.frontDistance(vehicle, tool, hitch)
+    local length = (vehicle.size ~= nil and vehicle.size.length) or 6
+    local width = (vehicle.size ~= nil and vehicle.size.width) or 3
+    local d = length + ADFetchToolTask.FRONT_MARGIN
+    local halfWidth = width / 2 + ADFetchToolTask.CORRIDOR_MARGIN
+    local toAlong = d + length / 2 + ADFetchToolTask.CORRIDOR_FRONT_GAP
+    local own = ownTrain(vehicle, tool)
+    local nearest, who = nil, nil
+    for _, v in pairs(AutoDrive.getAllVehicles ~= nil and AutoDrive.getAllVehicles() or {}) do
+        if not own[v] then
+            local ok, u = FarmPilotCall(ADFetchToolTask.corridorAlong, v, hitch, 0.5, toAlong, halfWidth)
+            if ok and u ~= nil and (nearest == nil or u < nearest) then
+                nearest, who = u, v
+            end
+        end
+    end
+    if nearest == nil then
+        return d, nil, false, nil
+    end
+    local name = ADAutonomousManager.toolLabel ~= nil and ADAutonomousManager.toolLabel(who) or "?"
+    local fit = nearest - length / 2 - ADFetchToolTask.CORRIDOR_FRONT_GAP
+    if fit >= length / 2 + ADFetchToolTask.FRONT_MIN_REAR then
+        return math.min(d, fit), name, false, nearest
+    end
+    return d, name, true, nearest
 end
 
 -- déjà devant l'outil, dans son axe, le nez à l'opposé : on recule tout de suite

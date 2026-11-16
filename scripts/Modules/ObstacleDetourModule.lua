@@ -32,7 +32,7 @@ ADObstacleDetourModule = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADObstacleDetourModule.DEBUG = false
+ADObstacleDetourModule.DEBUG = true -- temporary diagnostic logs for the tests
 
 ADObstacleDetourModule.STATE_IDLE = 0
 ADObstacleDetourModule.STATE_REVERSING = 1

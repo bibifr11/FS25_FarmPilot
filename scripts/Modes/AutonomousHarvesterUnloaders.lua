@@ -956,7 +956,8 @@ local function jobIsCombine(mode)
     if harvester ~= nil then
         return not isChopper(harvester)
     end
-    return v.ad.fpPickedFrom ~= nil and not v.ad.fpPickedFrom.chopper
+    -- (16/11) machine inconnue (partie rechargée) : seulement si le choix a noté une moissonneuse ; pas noté = rien
+    return v.ad.fpPickedFrom ~= nil and v.ad.fpPickedFrom.chopper == false
 end
 
 -- son point de départ, comme un marqueur (id = point du réseau, nom affiché)
@@ -1081,6 +1082,11 @@ if ADSavegameResume ~= nil then
             local wp = vehicle ~= nil and ADHarvesterUnloaders.returnPoint(vehicle) or nil
             if wp ~= nil then
                 xmlFile:setValue(key .. "#fpPickedFrom", wp)
+                -- (16/11) ensileuse ou moissonneuse, pour garder les deux séparées après rechargement
+                local memo = vehicle.ad ~= nil and vehicle.ad.fpPickedFrom or nil
+                if memo ~= nil and memo.chopper ~= nil then
+                    xmlFile:setValue(key .. "#fpPickedFromChopper", memo.chopper == true)
+                end
             end
         end)
         if not ok then
@@ -1099,6 +1105,12 @@ if ADSavegameResume ~= nil then
             vehicle.ad.fpUnloaderTeam = ok and ADHarvesterUnloaders.teamFromString(text) or nil
             local okP, wp = FarmPilotCall(xmlFile.getValue, xmlFile, key .. "#fpPickedFrom")
             vehicle.ad.fpPickedFrom = (okP and type(wp) == "number" and wp >= 1) and { wp = wp } or nil
+            if vehicle.ad.fpPickedFrom ~= nil then
+                local okC, chopper = FarmPilotCall(xmlFile.getValue, xmlFile, key .. "#fpPickedFromChopper")
+                if okC and type(chopper) == "boolean" then
+                    vehicle.ad.fpPickedFrom.chopper = chopper
+                end
+            end
         end
     end
 end

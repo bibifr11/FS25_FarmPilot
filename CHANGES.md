@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.0.7): 91 files modified, 290 files added, 3 files removed.
+Summary (FarmPilot 1.1.0.8): 91 files modified, 290 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -54,7 +54,7 @@ Summary (FarmPilot 1.1.0.7): 91 files modified, 290 files added, 3 files removed
 - scripts/Modules/TrailerModule.lua (+0 / -8)
 - scripts/PathCalculation.lua (+39 / -10)
 - scripts/Settings.lua (+180 / -12)
-- scripts/Specialization.lua (+193 / -37)
+- scripts/Specialization.lua (+194 / -37)
 - scripts/Sync.lua (+1 / -1)
 - scripts/Tasks/AbstractTask.lua (+26 / -0)
 - scripts/Tasks/CatchCombinePipeTask.lua (+107 / -12)

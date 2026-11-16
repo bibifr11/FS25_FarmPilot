@@ -364,6 +364,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousHeaderHookup.lua", g_currentMo
 source(Utils.getFilename("scripts/Modes/AutonomousHarvesterUnloaders.lua", g_currentModDirectory)) -- bennes qui suivent le champ de la moissonneuse
 source(Utils.getFilename("scripts/Modes/AutonomousUnloaderAutoPick.lua", g_currentModDirectory)) -- (16/11) machine au travail sans benne : tracteurs et remorques choisis et envoyés au champ
 source(Utils.getFilename("scripts/Hud/HudHarvester.lua", g_currentModDirectory)) -- HUD Autonome moissonneuse / ensileuse : Champ, Barre, Champ suivant, Barre suivante
+source(Utils.getFilename("scripts/Hud/HudSilo.lua", g_currentModDirectory)) -- (16/11) HUD du mode « Tassage » : lignes Silo et Attente
 source(Utils.getFilename("scripts/Modes/SprayerRestReturn.lua", g_currentModDirectory)) -- épandeurs : reste rendu à la zone de plein ou vendu, jamais en big bags
 source(Utils.getFilename("scripts/Modes/AutonomousSprayerDump.lua", g_currentModDirectory)) -- épandeurs : vider le reste (fin de champ, bouton parking)
 source(Utils.getFilename("scripts/Manager/RefillSources.lua", g_currentModDirectory)) -- zones de plein filtrées selon le produit

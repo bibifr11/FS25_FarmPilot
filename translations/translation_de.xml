@@ -503,6 +503,10 @@
 		<text name="gui_ad_silo_width" text="Arbeitsbreite" />
 		<text name="gui_ad_silo_auto" text="Auto" />
 		<text name="gui_ad_silo_blade" text="Schildhöhe" />
+		<text name="gui_ad_silo_hudSilo" text="Silo %d (%d %%)" />
+		<text name="gui_ad_silo_hudSiloNone" text="Silo: keins (wählen)" />
+		<text name="gui_ad_silo_hudWait" text="Warten: %s" />
+		<text name="gui_ad_silo_number" text="Silo %d" />
 		<text name="gui_ad_silo_push" text="Arbeit des Schilds" />
 		<text name="gui_ad_silo_pushAuto" text="Auto (je nach Silo)" />
 		<text name="gui_ad_silo_pushWall" text="Gegen die Rückwand schieben" />
@@ -648,6 +652,7 @@
 		<text name="AD_obstacleDetour_reroute" text="merkt sich diese Durchfahrt als blockiert und nimmt einen anderen Weg" />
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonom" />
+		<text name="AD_MODE_COMPACT" text="Verdichten" />
 		<text name="input_ADAutonomousCourses" text="FP - Autonome Kurse (Wahl je Feld)" />
 		<text name="AD_autonomous_start" text="Courseplay-Kurs „%s“ auf Feld %s gestartet" />
 		<text name="AD_autonomous_none" text="kein Courseplay-Kurs mit %s m auf Feld %s, wartet" />

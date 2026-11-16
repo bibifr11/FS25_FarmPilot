@@ -521,6 +521,10 @@
 		<text name="gui_ad_silo_width" text="Largeur de travail" />
 		<text name="gui_ad_silo_auto" text="Auto" />
 		<text name="gui_ad_silo_blade" text="Hauteur de la lame" />
+		<text name="gui_ad_silo_hudSilo" text="Silo %d (%d %%)" />
+		<text name="gui_ad_silo_hudSiloNone" text="Silo : aucun (choisir)" />
+		<text name="gui_ad_silo_hudWait" text="Attente : %s" />
+		<text name="gui_ad_silo_number" text="Silo %d" />
 		<text name="gui_ad_silo_push" text="Travail de la lame" />
 		<text name="gui_ad_silo_pushAuto" text="Auto (selon le silo)" />
 		<text name="gui_ad_silo_pushWall" text="Pousser contre le fond" />
@@ -651,6 +655,7 @@
 		<text name="adAddon_player" text="Joueur"/>
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonome" />
+		<text name="AD_MODE_COMPACT" text="Tassage" />
 		<text name="input_ADAutonomousCourses" text="FP - Parcours Autonome (choix par champ)" />
 		<text name="AD_autonomous_start" text="parcours Courseplay « %s » lancé sur le champ %s" />
 		<text name="AD_autonomous_none" text="aucun parcours Courseplay de %s m sur le champ %s, en attente" />

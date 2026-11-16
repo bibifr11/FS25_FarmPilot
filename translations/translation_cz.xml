@@ -523,6 +523,10 @@
 		<text name="gui_ad_silo_width" text="Working width" />
 		<text name="gui_ad_silo_auto" text="Auto" />
 		<text name="gui_ad_silo_blade" text="Blade height" />
+		<text name="gui_ad_silo_hudSilo" text="Silo %d (%d %%)" />
+		<text name="gui_ad_silo_hudSiloNone" text="Silo: none (choose)" />
+		<text name="gui_ad_silo_hudWait" text="Wait: %s" />
+		<text name="gui_ad_silo_number" text="Silo %d" />
 		<text name="gui_ad_silo_push" text="Blade work" />
 		<text name="gui_ad_silo_pushAuto" text="Auto (by silo)" />
 		<text name="gui_ad_silo_pushWall" text="Push against the back wall" />
@@ -653,6 +657,7 @@
 		<text name="adAddon_player" text="Player"/>
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonomous" />
+		<text name="AD_MODE_COMPACT" text="Compacting" />
 		<text name="input_ADAutonomousCourses" text="FP - Autonomous courses (choice per field)" />
 		<text name="AD_autonomous_start" text='Courseplay course "%s" started on field %s' />
 		<text name="AD_autonomous_none" text="no Courseplay course of %s m on field %s, waiting" />

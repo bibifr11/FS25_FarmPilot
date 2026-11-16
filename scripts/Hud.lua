@@ -143,12 +143,15 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		fpKind = AutoDriveHud.fpRowKind(vehicle) or false
 	end
 	self.fpRowKind = fpKind
-	self.fpNextToolRow = self.fpRowKind ~= false and self.fpRowKind ~= "drive" -- (15/11) Conduire : ligne « Atteler » à la place d'une ligne vide, HUD de même taille
+	self.fpNextToolRow = self.fpRowKind ~= false and self.fpRowKind ~= "drive" and self.fpRowKind ~= "silo" -- (15/11) Conduire : ligne « Atteler » à la place d'une ligne vide, HUD de même taille
 	local pullDownRows = self.fpNextToolRow and 4 or 3
 	-- (10/11) mode Autonome : lignes « Outil avant » et « Outil avant suivant » en plus (6 lignes)
 	self.fpFrontRows = self.fpRowKind == "next"
 	if self.fpFrontRows then
 		pullDownRows = 6
+	end
+	if self.fpRowKind == "silo" then
+		pullDownRows = 2 -- (16/11) mode « Tassage » : Silo / Attente, voir Hud/HudSilo.lua
 	end
 
 	self.borderX, self.borderY = getNormalizedScreenValues(uiScale * gapSize, uiScale * gapSize)
@@ -215,6 +218,11 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	table.insert(self.hudElements, ADHudButton:new(posX, posY, closeWidth, closeHeight, "input_toggleHudExtension", nil, nil, nil, nil, nil, nil, nil, "", 1, true))
 
 	
+	if self.fpRowKind == "silo" then
+		-- (16/11) mode « Tassage », 2 lignes : Silo (rangée du haut, bouton marqueur) / Attente (roue dentée)
+		self.rowHeader, self.row4, self.row3 = self.row4, self.row3, self.row2
+	end
+
 	-- (08/11, chaque champ avec son outil, sinon ils sont décalés) mode Autonome, de haut en bas :
 	-- Champ / Outil / Champ suivant / Outil suivant. Rang (order) = place depuis le haut, pour les listes ouvertes
 	local rowUnload, rowFill, rowNextTool = self.row3, self.row2, self.rowFpNextTool
@@ -277,6 +285,8 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		driveList.fpTrailer = true
 		driveList.order = 3
 		table.insert(self.hudElements, driveList)
+	elseif self.fpRowKind == "silo" then
+		if ADSiloHud ~= nil then ADSiloHud.addRows(self) end -- (16/11) mode « Tassage » : lignes Silo et Attente, voir Hud/HudSilo.lua
 	elseif self.fpRowKind == "harvester" and ADHarvesterHud ~= nil then
 		ADHarvesterHud.addRows(self, rowFill, rowNextTool) -- moissonneuse / ensileuse : lignes « Barre », voir HudHarvester.lua
 	elseif self.fpNextToolRow then
@@ -1075,6 +1085,8 @@ function AutoDriveHud:getModeName(vehicle)
 		return g_i18n:getText("AD_MODE_BGA")
 	elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_AUTONOMOUS then
 		return g_i18n:getText("AD_MODE_AUTONOMOUS")
+	elseif vehicle.ad.stateModule:getMode() == AutoDrive.MODE_COMPACT then
+		return g_i18n:getText("AD_MODE_COMPACT")
 	end
 
 	return ""

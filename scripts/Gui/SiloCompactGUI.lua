@@ -1,10 +1,11 @@
 -- ============================================================================================================
 -- FarmPilot : SiloCompactGUI.lua
--- Fenêtre « Tassage du silo » (16/11) : roue dentée « Tassage » du HUD, mode « Conduire vers », tracteur sans benne
+-- Fenêtre « Tassage du silo » (16/11) : roue dentée du HUD en mode « Tassage » (Hud/HudSilo.lua), tracteur sans benne
 -- (lame ou rouleau acceptés).
 --
 -- Même forme que la fenêtre de la presse. Lignes :
--- - Silo (le plus proche d'abord ; « Changer » passe au suivant) : à fond / traversant, taille, distance ;
+-- - Silo (tous les silos de la carte, celui choisi dans le HUD d'abord ; « Changer » passe au suivant) :
+--   numéro, à fond / traversant, taille, distance ;
 -- - Tassage : % du silo (affichage) ;
 -- - Entrée dans le silo : marche avant / marche arrière ;
 -- - Largeur de travail : Auto (largeur calculée) / 2 à 6 m ;
@@ -20,7 +21,7 @@
 
 ADSiloCompactGui = {}
 ADSiloCompactGui.context = nil -- { vehicle }
-ADSiloCompactGui.SILO_RANGE = 1000 -- m, silos proposés
+ADSiloCompactGui.SILO_RANGE = nil -- tous les silos de la carte (départ de n'importe où)
 
 local ADSiloCompactGui_mt = Class(ADSiloCompactGui, DialogElement)
 
@@ -72,6 +73,9 @@ function ADSiloCompactGui:onOpen()
         local job = self.vehicle.ad.fpSiloJob
         local current = job ~= nil and ADSiloJob.findSilo(job.x, job.z) or nil
         if current == nil then
+            current = ADSiloJob.selectedSilo(self.vehicle) -- silo choisi dans le HUD
+        end
+        if current == nil then
             local task = self.vehicle.ad.taskModule ~= nil and self.vehicle.ad.taskModule:getActiveTask() or nil
             current = task ~= nil and task.fpSiloCompact and task.silo or nil
         end
@@ -103,6 +107,7 @@ function ADSiloCompactGui:sendCfg(action)
     local silo = self:selectedSilo()
     if silo ~= nil then
         x, z = ADSiloJob.center(silo)
+        self.cfg.sx, self.cfg.sz = x, z -- même silo dans la 1re ligne du HUD
     end
     ADSiloCompactEvent.send(self.vehicle, action, ADSiloJob.cfgToText(self.cfg), x, z)
     self.cfg = ADSiloJob.textToCfg(ADSiloJob.cfgToText(self.cfg))
@@ -135,7 +140,7 @@ function ADSiloCompactGui:siloText(entry)
     if not ADSiloCompactor.isFilling(entry.silo) then
         kind = kind .. " · " .. text("gui_ad_silo_closed")
     end
-    return string.format(text("gui_ad_silo_desc"), kind, entry.g.length, entry.g.width, entry.dist)
+    return string.format(text("gui_ad_silo_number"), ADSiloJob.siloNumber(entry.silo)) .. " : " .. string.format(text("gui_ad_silo_desc"), kind, entry.g.length, entry.g.width, entry.dist)
 end
 
 function ADSiloCompactGui:refreshItems()

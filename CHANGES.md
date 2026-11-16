@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.0.9.0): 91 files modified, 276 files added, 3 files removed.
+Summary (FarmPilot 1.0.9.1): 91 files modified, 277 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,14 +24,14 @@ Summary (FarmPilot 1.0.9.0): 91 files modified, 276 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+375 / -12)
-- scripts/AutoDrive.lua (+65 / -2)
+- register.lua (+376 / -12)
+- scripts/AutoDrive.lua (+66 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
 - scripts/Gui.lua (+38 / -0)
 - scripts/Gui/SettingsPage.lua (+2 / -0)
-- scripts/Hud.lua (+164 / -35)
-- scripts/Hud/HudButton.lua (+47 / -1)
+- scripts/Hud.lua (+176 / -35)
+- scripts/Hud/HudButton.lua (+50 / -1)
 - scripts/Hud/HudHarvesterInfo.lua (+1 / -1)
 - scripts/Hud/HudIcon.lua (+152 / -11)
 - scripts/Hud/PullDownList.lua (+167 / -10)
@@ -54,7 +54,7 @@ Summary (FarmPilot 1.0.9.0): 91 files modified, 276 files added, 3 files removed
 - scripts/Modules/TrailerModule.lua (+0 / -8)
 - scripts/PathCalculation.lua (+39 / -10)
 - scripts/Settings.lua (+180 / -12)
-- scripts/Specialization.lua (+184 / -37)
+- scripts/Specialization.lua (+185 / -37)
 - scripts/Sync.lua (+1 / -1)
 - scripts/Tasks/AbstractTask.lua (+26 / -0)
 - scripts/Tasks/CatchCombinePipeTask.lua (+107 / -12)
@@ -80,25 +80,25 @@ Summary (FarmPilot 1.0.9.0): 91 files modified, 276 files added, 3 files removed
 - scripts/Utils/UtilFuncs.lua (+2 / -18)
 - scripts/XML.lua (+46 / -12)
 - textures/ad_gui.dds (binary, replaced)
-- textures/ad_gui.xml (+7 / -0)
-- translations/translation_br.xml (+1060 / -90)
-- translations/translation_cs.xml (+1061 / -91)
-- translations/translation_ct.xml (+1062 / -92)
-- translations/translation_cz.xml (+1060 / -90)
-- translations/translation_da.xml (+1061 / -91)
-- translations/translation_de.xml (+1070 / -95)
-- translations/translation_ea.xml (+1062 / -92)
-- translations/translation_en.xml (+1072 / -92)
-- translations/translation_es.xml (+1062 / -92)
-- translations/translation_fr.xml (+1124 / -146)
-- translations/translation_hu.xml (+1061 / -91)
-- translations/translation_it.xml (+1053 / -83)
-- translations/translation_nl.xml (+1062 / -92)
-- translations/translation_pl.xml (+1061 / -91)
-- translations/translation_pt.xml (+1062 / -92)
-- translations/translation_ru.xml (+1062 / -92)
-- translations/translation_tr.xml (+1151 / -181)
-- translations/translation_uk.xml (+1062 / -92)
+- textures/ad_gui.xml (+9 / -0)
+- translations/translation_br.xml (+1065 / -90)
+- translations/translation_cs.xml (+1066 / -91)
+- translations/translation_ct.xml (+1067 / -92)
+- translations/translation_cz.xml (+1065 / -90)
+- translations/translation_da.xml (+1066 / -91)
+- translations/translation_de.xml (+1075 / -95)
+- translations/translation_ea.xml (+1067 / -92)
+- translations/translation_en.xml (+1077 / -92)
+- translations/translation_es.xml (+1067 / -92)
+- translations/translation_fr.xml (+1129 / -146)
+- translations/translation_hu.xml (+1066 / -91)
+- translations/translation_it.xml (+1058 / -83)
+- translations/translation_nl.xml (+1067 / -92)
+- translations/translation_pl.xml (+1066 / -91)
+- translations/translation_pt.xml (+1067 / -92)
+- translations/translation_ru.xml (+1067 / -92)
+- translations/translation_tr.xml (+1169 / -184)
+- translations/translation_uk.xml (+1067 / -92)
 
 ## New files (written for FarmPilot)
 
@@ -187,6 +187,7 @@ Summary (FarmPilot 1.0.9.0): 91 files modified, 276 files added, 3 files removed
 - scripts/Hud/HudEditorReminder.lua
 - scripts/Hud/HudHarvester.lua
 - scripts/Hud/HudLoadPoint.lua
+- scripts/Hud/HudSilo.lua
 - scripts/Hud/HudTextWrap.lua
 - scripts/Manager/AccessRoadManager.lua
 - scripts/Manager/AccessRoadStart.lua

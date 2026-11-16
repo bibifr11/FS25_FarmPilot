@@ -239,6 +239,7 @@ function AutoDrive:onLoad(savegame)
     self.ad.modes[AutoDrive.MODE_BGA] = BGAMode:new(self)
     self.ad.modes[AutoDrive.MODE_UNLOAD] = CombineUnloaderMode:new(self)
     self.ad.modes[AutoDrive.MODE_AUTONOMOUS] = AutonomousMode:new(self)
+    if CompactMode ~= nil then self.ad.modes[AutoDrive.MODE_COMPACT] = CompactMode:new(self) end -- (16/11) mode « Tassage », voir SiloCompactorTask.lua
 
     self.ad.onRouteToPark = false
     self.ad.onRouteToRefuel = false

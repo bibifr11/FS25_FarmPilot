@@ -64,7 +64,7 @@
 		<text name="input_ADCopySettings"								text="FP - Ayarları Kopyala" />
 		<text name="input_ADPasteSettings"								text="FP - Ayarları Yapıştır" />
 		<text name="input_ADCreateFieldPoints"							text="FP - Tarla Noktaları Oluştur" />
-		<text name="hud_avoidFruit"									text="FP - Meyvelerden/Mahsulden kaçının" />
+		<text name="hud_avoidFruit"									text="FP - Meyvelerden/Ekinden kaçının" />
 		<text name="hud_startHelper"									text="FP - AI/CP'ı varış noktasında başlatın" />
 		<text name="AD_parkVehicle_noPosSet"							text="Park yeri atanmadı. Lütfen halihazırda seçili olan hedefi sağ fare tuşu ile atayın." />
 		<text name="AD_parkVehicle_selected"							text="Seçilen park yeri:" />
@@ -136,7 +136,7 @@
 		<text name="gui_ad_autoConnect_end"							text="Otomatik bağlan (son)" />
 		<text name="gui_ad_autoConnect_end_tooltip"					text="Kaydın sonunda uygun düğümü otomatik olarak bağlayın" />
 		<text name="gui_ad_parkInField"								text="Tarlaya park et" />
-		<text name="gui_ad_parkInField_tooltip"						text="Bir biçerdöverin boşaltılmasından sonra - meyveye park edilmemişse" />
+		<text name="gui_ad_parkInField_tooltip"						text="Bir biçerdöverin boşaltılmasından sonra - ekili alana park edilmemişse" />
 		<text name="gui_ad_unloadFillLevel"							text="Doldurma seviyesini boşalt" />
 		<text name="gui_ad_unloadFillLevel_tooltip"					text="Biçerdöver boşaldıktan sonra doğrudan bu doldurma seviyesinde dağıtıma gidin." />
 		<text name="gui_ad_fpSiloEmptyWait" text="Yükleme durduruldu: şu süreden sonra ayrıl" />
@@ -170,8 +170,8 @@
 		<text name="gui_ad_driverWages_tooltip"						text="Sürücü ücretleri bu değer ile çarpılacaktır" />
 		<text name="gui_ad_showNextPath"								text="Sonraki yolu göster" />
 		<text name="gui_ad_showNextPath_tooltip"						text="Sonraki iki yolnoktasının görüntülenmesini Etkinleştir / Devre Dışı Bırak" />
-		<text name="gui_ad_avoidFruit"									text="Meyveden kaçının" />
-		<text name="gui_ad_avoidFruit_tooltip"							text="Kombine boşaltıcı, meyve tahribatını önlemeye çalışır" />
+		<text name="gui_ad_avoidFruit"									text="Ekinden kaçının" />
+		<text name="gui_ad_avoidFruit_tooltip"							text="Kombine boşaltıcı, ekin tahribatını önlemeye çalışır" />
 		<text name="gui_ad_pathFinderTime"								text="Yol bulucu süresi (maks.)" />
 		<text name="gui_ad_pathFinderTime_tooltip"						text="Yol bulma algoritmasının birleştirmeye / birleştirmeden çarpışmasız yolu aramasına ne kadar süre izin verileceğini belirler. (Potansiyel fps etkisi)" />
 		<text name="gui_ad_lineHeight"									text="Satır yüksekliği" />
@@ -221,8 +221,8 @@
 		<text name="gui_ad_autoRefuel_tooltip"							text="Yakıt seviyesi düşükken yakıt ikmali hedefine (yakıt tetiğine yakın) gidin." />
 		<text name="gui_ad_autoRepair"									text="Otamatik Tamir etme" />
 		<text name="gui_ad_autoRepair_tooltip"							text="Aşınma seviyesi çok yüksek olduğunda, atölye hedefine (onarım tetikleyicisinin yakınına) sürün." />
-		<text name="gui_ad_fpTireChange" text="Change tires at" />
-		<text name="gui_ad_fpTireChange_tooltip" text="With AutoSwitch: when a tire of the tractor or of an attached implement has only this % left, the tractor goes to the workshop to replace the worn tires (like the « New tires » button), after its current job (at once below 5 %). No: never." />
+		<text name="gui_ad_fpTireChange" text="Lastikleri değiştirme eşiği" />
+		<text name="gui_ad_fpTireChange_tooltip" text="AutoSwitch ile: traktörün veya bağlı ekipmanın bir lastiğinde yalnızca bu % kaldığında, traktör mevcut işini tamamladıktan sonra (%5'in altındaysa hemen) aşınmış lastikleri değiştirmek için atölyeye gider («Yeni lastikler» düğmesi gibi). Hayır: asla." />
 		<text name="gui_ad_filter"										text="Filtrele" />
 		<text name="gui_ad_enterDestinationFilterTitle"				text="Hedefin filtre metnini değiştir" />
 		<text name="gui_ad_enterDestinationFilterText"					text="Filtre metni ekleyin:" />
@@ -377,59 +377,59 @@
 		<text name="ad_color_dirtSingleConnection" text="32 - Tek yönlü ara yol çizgisi" />
 		<text name="ad_color_dirtDualConnection" text="33 - Çift yönlü ara yol çizgisi" />
 		<text name="ad_color_dirtNode" text="34 - Ara yol geçiş noktası" />
-		<text name="ad_color_accessSingleConnection" text="35 access road line, one way" />
-		<text name="ad_color_accessDualConnection" text="36 access road line, two way" />
-		<text name="ad_color_accessNode" text="37 access road waypoint" />
+		<text name="ad_color_accessSingleConnection" text="35 bağlantı yolu çizgisi, tek yön" />
+		<text name="ad_color_accessDualConnection" text="36 bağlantı yolu çizgisi, çift yön" />
+		<text name="ad_color_accessNode" text="37 bağlantı yolu noktası" />
         <text name="button_delete_all"									text="Tümünü Sil" />
         <text name="button_reset_selected"								text="Seçileni sıfırla" />
         <text name="AD_task_pathfinding"								text="Yol planlanıyor" />
         <text name="AD_task_catch_up_with_combine"						text="Biçerdövere yetişiyor" />
         <text name="AD_task_clearcrop"									text="Ekin temizleniyor" />
         <text name="AD_task_drive_to_destination"						text="Hedefe sürülüyor" />
-        <text name="AD_fpGoal_drive" text="Driving" />
-        <text name="AD_fpGoal_to" text="to %s" />
-        <text name="AD_fpGoal_to_short" text="to destination" />
-        <text name="AD_fpGoal_load" text="loading at %s" />
-        <text name="AD_fpGoal_load_short" text="loading" />
-        <text name="AD_fpGoal_refill" text="refilling %s at %s" />
-        <text name="AD_fpGoal_refill_short" text="refilling %s" />
-        <text name="AD_fpGoal_refill_tiny" text="refilling" />
-        <text name="AD_fpGoal_unload" text="unloading at %s" />
-        <text name="AD_fpGoal_unload_short" text="unloading" />
-        <text name="AD_fpGoal_refuel" text="refuelling at %s" />
-        <text name="AD_fpGoal_refuel_short" text="refuelling" />
-        <text name="AD_fpGoal_repair" text="repair at %s" />
-        <text name="AD_fpGoal_repair_short" text="repair" />
-        <text name="AD_fpGoal_work" text="work at %s" />
-        <text name="AD_fpGoal_work_short" text="work at the field" />
-        <text name="AD_fpGoal_work_tiny" text="field work" />
-        <text name="AD_fpGoal_back" text="back to %s" />
-        <text name="AD_fpGoal_back_short" text="back to the field" />
-        <text name="AD_fpGoal_back_tiny" text="back to field" />
-        <text name="AD_fpGoal_toolPark" text="parking the tool at %s" />
-        <text name="AD_fpGoal_toolPark_short" text="parking the tool" />
-        <text name="AD_fpGoal_park" text="parking at %s" />
-        <text name="AD_fpGoal_park_short" text="parking" />
-        <text name="AD_fpGoal_fetch" text="fetching %s" />
-        <text name="AD_fpGoal_fetch_short" text="fetching the tool" />
-        <text name="AD_fpGoal_fetch_tiny" text="fetching tool" />
-        <text name="AD_fpGoal_dump" text="emptying the rest of %s at %s" />
-        <text name="AD_fpGoal_dump_short" text="emptying the rest of %s" />
-        <text name="AD_fpGoal_dump_tiny" text="emptying the rest" />
-        <text name="AD_fpGoal_dump_min" text="emptying" />
-        <text name="AD_fpGoal_dumpAny" text="emptying the rest at %s" />
-        <text name="AD_fpGoal_dumpAny_short" text="emptying the rest" />
-        <text name="AD_fpGoal_dumpAny_tiny" text="emptying" />
-        <text name="AD_fpGoal_bales" text="dropping the bales at %s" />
-        <text name="AD_fpGoal_bales_short" text="dropping the bales" />
-        <text name="AD_fpGoal_bales_tiny" text="dropping bales" />
-        <text name="AD_fpGoal_swap" text="trailer swap at %s" />
-        <text name="AD_fpGoal_swap_short" text="trailer swap" />
-        <text name="AD_fpGoal_drop" text="%s yerine bırak" />
-        <text name="AD_fpGoal_drop_short" text="yerine bırak" />
-        <text name="AD_fpGoal_hitch" text="hitching %s" />
-        <text name="AD_fpGoal_hitch_short" text="hitching the trailer" />
-        <text name="AD_fpGoal_hitch_tiny" text="hitching" />
+        <text name="AD_fpGoal_drive" text="Sürüş:" />
+        <text name="AD_fpGoal_to" text="%s hedefine gidiyor" />
+        <text name="AD_fpGoal_to_short" text="hedefe gidiyor" />
+        <text name="AD_fpGoal_load" text="%s noktasında yükleniyor" />
+        <text name="AD_fpGoal_load_short" text="yükleniyor" />
+        <text name="AD_fpGoal_refill" text="%s dolduruyor (%s noktasında)" />
+        <text name="AD_fpGoal_refill_short" text="%s dolduruyor" />
+        <text name="AD_fpGoal_refill_tiny" text="dolduruyor" />
+        <text name="AD_fpGoal_unload" text="%s noktasında boşaltıyor" />
+        <text name="AD_fpGoal_unload_short" text="boşaltıyor" />
+        <text name="AD_fpGoal_refuel" text="%s noktasında yakıt alıyor" />
+        <text name="AD_fpGoal_refuel_short" text="yakıt alıyor" />
+        <text name="AD_fpGoal_repair" text="%s noktasında tamir oluyor" />
+        <text name="AD_fpGoal_repair_short" text="tamir oluyor" />
+        <text name="AD_fpGoal_work" text="%s tarlasında çalışıyor" />
+        <text name="AD_fpGoal_work_short" text="tarlada çalışıyor" />
+        <text name="AD_fpGoal_work_tiny" text="tarla işi" />
+        <text name="AD_fpGoal_back" text="%s tarlasına dönüyor" />
+        <text name="AD_fpGoal_back_short" text="tarlaya dönüyor" />
+        <text name="AD_fpGoal_back_tiny" text="tarlaya dönüş" />
+        <text name="AD_fpGoal_toolPark" text="ekipmanı %s noktasına park ediyor" />
+        <text name="AD_fpGoal_toolPark_short" text="ekipmanı park ediyor" />
+        <text name="AD_fpGoal_park" text="%s noktasına park ediyor" />
+        <text name="AD_fpGoal_park_short" text="park ediyor" />
+        <text name="AD_fpGoal_fetch" text="%s ekipmanını alıyor" />
+        <text name="AD_fpGoal_fetch_short" text="ekipmanı alıyor" />
+        <text name="AD_fpGoal_fetch_tiny" text="ekipman alma" />
+        <text name="AD_fpGoal_dump" text="kalan %s ürününü boşaltıyor (%s noktasında)" />
+        <text name="AD_fpGoal_dump_short" text="kalan %s ürününü boşaltıyor" />
+        <text name="AD_fpGoal_dump_tiny" text="kalanı boşaltıyor" />
+        <text name="AD_fpGoal_dump_min" text="boşaltıyor" />
+        <text name="AD_fpGoal_dumpAny" text="%s noktasında kalanı boşaltıyor" />
+        <text name="AD_fpGoal_dumpAny_short" text="kalanı boşaltıyor" />
+        <text name="AD_fpGoal_dumpAny_tiny" text="boşaltıyor" />
+        <text name="AD_fpGoal_bales" text="balyaları %s noktasına bırakıyor" />
+        <text name="AD_fpGoal_bales_short" text="balyaları bırakıyor" />
+        <text name="AD_fpGoal_bales_tiny" text="balya bırakma" />
+        <text name="AD_fpGoal_swap" text="%s noktasında römork değiştiriyor" />
+        <text name="AD_fpGoal_swap_short" text="römork değiştiriyor" />
+        <text name="AD_fpGoal_drop" text="%s yerine bırakılıyor" />
+        <text name="AD_fpGoal_drop_short" text="yerine bırakılıyor" />
+        <text name="AD_fpGoal_hitch" text="%s römorkunu bağlıyor" />
+        <text name="AD_fpGoal_hitch_short" text="römorku bağlıyor" />
+        <text name="AD_fpGoal_hitch_tiny" text="bağlıyor" />
         <text name="AD_task_drive_to_vehicle"							text="Hedef araca sürülüyor" />
         <text name="AD_task_step_aside"							text="Biçerdöver için kenara çekiliyor" />
         <text name="AD_task_drive_to_combine_pipe"						text="Biçerdöver borusuna sürülüyor" />
@@ -457,7 +457,7 @@
         <text name="AD_task_unload_area_in_fruit"						text="Boşaltma alanı engellendi" />
         <text name="gui_CPAD_off"										text="Kapalı" />
         <text name="gui_CPAD_simple"									text="Basit" />
-        <text name="gui_CPAD_full"										text="Tam" />
+        <text name="gui_CPAD_full"										text="Dolu" />
         <text name="gui_ad_combineCPADHudMouse"						text="CP/FarmPilot Düğmelerini birleştir" />
         <text name="gui_ad_combineCPADHudMouse_tooltip"				text="Kapalı: varsayılan / Basit: CP: ikincil fare eylemi &gt; fare aç + kapa, FarmPilot: HUD deşitir &gt; her iki HUD aç + kapa / Tam: basit gibidir ancak HUD'lar tek adımda değişir / Gereksinim: CP ayarlarından sağ tıklama HUD'u kapatın" />
         <text name="gui_ad_editorTip_1"								text="Basit sol tıklama:" />
@@ -499,7 +499,7 @@
 		<text name="AD_ty_toReverse" text="geri gitmesi" />
 		<text name="AD_ty_toClear" text="yolu açması" />
 		<text name="AD_ty_leaveTrack" text="raydan/rottan çıkması" />
-		<text name="AD_ty_toLeaveYard" text="to clear the tool area" />
+		<text name="AD_ty_toLeaveYard" text="Çalışma alanından çıkmak için" />
 		<text name="AD_fp_silo_closed" text="silo covered or fermenting, waiting in front" />
 		<text name="AD_fp_silo_compactDone" text="silo no longer filling, compacting finished" />
 		<text name="AD_fp_silo_canCover" text="silo 100 % compacted, ready to be covered" />
@@ -523,6 +523,10 @@
 		<text name="gui_ad_silo_width" text="Working width" />
 		<text name="gui_ad_silo_auto" text="Auto" />
 		<text name="gui_ad_silo_blade" text="Blade height" />
+		<text name="gui_ad_silo_hudSilo" text="Silo %d (%d %%)" />
+		<text name="gui_ad_silo_hudSiloNone" text="Silo: none (choose)" />
+		<text name="gui_ad_silo_hudWait" text="Wait: %s" />
+		<text name="gui_ad_silo_number" text="Silo %d" />
 		<text name="gui_ad_silo_push" text="Blade work" />
 		<text name="gui_ad_silo_pushAuto" text="Auto (by silo)" />
 		<text name="gui_ad_silo_pushWall" text="Push against the back wall" />
@@ -553,7 +557,7 @@
 		<text name="gui_ad_trafficYieldDriveSide_right" text="Sağ" />
 		<text name="gui_ad_trafficYieldDriveSide_left" text="Sol" />
 		<text name="gui_ad_fieldParkWhileWaiting" text="Tarlanın içinde bekle" />
-		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Biçerdöver çağrısı bekleyen bir boşaltıcı, yolu tıkamamak için tarlaya girer ve yollardan uzakta, mahsul olmayan boş bir alana park eder" />
+		<text name="gui_ad_fieldParkWhileWaiting_tooltip" text="Biçerdöver çağrısı bekleyen bir boşaltıcı, yolu tıkamamak için tarlaya girer ve yollardan uzakta, ekin/mahsul olmayan boş bir alana park eder" />
 		<text name="gui_ad_autonomousNoCp" text="Courseplay olmadan otonom" />
 		<text name="gui_ad_autonomousNoCp_tooltip" text="Courseplay yüklü olmadığında Otonom modun yaptığı şey: sürücü durur ve bekler ya da temel oyun işçisi tarlayı devralır (klasik mod)" />
 		<text name="gui_ad_autonomousNoCp_wait" text="Bekle" />
@@ -570,19 +574,19 @@
 		<text name="AD_foldWait" text="%s %s: %s katlanması bekleniyor (%d %%)%s, ayrılmıyor" />
 		<text name="gui_ad_dirtRoadSpeed" text="Ara yollardaki maksimum hız" />
 		<text name="gui_ad_dirtRoadSpeed_tooltip" text="Ara yol noktalarındaki maksimum hız. Rota araması bunu kullanır: bir ara yol yalnızca zamandan tasarruf sağladığında tercih edilir" />
-		<text name="gui_ad_secondaryRoadSpeed" text="Tali yollardaki maksimum hız" />
-		<text name="gui_ad_secondaryRoadSpeed_tooltip" text="Tali yol noktalarındaki maksimum hız. Rota hesaplaması bunu dikkate alır: tali yol yalnızca zaman kazandırıyorsa kullanılır" />
-		<text name="gui_ad_roadTypes_title_secondary" text="Secondary roads: vehicle types" />
-		<text name="gui_ad_roadTypes_title_tertiary" text="Tertiary roads: vehicle types" />
-		<text name="gui_ad_roadTypes_info_secondary" text="When « Secondary roads » is set to Auto, for all vehicles. Yes: secondary roads taken whenever they save time. No: only when there is no other route." />
-		<text name="gui_ad_roadTypes_info_tertiary" text="When « Tertiary roads » is set to Auto, for all vehicles. Yes: tertiary roads allowed to reach a destination (limited speed), never as a shortcut. No: only when there is no other route." />
-		<text name="gui_ad_roadTypes_todo" text="Changed: press « Validate » to save." />
-		<text name="gui_ad_roadTypes_thisVehicle" text="(this vehicle)" />
-		<text name="gui_ad_roadTypes_tractor" text="Tractors" />
-		<text name="gui_ad_roadTypes_truck" text="Trucks and semis" />
-		<text name="gui_ad_roadTypes_car" text="Cars and pickups" />
-		<text name="gui_ad_roadTypes_loader" text="Loaders and telehandlers" />
-		<text name="gui_ad_roadTypes_selfPropelled" text="Self-propelled (combines, forage harvesters, sprayers…)" />
+		<text name="gui_ad_secondaryRoadSpeed" text="Tali (İkincil)) yollardaki maksimum hız" />
+		<text name="gui_ad_secondaryRoadSpeed_tooltip" text="Tali (İkincil)) yol noktalarındaki maksimum hız. Rota hesaplaması bunu dikkate alır: tali yol yalnızca zaman kazandırıyorsa kullanılır" />
+		<text name="gui_ad_roadTypes_title_secondary" text="İkincil yol: araç türleri" />
+		<text name="gui_ad_roadTypes_title_tertiary" text="Üçüncül yol: araç türleri" />
+		<text name="gui_ad_roadTypes_info_secondary" text="«İkincil yollar» Otomatik olarak ayarlandığında tüm araçlar için geçerlidir. Evet: zaman kazandırdığı her durumda ikincil yollar kullanılır. Hayır: yalnızca başka rota yoksa kullanılır." />
+		<text name="gui_ad_roadTypes_info_tertiary" text="«Üçüncül yollar» Otomatik olarak ayarlandığında tüm araçlar için geçerlidir. Evet: hedefe ulaşmak için üçüncül yollara izin verilir (hız sınırlıdır), asla kestirme olarak kullanılmaz. Hayır: yalnızca başka rota yoksa kullanılır." />
+		<text name="gui_ad_roadTypes_todo" text="Değiştirildi: kaydetmek için «Onayla» düğmesine basın." />
+		<text name="gui_ad_roadTypes_thisVehicle" text="(bu araç)" />
+		<text name="gui_ad_roadTypes_tractor" text="Traktörler" />
+		<text name="gui_ad_roadTypes_truck" text="Kamyonlar ve tırlar" />
+		<text name="gui_ad_roadTypes_car" text="Otomobiller ve kamyonetler" />
+		<text name="gui_ad_roadTypes_loader" text="Yükleyiciler ve teleskopik yükleyiciler" />
+		<text name="gui_ad_roadTypes_selfPropelled" text="Kendi yürür makineler (biçerdöverler, silaj makineleri, ilaçlama makineleri…)" />
 		<text name="AD_task_park_in_field" text="Tarlaya park ediliyor" />
 		<text name="AD_task_hv_chopper" text="silaj makinesi (chopper)" />
 		<text name="AD_task_hv_combine" text="biçerdöver" />
@@ -653,6 +657,7 @@
 		<text name="adAddon_player" text="Oyuncu"/>
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Otonom" />
+		<text name="AD_MODE_COMPACT" text="Compacting" />
 		<text name="input_ADAutonomousCourses" text="FP - Otonom rotalar (her tarla için seçim)" />
 		<text name="AD_autonomous_start" text="&quot;%s&quot; Courseplay rotası %s tarlasında başlatıldı" />
 		<text name="AD_autonomous_none" text="%s tarlasında %s m boyutunda Courseplay rotası yok, bekleniyor" />
@@ -684,18 +689,18 @@
 		<text name="AD_autonomous_aiNoCp" text="Courseplay bulunamadı: yapayzeka işçisi %s tarlasında başlatıldı" />
 		<text name="AD_autonomous_aiNoCourse" text="no Courseplay course of %s m on field %s: base game worker started" />
 		<text name="AD_autonomous_aiFailed" text="Yapayzeka işçisi başlatılamadı, bekleniyor" />
-		<text name="AD_autonomous_aiStopped" text="the base game worker stopped before the end of the field (%s): the tractor stays here" />
+		<text name="AD_autonomous_aiStopped" text="ana oyun işçisi tarla bitmeden durdu (%s): traktör burada kalıyor" />
 		<text name="AD_autonomous_noCp" text="Bu araçta Courseplay bulunamadı, bekleniyor" />
 		<text name="AD_autonomous_cpFailed" text="Courseplay &quot;%s&quot; ile başlatılamadı, bekleniyor" />
 		<text name="AD_autonomous_nextField" text="Sonraki tarla: %s" />
 		<text name="AD_autonomous_nextFieldNone" text="Sonraki tarla: yok" />
-		<text name="AD_autonomous_fieldNone" text="Field: none" />
-		<text name="AD_autonomous_fieldNoneStart" text="choose a field on the 1st line before starting" />
-		<text name="AD_fpTires_noMoney" text="worn tires, not enough money to replace them (%s): new try tomorrow" />
-		<text name="AD_fpTires_done" text="%d new tires fitted at the workshop (%s)" />
-		<text name="AD_fpTires_noWorkshop" text="worn tires but no workshop on the network: new try tomorrow" />
+		<text name="AD_autonomous_fieldNone" text="Tarla: Yok" />
+		<text name="AD_autonomous_fieldNoneStart" text="başlamadan önce 1. satırdan bir tarla seçin" />
+		<text name="AD_fpTires_noMoney" text="lastikler aşınmış, yenilemek için yeterli para yok (%s): yarın tekrar denenecek" />
+		<text name="AD_fpTires_done" text="atölyede %d yeni lastik takıldı (%s)" />
+		<text name="AD_fpTires_noWorkshop" text="lastikler aşınmış ancak ağda atölye yok: yarın tekrar denenecek" />
 		<text name="AD_autonomous_nextFieldGo" text="tarla tamamlandı, « %s » adlı sonraki tarlaya sürülüyor" />
-		<text name="AD_autonomous_skipNoNext" text="no next field set, keeps driving to « %s »" />
+		<text name="AD_autonomous_skipNoNext" text="sonraki tarla ayarlanmamış, «%s» yönüne sürmeye devam ediliyor" />
 		<text name="AD_task_autonomous_detach" text="Ekipmanı çıkar" />
 		<text name="AD_task_autonomous_fetch" text="Ekipmanı bağla" />
 		<text name="AD_autonomous_dropGo" text="tarla bitti, ekipman « %s » konumuna gidiyor" />
@@ -719,68 +724,78 @@
 		<text name="AD_autonomous_frontNoJoint" text="&quot;%s&quot; bu traktörün önüne takılamıyor (veya ön bağlantı dolu)" />
 		<text name="AD_autonomous_frontNoPark" text="&quot;%s&quot; (ön) için park yeri ve yanına bırakılacak bir şey yok: takılı kalıyor" />
 		<text name="AD_autonomous_massBlocked" text="&quot;%s&quot; (ön) için park yeri ve yanına bırakılacak bir şey yok: &quot;%s&quot; alınamıyor, traktör burada kalıyor (ağırlığın üstüne park etmiyor)" />
-		<text name="AD_task_autonomous_headerWait" text="Wait for the other machine" />
-		<text name="AD_task_autonomous_headerDrop" text="Put the header down" />
-		<text name="AD_fpGoal_headerTrailer" text="taking the header to %s" />
-		<text name="AD_fpGoal_headerDrop" text="putting the header down" />
-		<text name="AD_autonomous_headerWaitTrailer" text="waiting for the header trailer (%s)" />
-		<text name="AD_autonomous_headerNoTractor" text="no free tractor to move the header trailer « %s »" />
-		<text name="AD_autonomous_headerBusy" text="the header trailer « %s » is in use" />
-		<text name="AD_autonomous_headerTrailerGo" text="taking the header trailer to « %s »" />
-		<text name="AD_autonomous_headerHome" text="header taken, going back to « %s »" />
-		<text name="AD_autonomous_headerCall" text="field done, calling %s to put the header back" />
-		<text name="AD_autonomous_headerDropFailed" text="header not put on the trailer (%s), stopping" />
-		<text name="AD_autonomous_headerTimeout" text="the other machine did not come, stopping" />
-		<text name="AD_autonomous_headerNoTrailer" text="no empty header trailer to put the header on" />
-		<text name="AD_task_autonomous_headerPlace" text="Park the trailer near the combine" />
-		<text name="AD_task_autonomous_headerYard" text="Park the trailer off the road" />
-		<text name="AD_task_autonomous_headerTurn" text="U-turn to free the header side" />
-		<text name="AD_autonomous_headerTurn" text="header side blocked, U-turn through the network" />
-		<text name="AD_autonomous_headerMove" text="header side blocked, going to a clear spot farther away" />
-		<text name="AD_autonomous_headerYard" text="nothing clear along the road, parking the trailer off the road" />
-		<text name="AD_autonomous_headerSideBlocked" text="no clear spot found, waiting at the end of the route" />
-		<text name="AD_autonomous_headerNoWay" text="no way through the field to the harvester, trying again" />
-		<text name="AD_task_autonomous_headerBackIn" text="Back the trailer into the field entrance" />
-		<text name="AD_autonomous_headerBackIn" text="backing the header trailer into the field entrance" />
-		<text name="AD_task_autonomous_headerRoadBack" text="Back the trailer up to the road" />
-		<text name="AD_autonomous_headerRoadBack" text="backing the header trailer straight back to the road" />
-		<text name="AD_task_autonomous_headerGateBack" text="Line up opposite the field entrance" />
-		<text name="AD_task_autonomous_headerGateIn" text="Stop the header in front of the combine" />
-		<text name="AD_autonomous_headerGate" text="waiting for its header opposite the field entrance, %s stops it in front" />
-		<text name="AD_autonomous_headerGateIn" text="stopping the header in front of %s, opposite the field entrance" />
-		<text name="AD_autonomous_headerClearWait" text="header attached, waiting for %s to clear with the empty trailer" />
-		<text name="AD_task_autonomous_headerEntry" text="Drive up to the field edge" />
-		<text name="AD_autonomous_headerEntry" text="header attached, driving straight up to the field" />
-		<text name="AD_task_autonomous_headerHookup" text="Connect the header: locks, PTO shafts, hydraulics" />
-		<text name="AD_task_autonomous_headerLock" text="Lock the header on its trailer" />
-		<text name="AD_autonomous_headerParkFirst" text="parking requested: the header goes back on its trailer first" />
-		<text name="AD_header_listAuto" text="Auto (by crop)" />
-		<text name="AD_header_line" text="Header: %s" />
-		<text name="AD_header_lineAuto" text="Header: auto (by crop)" />
-		<text name="AD_header_nextLine" text="Next header: %s" />
-		<text name="AD_header_nextLineAuto" text="Next header: auto" />
-		<text name="AD_autonomous_headerSwap" text="changing header: « %s »" />
-		<text name="AD_autonomous_headerGroundDrop" text="puts « %s » back where it was picked up" />
-		<text name="AD_header_homePlace" text="where it was" />
-		<text name="AD_autonomous_headerChosenGone" text="chosen header not available, start refused" />
-		<text name="AD_autonomous_headerNoCrop" text="no header can cut « %s », start refused" />
+		<text name="AD_task_autonomous_headerWait" text="Diğer tablayı bekle" />
+		<text name="AD_task_autonomous_headerDrop" text="Tablayı bırak" />
+		<text name="AD_fpGoal_headerTrailer" text="tablayı %s noktasına götürüyor" />
+		<text name="AD_fpGoal_headerDrop" text="tablayı bırakıyor" />
+		<text name="AD_autonomous_headerWaitTrailer" text="tabla römorku bekleniyor (%s)" />
+		<text name="AD_autonomous_headerNoTractor" text="«%s» tabla römorkunu taşıyacak boşta traktör yok" />
+		<text name="AD_autonomous_headerBusy" text="«%s» tabla römorku kullanımda" />
+		<text name="AD_autonomous_headerTrailerGo" text="tabla römorku «%s» noktasına götürülüyor" />
+		<text name="AD_autonomous_headerHome" text="tabla alındı, «%s» noktasına dönülüyor" />
+		<text name="AD_autonomous_headerCall" text="tarla bitti, tablayı geri takmak için %s çağrılıyor" />
+		<text name="AD_autonomous_headerDropFailed" text="tabla römorka yerleştirilemedi (%s), durduruluyor" />
+		<text name="AD_autonomous_headerTimeout" text="diğer makine gelmedi, durduruluyor" />
+		<text name="AD_autonomous_headerNoTrailer" text="tablanın üzerine konulacağı boş tabla römorku yok" />
+		<text name="AD_task_autonomous_headerPlace" text="Römorku biçerdöverin yakınına park et" />
+		<text name="AD_task_autonomous_headerYard" text="Römorku yol dışına park et" />
+		<text name="AD_task_autonomous_headerTurn" text="Tabla tarafını boşa çıkarmak için U dönüşü yap" />
+		<text name="AD_autonomous_headerTurn" text="tabla tarafı kapalı, yol ağı üzerinden U dönüşü yapılıyor" />
+		<text name="AD_autonomous_headerMove" text="tabla tarafı kapalı, ilerideki açık bir noktaya gidiliyor" />
+		<text name="AD_autonomous_headerYard" text="yol boyunca açık yer yok, römork yol dışına park ediliyor" />
+		<text name="AD_autonomous_headerSideBlocked" text="açık nokta bulunamadı, rotanın sonunda bekleniyor" />
+		<text name="AD_autonomous_headerNoWay" text="tarla içinden hasat makinesine geçiş yolu yok, tekrar deneniyor" />
+		<text name="AD_task_autonomous_headerBackIn" text="Römorku tarla girişine geri geri yanaştır" />
+		<text name="AD_autonomous_headerBackIn" text="tabla römorku tarla girişine geri geri yanaştırılıyor" />
+		<text name="AD_task_autonomous_headerRoadBack" text="Römorku yola kadar geri geri çıkar" />
+		<text name="AD_autonomous_headerRoadBack" text="tabla römorku düz bir şekilde yola doğru geri çıkarılıyor" />
+		<text name="AD_task_autonomous_headerGateBack" text="Tablayı tarla girişinin karşısına hizala" />
+		<text name="AD_task_autonomous_headerGateIn" text="Tablayı biçerdöverin önünde durdur" />
+		<text name="AD_autonomous_headerGate" text="tablası tarla girişinin karşısında bekleniyor, %s aracı önünde durduruyor" />
+		<text name="AD_autonomous_headerGateIn" text="tablası tarla girişinin karşısında, %s aracının önünde durduruluyor" />
+		<text name="AD_autonomous_headerClearWait" text="tabla takıldı, boş römorkla %s aracının yolu açması bekleniyor" />
+		<text name="AD_task_autonomous_headerEntry" text="Tarla kenarına kadar sür" />
+		<text name="AD_autonomous_headerEntry" text="tabla takıldı, doğrudan tarlaya doğru sürülüyor" />
+		<text name="AD_task_autonomous_headerHookup" text="Tablayı bağla: kilitler, kuyruk mili, hidrolik" />
+		<text name="AD_task_autonomous_headerLock" text="Tablayı römorkuna kilitle" />
+		<text name="AD_autonomous_headerParkFirst" text="park etme istendi: önce tabla römorkuna geri yerleştiriliyor" />
+		<text name="AD_header_listAuto" text="Otomatik (ekine göre)" />
+		<text name="AD_header_line" text="Tabla: %s" />
+		<text name="AD_header_lineAuto" text="Tabla: otomatik (ürüne göre)" />
+		<text name="AD_header_nextLine" text="Sonraki tabla: %s" />
+		<text name="AD_header_nextLineAuto" text="Sonraki tabla: otomatik" />
+		<text name="AD_autonomous_headerSwap" text="tabla değiştiriliyor: «%s»" />
+		<text name="AD_autonomous_headerGroundDrop" text="«%s» alındığı yere geri bırakılıyor" />
+		<text name="AD_header_homePlace" text="aldığı yer" />
+		<text name="AD_autonomous_headerChosenGone" text="seçilen tabla mevcut değil, başlatma reddedildi" />
+		<text name="AD_autonomous_headerNoCrop" text="«%s» ürününü kesebilecek tabla yok, başlatma reddedildi" />
 		<text name="AD_autonomous_unloadersAuto" text="%d trailer(s) picked automatically for « %s »" />
 		<text name="AD_autonomous_unloadersAutoNone" text="no free trailer that fits for « %s » (tractor powerful enough, empty trailer): new try every minute" />
 		<text name="AD_autonomous_unloadersAutoNoField" text="no marker for field %s: no trailer picked automatically" />
 		<text name="AD_autonomous_unloadersAutoNoDest" text="no unloading place for %s (farm silo or selling point near a marker): no trailer picked automatically" />
-		<text name="AD_autonomous_unloadersFollow" text="%d trailer(s) follow to « %s »" />
-		<text name="AD_autonomous_unloadersWait" text="%d trailer(s) will follow to « %s » once the harvester is working again" />
-		<text name="AD_autonomous_unloadersStay" text="the trailers stay at « %s » (other machine)" />
-		<text name="AD_autonomous_unloadersRecall" text="%d trailer(s) of its team called back from the yard, on the way to « %s »" />
-		<text name="AD_fpFn_cutter" text="Header" />
-		<text name="AD_fpFn_cornHeader" text="Corn header" />
-		<text name="AD_fpFn_chopperHeader" text="Forage harvester header" />
-		<text name="AD_autonomous_headerChosenBusy" text="« %s » (chosen) is not free, « %s » goes instead" />
-		<text name="gui_ad_headerTractor_title" text="Header transport" />
-		<text name="gui_ad_headerTractor_tooltip" text="Vehicle for the header trailer" />
-		<text name="gui_ad_headerTractor_auto" text="Nearest free tractor" />
-		<text name="gui_ad_headerTractor_free" text="nothing attached" />
-		<text name="gui_ad_headerTractor_info" text="Vehicle called to bring and take back the header trailer: %s. Free tractor = stopped, nothing attached (a weight does not count). Chosen vehicle: stopped, rear hitch free." />
+		<text name="AD_autonomous_unloadersFollow" text="%d römork «%s» konumuna takip ediyor" />
+		<text name="AD_autonomous_unloadersWait" text="biçerdöver yeniden çalışmaya başladığında %d römork «%s» konumunu takip edecek" />
+		<text name="AD_autonomous_unloadersStay" text="römorklar «%s» konumunda kalıyor (diğer makine)" />
+		<text name="AD_autonomous_unloadersRecall" text="ekipten %d römork sahadan geri çağrıldı, «%s» konumuna gidiyor" />
+		<text name="AD_fpFn_cutter" text="Biçerdöver tablası" />
+		<text name="AD_fpFn_cornHeader" text="Mısır tablası" />
+		<text name="AD_fpFn_chopperHeader" text="Silaj makinesi tablası" />
+		<text name="AD_autonomous_headerChosenBusy" text="«%s» (seçilen) boşta değil, yerine «%s» gidiyor" />
+		<text name="AD_autonomous_headerStayNoTrailer" text="field done, no empty header trailer: stays here with the header, new try every minute" />
+		<text name="AD_autonomous_headerStayNoTractor" text="field done, no free tractor for the header trailer « %s »: stays here with the header, new try every minute" />
+		<text name="AD_autonomous_headerStay" text="field done, header not put down: stays here with the header, new try every minute" />
+		<text name="AD_task_autonomous_headerStay" text="Wait for a header trailer and a tractor" />
+		<text name="AD_autonomous_headerParkStay" text="parking requested: no empty header trailer, stays here with the header" />
+		<text name="AD_autonomous_headerParkStayOther" text="parking requested: the header cannot be put down, stays here with the header" />
+		<text name="AD_autonomous_headerEmptyFirst" text="field done: waits to be emptied before putting the header down" />
+		<text name="AD_task_autonomous_headerEmptyFirst" text="Wait to be emptied" />
+		<text name="AD_autonomous_headerCarry" text="« %s » does not fit on the road to the next field: put back on its trailer, the tractor brings it" />
+		<text name="AD_autonomous_headerCarryStay" text="« %s » does not fit on the road to the next field and cannot be put down (no empty trailer or no free tractor): stopping here" />
+		<text name="gui_ad_headerTractor_title" text="Tabla taşıma" />
+		<text name="gui_ad_headerTractor_tooltip" text="Tabla römorkunu taşıyacak araç" />
+		<text name="gui_ad_headerTractor_auto" text="En yakın boşta traktör" />
+		<text name="gui_ad_headerTractor_free" text="ekipman bağlı değil" />
+		<text name="gui_ad_headerTractor_info" text="Tabla römorkunu getirmek ve geri götürmek için çağrılan araç: %s. Boşta traktör = durmuş, ekipman bağlı değil (ön/arka ağırlık sayılmaz). Seçilen araç: durmuş, arka çeki demiri boş." />
 		<text name="AD_autonomous_massNoPark" text="traktörün &quot;%s&quot; bırakılacak park yeri yok: ayarlayın (park düğmesi, hiçbir şey seçili değil)" />
 		<text name="AD_autonomous_frontBeside" text="&quot;%s&quot; ekipmanını &quot;%s&quot; yanına bırakıyor" />
 		<text name="AD_autonomous_frontDropAt" text="&quot;%s&quot; ekipmanını &quot;%s&quot; yerinin dibine bırakıyor, önden giriyor" />
@@ -864,7 +879,7 @@
 		<text name="AD_fpFn_baler" text="Balya Makinesi" />
 		<text name="AD_fpFn_balerSquare" text="Kare Balya Makinesi" />
 		<text name="AD_fpFn_balerRound" text="Yuvarlak Balya Makinesi" />
-		<text name="AD_fpFn_baleLoader" text="Bale loader" />
+		<text name="AD_fpFn_baleLoader" text="Balya yükleyici" />
 		<text name="AD_fpFn_baleWrapper" text="Balya sarma makinesi" />
 		<text name="gui_ad_autonomous_title" text="Otonom Rotalar" />
 		<text name="gui_ad_autonomous_field" text="Tarla %s" />
@@ -925,18 +940,18 @@
 		<text name="AD_autonomous_sprayerTodo" text="« %s » için « %s » ayarlarının onaylanması gerekiyor (turuncu dişli), başlatma reddedildi" />
 		<text name="AD_autonomous_sprayerFill" text="tank yeterince dolu değil: tarladan önce « %s » konumunda dolduruluyor" />
 		<text name="AD_autonomous_sprayerEmpty" text="tank boş: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
-		<text name="AD_autonomous_dumpGo" text="field done: %s at « %s »" />
-		<text name="AD_autonomous_dumpFailed" text="rest of the tank not returned at « %s » (refused or no space): kept in the tank" />
-		<text name="AD_autonomous_dumpParkGo" text="parking: first, %s at « %s »" />
-		<text name="AD_autonomous_dumpKept" text="%s left in the tank: no storage, buying point or selling point to take it back (see log)" />
-		<text name="AD_rest_how_stock" text="puts the rest of the tank back into storage" />
-		<text name="AD_rest_how_buy" text="sells the rest of the tank back at purchase price" />
-		<text name="AD_rest_how_bag" text="puts the rest of the tank back into the big bags already there" />
-		<text name="AD_rest_how_sell" text="goes to sell the rest of the tank" />
-		<text name="AD_autonomous_parkUnloadGo" text="parking: trailer not empty, first unloading at « %s »" />
-		<text name="AD_autonomous_parkUnloadNone" text="parking: trailer not empty (%s L of %s), but no unload destination set: it stays loaded" />
-		<text name="AD_autonomous_parkUnloadFailed" text="parking: nothing is unloading at « %s » (%s L left): parking without unloading" />
-		<text name="AD_task_autonomous_dump" text="Returns or sells the rest of the tank" />
+		<text name="AD_autonomous_dumpGo" text="tarla bitti: %s («%s» noktasında)" />
+		<text name="AD_autonomous_dumpFailed" text="Araç deposunda/tankında kalan ürün «%s» noktasına iade edilemedi (reddedildi veya yer yok): depoda tutuluyor" />
+		<text name="AD_autonomous_dumpParkGo" text="park etme: önce %s («%s» noktasında)" />
+		<text name="AD_autonomous_dumpKept" text="Araç deposunda/tankında %s kaldı: geri alacak depo, alım veya satış noktası yok (günlüğe bakın)" />
+		<text name="AD_rest_how_stock" text="Araç deposunda/tankında kalanı tekrar depoya boşaltıyor" />
+		<text name="AD_rest_how_buy" text="Araç deposunda/tankında kalanı alış fiyatından geri satıyor" />
+		<text name="AD_rest_how_bag" text="Araç deposunda/tankında kalanı oradaki büyük çuvallara (BigBag) geri dolduruyor" />
+		<text name="AD_rest_how_sell" text="Araç deposunda/tankında kalanı satmaya gidiyor" />
+		<text name="AD_autonomous_parkUnloadGo" text="park etme: römork boş değil, önce «%s» noktasında boşaltılıyor" />
+		<text name="AD_autonomous_parkUnloadNone" text="park etme: römork boş değil (%s L %s var), ancak boşaltma hedefi ayarlanmamış: yüklü kalıyor" />
+		<text name="AD_autonomous_parkUnloadFailed" text="park etme: «%s» noktasında hiçbir şey boşaltılmıyor (%s L kaldı): boşaltmadan park ediliyor" />
+		<text name="AD_task_autonomous_dump" text="Depoda kalanı iade eder veya satar" />
 		<text name="gui_ad_baleLoader_title" text="Balya yükleyici ayarları" />
 		<text name="gui_ad_baleLoader_head" text="Yükleyici: %s · Tarla: %s · Alınan: %s" />
 		<text name="gui_ad_baleLoader_round" text="yuvarlak balyalar" />
@@ -957,11 +972,11 @@
 		<text name="gui_ad_baleLoader_tooltipNext" text="Balya yükleyici ayarları (sonraki tarla)" />
 		<text name="gui_ad_baleWrapper_title" text="Balya sarma makinesi ayarları" />
 		<text name="gui_ad_baleWrapper_head" text="Sarma makinesi: %s · Tarla: %s · Alınan: %s" />
-		<text name="gui_ad_baleWrapper_refill" text="Streç film doldurma noktası" />
-		<text name="gui_ad_baleWrapper_pickRefill" text="Streç film doldurma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Üst kısımda: bir film kaynağının (palet, mağaza) yakınında." />
-		<text name="gui_ad_baleWrapper_pickRefillAll" text="Streç film doldurma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Hiçbir işaretçinin yakınında film kaynağı bulunamadı: tüm işaretçiler." />
-		<text name="gui_ad_baleWrapper_film" text="film" />
-		<text name="gui_ad_baleWrapper_needRefill" text="Streç film doldurma noktasını seçin." />
+		<text name="gui_ad_baleWrapper_refill" text="Sarıcı (Streç film) doldurma noktası" />
+		<text name="gui_ad_baleWrapper_pickRefill" text="Sarıcı (Streç film) doldurma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Üst kısımda: bir film kaynağının (palet, mağaza) yakınında." />
+		<text name="gui_ad_baleWrapper_pickRefillAll" text="Sarıcı (Streç film) doldurma noktasını seçin (Seçin veya çift tıklayın), Geri dönmek için Geri tuşunu kullanın. Hiçbir işaretçinin yakınında film kaynağı bulunamadı: tüm işaretçiler." />
+		<text name="gui_ad_baleWrapper_film" text="Sarıcı (Streç film)" />
+		<text name="gui_ad_baleWrapper_needRefill" text="Sarıcı (Streç film) doldurma noktasını seçin." />
 		<text name="gui_ad_baleWrapper_tooltip" text="Balya sarma makinesi ayarları" />
 		<text name="gui_ad_baleWrapper_tooltipNext" text="Balya sarma makinesi ayarları (sonraki tarla)" />
 		<text name="AD_autonomous_baleLoaderTodo" text="'%s' için '%s' ayarlarının doğrulanması gerekiyor (turuncu dişli), başlatma reddedildi" />
@@ -979,11 +994,11 @@
 		<text name="AD_autonomous_balesNoLoader" text="balya yükleyici ayrılmış, bekleniyor" />
 		<text name="AD_autonomous_wrapStart" text="%s numaralı tarladaki balyalar sarılıyor (%d sarılacak)" />
 		<text name="AD_autonomous_wrapNone" text="%s numaralı tarlada sarılacak balya kalmadı" />
-		<text name="AD_autonomous_wrapFilmEmpty" text="film bitti: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
-		<text name="AD_autonomous_wrapFilmFill" text="film yok: tarladan önce « %s » konumunda dolduruluyor" />
-		<text name="AD_autonomous_wrapFilmBack" text="film dolduruldu, « %s » tarlasına geri dönülüyor" />
-		<text name="AD_autonomous_wrapFilmNoZone" text="film bitti ve « %s » doldurma noktası bulunamadı (dişli), bekleniyor" />
-		<text name="AD_autonomous_wrapFilmFailed" text="film « %s » konumunda doldurulamadı (günlüğe bakın), bekleniyor" />
+		<text name="AD_autonomous_wrapFilmEmpty" text="Sarıcı (Streç film) bitti: « %s » konumunda doldurulup tarlaya geri dönülüyor" />
+		<text name="AD_autonomous_wrapFilmFill" text="Sarıcı (Streç film) yok: tarladan önce « %s » konumunda dolduruluyor" />
+		<text name="AD_autonomous_wrapFilmBack" text="Sarıcı (Streç film) dolduruldu, « %s » tarlasına geri dönülüyor" />
+		<text name="AD_autonomous_wrapFilmNoZone" text="Sarıcı (Streç film) bitti ve « %s » doldurma noktası bulunamadı (dişli), bekleniyor" />
+		<text name="AD_autonomous_wrapFilmFailed" text="Sarıcı (Streç film) « %s » konumunda doldurulamadı (günlüğe bakın), bekleniyor" />
 		<text name="AD_autonomous_wrapContinue" text="sarma durduruldu: %s numaralı tarla bırakıldı, işe devam ediliyor" />
 		<text name="AD_autonomous_wrapNoWork" text="balya sarma makinesi çalışma konumuna geçmiyor, bekleniyor" />
 		<text name="AD_autonomous_wrapStuck" text="balya sarma makinesi balyasını bitirmedi (günlüğe bakın), bekleniyor" />
@@ -1002,68 +1017,68 @@
 		<text name="hud_fpEnDisable" text="FP - Etkinleştir/Devre Dışı Bırak: kaldığı yerden devam eder - Sağ tık: baştan başlat" />
 			<!-- FarmPilot aide (menu Aide du jeu) -->
 		<!-- fenêtre « Rappel éditeur » (bouton « ? » du HUD, HudEditorReminder.lua) -->
-		<text name="fp_reminder_title" text="Editor reminder" />
-		<text name="fp_reminder_single" text="One-way" />
-		<text name="fp_reminder_dual" text="Two-way" />
-		<text name="fp_reminder_road_primary" text="Primary" />
-		<text name="fp_reminder_road_secondary" text="Secondary" />
-		<text name="fp_reminder_road_tertiary" text="Tertiary" />
-		<text name="fp_reminder_road_access" text="Access" />
-		<text name="fp_reminder_road_intersection" text="Intersection" />
-		<text name="fp_reminder_road_reverse" text="Reverse" />
-		<text name="fp_reminder_point_secondary" text="Secondary: used when it saves time, depending on the vehicle type (gear in the vehicle settings)." />
-		<text name="fp_reminder_point_tertiary" text="Tertiary: special road (dirt track). Limited speed, and only for the vehicle types allowed in the gear." />
-		<text name="fp_reminder_point_access" text="Access: only used to reach its point." />
-		<text name="fp_reminder_point_intersection" text="Intersection: the vehicle slows down and looks before crossing." />
-		<text name="fp_reminder_point_places" text="Tool spot: drawn in reverse. Header spot: drawn forward, marker 5 m before the header." />
-		<text name="fp_reminder_point_parking" text="Ctrl + click on the parking button: gives the selected tool its spot." />
-		<text name="fp_reminder_point_keys" text="Left Ctrl: create a point. Left Alt: delete. Left Shift: road type. Right Shift: reverse line." />
-		<text name="fp_reminder_point_keys2" text="On the 2nd point, Left Ctrl: one-way or two-way." />
+		<text name="fp_reminder_title" text="Düzenleyici hatırlatması" />
+		<text name="fp_reminder_single" text="Tek yön" />
+		<text name="fp_reminder_dual" text="Çift yön" />
+		<text name="fp_reminder_road_primary" text="Birincil" />
+		<text name="fp_reminder_road_secondary" text="İkincil" />
+		<text name="fp_reminder_road_tertiary" text="Üçüncül" />
+		<text name="fp_reminder_road_access" text="Bağlantı" />
+		<text name="fp_reminder_road_intersection" text="Kavşak" />
+		<text name="fp_reminder_road_reverse" text="Geri" />
+		<text name="fp_reminder_point_secondary" text="İkincil: Araç türüne bağlı olarak zaman kazandırdığında kullanılır (araç ayarlarından vites/ayar seçilir)." />
+		<text name="fp_reminder_point_tertiary" text="Üçüncül: Özel yol (toprak/stabilize yol). Hız sınırlıdır ve yalnızca ayarda izin verilen araç türleri için geçerlidir." />
+		<text name="fp_reminder_point_access" text="Bağlantı: Yalnızca hedefine ulaşmak için kullanılır." />
+		<text name="fp_reminder_point_intersection" text="Kavşak: Araç geçmeden önce yavaşlar ve etrafını kontrol eder." />
+		<text name="fp_reminder_point_places" text="Alet noktası: Geri vitesle çizilir. Tabla noktası: İleri yönlü çizilir, işaretçi tablanın 5 m öncesindedir." />
+		<text name="fp_reminder_point_parking" text="Ctrl + park düğmesine tıklama: Seçilen alete kendi noktasını atar." />
+		<text name="fp_reminder_point_keys" text="Sol Ctrl: Nokta oluşturur. Sol Alt: Siler. Sol Shift: Yol türü. Sağ Shift: Ters yön hattı." />
+		<text name="fp_reminder_point_keys2" text="2. noktada Sol Ctrl: Tek yön veya çift yön." />
 		<text name="fp_unloadImpossible" text="burada boşaltamıyor (boşaltma 3 kez yeniden başlatıldı). log.txt dosyasına bakın" />
-		<text name="fp_help_cat_A" text="FarmPilot - Getting started" />
-		<text name="fp_help_a1_title" text="Welcome" />
-		<text name="fp_help_a1_1_title" text="What is FarmPilot?" />
-		<text name="fp_help_a1_1_text" text="FarmPilot drives your vehicles on a road network that you draw on the map. It goes to a destination, loads, delivers, unloads combines and forage harvesters, and in Autonomous mode it chains the fields by itself with Courseplay: fetch the implement, refill, work the field, move on to the next one, put the implement away and park the tractor." />
-		<text name="fp_help_a1_2_title" text="Based on AutoDrive" />
-		<text name="fp_help_a1_2_text" text="FarmPilot is based on AutoDrive 3.0.1.4 (Stephan Schlosser and the AutoDrive team, MIT licence). If you already play with AutoDrive, just replace the mod: FarmPilot takes over your road network (AutoDrive_config.xml), your saved routes, your colours and your vehicle settings. Nothing to copy. If AutoDrive is also active, FarmPilot switches it off and shows a message: remove it from your mods. The former AutoDrive Addon is built in: deactivate FS25_AutoDriveAddon." />
-		<text name="fp_help_a1_3_title" text="3 steps to get started" />
-		<text name="fp_help_a1_3_text" text="1. Draw your roads (category « Route editor ») or load an existing network.&#10;2. Create destinations: fields, silos, selling points, parking places.&#10;3. Get into a vehicle, open the HUD, choose the mode and the destination, then Start." />
-		<text name="fp_help_a2_title" text="The HUD" />
-		<text name="fp_help_a2_1_title" text="Open the HUD and the mouse" />
-		<text name="fp_help_a2_1_text" text="Alt + 0 (numpad) shows or hides the HUD. Middle click: the mouse appears so you can click in the HUD (middle click again to hide it). Move the HUD by dragging its top bar. Its size is set in Settings &gt; User &gt; « Gui scale for FarmPilot HUD »." />
-		<text name="fp_help_a2_2_title" text="The HUD areas" />
-		<text name="fp_help_a2_2_text" text="1. Top bar: vehicle name, close, extended info.&#10;2. List rows: destination, unloading, product, and depending on the mode the rows Trailer, Implement, Next field, Next implement.&#10;3. Buttons left of the rows: automatic choice, settings cogs.&#10;4. Button row: Start/Stop, Mode, Continue (&gt;&gt;), Park (P), loop counter, speed, editor.&#10;5. 2nd row (depending on settings): start Courseplay/helper at the destination, quick settings, settings.&#10;6. Status line: what the driver is doing and for how long." />
-		<text name="fp_help_a2_3_title" text="Tooltips" />
-		<text name="fp_help_a2_3_text" text="Hover a button with the mouse: its tooltip appears at the very top of the HUD, above the mode (example: « Park vehicle - GT_4 » on the P button). Turn them off in Settings &gt; User &gt; « Show tooltips »." />
-		<text name="fp_help_a3_title" text="The HUD buttons" />
-		<text name="fp_help_a3_1_title" text="Start / Stop" />
-		<text name="fp_help_a3_1_text" text="Starts or stops the FarmPilot driver of the vehicle. A started vehicle carries on without you: you can get out or switch vehicles." />
-		<text name="fp_help_a3_2_title" text="Mode" />
-		<text name="fp_help_a3_2_text" text="Left click: next mode. Right click: previous mode. The modes: Drive, Deliver, Pickup and Deliver, Load, Unload Combine, Unload bunker silo, Autonomous. The HUD rows change with the mode." />
-		<text name="fp_help_a3_3_title" text="Continue (&gt;&gt;)" />
-		<text name="fp_help_a3_3_text" text="Makes a waiting driver move on (at loading, at refilling, in front of a machine). In Autonomous mode it has extra roles: see « The &gt;&gt; button in Autonomous »." />
-		<text name="fp_help_a3_4_title" text="Park (P)" />
-		<text name="fp_help_a3_4_text" text="Left click: sends the vehicle to its parking place. If it has an implement or a trailer with its own place, the implement is put at its place first, then the tractor goes to its own. Right click: the destination of the 1st row becomes the parking place (of the tractor, or of the selected implement). See « Parking »." />
-		<text name="fp_help_a3_5_title" text="Loop counter" />
-		<text name="fp_help_a3_5_text" text="Number of rounds in Pickup and Deliver: 0 = endless. Left click +1, right click -1." />
-		<text name="fp_help_a3_6_title" text="Speed" />
-		<text name="fp_help_a3_6_text" text="Maximum road speed of the vehicle. Mouse wheel on the counter, or the « Increase / Decrease speed » keys." />
-		<text name="fp_help_a3_7_title" text="Editor" />
-		<text name="fp_help_a3_7_text" text="Left click: turns the route editor on. Right click: only shows the roads and the points. See the category « Route editor »." />
-		<text name="fp_help_a3_8_title" text="Start at destination (2nd row)" />
-		<text name="fp_help_a3_8_text" text="On: on arrival, the helper takes over with the course already loaded in the vehicle. Right click: chooses the helper (Courseplay, AIVE or the game worker). In Autonomous mode this button becomes « Autonomous courses »." />
-		<text name="fp_help_a4_title" text="Lists, automatic choice and cogs" />
-		<text name="fp_help_a4_1_title" text="Choose in a list" />
-		<text name="fp_help_a4_1_text" text="Click a row: the list opens, with the destination folders. Click a folder to open it, click a destination to take it. Right click on an Autonomous row (Implement, Next field, Next implement) or on the Trailer row: back to the default value. On the map (M), right click on a FarmPilot marker: it becomes the destination (setting « Switch to markers »)." />
-		<text name="fp_help_a4_2_title" text="Automatic choice" />
-		<text name="fp_help_a4_2_text" text="The buttons left of the loading and unloading rows make FarmPilot pick the best loading or selling point for the product. The button left of the product: « Load by fill level »." />
-		<text name="fp_help_a4_3_title" text="Cogs" />
-		<text name="fp_help_a4_3_text" text="A cog appears left of a row when the implement or the trailer has settings: seeder, spreader or sprayer, bale loader, trailer swap. Orange = to be set (start refused with a message). Green = validated. One click opens the settings window." />
-		<text name="fp_help_a5_title" text="Keyboard shortcuts" />
-		<text name="fp_help_a5_1_title" text="Main keys" />
-		<text name="fp_help_a5_1_text" text="- Alt + 0 (numpad): show / hide the HUD&#10;- Middle click: show / hide the mouse&#10;- Ctrl + Alt + 0 (numpad): FarmPilot settings&#10;- Ctrl + Alt + right / left arrow: next / previous destination&#10;- Ctrl + Alt + O / Ctrl + Alt + 4 (numpad): next / previous product&#10;- Ctrl + Alt + 5 (numpad): Autonomous courses window&#10;- Ctrl + Alt + 1 (numpad): routes manager&#10;- Ctrl + Alt + M: message history&#10;- Shift + C / Shift + V: copy / paste the settings from one vehicle to another&#10;- Ctrl + Shift + F: create the field points" />
-		<text name="fp_help_a5_2_title" text="All other actions" />
-		<text name="fp_help_a5_2_text" text="All FarmPilot actions are in Options &gt; Controls, named « FP - … »: activate, change mode, continue, park, set the parking place, refuel, repair, call a driver, enter the arrived vehicle, name the driver, destination filter, swap destinations, road and field speed, repetitions, all the editor keys. Many have no default key: assign them yourself." />
+		<text name="fp_help_cat_A" text="FarmPilot - Başlangıç" />
+		<text name="fp_help_a1_title" text="Hoş Geldiniz" />
+		<text name="fp_help_a1_1_title" text="FarmPilot Nedir?" />
+		<text name="fp_help_a1_1_text" text="FarmPilot, harita üzerinde çizdiğiniz bir yol ağında araçlarınızı yönetir. Bir hedefe gider, yükleme ve teslimat yapar, biçerdöverleri ve silaj makinelerini boşaltır; Otonom (Autonomous) modunda ise Courseplay ile tarlaları arka arkaya otomatik olarak işler: ekipmanı alır, yeniden doldurur, tarlada çalışır, bir sonraki tarlaya geçer, ekipmanı yerine koyar ve traktörü park eder." />
+		<text name="fp_help_a1_2_title" text="AutoDrive Dayanağı" />
+		<text name="fp_help_a1_2_text" text="FarmPilot, AutoDrive 3.0.1.4 (Stephan Schlosser ve AutoDrive ekibi, MIT lisansı) temel alınarak geliştirilmiştir. Zaten AutoDrive kullanıyorsanız, modu değiştirmeniz yeterlidir: FarmPilot mevcut yol ağınızı (AutoDrive_config.xml), kayıtlı rotalarınızı, renklerinizi ve araç ayarlarınızı devralır. Ekstra bir dosya kopyalamanıza gerek yoktur. AutoDrive da etkin durumdaysa FarmPilot onu kapatır ve bir uyarı mesajı gösterir: lütfen mod listesinden kaldırın. Eski AutoDrive Addon bileşeni artık doğrudan dahildir: FS25_AutoDriveAddon modunu devre dışı bırakın." />
+		<text name="fp_help_a1_3_title" text="Başlarken 3 Adım" />
+		<text name="fp_help_a1_3_text" text="1. Yollarınızı çizin («Rota düzenleyici» kategorisi) veya mevcut bir ağ yükleyin.&#10;2. Hedefler oluşturun: tarlalar, silolar, satış noktaları, park yerleri.&#10;3. Bir araca binin, Arayüzü (HUD) açın, modu ve hedefi seçip Başlat'a basın." />
+		<text name="fp_help_a2_title" text="Arayüz (HUD)" />
+		<text name="fp_help_a2_1_title" text="Arayüzü ve Fareyi Açma" />
+		<text name="fp_help_a2_1_text" text="Alt + 0 (numpad) arayüzü gösterir veya gizler. Fare orta tuşu: fare imlecini görünür yapar böylece arayüze tıklayabilirsiniz (gizlemek için tekrar orta tuşa basın). Arayüzü üst çubuğundan sürükleyerek taşıyabilirsiniz. Boyutu Ayarlar &gt; Kullanıcı &gt; «FarmPilot arayüzü için arayüz ölçeği» kısmından ayarlanır." />
+		<text name="fp_help_a2_2_title" text="Arayüz Alanları" />
+		<text name="fp_help_a2_2_text" text="1. Üst çubuk: araç adı, kapatma, genişletilmiş bilgi.&#10;2. Liste satırları: hedef, boşaltma, ürün ve moda bağlı olarak Römork, Ekipman, Sonraki tarla, Sonraki ekipman satırları.&#10;3. Satırların solundaki düğmeler: otomatik seçim, ayar çarkları.&#10;4. Düğme satırı: Başlat/Durdur, Mod, Devam Et (&gt;&gt;), Park (P), döngü sayacı, hız, düzenleyici.&#10;5. 2. satır (ayarlara bağlı olarak): hedefe varınca Courseplay'i/yardımcıyı başlatma, hızlı ayarlar, ayarlar.&#10;6. Durum satırı: sürücünün ne yaptığı ve bunu ne kadar süredir gerçekleştirdiği." />
+		<text name="fp_help_a2_3_title" text="İpucu Baloncukları" />
+		<text name="fp_help_a2_3_text" text="Fareyi bir düğmenin üzerine getirdiğinizde, modun hemen üstünde en üstte bir ipucu belirir (örnek: P düğmesi üzerinde «Aracı park et - GT_4»). Bunları Ayarlar &gt; Kullanıcı &gt; «İpucu baloncuklarını göster» kısmından kapatabilirsiniz." />
+		<text name="fp_help_a3_title" text="Arayüz Düğmeleri" />
+		<text name="fp_help_a3_1_title" text="Başlat / Durdur" />
+		<text name="fp_help_a3_1_text" text="Aracın FarmPilot sürücüsünü başlatır veya durdurur. Başlatılan bir araç siz olmadan da yoluna devam eder: araçtan inebilir veya başka bir araca geçebilirsiniz." />
+		<text name="fp_help_a3_2_title" text="Mod" />
+		<text name="fp_help_a3_2_text" text="Sol tık: sonraki mod. Sağ tık: önceki mod. Modlar: Sür, Teslim et, Al ve teslim et, Yükle, Biçerdöver boşalt, Sığınak silo boşalt, Otonom. Mod değiştirildiğinde arayüz satırları da değişir." />
+		<text name="fp_help_a3_3_title" text="Devam Et (&gt;&gt;)" />
+		<text name="fp_help_a3_3_text" text="Bekleyen bir sürücünün harekete geçmesini sağlar (yüklemede, dolumda, bir makinenin önünde). Otonom modunda ek işlevleri vardır: bkz. «Otonom modunda &gt;&gt; düğmesi»." />
+		<text name="fp_help_a3_4_title" text="Park Et (P)" />
+		<text name="fp_help_a3_4_text" text="Sol tık: aracı park yerine gönderir. Kendine ait yeri olan bir ekipmanı veya römorku varsa, önce ekipman kendi yerine konur, ardından traktör kendi park yerine gider. Sağ tık: 1. satırın hedefi park yeri olur (traktörün veya seçilen ekipmanın). Bkz. «Park etme»." />
+		<text name="fp_help_a3_5_title" text="Döngü Sayacı" />
+		<text name="fp_help_a3_5_text" text="Al ve teslim et modundaki tur sayısı: 0 = sonsuz. Sol tık +1, sağ tık -1." />
+		<text name="fp_help_a3_6_title" text="Hız" />
+		<text name="fp_help_a3_6_text" text="Aracın yoldaki azami hızı. Sayaç üzerinde fare tekerleği veya «Hızı artır / Azalt» tuşları kullanılır." />
+		<text name="fp_help_a3_7_title" text="Düzenleyici" />
+		<text name="fp_help_a3_7_text" text="Sol tık: rota düzenleyiciyi açar. Sağ tık: yalnızca yolları ve noktaları gösterir. Bkz. «Rota düzenleyici» kategorisi." />
+		<text name="fp_help_a3_8_title" text="Hedefte başlat (2. satır)" />
+		<text name="fp_help_a3_8_text" text="Açık: varışta, rota araca önceden yüklenmiş olarak yardımcı (Courseplay, AIVE veya oyun işçisi) görevi devralır. Sağ tık: yardımcıyı seçer (Courseplay, AIVE veya oyun işçisi). Otonom modunda bu düğme «Otonom rotalar» haline gelir." />
+		<text name="fp_help_a4_title" text="Listeler, Otomatik Seçim ve Çarklar" />
+		<text name="fp_help_a4_1_title" text="Listeden Seçim" />
+		<text name="fp_help_a4_1_text" text="Bir satıra tıklayın: hedef klasörleriyle birlikte liste açılır. Klasör açmak için tıklayın, hedef seçmek için hedefe tıklayın. Otonom satırına (Ekipman, Sonraki tarla, Sonraki ekipman) veya Römork satırına sağ tıklama: varsayılan değere geri döner. Harita üzerinde (M), bir FarmPilot işaretçisine sağ tıklama: hedefi o işaretçi yapar («İşaretçilere geç» ayarı)." />
+		<text name="fp_help_a4_2_title" text="Otomatik Seçim" />
+		<text name="fp_help_a4_2_text" text="Yükleme ve boşaltma satırlarının solundaki düğmeler, FarmPilot'ın ürün için en iyi yükleme veya satış noktasını seçmesini sağlar. Ürünün solundaki düğme: «Doluluk seviyesine göre yükle»." />
+		<text name="fp_help_a4_3_title" text="Çarklar" />
+		<text name="fp_help_a4_3_text" text="Ekipman veya römorkun ayarları olduğunda bir satırın solunda çark simgesi belirebilir: mibzer, gübre atıcı veya ilaçlama makinesi, balya yükleyici, römork değişimi. Turuncu = ayarlanması gerekiyor (mesajla başlatma reddedilir). Yeşil = onaylandı. Tek tıkla ayar penceresi açılır." />
+		<text name="fp_help_a5_title" text="Klavye Kısayolları" />
+		<text name="fp_help_a5_1_title" text="Ana Tuşlar" />
+		<text name="fp_help_a5_1_text" text="- Alt + 0 (numpad): arayüzü göster / gizle&#10;- Fare orta tuşu: fareyi göster / gizle&#10;- Ctrl + Alt + 0 (numpad): FarmPilot ayarları&#10;- Ctrl + Alt + sağ / sol ok: sonraki / önceki hedef&#10;- Ctrl + Alt + O / Ctrl + Alt + 4 (numpad): sonraki / önceki ürün&#10;- Ctrl + Alt + 5 (numpad): Otonom rotalar penceresi&#10;- Ctrl + Alt + 1 (numpad): rota yöneticisi&#10;- Ctrl + Alt + M: bildirim geçmişi&#10;- Shift + C / Shift + V: ayarları bir araçtan diğerine kopyala / yapıştır&#10;- Ctrl + Shift + F: tarla noktalarını oluştur" />
+		<text name="fp_help_a5_2_title" text="Diğer Tüm Eylemler" />
+		<text name="fp_help_a5_2_text" text="Tüm FarmPilot eylemleri Seçenekler &gt; Kontroller altında «FP - ...» adıyla yer alır: etkinleştirme, mod değiştirme, devam etme, park etme, park yeri belirleme, yakıt ikmali, tamir, sürücü çağırma, varan araca binme, sürücüye isim verme, hedef filtresi, hedefleri değiştirme, yol ve tarla hızı, tekrarlar, tüm düzenleyici tuşları. birçoğunun varsayılan tuşu yoktur: bunları kendiniz atayabilirsiniz." />
 		<text name="fp_help_a6_title" text="Messages and history" />
 		<text name="fp_help_a6_1_title" text="On-screen messages" />
 		<text name="fp_help_a6_1_text" text="Each stop, wait or refused start shows a message with the reason (« seeder settings to validate », « no next field set », « the implement is attached to another vehicle »…). Their duration is set in Settings &gt; User &gt; « Notifications »." />
@@ -1071,310 +1086,310 @@
 		<text name="fp_help_a6_2_text" text="Ctrl + Alt + M opens the « Notifications » window: find what happened while you were elsewhere. Backspace deletes the selected message, Space deletes all, Esc closes." />
 		<text name="fp_help_a6_3_title" text="Status text" />
 		<text name="fp_help_a6_3_text" text="Under the HUD and on the map, each driver says what it is doing and for how long: « Parking in the field », « Following the forage harvester from behind », « Calculating the path (12 s) », « Letting pass »…" />
-		<text name="fp_help_cat_B" text="FarmPilot - Work modes" />
-		<text name="fp_help_b1_title" text="Drive" />
-		<text name="fp_help_b1_1_title" text="How it works" />
-		<text name="fp_help_b1_1_text" text="Choose a destination, then Start. The vehicle follows the network to the destination, then stops." />
-		<text name="fp_help_b1_2_title" text="With a helper on arrival" />
-		<text name="fp_help_b1_2_text" text="Turn on « Start at destination » (2nd row): on arrival, Courseplay, AIVE or the game worker takes over with the course already loaded in the vehicle. To let FarmPilot choose the Courseplay course itself and chain the fields, use Autonomous mode." />
-		<text name="fp_help_b2_title" text="Deliver" />
-		<text name="fp_help_b2_1_title" text="How it works" />
-		<text name="fp_help_b2_1_text" text="Choose the unloading point, then Start. The vehicle goes there, empties its trailer (tipping side chosen by itself, cover opened then closed), then parks if « Park at Job finished » is on Yes and a place is set, otherwise it stops.&#10;(Screen Update coming)" />
-		<text name="fp_help_b3_title" text="Pickup and Deliver" />
-		<text name="fp_help_b3_1_title" text="How it works" />
-		<text name="fp_help_b3_1_text" text="1st row: loading point. 2nd row: unloading point. 3rd row: product. The vehicle loads, delivers, then starts again.&#10;(Screen Update coming)" />
-		<text name="fp_help_b3_2_title" text="Loops and automatic choice" />
-		<text name="fp_help_b3_2_text" text="Loop counter: 0 = endless, otherwise number of rounds before stopping (then it parks if that is set). The buttons left of the rows automatically pick the best loading or selling point." />
-		<text name="fp_help_b3_3_title" text="Cycle in a folder" />
-		<text name="fp_help_b3_3_text" text="Vehicle setting « Cycle Pickup and Deliver »: FarmPilot takes in turn the pickup and/or delivery points of the same folder." />
-		<text name="fp_help_b3_4_title" text="Leave without being full" />
-		<text name="fp_help_b3_4_text" text="Vehicle setting « Loading stopped: leave after »: if the trailer already holds something and nothing more comes in, it leaves after 15 s, 30 s (default), 1, 2 or 5 min. « No »: it waits to be full up to the « Unload fill level » (the right choice for a truck at the field edge). A rest under 1 % counts as an empty trailer." />
-		<text name="fp_help_b4_title" text="Load" />
-		<text name="fp_help_b4_1_title" text="How it works" />
-		<text name="fp_help_b4_1_text" text="The vehicle loads at the point of the 2nd row (product of the 3rd row), then drives to the point of the 1st row and stops. Handy to fill a machine before going to the field. Seeders, spreaders and sprayers in Autonomous mode refill by themselves (see category C)." />
-		<text name="fp_help_b5_title" text="Unload Combine" />
-		<text name="fp_help_b5_1_title" text="How it works" />
-		<text name="fp_help_b5_1_text" text="1st row: the field. 2nd row: where to deliver. The tractor waits near the field, comes under the pipe when the combine calls it, follows it while it unloads, then delivers and comes back.&#10;(Screen Update coming)" />
-		<text name="fp_help_b5_2_title" text="It stays under the pipe" />
-		<text name="fp_help_b5_2_text" text="As long as the combine unloads into its trailer and the trailer is not full, the tractor does not reverse and does not leave: it stays stopped if the combine stops, moves with it, and only reverses if the combine reverses. It leaves when the trailer is full, the pipe is folded, or nothing has come in for 3 s." />
-		<text name="fp_help_b5_3_title" text="Waiting inside the field" />
-		<text name="fp_help_b5_3_text" text="While waiting for the call, the trailer enters the field and parks along the edge, on already harvested ground, flat, at least 40 m from the entrance, on the side where the machine is working. The next trailers park in a queue behind it. The place is kept for the field. Field full: the trailer waits at the roadside before the entrance. Setting « Wait inside the field » (Yes by default)." />
-		<text name="fp_help_b5_4_title" text="Not in the crop" />
-		<text name="fp_help_b5_4_text" text="The trailer refuses a line that would take it into the standing crop (crop block between 2 and 10 m ahead). The path to the place never goes through the crop." />
-		<text name="fp_help_b5_5_title" text="The combine's field is finished" />
-		<text name="fp_help_b5_5_text" text="When the combine has finished its field, its trailers go and unload what they carry, then return to their parking place." />
-		<text name="fp_help_b5_6_title" text="Settings" />
-		<text name="fp_help_b5_6_text" text="Settings &gt; Unload combine: early call (fill level that calls the driver), call the 2nd driver, unloading on the move, forage harvester unloading side. Vehicle settings: pipe offset, distance behind the combine, unload fill level, park in field." />
-		<text name="fp_help_b6_title" text="Forage harvester" />
-		<text name="fp_help_b6_1_title" text="The trailer follows from behind" />
-		<text name="fp_help_b6_1_text" text="With a forage harvester, the trailer aims for the place behind the machine, on its cut track, then takes the free side. It reads the Courseplay course ahead of the forage harvester (end of row, U-turn) and keeps its place while the harvester turns." />
-		<text name="fp_help_b6_2_title" text="U-turns at the end of the row" />
-		<text name="fp_help_b6_2_text" text="The trailer chooses its manoeuvre depending on the space: forward U-turn, reverse then U-turn, offset U-turn, Y-turn when the headland is narrow, square turn, or U-turn in the cut strip. Each manoeuvre is checked beforehand (field ground, crop, obstacles), at the tractor's turning radius." />
-		<text name="fp_help_b6_3_title" text="Second trailer" />
-		<text name="fp_help_b6_3_text" text="The 2nd trailer follows the tracks of the 1st and waits behind it. It moves aside when the harvester or the 1st trailer comes towards it, then comes back into place." />
-		<text name="fp_help_b6_4_title" text="Full trailer and end of the job" />
-		<text name="fp_help_b6_4_text" text="Full trailer: it leaves through the field entrance; otherwise it reverses in its tracks, pulls aside to let the next one pass, or turns in the strip. End of the job (also seen by Courseplay): each trailer unloads what it carries, then goes to its parking. A short stop of the harvester does not release the trailers." />
-		<text name="fp_help_b7_title" text="Unload bunker silo" />
-		<text name="fp_help_b7_1_title" text="How it works" />
-		<text name="fp_help_b7_1_text" text="For a bucket loader: it takes from the bunker silo and fills the trailers that come. Vehicle settings: bucket width and height if the detection is not right. The button next to the counter chooses to unload into a trailer or into the biogas plant." />
-		<text name="fp_help_b8_title" text="Chosen trailer (« Trailer » row)" />
-		<text name="fp_help_b8_1_title" text="A trailer for the job" />
-		<text name="fp_help_b8_1_text" text="In the modes with a trailer (Pickup and Deliver, Load, Deliver, Unload Combine), the 4th row is « Trailer ». Default: « the attached one », nothing changes. Choose a trailer in the list: tippers, flatbeds, tankers and overloaders of the farm, detached, that hitch behind this tractor, the closest first (« name · capacity »). Right click: back to « the attached one ».&#10;(Screen Update coming)" />
-		<text name="fp_help_b8_2_title" text="At the start" />
-		<text name="fp_help_b8_2_text" text="If the chosen trailer is not attached, the tractor fetches it along your roads up to the front of it, reverses to the drawbar, hitches it (hoses connected with the manual attach mod), then the mode starts. Start refused, with a message, if it is attached to another vehicle, if something else is already attached behind, or if it does not hitch to this tractor." />
-		<text name="fp_help_b8_3_title" text="At the end of the job" />
-		<text name="fp_help_b8_3_text" text="Loop counter finished, or end of the forage harvester job: if the trailer has its parking place and the tractor its own, the trailer is put at its place, then the tractor goes to its own." />
-		<text name="fp_help_b9_title" text="Trailer swap" />
-		<text name="fp_help_b9_1_title" text="How it works" />
-		<text name="fp_help_b9_1_text" text="At delivery, instead of going to unload, the tractor drops the full trailer on a free place and leaves straight away with an empty trailer. Available in Pickup and Deliver and in Unload Combine: cog left of the « Trailer » row." />
-		<text name="fp_help_b9_2_title" text="Prepare the places" />
-		<text name="fp_help_b9_2_text" text="Create a destination folder and put one marker per place in it (at least 4.5 m between two places side by side). The tractor drives to the marker and stops on it, the trailer stays behind it. A place is free when nothing is on the road leading to the marker (22 m on the trailer side, 10 m on the other). Leave room in front of the empty trailers so it can get in front of the drawbar and reverse. Put at least one empty trailer and leave at least one place free.&#10;(Screen Update coming)" />
-		<text name="fp_help_b9_3_title" text="Set it" />
-		<text name="fp_help_b9_3_text" text="Click the cog: « Trailer swap » window. 1st row « No (normal delivery) », then each folder with its number of places, free places and empty trailers. Choose or double click. Orange = no swap, green = swap set." />
-		<text name="fp_help_b9_4_title" text="At delivery" />
-		<text name="fp_help_b9_4_text" text="Full trailer: it goes to the 1st free place, detaches (support leg, hoses), goes and hitches the closest empty trailer (under 1 % filled, that takes the same product), then gets back to work. The empty trailer becomes the trailer of the « Trailer » row. The full trailers stay on the places: empty them yourself or with another vehicle. Two tractors on the same folder never aim for the same place or the same trailer." />
-		<text name="fp_help_b9_5_title" text="Normal delivery instead" />
-		<text name="fp_help_b9_5_text" text="No free place, no suitable empty trailer, or a train of several trailers: it delivers normally, with a message." />
-		<text name="fp_help_cat_C" text="FarmPilot - Autonomous mode" />
-		<text name="fp_help_c1_title" text="How it works" />
-		<text name="fp_help_c1_1_title" text="The field from A to Z" />
-		<text name="fp_help_c1_1_text" text="Autonomous mode does all the work of a field: fetch the implement, refill, drive to the field, start Courseplay with the right course, refill along the way, then chain the next field or put the implement away and park the tractor." />
-		<text name="fp_help_c1_2_title" text="What you need" />
-		<text name="fp_help_c1_2_text" text="Courseplay installed, with saved courses for your fields. A working implement: soil cultivation, seeder, planter, sprayer, spreader, mower, tedder, windrower, baler, bale loader… With only a tipper, a flatbed or a combine, the start is refused." />
-		<text name="fp_help_c1_3_title" text="Without Courseplay" />
-		<text name="fp_help_c1_3_text" text="General setting « Autonomous without Courseplay »: Wait (default: the driver stops at the field) or Game worker (the game worker takes the field). With Courseplay installed, the game worker is never used." />
-		<text name="fp_help_c2_title" text="The HUD in Autonomous" />
-		<text name="fp_help_c2_1_title" text="The 6 rows" />
-		<text name="fp_help_c2_1_text" text="1. Field: the field to work.&#10;2. Front: the implement or weight to attach at the front (« the attached one » by default).&#10;3. Rear: the implement to attach at the rear (« the attached one » by default).&#10;4. Next field: the field to do next (empty by default).&#10;5. Next front: the front implement of the next field.&#10;6. Next rear: the rear implement of the next field (« the same » by default).&#10;Right click on an implement row or on Next field: back to the default value. The implement cogs are left of their row." />
-		<text name="fp_help_c2_2_title" text="The implements in the list" />
-		<text name="fp_help_c2_2_text" text="The Rear list shows the farm's detached implements that hitch behind this tractor, by function and width: « The attached one » first, then « Cultivator (8 m) », « Planter (8.4 m) »…, sorted by function then width (no width for a bale loader). Two identical implements: the distance is added (« Mower (3.4 m) · 230 m »). The Front list shows « The attached one », the front implements (« Mower (3.4 m) »), then the weights by mass; two identical weights are told apart by their distance (« Weight (1,000 kg) · 72 m »). A front implement is never offered at the rear, and the other way round." />
-		<text name="fp_help_c2_3_title" text="The right field" />
-		<text name="fp_help_c2_3_text" text="The field is the one of the marker number (« Field 56 » = field 56) if it is less than 100 m away; otherwise the one under the tractor on arrival, otherwise the closest. « Field 52 - 53 »: the closest of the two. Fields merged by AutoSwitch count as one." />
-		<text name="fp_help_c3_title" text="The Courseplay course" />
-		<text name="fp_help_c3_1_title" text="Automatic choice" />
-		<text name="fp_help_c3_1_text" text="On arrival, FarmPilot takes the saved Courseplay course (all folders) that covers this field and has exactly the implement's width, within 10 cm. It loads it and starts Courseplay at the first waypoint." />
-		<text name="fp_help_c3_2_title" text="Memory" />
-		<text name="fp_help_c3_2_text" text="The chosen course is kept for this field and this implement, whatever the tractor, in the savegame. Weights do not count. The next year, it is reused directly." />
-		<text name="fp_help_c3_3_title" text="No course or several" />
-		<text name="fp_help_c3_3_text" text="No course of the right width, or several without a kept choice: the driver stops at the field and a message gives the reason. Choose the course in the Autonomous courses window, then start again." />
-		<text name="fp_help_c3_4_title" text="Autonomous courses window" />
-		<text name="fp_help_c3_4_text" text="HUD button (in Autonomous, in place of the Courseplay button) or Ctrl + Alt + 5 (numpad), in the vehicle with the implement attached. At the top: the implement and its width. One row per field or group of fields (« Fields 52 + 53 + 54 + 55 »). On the right, the course used: « Automatic: course name » when only one Courseplay course fits, or « Automatic (2 courses: stop) » when there are several: the driver then stops, you have to pick one. Enter (or double click): moves to the next course. Space: back to Automatic. Esc: back." />
-		<text name="fp_help_c4_title" text="Fetch the implement, put it back at its place" />
-		<text name="fp_help_c4_1_title" text="Go and hitch" />
-		<text name="fp_help_c4_1_text" text="If the Rear row is not « the attached one », the driver takes your roads to the implement's place (or to the network point in front of the implement), lines up in front of it, reverses, hitches it, connects hoses and PTO (manual attach mod), lifts it and leaves for the field. The road of the place is only used if the implement is parked in line with it; otherwise it goes to the network point in front of the drawbar." />
-		<text name="fp_help_c4_2_title" text="Front implement and weight" />
-		<text name="fp_help_c4_2_text" text="With an implement on the Front row: if there is a weight at the front, the tractor first drops it at the back of its own parking place (the tractor's), driving in nose first. Another front implement is put at its place, or next to the rear implement. Then it goes in front of the front implement, nose towards it, moves up to the attach point (missed: it reverses and tries again, 2 times at most), then hitches the rear implement as usual. Front + rear mower is not refused." />
-		<text name="fp_help_c4_3_title" text="End of the job with a front implement" />
-		<text name="fp_help_c4_3_text" text="In order: rear implement put at its place, front implement put at its place (or next to the rear implement, parallel, 1 m between them), weight taken back at the tractor's place, tractor parked. After each detach at the front, it reverses 8 m straight." />
-		<text name="fp_help_c4_4_title" text="Implement hard to reach" />
-		<text name="fp_help_c4_4_text" text="No path up to the front of the implement: it moves forward (or reverses) 10 m straight then recalculates, 2 times at most, before stopping with a message. Leave room in front of parked implements." />
-		<text name="fp_help_c4_5_title" text="Put back at its place" />
-		<text name="fp_help_c4_5_text" text="End of the job with no next field: if the implement has its parking place and the tractor its own (different), the driver puts the implement at its place, turns it off, disconnects PTO and hoses, detaches it, then goes and parks the tractor. Weights ignored. Several implements attached, or implement without a place: it parks as before, with the implement." />
-		<text name="fp_help_c4_6_title" text="Implements folded before leaving" />
-		<text name="fp_help_c4_6_text" text="At the start, FarmPilot waits until folding, attaching or a game order is finished. A blocked fold is restarted towards the transport position (implement lifted first). A message shows every minute while it waits." />
-		<text name="fp_help_c5_title" text="Next field and next implement" />
-		<text name="fp_help_c5_1_title" text="Next field" />
-		<text name="fp_help_c5_1_text" text="Next field row. Choose a field in the list, or right click on the map. When the current field is finished, the next field moves to the 1st row, the row empties, and the driver leaves to work it. Empty: it puts the implement away and parks.&#10;(Screen Update coming)" />
-		<text name="fp_help_c5_2_title" text="Next implements" />
-		<text name="fp_help_c5_2_text" text="Next front and Next rear rows, only useful with a next field. At the end of the field: it puts the attached implements at their place, fetches the next implements, then leaves for the next field. The next implements then move to the Front and Rear rows." />
-		<text name="fp_help_c5_3_title" text="When it cannot be done" />
-		<text name="fp_help_c5_3_text" text="Next implement attached to another vehicle, or that does not hitch to this tractor: the attached implement is still put at its place, then the driver stops with a message. Start again when the implement is free. Attached implement without a parking place, or several implements: stop at the end of the field with a message." />
-		<text name="fp_help_c5_4_title" text="The &gt;&gt; button on the road" />
-		<text name="fp_help_c5_4_text" text="On the road to the field, &gt;&gt; skips this field and leaves for the next field, with the same steps as a finished field (next implement, refill). At the field, &gt;&gt; does nothing: Courseplay finishes the field. Without a next field: message « no next field set ». During a refill, a hitching or a drop: no skip." />
-		<text name="fp_help_c6_title" text="Seeder and planter" />
-		<text name="fp_help_c6_1_title" text="Seeder settings" />
-		<text name="fp_help_c6_1_text" text="With a seeder on the Rear row (or Next rear), a cog appears. Orange: start refused (« seeder settings to validate »). It opens the « Seeder settings » window:&#10;- Crop to sow: only those this seeder can sow this season (game calendar); a crop saved out of season shows « (out of season) ».&#10;- Load: Seeds, Load: Solid fertilizer… Yes or No for each (Enter changes the value).&#10;- Refill point: your markers less than 50 m from a place that has the product (station, silo, shop, big bags, pallets). None: all are shown.&#10;- Validate (Space key). Then the window shows « Settings validated: start allowed. » and the cog turns green. Esc closes without validating.&#10;The setting is kept per field and per seeder; on a new field, the window takes the seeder's last settings." />
-		<text name="fp_help_c6_2_title" text="Refilling" />
-		<text name="fp_help_c6_2_text" text="At the start, once the seeder is attached, the crop is set on the seeder. If the chosen tanks are not full, it goes to refill at the point, then leaves for the field. Empty seeder at the field: Courseplay stops, the driver leaves the field, refills, comes back, and Courseplay restarts at the last waypoint. It waits until the tanks are full; &gt;&gt; makes it leave without waiting." />
-		<text name="fp_help_c6_3_title" text="Courseplay settings" />
-		<text name="fp_help_c6_3_text" text="FarmPilot sets Courseplay for you: « refill in the field » off, seeder fertilizer on only if you load fertilizer." />
-		<text name="fp_help_c7_title" text="Spreaders and sprayers" />
-		<text name="fp_help_c7_1_title" text="Spreader settings" />
-		<text name="fp_help_c7_1_text" text="Trailed or self-propelled. Cog on the machine's row, « Spreader settings » window:&#10;- Product to load (those the tank accepts).&#10;- Quantity to take: Full, or Just enough for the field (rate x area + 10 %, the estimate is shown).&#10;- Refill point (markers near a place that has the product).&#10;- Validate (Space key). Start refused until it is validated." />
-		<text name="fp_help_c7_2_title" text="Refill and rest" />
-		<text name="fp_help_c7_2_text" text="Refilling works like for the seeder, at the start and when the tank is empty at the field. At the end of the field: same product on the next field with the same machine, the rest is kept. Otherwise the rest is given back to the stock or sold, then the usual steps. Slurry, manure, digestate: the rest also goes back into the pit / the storage, or is sold." />
-		<text name="fp_help_c7_3_title" text="P button with product left" />
-		<text name="fp_help_c7_3_text" text="Park button on a spreader or sprayer that still holds more than 20 L: it first gets rid of the rest, then parks (implement put at its place if it has one). Point used: the one of the current field, otherwise the last one set for this machine and this product, otherwise the closest marker that has this product." />
-		<text name="fp_help_c8_title" text="Baler" />
+		<text name="fp_help_cat_B" text="FarmPilot - Çalışma Modları" />
+		<text name="fp_help_b1_title" text="Sür (Drive)" />
+		<text name="fp_help_b1_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b1_1_text" text="Bir hedef seçin ve ardından Başlat'a basın. Araç, ağ üzerinden hedefe kadar takip eder ve ardından durur." />
+		<text name="fp_help_b1_2_title" text="Varışta Yardımcı ile" />
+		<text name="fp_help_b1_2_text" text="«Hedefte başlat» seçeneğini açın (2. satır): varışta rota araca önceden yüklenmiş olarak Courseplay, AIVE veya oyun işçisi görevi devralır. FarmPilot'ın Courseplay rotasını kendi seçmesini ve tarlaları arka arkaya işlemesini istiyorsanız Otonom modunu kullanın." />
+		<text name="fp_help_b2_title" text="Teslim Et (Deliver)" />
+		<text name="fp_help_b2_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b2_1_text" text="Boşaltma noktasını seçin ve Başlat'a basın. Araç oraya gider, römorkunu boşaltır (devrilme yönü kendi seçilir, branda açılıp kapatılır), ardından «İş bitince park et» Evet olarak ayarlanmışsa ve bir yer belirlenmişse park eder, aksi takdirde durur.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_b3_title" text="Al ve Teslim Et (Pickup and Deliver)" />
+		<text name="fp_help_b3_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b3_1_text" text="1. satır: yükleme noktası. 2. satır: boşaltma noktası. 3. satır: ürün. Araç yükleme yapar, teslim eder ve ardından tekrar başlar.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_b3_2_title" text="Döngüler ve Otomatik Seçim" />
+		<text name="fp_help_b3_2_text" text="Döngü sayacı: 0 = sonsuz, aksi takdirde durmadan önceki tur sayısı (ayarlanmışsa ardından park eder). Satırların solundaki düğmeler en iyi yükleme veya satış noktasını otomatik olarak seçer." />
+		<text name="fp_help_b3_3_title" text="Klasör İçinde Döngü" />
+		<text name="fp_help_b3_3_text" text="Araç ayarı «Al ve teslim et döngüsü»: FarmPilot, aynı klasördeki alım ve/or teslimat noktalarını sırayla ele alır." />
+		<text name="fp_help_b3_4_title" text="Tam Dolmadan Ayrılma" />
+		<text name="fp_help_b3_4_text" text="Araç ayarı «Yükleme durduruldu: şu süre sonra ayrıl»: römorkta zaten bir miktar ürün varsa ve daha fazla ürün gelmiyorsa, 15 s, 30 s (varsayılan), 1, 2 veya 5 dk sonra hareket eder. «Hayır»: «Boşaltma doluluk seviyesi» değerine ulaşana kadar tam dolmayı bekler (tarla kenarındaki bir kamyon için doğru tercihtir). %1'in altındaki bir miktar boş römork olarak kabul edilir." />
+		<text name="fp_help_b4_title" text="Yükle (Load)" />
+		<text name="fp_help_b4_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b4_1_text" text="Araç, 2. satırdaki noktada (3. satırdaki ürünle) yükleme yapar, ardından 1. satırdaki noktaya sürer ve durur. Tarlaya gitmeden önce bir makineyi doldurmak için kullanışlıdır. Mibzerler, gübre atıcılar ve ilaçlama makineleri otonom modda kendi kendilerini yeniden doldurur (bkz. C kategorisi)." />
+		<text name="fp_help_b5_title" text="Biçerdöver Boşalt (Unload Combine)" />
+		<text name="fp_help_b5_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b5_1_text" text="1. satır: tarla. 2. satır: teslim edilecek yer. Traktör tarlanın yakınında bekler, biçerdöver çağırdığında borunun altına girer, boşaltma sırasında onu takip eder, ardından teslimat yapıp geri döner.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_b5_2_title" text="Borunun Altında Kalma" />
+		<text name="fp_help_b5_2_text" text="Biçerdöver römorka boşaltma yaptığı ve römork dolmadığı sürece traktör geri vitese takmaz ve ayrılmaz: biçerdöver durursa o da durur, onunla birlikte hareket eder ve yalnızca biçerdöver geri giderse geri vitese takar. Römork dolduğunda, boru katlandığında veya 3 saniye boyunca yeni ürün gelmediğinde ayrılır." />
+		<text name="fp_help_b5_3_title" text="Tarlanın İçinde Bekleme" />
+		<text name="fp_help_b5_3_text" text="Çağrı beklenirken römork tarlaya girer ve kenar boyunca, önceden hasat edilmiş zeminde, düz bir yerde, girişten en az 40 m uzakta, makinenin çalıştığı tarafta park eder. Sonraki römorklar arkasında kuyruk oluşturur. Yer tarla için saklanır. Tarla dolu: römork girişten önce yol kenarında bekler. «Tarlanın içinde bekler» ayarı (Varsayılan olarak Evet)." />
+		<text name="fp_help_b5_4_title" text="Ekinin Üstüne Girmeme" />
+		<text name="fp_help_b5_4_text" text="Römork, kendisini henüz biçilmemiş ekinin içine sokacak bir hattı reddeder (2 ila 10 m ileride ekin bloğu varsa). Konuma giden yol hiçbir zaman ekinin içinden geçmez." />
+		<text name="fp_help_b5_5_title" text="Biçerdöverin Tarlası Bittiğinde" />
+		<text name="fp_help_b5_5_text" text="Biçerdöver tarlasını bitirdiğinde, römorkları taşıdıkları yükü boşaltmaya gider ve ardından park yerlerine döner." />
+		<text name="fp_help_b5_6_title" text="Ayarlar" />
+		<text name="fp_help_b5_6_text" text="Ayarlar &gt; Biçerdöver boşaltma: erken çağrı (sürücüyü çağıran doluluk seviyesi), 2. sürücüyü çağırma, hareket halinde boşaltma, silaj makinesi boşaltma tarafı. Araç ayarları: boru mesafesi, biçerdöverin arkasındaki mesafe, boşaltma doluluk seviyesi, tarlada park etme." />
+		<text name="fp_help_b6_title" text="Silaj Makinesi (Forage harvester)" />
+		<text name="fp_help_b6_1_title" text="Römorkun Arkadan Takip Etmesi" />
+		<text name="fp_help_b6_1_text" text="Silaj makinesi ile römork, makinenin arkasındaki konumu, kendi biçilen izini hedefler, ardından boş tarafı alır. Silaj makinesinin önündeki Courseplay rotasını okur (sıra sonu, U dönüşü) ve makine dönerken yerini korur." />
+		<text name="fp_help_b6_2_title" text="Sıra Sonunda U Dönüşleri" />
+		<text name="fp_help_b6_2_text" text="Römork boşluğa bağlı olarak manevrasını seçer: ileri U dönüşü, geri gidip U dönüşü, kaydırmalı U dönüşü, başak alanı dar olduğunda Y dönüşü, kare dönüşü veya biçilen şeritte U dönüşü. Her manevra önceden kontrol edilir (tarla zemin, ekin, engeller), traktörün dönüş yarıçapında hesaplanır." />
+		<text name="fp_help_b6_3_title" text="İkinci Römork" />
+		<text name="fp_help_b6_3_text" text="2. römork 1. römorkun izlerini takip eder ve arkasında bekler. Biçerdöver (Hasat Makinesi) veya 1. römork üzerine doğru geldiğinde kenara çekilir, ardından tekrar yerini alır." />
+		<text name="fp_help_b6_4_title" text="Dolu Römork ve İşin Sonu" />
+		<text name="fp_help_b6_4_text" text="Dolu römork: tarla girişinden ayrılır; aksi takdirde izinde geri manevra yapar, sonrakinin geçmesine izin vermek için kenara çekilir veya şeritte döner. İşin sonu (Courseplay tarafından da algılanır): her römork taşıdığını boşaltır, ardından park yerine gider. Makinenin kısa süre durması römorkları serbest bırakmaz." />
+		<text name="fp_help_b7_title" text="Yığın Silo Boşalt (Unload bunker silo)" />
+		<text name="fp_help_b7_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b7_1_text" text="Kepçeli yükleyici için: yığın silodan alır ve gelen römorkları doldurur. Araç ayarları: algılama doğru değilse kepçe genişliği ve yüksekliği. Sayaç yanındaki düğme bir römorka ya da biyogaz tesisine boşaltım yapmayı seçer." />
+		<text name="fp_help_b8_title" text="Seçilen Römork («Römork» Satırı)" />
+		<text name="fp_help_b8_1_title" text="İş İçin Bir Römork" />
+		<text name="fp_help_b8_1_text" text="Römorklu modlarda (Al ve teslim et, Yükle, Teslim et, Biçerdöver boşalt), 4. satır «Römork» satırıdır. Varsayılan: «bağlı olan», hiçbir şey değişmez. Listeden bir römork seçin: çiftliğin damperli, platformlu, tanker ve aktarma römorkları, ayrılmış, bu traktörün arkasına takılabilen, en yakın olanı önce («adı · kapasite»). Sağ tık: «bağlı olan» seçeneğine geri döner.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_b8_2_title" text="Başlangıçta" />
+		<text name="fp_help_b8_2_text" text="Seçilen römork bağlı değilse, traktör yollarınız boyunca önüne kadar gider, çeki demirine doğru geri yanaşır, takar (manuel bağlantı modunda hortumlar bağlanır), ardından mod başlar. Başka bir araçta takılıysa, arkada halihazırda başka bir şey bağlıysa veya bu traktöre takılamıyorsa bir mesajla başlatma reddedilir." />
+		<text name="fp_help_b8_3_title" text="İşin Sonunda" />
+		<text name="fp_help_b8_3_text" text="Döngü sayacı tamamlandığında veya silaj makinesi işi bittiğinde: römorkun park yeri ve traktörün kendi park yeri varsa, önce römork kendi yerine konur, ardından traktör kendi yerine gider." />
+		<text name="fp_help_b9_title" text="Römork Değişimi (Trailer swap)" />
+		<text name="fp_help_b9_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_b9_1_text" text="Teslimatta, boşaltmaya gitmek yerine traktör dolu römorku boş bir yere bırakır ve hemen boş bir römorkla ayrılır. Al ve teslim et ile Biçerdöver boşalt modlarında kullanılabilir: «Römork» satırının solundaki dişli çark simgesi." />
+		<text name="fp_help_b9_2_title" text="Yerleri Hazırlama" />
+		<text name="fp_help_b9_2_text" text="Bir hedef klasör oluşturun ve içine her yer için bir işaretçi koyun (yan yana iki yer arasında en az 4.5 m). Traktör işaretçiye sürer ve üzerinde durur, römork arkasında kalır. İşaretçiye giden yolda hiçbir şey olmadığında yer boştur (römork tarafında 22 m, diğer tarafta 10 m). Çeki demirinin önüne geçip geri manevra yapabilmesi için boş römorkların önünde yer bırakın. En az bir boş römork koyun ve en az bir yer boş bırakın.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_b9_3_title" text="Ayar Yapma" />
+		<text name="fp_help_b9_3_text" text="Dişli çarka tıklayın: «Römork değişimi» penceresi. 1. satır «Hayır (normal teslimat)», ardından yer sayısı, boş yerler ve boş römorklarıyla birlikte her klasör. Seçin veya çift tıklayın. Turuncu = değişim yok, yeşil = değişim ayarlandı." />
+		<text name="fp_help_b9_4_title" text="Teslimatta" />
+		<text name="fp_help_b9_4_text" text="Dolu römork: 1. boş yere gider, ayrılır (destek ayağı, hortumlar), en yakın boş römorku gider ve takar (%1'den az dolu, aynı ürünü alan), ardından işine geri döner. Boş römork «Römork» satırının römorku olur. Dolu römorklar yerlerinde kalır: bunları kendiniz veya başka bir araçla boşaltın. Aynı klasördeki iki traktör asla aynı yeri veya aynı römorku hedeflemez." />
+		<text name="fp_help_b9_5_title" text="Bunun Yerine Normal Teslimat" />
+		<text name="fp_help_b9_5_text" text="Boş yer, uygun boş römork yoksa veya birden fazla römork katarı varsa: bir mesajla birlikte normal şekilde teslimat yapar." />
+		<text name="fp_help_cat_C" text="FarmPilot - Otonom Mod (Autonomous mode)" />
+		<text name="fp_help_c1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_c1_1_title" text="A'dan Z'ye Tarla" />
+		<text name="fp_help_c1_1_text" text="Otonom mod bir tarlanın tüm işini yapar: ekipmanı alır, doldurur, tarlaya sürer, doğru rotayla Courseplay'i başlatır, yol boyunca yeniden doldurur, ardından sonraki tarlaya geçer veya ekipmanı yerine koyup traktörü park eder." />
+		<text name="fp_help_c1_2_title" text="İhtiyacınız Olanlar" />
+		<text name="fp_help_c1_2_text" text="Tarlalarınız için kaydedilmiş rotalarıyla birlikte kurulu Courseplay. Çalışan bir ekipman: toprak işleme, mibzer, ekim makinesi, ilaçlama makinesi, gübre atıcı, çayır biçme makinesi, ot yayma makinesi, tırmık, balya makinesi, balya yükleyici... Yalnızca damperli römork, platform veya biçerdöverle başlatma reddedilir." />
+		<text name="fp_help_c1_3_title" text="Courseplay Olmadan" />
+		<text name="fp_help_c1_3_text" text="Genel ayar «Courseplay olmadan otonom»: Bekle (varsayılan: sürücü tarlada durur) veya Oyun işçisi (oyun işçisi tarlayı devralır). Courseplay kuruluysa oyun işçisi asla kullanılmaz." />
+		<text name="fp_help_c2_title" text="Otonom Modda Arayüz" />
+		<text name="fp_help_c2_1_title" text="6 Satır" />
+		<text name="fp_help_c2_1_text" text="1. Tarla: işlenecek tarla.&#10;2. Ön (Front): öne takılacak ekipman veya ağırlık (varsayılan olarak «bağlı olan»).&#10;3. Arka (Rear): arkaya takılacak ekipman (varsayılan olarak «bağlı olan»).&#10;4. Sonraki tarla (Next field): sıradaki tarla (varsayılan olarak boş).&#10;5. Sonraki ön (Next front): sonraki tarlanın ön ekipmanı.&#10;6. Sonraki arka (Next rear): sonraki tarlanın arka ekipmanı (varsayılan olarak «aynısı»).&#10;Bir ekipman satırına veya Sonraki tarla üzerine sağ tık: varsayılan değere geri döner. Ekipman çarkları satırlarının solundadır." />
+		<text name="fp_help_c2_2_title" text="Listedeki Ekipmanlar" />
+		<text name="fp_help_c2_2_text" text="Arka listesi, çiftliğin bu traktörün arkasına takılan ayrılmış ekipmanlarını işlev ve genişliğe göre gösterir: önce «Bağlı olan», ardından «Kültivatör (8 m)», «Ekim makinesi (8.4 m)»..., işlevine ve ardından genişliğine göre sıralanır (balya yükleyici için genişlik yoktur). İki özdeş ekipman: mesafe eklenir («Çayır biçme makinesi (3.4 m) · 230 m»). Ön listesi «Bağlı olan», ön ekipmanları («Çayır biçme makinesi (3.4 m)») ve ardından kütleye göre ağırlıkları gösterir; iki özdeş ağırlık mesafeleriyle ayırt edilir («Ağırlık (1,000 kg) · 72 m»). Bir ön ekipman asla arkada önerilmez, tam tersi de geçerli değildir." />
+		<text name="fp_help_c2_3_title" text="Doğru Tarla" />
+		<text name="fp_help_c2_3_text" text="Tarla, 100 m'den yakınsa işaretçi numarasına ait olan tarladır («Tarla 56» = tarla 56); aksi takdirde varışta traktörün altındaki tarla, o da değilse en yakın olanıdır. «Tarla 52 - 53»: ikisinden en yakın olanı. AutoSwitch ile birleştirilmiş tarlar tek bir tarla olarak sayılır." />
+		<text name="fp_help_c3_title" text="Courseplay Rotası" />
+		<text name="fp_help_c3_1_title" text="Otomatik Seçim" />
+		<text name="fp_help_c3_1_text" text="Varışta FarmPilot, bu tarlayı kapsayan ve 10 cm içinde tam olarak ekipmanın genişliğine sahip olan kaydedilmiş Courseplay rotasını (tüm klasörler) alır. Rotayı yükler ve ilk ara noktada Courseplay'i başlatır." />
+		<text name="fp_help_c3_2_title" text="Bellek" />
+		<text name="fp_help_c3_2_text" text="Seçilen rota, traktör ne olursa olsun bu tarla ve bu ekipman için kayıt dosyasında saklanır. Ağırlıklar sayılmaz. Ertesi yıl doğrudan yeniden kullanılır." />
+		<text name="fp_help_c3_3_title" text="Rota Yok veya Birden Fazla Rota" />
+		<text name="fp_help_c3_3_text" text="Doğru genişlikte rota yoksa veya kayıtlı seçim olmaksızın birden fazla varsa: sürücü tarlada durur ve bir mesaj nedenini bildirir. Otonom rotalar penceresinden rotayı seçin, ardından yeniden başlatın." />
+		<text name="fp_help_c3_4_title" text="Otonom Rotalar Penceresi" />
+		<text name="fp_help_c3_4_text" text="Arayüz düğmesi (Otonom modunda, Courseplay düğmesinin yerine) veya araçta ekipman bağlı durumdayken Ctrl + Alt + 5 (numpad). En üstte: ekipman ve genişliği. Her tarla veya tarla grubu için bir satır («Tarlalar 52 + 53 + 54 + 55»). Sağ tarafta kullanılan rota: yalnızca tek bir Courseplay rotası uydğunda «Otomatik: rota adı», birden fazla olduğunda «Otomatik (2 rota: durdur)»: bu durumda sürücü durur, bir tane seçmeniz gerekir. Enter (veya çift tık): sonraki rotaya geçer. Boşluk: Otomatik seçeneğine döner. Esc: geri döner." />
+		<text name="fp_help_c4_title" text="Ekipmanı Alma ve Yerine Koyma" />
+		<text name="fp_help_c4_1_title" text="Gidip Bağlama" />
+		<text name="fp_help_c4_1_text" text="Arka satırı «bağlı olan» değilse, sürücü yollarınızı kullanarak ekipmanın yerine (veya ekipmanın önündeki yol ağ noktasına) gider, önüne hizalanır, geri yanaşır, takar, hortumları ve kuyruk milini bağlar (manuel bağlantı modu), kaldırır ve tarlaya doğru yola çıkar. Yer yolu yalnızca ekipman yol ile aynı hizada park edilmişse kullanılır; aksi takdirde çeki demirinin önündeki ağ noktasına gider." />
+		<text name="fp_help_c4_2_title" text="Ön Ekipman ve Ağırlık" />
+		<text name="fp_help_c4_2_text" text="Ön satırında bir ekipman varsa: önde bir ağırlık varsa, traktör önce burnu önce gelecek şekilde sürerek kendi park yerinin (traktörün) arkasına bırakır. Diğer ön ekipman kendi yerine veya arka ekipmanın yanına konur. Ardından ön ekipmanın önüne, burnu ona dönük şekilde gider, bağlantı noktasına kadar ilerler (kaçırırsa: geri gider ve tekrar dener, en fazla 2 kez), ardından arka ekipmanı her zamanki gibi takar. Ön + arka biçerdöver/çayır biçme makinesi reddedilmez." />
+		<text name="fp_help_c4_3_title" text="Ön Ekipmanla İşin Sonu" />
+		<text name="fp_help_c4_3_text" text="Sırasıyla: arka ekipman kendi yerine konur, ön ekipman kendi yerine konur (veya arka ekipmanın yanına, paralel, aralarında 1 m mesafe olacak şekilde), ağırlık traktörün yerinden geri alınır, traktör park edilir. Öndeki her çıkarma işleminden sonra düz bir şekilde 8 m geri gider." />
+		<text name="fp_help_c4_4_title" text="Ulaşılması Zor Ekipman" />
+		<text name="fp_help_c4_4_text" text="Ekipmanın önüne kadar bir yol yoksa: düz bir şekilde 10 m ileri (veya geri) gider ve ardından yeniden hesaplar, durmadan önce en fazla 2 kez dener. Park edilmiş ekipmanların önünde yer bırakın." />
+		<text name="fp_help_c4_5_title" text="Yerine Geri Koyma" />
+		<text name="fp_help_c4_5_text" text="Sonraki tarla olmaksızın işin sonu: ekipmanın park yeri ve traktörün kendi yeri (farklı) varsa, sürücü ekipmanı yerine koyar, kapatır, kuyruk milini ve hortumları söker, ekipmanı ayırır ve ardından gidip traktörü park eder. Ağırlıklar dikkate alınmaz. Birden fazla ekipman bağlıysa veya yeri olmayan ekipmansa: ekipmanla birlikte eskisi gibi park eder." />
+		<text name="fp_help_c4_6_title" text="Yola Çıkmadan Önce Katlanan Ekipmanlar" />
+		<text name="fp_help_c4_6_text" text="Başlangıçta FarmPilot katlama, takma veya oyun komutu bitene kadar bekler. Tıkalı bir katlama taşıma konumuna doğru yeniden başlatılır (önce ekipman kaldırılır). Beklerken her dakika bir mesaj gösterilir." />
+		<text name="fp_help_c5_title" text="Sonraki Tarla ve Sonraki Ekipman" />
+		<text name="fp_help_c5_1_title" text="Sonraki Tarla" />
+		<text name="fp_help_c5_1_text" text="Sonraki tarla satırı. Listeden bir tarla seçin veya harita üzerinde sağ tıklayın. Mevcut tarla bittiğinde, sonraki tarla 1. satıra taşınır, satır boşalır ve sürücü burayı işlemeye gider. Boş: ekipmanı yerine koyar ve park eder.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_c5_2_title" text="Sonraki Ekipmanlar" />
+		<text name="fp_help_c5_2_text" text="Sonraki ön ve Sonraki arka satırları, yalnızca sonraki tarlayla birlikte kullanışlıdır. Tarlanın sonunda: bağlı ekipmanları yerlerine koyar, sonraki ekipmanları alır ve ardından sonraki tarlaya hareket eder. Sonraki ekipmanlar ardından Ön ve Arka satırlarına taşınır." />
+		<text name="fp_help_c5_3_title" text="Yapılamadığı Durumlar" />
+		<text name="fp_help_c5_3_text" text="Sonraki ekipman başka bir araca bağlıysa veya bu traktöre takılamıyorsa: bağlı ekipman yine de yerine konur, ardından sürücü bir mesajla durur. Ekipman boşta olduğunda yeniden başlatın. Park yeri olmayan bağlı ekipman veya birden fazla ekipman: tarlanın sonunda bir mesajla durur." />
+		<text name="fp_help_c5_4_title" text="Yoldaki &gt;&gt; Düğmesi" />
+		<text name="fp_help_c5_4_text" text="Tarlaya giden yolda, &gt;&gt; bu tarlayı atlar ve bitmiş bir tarla ile aynı adımlarla (sonraki ekipman, yeniden doldurma) sonraki tarlaya hareket eder. Tarlada, &gt;&gt; hiçbir şey yapmaz: Courseplay tarlayı bitirir. Sonraki tarla olmadan: «sonraki tarla ayarlanmadı» mesajı çıkar. Yeniden doldurma, takma veya bırakma sırasında: atlama yapılmaz." />
+		<text name="fp_help_c6_title" text="Mibzer ve Ekim Makinesi (Seeder and planter)" />
+		<text name="fp_help_c6_1_title" text="Mibzer Ayarları" />
+		<text name="fp_help_c6_1_text" text="Arka satırda bir mibzerle (veya sonraki arka) bir çark belirir. Turuncu: başlatma reddedildi («doğrulanacak mibzer ayarları»). «Mibzer ayarları» penceresini açar:&#10;- Ekilecek ürün: yalnızca bu mibzerin bu mevsimde ekelebileceği ürünler (oyun takvimi); mevsimi dışında kaydedilen ürün «(mevsimi dışında)» gösterir.&#10;- Yükle: Tohumlar, Yükle: Katı gübre... Her biri için Evet veya Hayır (Enter değeri değiştirir).&#10;- Yeniden doldurma noktası: ürüne sahip bir yerden 50 m'den kısa mesafedeki işaretçileriniz (istasyon, silo, mağaza, büyük çuvallar, paletler). Hiçbiri: hepsi gösterilir.&#10;- Onayla (Boşluk tuşu). Ardından pencere «Ayarlar onaylandı: başlatmaya izin verildi.» gösterir ve çark yeşile döner. Esc onaylamadan kapatır.&#10;Ayar tarla başına ve mibzer başına saklanır; yeni bir tarlada pencere mibzerin son ayarlarını alır." />
+		<text name="fp_help_c6_2_title" text="Yeniden Doldurma" />
+		<text name="fp_help_c6_2_text" text="Başlangıçta, mibzer takıldıktan sonra ürün mibzer üzerinde ayarlanır. Seçilen tanklar dolu değilse, yeniden doldurma noktasına gider, ardından tarlaya hareket eder. Tarlada boş mibzer: Courseplay durur, sürücü tarladan ayrılır, yeniden doldurur, geri döner ve Courseplay son ara noktadan yeniden başlar. Tanklar dolana kadar bekler; &gt;&gt; beklemeden ayrılmasını sağlar." />
+		<text name="fp_help_c6_3_title" text="Courseplay Ayarları" />
+		<text name="fp_help_c6_3_text" text="FarmPilot sizin için Courseplay'i ayarlar: «tarlada yeniden doldurma» kapalı, mibzer gübresi yalnızca gübre yüklerseniz açık." />
+		<text name="fp_help_c7_title" text="Gübre Atıcılar ve İlaçlama Makineleri (Spreaders and sprayers)" />
+		<text name="fp_help_c7_1_title" text="Gübre Atıcı Ayarları" />
+		<text name="fp_help_c7_1_text" text="Çekilir veya kendinden yürür tip. Makinenin satırındaki çark simgesi, «Gübre atıcı ayarları» penceresi:&#10;- Yüklenecek ürün (deponun kabul ettiği ürünler).&#10;- Alınacak miktar: Tam dolu veya Yalnızca tarlaya yetecek kadar (oran x alan + %10, tahmini miktar gösterilir).&#10;- Yeniden doldurma noktası (ürüne sahip bir yerin yakınındaki işaretçiler).&#10;- Onayla (Boşluk tuşu). Onaylanana kadar başlatma reddedilir." />
+		<text name="fp_help_c7_2_title" text="Yeniden Doldurma ve Kalan Ürün" />
+		<text name="fp_help_c7_2_text" text="Yeniden doldurma işlemi mibzerde olduğu gibi başlangıçta ve tarlada depo boşaldığında çalışır. Tarlanın sonunda: aynı makineyle sonraki tarlada aynı ürün kullanılacaksa kalan ürün depoda tutulur. Aksi takdirde kalan ürün depoya iade edilir veya satılır, ardından normal adımlar izlenir. Sıvı gübre, katı gübre, fermente gübre: kalan miktar ayrıca çukura / depoya geri boşaltılır veya satılır." />
+		<text name="fp_help_c7_3_title" text="İçinde Ürün Varken P Düğmesi" />
+		<text name="fp_help_c7_3_text" text="İçinde hala 20 L'den fazla ürün bulunan bir gübre atıcı veya ilaçlama makinesinde Park düğmesine basıldığında: önce kalan üründen kurtulur, ardından park eder (kendi yeri varsa ekipman yerine bırakılır). Kullanılan nokta: mevcut tarlanın noktası, yoksa bu makine ve bu ürün için ayarlanan son nokta, o da yoksa bu ürüne sahip en yakın işaretçi." />
+		<text name="fp_help_c8_title" text="Balya Makinesi (Baler)" />
 		<text name="fp_help_c8_1_title" text="Namlular, Courseplay olmadan" />
 		<text name="fp_help_c8_1_text" text="Balya makinesiyle FarmPilot Courseplay kullanmaz: tarlaya varınca traktör durur, yerdeki namluları arar (tarla ve birleştirilmiş tarlalar), sonra onları tek tek balyalar. Makine açılır, çalıştırılır, toplayıcı indirilir, balyalar otomatik bırakılır; traktör balyadan önce yavaşlar ve balya atılırken ya da sarılırken durur. İp / file bitince: seçilen noktada doldurma (dişli çark), tarlaya dönüş, yeni arama ve devam. Tarla bitince: makine katlanır, sonraki tarla (yoksa çiftlik)." />
 		<text name="fp_help_c8_2_title" text="Namlu yok" />
 		<text name="fp_help_c8_2_text" text="Tarlada makinenin ürününden namlu yoksa: « balya makinesi: X tarlasında namlu yok, bekliyor » mesajı. Tarla zaten balyalandıysa ya da saman doğrandıysa olur. Oyun yeniden yüklendi ya da balyalama sırasında Aç / Kapat düğmesi: yerinde yeni arama, balyalama devam eder." />
-		<text name="fp_help_c9_title" text="Bale loader" />
-		<text name="fp_help_c9_1_title" text="Settings" />
-		<text name="fp_help_c9_1_text" text="Cog on the loader's row, « Bale loader settings » window:&#10;- Bales to collect: All, Wrapped only, Unwrapped only.&#10;- Drop-off point: at the top, the markers less than 60 m from a selling point that takes bales (« sale · name »); then all the other markers for storage.&#10;- Validate (Space key; refused until a point is chosen)." />
-		<text name="fp_help_c9_2_title" text="Collecting" />
-		<text name="fp_help_c9_2_text" text="On arrival at the field, FarmPilot looks for the bales the loader can take: round or square, right size, from your farm, on the ground on this field, not stacked, one product at a time. The arm goes to work position, it drives to the closest bale, lines up so the arm passes over it (12 km/h far away, 6 km/h when close) and the game arm picks it up. Missed bale: a 2nd try, then it is left. Bale right in front of the tractor: it reverses 10 m first.&#10;(Screen Update coming)" />
-		<text name="fp_help_c9_3_title" text="Drop-off and end" />
-		<text name="fp_help_c9_3_text" text="Full loader: arm in, road to the drop-off point, automatic unloading, back to the field if bales are left. At a selling point the bales are sold; at a storage point they are put down at the marker. No more bales: last drop-off, then next field or parking." />
-		<text name="fp_help_c9_4_title" text="The &gt;&gt; button with the bale loader" />
-		<text name="fp_help_c9_4_text" text="With bales loaded: drop-off straight away, then back to the field. Empty loader: the field is left, steps of a finished field." />
-		<text name="fp_help_c10_title" text="Combine and forage harvester in Autonomous (header)" />
-		<text name="fp_help_c10_1_title" text="The combine HUD" />
-		<text name="fp_help_c10_1_text" text="In Autonomous mode, a combine or a forage harvester has 4 rows instead of the implement rows:&#10;1. Field: it is also the field of its trailers. The trailers in « Unload Combine » that have this field serve it, and they change field with it at the next field (unless another combine is still harvesting the old one).&#10;2. Header: « auto » chooses, depending on the field's crop, a farm header that can cut it (grain header, corn header, forage harvester header). You can also choose a specific header. No header for this crop: start refused, with a message.&#10;3. Next field.&#10;4. Next header: « auto » by default; it becomes the Header row on the next field." />
-		<text name="fp_help_c10_2_title" text="The tractor of the header trailer" />
-		<text name="fp_help_c10_2_text" text="The cog of the Header row opens the « Header transport » window. Orange: the nearest free tractor (stopped, nothing attached behind; a weight or a front implement do not matter). Green: the tractor you chose. A tractor already attached to the trailer is always taken first." />
-		<text name="fp_help_c10_3_title" text="How it goes" />
-		<text name="fp_help_c10_3_text" text="1. You start the combine without a header.&#10;2. The tractor hitches the header trailer and brings it towards the field. It stops it at a clear spot on the side where the combine arrives (no standing crop, ditch, water or obstacle); otherwise it looks for another clear spot within 1 km.&#10;3. The combine follows at a distance, stops before the field track and waits until the trailer is in place. The status bar then says « Wait for the other machine ».&#10;4. It attaches the header driving forward, reverses and starts its Courseplay course. The tractor puts the empty trailer at its place, then parks: it is free.&#10;5. Field finished: a tractor brings the trailer back to the field, the combine puts the header on it, then goes to its place. The tractor puts the trailer away." />
-		<text name="fp_help_c10_4_title" text="Header without a trailer (corn header on the ground)" />
-		<text name="fp_help_c10_4_text" text="The combine fetches it alone, without a tractor. To put it back, it goes to the header's parking place if it has one, otherwise where it took it (same spot, same direction). Give a parking place to your headers left on the ground: the remembered spot is lost when the game is reloaded." />
-		<text name="fp_help_c10_5_title" text="Header change on the next field" />
-		<text name="fp_help_c10_5_text" text="Wheat then corn: the grain header goes back on its trailer, then the combine takes the corn header. Corn then wheat: the corn header is put down, then the tractor brings the grain header to the next field." />
-		<text name="fp_help_c10_6_title" text="If it gets stuck" />
-		<text name="fp_help_c10_6_text" text="No path to the header: the combine asks the tractor to move the trailer (3 times at most), then both stop with the message « no path to the front of the implement »." />
-		<text name="fp_help_c11_title" text="Fuel, messages, tips" />
-		<text name="fp_help_c11_1_title" text="Refuelling" />
-		<text name="fp_help_c11_1_text" text="Courseplay stops for lack of fuel: FarmPilot leaves the field (if the entrance is more than 30 m away), refuels at the closest pump, comes back, and Courseplay restarts where it stopped. Set « wait for refuel » to No in Courseplay. Field finished with a next field and a tank (diesel or DEF) under 20 %: refuel first." />
-		<text name="fp_help_c11_2_title" text="The &gt;&gt; button in Autonomous (summary)" />
-		<text name="fp_help_c11_2_text" text="During a refill: leave without waiting. On the road: next field. Bale loader: drop-off or field left. At the field with Courseplay: nothing." />
-		<text name="fp_help_c11_3_title" text="Tips" />
-		<text name="fp_help_c11_3_text" text="- Set a parking place for each implement and each tractor.&#10;- Save your Courseplay courses at the exact width of your implements.&#10;- Leave room in front of parked implements and trailers.&#10;- Check the cogs: orange = start refused." />
-		<text name="fp_help_cat_D" text="FarmPilot - On the road" />
-		<text name="fp_help_d1_title" text="Parking" />
-		<text name="fp_help_d1_1_title" text="Parking places" />
-		<text name="fp_help_d1_1_text" text="Each vehicle and each implement can have its place. Put the place in the 1st row, then Ctrl + click on the parking button (P): with an implement selected, it is the implement's place; with no implement selected, the tractor's. The tractor's place must be different from the implement's.&#10;(Screen Update coming)" />
-		<text name="fp_help_d1_2_title" text="Drawing the places" />
-		<text name="fp_help_d1_2_text" text="- Implement place: the road leading to it is drawn in reverse (the tractor reverses the implement into it).&#10;- Header place: drawn forward, the marker 5 m before the header." />
-		<text name="fp_help_d1_3_title" text="Park button (P)" />
-		<text name="fp_help_d1_3_text" text="Every implement or trailer attached directly to the tractor that has its place is put at its place first, then the tractor goes to its own. Weights ignored. The button switches to Autonomous for the drop, then the previous mode comes back by itself (tractor parked, stop or error)." />
-		<text name="fp_help_d1_4_title" text="Park at the end of the job" />
-		<text name="fp_help_d1_4_text" text="Vehicle setting « Park at Job finished » (Deliver, Pickup and Deliver): at the end, vehicle and implement go to their place." />
-		<text name="fp_help_d2_title" text="The smart driver" />
-		<text name="fp_help_d2_1_title" text="Braking and distance" />
-		<text name="fp_help_d2_1_text" text="It watches the road ahead and slows down gradually before an obstacle. It follows a slower vehicle at its speed and keeps 3 m behind another FarmPilot vehicle. Behind a vehicle on the weighbridge, with a driver or in a queue, it waits without going around." />
-		<text name="fp_help_d2_2_title" text="Small sidestep" />
-		<text name="fp_help_d2_2_text" text="An obstacle on one side only (post, cone, bale, parked car) is avoided by a slight offset, without stopping, then it comes back onto its line. Posts that are on your road are seen at calculation time: the road passes beside them with the width of the vehicle combination plus 30 cm (except ditch, bank, bridge or walls)." />
-		<text name="fp_help_d2_3_title" text="Going around" />
-		<text name="fp_help_d2_3_text" text="Blocked by a fixed object (fallen object, low wall, tree, vehicle stopped for a long time): it reverses then calculates a path to rejoin its road further on. In front of a gate, it waits. Settings: obstacle detour yes/no, delay, reverse before detour." />
-		<text name="fp_help_d2_4_title" text="Pushing without moving" />
-		<text name="fp_help_d2_4_text" text="If it should drive but does not move 50 cm in 3 s, it reverses 3 to 5 m and passes beside it, on the free side. If it still pushes, it reverses and calculates a detour." />
-		<text name="fp_help_d2_5_title" text="Blocked passage" />
-		<text name="fp_help_d2_5_text" text="After two failed detours in front of the same fixed object, it creeps forward (2.5 km/h). If it stays stuck, the passage is remembered as blocked for this combination width and wider ones (saved in the game) and it turns back by another road. The next starts avoid this passage. A passage whose points were moved in the editor is forgotten. To forget everything: delete FarmPilot_PassagesBouches.xml from the savegame folder, game closed." />
-		<text name="fp_help_d3_title" text="Head-on passing" />
-		<text name="fp_help_d3_1_title" text="On two-way roads" />
-		<text name="fp_help_d3_1_text" text="Two FarmPilot vehicles about to meet nose to nose are seen from far away (250 m): they slow down and stop at a good distance. One pulls over to the side (place calculated with the size of both combinations, the slope, water and fields), the other passes, or one reverses. The empty vehicle gives way first, then the one without a trailer. A header trailer never reverses." />
-		<text name="fp_help_d3_2_title" text="Single-lane tracks" />
-		<text name="fp_help_d3_2_text" text="Priority to the one already engaged. The one giving way stops 15 m before the track entrance and waits until the other has passed (plus 10 m). The one that cannot reverse takes another road and comes back later." />
-		<text name="fp_help_d3_3_title" text="If it fails" />
-		<text name="fp_help_d3_3_text" text="After two failures, red message and 5-minute pause for the pair. Settings: head-on passing yes/no, delay before passing, max reverse distance, clearance between combinations, driving side (right or left)." />
-		<text name="fp_help_d4_title" text="Intersections" />
-		<text name="fp_help_d4_1_title" text="The red points" />
-		<text name="fp_help_d4_1_text" text="Mark dangerous crossings as Intersection in the editor (see « Road types »). Before crossing or merging, the vehicle slows down (20 then 8 km/h), checks the lanes over 120 m and stops just before the first red point if a vehicle is coming (traffic, tractor, player). Then it crosses without stopping." />
-		<text name="fp_help_d4_2_title" text="The gap in the traffic" />
-		<text name="fp_help_d4_2_text" text="The gap it waits for depends on the time the combination needs to cross. After 30 s of waiting, it becomes less demanding. It does not go if the exit is busy. Stopped in the middle: it reverses back to its line." />
-		<text name="fp_help_d5_title" text="Bends" />
-		<text name="fp_help_d5_1_title" text="Corner speed" />
-		<text name="fp_help_d5_1_text" text="The speed depends on the real radius of the bend, and the tractor brakes before entering it. Example: radius 12 m = 16 km/h, radius 40 m = 30 km/h. Vehicle setting « Corner speed » (50 to 200 %)." />
-		<text name="fp_help_d5_2_title" text="Bends too tight" />
-		<text name="fp_help_d5_2_text" text="A bend is first simulated as you drew it: if the combination gets through, it is left alone. Otherwise it is redrawn at the widest line that gets through, at most 3 m from your road, without obstacle and without a wheel off the tarmac." />
-		<text name="fp_help_d5_3_title" text="Road end too tight" />
-		<text name="fp_help_d5_3_text" text="If the last bend before the destination is too tight, FarmPilot plans before leaving a manoeuvre (forward, reverse, forward again), or another arrival through a detour, and keeps the fastest. With a trailed implement, it only reverses straight, 8 m at most." />
-		<text name="fp_help_d5_4_title" text="Turn lights" />
-		<text name="fp_help_d5_4_text" text="With « Turnlight Automatic », the indicator comes on at the set distance (« Turnlight Distance », 20 to 100 m) before a bend or a junction, and stays on until the tractor is straight again. No indicator for a sidestep. Engine off: it goes off." />
-		<text name="fp_help_d6_title" text="Road types" />
-		<text name="fp_help_d6_1_title" text="The road types" />
-		<text name="fp_help_d6_1_text" text="- Main: the normal road.&#10;- Secondary: taken if it saves time, depending on the vehicle type (cog in the general settings).&#10;- Tertiary (dirt track): special road, only for the vehicle types allowed in that cog, and never as a shortcut. Limited speed (« Max speed on tertiary roads », 30 km/h by default): the vehicle slows down 30 m before.&#10;- Access: only taken to reach the point it leads to (a place, a silo…), never to pass through.&#10;- Intersection: the vehicle slows down and looks before crossing." />
-		<text name="fp_help_d6_2_title" text="Settings (General tab)" />
-		<text name="fp_help_d6_2_text" text="- « Secondary roads »: Auto = by vehicle type (cog: Yes / No per type); Allowed = taken whenever they save time; Never.&#10;- « Tertiary roads »: Auto = by vehicle type (cog); Allowed; Never.&#10;One choice for all vehicles. Never = taken only if no other road exists, or if the other one is too narrow." />
-		<text name="fp_help_d6_3_title" text="Narrow passages" />
-		<text name="fp_help_d6_3_text" text="The route calculation avoids sections too narrow for the combination (dual wheels, wide implement) when another way exists. The width is measured at the tyres; a folding implement counts as 2.4 m." />
-		<text name="fp_help_d7_title" text="Entering and leaving the field" />
-		<text name="fp_help_d7_1_title" text="Leaving the field" />
-		<text name="fp_help_d7_1_text" text="To leave the field, the vehicle first aims for the entrance of the field it is in, instead of the closest network point (which can be behind the crop or on the neighbouring field). Otherwise it tries up to 6 other points, without crossing the crop or another field. Gates are passed in line: it lines up 12 to 20 m before." />
-		<text name="fp_help_d7_2_title" text="Strict mode" />
-		<text name="fp_help_d7_2_text" text="« Restrict pathfinder to field » and « Avoid fruit » have a Strict value: the calculation never lifts the restriction, and the trailer never drives on the neighbouring field. Small forgotten crop islands are ignored." />
-		<text name="fp_help_d7_3_title" text="Stuck" />
-		<text name="fp_help_d7_3_text" text="A stuck combination (crop around, bend too tight) frees itself with small forward curves. A spot that keeps blocking becomes a no-go zone for 5 minutes." />
-		<text name="fp_help_cat_E" text="FarmPilot - Route editor" />
-		<text name="fp_help_e1_title" text="Turn the editor on" />
-		<text name="fp_help_e1_1_title" text="Open the editor" />
-		<text name="fp_help_e1_1_text" text="Editor button of the HUD (or key « FP - Activate edit mode »). The roads and points appear around the vehicle and the editing buttons are added to the HUD. Middle click to get the mouse. Right click on the editor button: shows only the roads. Setting « Line height »: lines on the ground or above the tractor.&#10;(Screen Update coming)" />
-		<text name="fp_help_e1_2_title" text="The editing buttons" />
-		<text name="fp_help_e1_2_text" text="Record, Routes manager, Create destination, Delete a point (right click: delete a destination), Rename the destination." />
-		<text name="fp_help_e2_title" text="Record a road while driving" />
-		<text name="fp_help_e2_1_title" text="Record button" />
-		<text name="fp_help_e2_1_text" text="Drive: a point is set regularly behind you. Click again: end of the recording. The type depends on the click:&#10;- Left click: one-way.&#10;- Right click: two-way.&#10;- Shift + left / right click: secondary, one-way / two-way.&#10;- Ctrl + left / right click: 2 roads at once (one on each side), one-way / two-way.&#10;- Ctrl + Shift + click: 2 roads at once, secondary.&#10;Reversing while recording creates a reverse road (to park by reversing).&#10;(Screen Update coming)" />
-		<text name="fp_help_e2_2_title" text="Auto connect" />
-		<text name="fp_help_e2_2_text" text="General settings « Auto connect (start) » and « Auto connect (end) »: the start and the end of the recording are linked to the nearby point. User setting « Record without driver »: the recording goes on if you get out." />
-		<text name="fp_help_e3_title" text="Points with the mouse" />
-		<text name="fp_help_e3_1_title" text="Commands" />
-		<text name="fp_help_e3_1_text" text="In the editor, mouse active (a reminder shows next to the HUD):&#10;- Left click on a point: select it. Left click on a 2nd point: link them, or undo the link.&#10;- At the 2nd point, Ctrl + left click: one-way or two-way.&#10;- Shift + right click on the 2nd point: reverse line.&#10;- Ctrl + left click in empty space: create a point (linked to the selected point).&#10;- Alt + left click on a point: delete it.&#10;- Shift + left click on a point: change its type (see « Road types and colours »).&#10;- Right click (or wheel) held on a point: move it." />
-		<text name="fp_help_e3_2_title" text="Curves" />
-		<text name="fp_help_e3_2_text" text="Point selected then hovering another one: a curve preview appears (green = gets through, red = collision). The click links with the curve." />
-		<text name="fp_help_e4_title" text="Sections" />
-		<text name="fp_help_e4_1_title" text="Act on a whole section" />
-		<text name="fp_help_e4_1_text" text="A section = the chain of points between two junctions. Select the 1st point, hover the last one: the section lights up.&#10;- Ctrl + click: changes the direction of the whole section (one-way, reversed, two-way).&#10;- Shift + click: changes the type of the whole section.&#10;- Ctrl + Shift + Alt + click: deletes the whole section." />
-		<text name="fp_help_e4_2_title" text="Area selection" />
-		<text name="fp_help_e4_2_text" text="Alt held on a selected point + mouse wheel: enlarges or shrinks the selection area; click: deletes all points in the area." />
-		<text name="fp_help_e5_title" text="Road types and colours" />
-		<text name="fp_help_e5_1_title" text="Change the type" />
-		<text name="fp_help_e5_1_text" text="Shift + left click on a point or a section cycles its type (main, secondary, tertiary, access, intersection…).&#10;(Screen Update coming)" />
-		<text name="fp_help_e5_2_title" text="Colours" />
-		<text name="fp_help_e5_2_text" text="In edit mode, an « Editor reminder » shows next to the HUD with these colours and the commands.&#10;- Main: green (one-way), blue (two-way).&#10;- Secondary: light orange (one-way), brown (two-way).&#10;- Tertiary: pink (one-way), purple (two-way).&#10;- Access: orange (one-way), beige (two-way).&#10;- Intersection: red.&#10;- Reverse: light blue.&#10;Colours are changed in Settings &gt; User &gt; « Custom colors »." />
-		<text name="fp_help_e6_title" text="Destinations and folders" />
-		<text name="fp_help_e6_1_title" text="Create a destination" />
-		<text name="fp_help_e6_1_text" text="Put the vehicle where you want it (on a point), « Create destination » button, type the name. Rename: Rename button. Delete: right click on the Delete button. Tip: one clear name per use (« Field 56 », « Farm silo », « G_Seeder 1 » for a parking place).&#10;(Screen Update coming)" />
-		<text name="fp_help_e6_2_title" text="Folders" />
-		<text name="fp_help_e6_2_text" text="Setting « Use folders »: destinations are sorted into folders (drag and drop in the open list, or via the settings). Folders are also used for the pickup and delivery cycle and for trailer swap. Destination filter: key « FP - Destination filter »." />
-		<text name="fp_help_e6_3_title" text="On the map" />
-		<text name="fp_help_e6_3_text" text="Setting « Show markers »: FarmPilot markers on the menu map and/or the in-game map." />
-		<text name="fp_help_e7_title" text="Field points and routes manager" />
-		<text name="fp_help_e7_1_title" text="Create the field points" />
-		<text name="fp_help_e7_1_text" text="Ctrl + Shift + F: creates points along the edge of the fields. Settings: offset (inside or outside the edge) and distance between the points." />
-		<text name="fp_help_e7_2_title" text="Routes manager" />
-		<text name="fp_help_e7_2_text" text="Ctrl + Alt + 1 (numpad): export your network under a name, or import a saved network (share with a friend, keep a backup before big changes).&#10;(Screen Update coming)" />
-		<text name="fp_help_cat_F" text="FarmPilot - Settings and functions" />
-		<text name="fp_help_f1_title" text="Open the settings" />
-		<text name="fp_help_f1_1_title" text="Settings window" />
-		<text name="fp_help_f1_1_text" text="Ctrl + Alt + 0 (numpad) or HUD button. Tabs: Vehicle (for the vehicle you are in), Unload combine, General (the whole game), User (your display), Environment (lights), Colours, Debug. Each row has a tooltip. Shift + C / Shift + V copy the settings from one vehicle to another." />
-		<text name="fp_help_f2_title" text="Vehicle settings" />
-		<text name="fp_help_f2_1_title" text="Driving" />
-		<text name="fp_help_f2_1_text" text="Corner speed, Restrict pathfinder to field (No / Yes / Strict), Avoid fruit (No / Yes / Strict), Maximum trigger distance." />
-		<text name="fp_help_f2_2_title" text="Loading" />
-		<text name="fp_help_f2_2_text" text="Unload fill level (start level), Loading stopped: leave after, Cycle Pickup and Deliver, Automatic Tip Side, Automatic Trailer Covers, Fold implements (Yes when bought), Change tires at (with AutoSwitch, 20 % when bought), Autoload: Unload Position and wait time, Swath detection (No when bought)." />
-		<text name="fp_help_f2_3_title" text="Combine" />
-		<text name="fp_help_f2_3_text" text="Pipe Offset, Distance combine, Park in field, Restrict unloader to field." />
-		<text name="fp_help_f2_4_title" text="End of job and upkeep" />
-		<text name="fp_help_f2_4_text" text="Park at Job finished, Automatic Refueling, Automatic Repairing." />
-		<text name="fp_help_f3_title" text="General settings" />
-		<text name="fp_help_f3_1_title" text="Traffic" />
-		<text name="fp_help_f3_1_text" text="Collision detection, Head-on passing (+ delay, max reverse distance, clearance, driving side), Obstacle detour (+ delay, reverse), Maximum detour, Secondary roads and Tertiary roads (+ cog per vehicle type), Max speed on tertiary roads." />
-		<text name="fp_help_f3_2_title" text="Work" />
-		<text name="fp_help_f3_2_text" text="Wait inside the field, Autonomous without Courseplay, Driver wages, Autostart helpers (at loading), Bunker Silo / Unload Manager Range (vehicles go one at a time)." />
-		<text name="fp_help_f3_3_title" text="Calculation and editor" />
-		<text name="fp_help_f3_3_text" text="Pathfinder algorithm, Pathfinder factor, Collisionheigth over ground, Use folders, Auto connect (start) and (end), Record offset in driving direction / in opposite driving direction, Fieldpoint Offset, field point max. distance, Maximum trigger distance, Routemanager on Server." />
-		<text name="fp_help_f4_title" text="User and environment settings" />
-		<text name="fp_help_f4_1_title" text="Display" />
-		<text name="fp_help_f4_1_text" text="Gui scale for FarmPilot HUD, Notifications, Display help (keys in F1), Show next path, Line height, Show tooltips, Show markers (on the map), Switch to markers, Add settings to HUD, Logo personalization, Wide HUD, Sound, Scale Lines, Scale Destination Name, Custom colors, Record without driver." />
-		<text name="fp_help_f4_2_title" text="Environment (lights)" />
-		<text name="fp_help_f4_2_text" text="Turnlight Automatic (Yes/No), Turnlight Distance, Engine Stop Delay (Never, 10 s, 30 s, 1, 2 or 5 min), Beacon lights (outside fields), Worklight when Loading / Unloading, Worklight when in a Silo Bunker, Hazard Lights (when reversing), Remaining Drive time (calculation for other mods; increase or turn off if the game slows down)." />
-		<text name="fp_help_f5_title" text="Built-in functions (former Addon)" />
-		<text name="fp_help_f5_1_title" text="Weighbridge" />
-		<text name="fp_help_f5_1_text" text="The vehicle centres the whole combination on the bridge, stops 5 s and shows product, load and total weight, then drives on. Stopping by hand 3 s on the bridge: the weight is shown too. With AutoSwitch, each weighing goes into its register.&#10;(Screen Update coming)" />
-		<text name="fp_help_f5_2_title" text="Engine and lights" />
-		<text name="fp_help_f5_2_text" text="Engine stop after the set delay. Engine off: only the basic lights stay on, everything comes back on restart." />
-		<text name="fp_help_f5_3_title" text="Empty silo" />
-		<text name="fp_help_f5_3_text" text="At loading, if the trailer already holds something and nothing more comes in, it leaves with what it has, according to « Loading stopped: leave after »." />
-		<text name="fp_help_f5_4_title" text="Rear implement" />
-		<text name="fp_help_f5_4_text" text="When the game starts, each tractor selects the implement attached behind it." />
-		<text name="fp_help_f6_title" text="Automatic refuelling and repair" />
-		<text name="fp_help_f6_1_title" text="How it works" />
-		<text name="fp_help_f6_1_text" text="With « Automatic Refueling / Repairing », the vehicle goes to the closest pump or workshop linked to the network, but only after the current job (trailer emptied, combine served). Never postponed: your request, Courseplay's request, a tank under 5 % or 90 % damage." />
-		<text name="fp_help_f7_title" text="Compatible mods and multiplayer" />
-		<text name="fp_help_f7_1_title" text="Compatibility" />
-		<text name="fp_help_f7_1_text" text="- Courseplay: Autonomous mode courses, forage harvester, right click left to the FarmPilot HUD and editor.&#10;- AIVE and game worker: helper at the destination.&#10;- AutoSwitch: merged fields, weighbridge register.&#10;- Manual attach (attachImplementsManually): hoses and PTO connected and disconnected.&#10;- autoTurnOffTurnLights: no effect while FarmPilot drives.&#10;- Mods that look for AutoDrive find FarmPilot." />
-		<text name="fp_help_f7_2_title" text="Multiplayer" />
-		<text name="fp_help_f7_2_text" text="All choices (implement, next field, trailer, trailer swap, implement settings) are sent to the other players and kept in the savegame." />
-		<text name="fp_help_f7_3_title" text="Savegame files" />
-		<text name="fp_help_f7_3_text" text="FarmPilot_config.xml (network), FarmPilot_Autonome.xml (kept courses), FarmPilot_RemorquesBalles.xml, FarmPilot_PassagesBouches.xml. Folder modSettings/FS25_FarmPilot: exported routes, colours." />
-		<text name="fp_help_f8_title" text="It does not work?" />
-		<text name="fp_help_f8_1_title" text="It does not start" />
-		<text name="fp_help_f8_1_text" text="- Orange cog: validate the implement settings.&#10;- Message « implement or combination moving »: it waits until folding is done.&#10;- Autonomous mode with only a tipper: a working implement is needed.&#10;- No road to the destination: check the links in the editor." />
-		<text name="fp_help_f8_2_title" text="It stops at the field" />
-		<text name="fp_help_f8_2_text" text="No Courseplay course at the implement width, or several: see the Autonomous courses window." />
-		<text name="fp_help_f8_3_title" text="Destination changed when loading the game" />
-		<text name="fp_help_f8_3_text" text="Destinations are now kept by their name. A game already shifted: choose the destination again once." />
-		<text name="fp_help_f8_4_title" text="Send a report" />
-		<text name="fp_help_f8_4_text" text="Attach the log.txt file (Documents/My Games/FarmingSimulator2025): the lines [FarmPilot …] and [AD-…] say what each driver is doing." />
+		<text name="fp_help_c9_title" text="Balya Yükleyici (Bale loader)" />
+		<text name="fp_help_c9_1_title" text="Ayarlar" />
+		<text name="fp_help_c9_1_text" text="Yükleyici satırındaki çark simgesi, «Balya yükleyici ayarları» penceresi:&#10;- Toplanacak balyalar: Tümü, Yalnızca sarılı, Yalnızca sarısız.&#10;- Bırakma noktası: en üstte, balya alan bir satış noktasına 60 m'den yakın işaretçiler («satış · ad»); ardından depolama için diğer tüm işaretçiler.&#10;- Onayla (Boşluk tuşu; bir nokta seçilene kadar reddedilir)." />
+		<text name="fp_help_c9_2_title" text="Toplama" />
+		<text name="fp_help_c9_2_text" text="Tarlaya varışta FarmPilot yükleyicinin alabileceği balyaları arar: yuvarlak veya kare, doğru boyutta, çiftliğinize ait, bu tarlada yerde duran, üst üste istiflenmemiş, tek seferde tek ürün. Kol çalışma konumuna geçer, en yakın balyaya sürer, kol üzerinden geçecek şekilde hizalanır (uzaktayken 12 km/sa, yakındayken 6 km/sa) ve oyun kolu balyayı toplar. Kaçırılan balya: 2. deneme yapılır, yine alınamazsa bırakılır. Traktörün hemen önündeki balya: önce 10 m geri gider.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_c9_3_title" text="Boşaltma ve Bitiş" />
+		<text name="fp_help_c9_3_text" text="Dolu yükleyici: kol kapanır, bırakma noktasına yol alır, otomatik boşaltma yapar, geride balya kaldıysa tarlaya geri döner. Satış noktasında balyalar satılır; depolama noktasında işaretçinin üzerine bırakılır. Başka balya kalmadığında: son boşaltma yapılır, ardından sonraki tarlaya veya park yerine gidilir." />
+		<text name="fp_help_c9_4_title" text="Balya Yükleyici ile &gt;&gt; Düğmesi" />
+		<text name="fp_help_c9_4_text" text="Balyalar yüklüyken: doğrudan boşaltmaya gider, ardından tarlaya döner. Boş yükleyici: tarladan ayrılır, bitmiş bir tarlanın adımlarını izler." />
+		<text name="fp_help_c10_title" text="Otonom Modda Biçerdöver ve Silaj Makinesi (Tabla)" />
+		<text name="fp_help_c10_1_title" text="Biçerdöver Arayüzü" />
+		<text name="fp_help_c10_1_text" text="Otonom modda, biçerdöver veya silaj makinesinde ekipman satırları yerine 4 satır bulunur:&#10;1. Tarla: aynı zamanda römorklarının da tarlasıdır. Bu tarlaya ayarlı «Biçerdöver boşalt» modundaki römorklar ona hizmet eder ve sonraki tarlada onunla birlikte tarla değiştirirler (eski tarlayı hala başka bir biçerdöver hasat etmiyorsa).&#10;2. Tabla: «otomatik» seçeneği, tarladaki ürüne bağlı olarak onu biçebilecek çiftliğe ait bir tablayı seçer (tahıl tablası, mısır tablası, silaj makinesi tablası). Belirli bir tablayı da seçebilirsiniz. Bu ürün için tabla yoksa: bir mesajla başlatma reddedilir.&#10;3. Sonraki tarla.&#10;4. Sonraki tabla: varsayılan olarak «otomatik»; sonraki tarlada Tabla satırına geçer." />
+		<text name="fp_help_c10_2_title" text="Tabla Römorkunun Traktörü" />
+		<text name="fp_help_c10_2_text" text="Tabla satırındaki çark simgesi «Tabla nakliyesi» penceresini açar. Turuncu: en yakın boşta traktör (durmuş, arkasında hiçbir şey takılı değil; ön ağırlık veya ön ekipman sorun teşkil etmez). Yeşil: sizin seçtiğiniz traktör. Römorka halihazırda bağlı olan bir traktör her zaman öncelikli alınır." />
+		<text name="fp_help_c10_3_title" text="Süreç Nasıl İşler" />
+		<text name="fp_help_c10_3_text" text="1. Biçerdöveri tablasız olarak başlatırsınız.&#10;2. Traktör tabla römorkunu takar ve tarlaya doğru getirir. Biçerdöverin geldiği taraftaki açık bir noktada durdurur (biçilmemiş ekin, hendek, su veya engel olmayan); aksi takdirde 1 km içinde başka bir açık nokta arar.&#10;3. Biçerdöver belirli bir mesafeden takip eder, tarla yolundan önce durur ve römork yerine yerleşene kadar bekler. Bu sırada durum çubuğunda «Diğer makineyi bekle» yazar.&#10;4. İleri sürerek tablayı takar, geri gider ve Courseplay rotasına başlar. Traktör boş römorku yerine koyar, ardından park eder: artık boştadır.&#10;5. Tarla bittiğinde: bir traktör römorku tekrar tarlaya getirir, biçerdöver tablayı üzerine bırakır ve kendi yerine gider. Traktör römorku yerine kaldırır." />
+		<text name="fp_help_c10_4_title" text="Römorksuz Tabla (Yerde Duran Mısır Tablası)" />
+		<text name="fp_help_c10_4_text" text="Biçerdöver tablayı traktör olmadan tek başına alır. Geri koymak için, kendi park yeri varsa oraya, yoksa aldığı yere (aynı nokta, aynı yön) gider. Yerde bırakılan tablalarınıza bir park yeri atayın: oyun yeniden yüklendiğinde hafızadaki nokta kaybolur." />
+		<text name="fp_help_c10_5_title" text="Sonraki Tarlada Tabla Değişimi" />
+		<text name="fp_help_c10_5_text" text="Buğdaydan sonra mısır: tahıl tablası römorkuna geri konur, ardından biçerdöver mısır tablasını alır. Mısırdan sonra buğday: mısır tablası yere bırakılır, ardından traktör tahıl tablasını sonraki tarlaya getirir." />
+		<text name="fp_help_c10_6_title" text="Takılırsa Ne Olur" />
+		<text name="fp_help_c10_6_text" text="Tablaya giden yol yoksa: biçerdöver traktörden römorku hareket ettirmesini ister (en fazla 3 kez), ardından her ikisi de «ekipmanın önüne yol yok» mesajıyla durur." />
+		<text name="fp_help_c11_title" text="Yakıt, Mesajlar, İpuçları" />
+		<text name="fp_help_c11_1_title" text="Yakıt İkmali" />
+		<text name="fp_help_c11_1_text" text="Yakıt yetersizliği nedeniyle Courseplay durur: FarmPilot tarladan ayrılır (giriş 30 m'den uzaktaysa), en yakın pompada yakıt ikmali yapar, geri döner ve Courseplay kaldığı yerden devam eder. Courseplay'de «yakıt ikmali için bekle» ayarını Hayır yapın. Sonraki tarla ayarlıyken tarla bittiğinde depo (dizel veya AdBlue/DEF) %20'nin altındaysa: önce yakıt ikmali yapılır." />
+		<text name="fp_help_c11_2_title" text="Otonom Modda &gt;&gt; Düğmesi (Özet)" />
+		<text name="fp_help_c11_2_text" text="Yeniden doldurma sırasında: beklemeden ayrılır. Yoldayken: sonraki tarlaya geçer. Balya yükleyici: boşaltmaya gider veya tarladan ayrılır. Tarlada Courseplay çalışırken: hiçbir şey yapmaz." />
+		<text name="fp_help_c11_3_title" text="İpuçları" />
+		<text name="fp_help_c11_3_text" text="- Her ekipman ve her traktör için bir park yeri belirleyin.&#10;- Courseplay rotalarınızı ekipmanlarınızın tam genişliğinde kaydedin.&#10;- Park edilmiş ekipmanların ve römorkların önünde manevra alanı bırakın.&#10;- Çark simgelerini kontrol edin: turuncu = başlatma reddedildi." />
+		<text name="fp_help_cat_D" text="FarmPilot - Yolda" />
+		<text name="fp_help_d1_title" text="Park Etme" />
+		<text name="fp_help_d1_1_title" text="Park Yerleri" />
+		<text name="fp_help_d1_1_text" text="Her aracın ve her ekipmanın kendi yeri olabilir. Yeri 1. satıra seçin, ardından park düğmesine (P) Ctrl + tıklama yapın: bir ekipman seçiliyse ekipmanın yeri, hiçbir ekipman seçili değilse traktörün yeri olur. Traktörün yeri ekipmanınkinden farklı olmalıdır.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_d1_2_title" text="Yerlerin Çizilmesi" />
+		<text name="fp_help_d1_2_text" text="- Ekipman yeri: oraya giden yol geri vitesle çizilir (traktör ekipmanı oraya geri manevrayla yanaştırır).&#10;- Tabla yeri: ileri yönlü çizilir, işaretçi tablanın 5 m önündedir." />
+		<text name="fp_help_d1_3_title" text="Park Düğmesi (P)" />
+		<text name="fp_help_d1_3_text" text="Traktöre doğrudan bağlı olan ve kendi yeri bulunan her ekipman veya römork önce kendi yerine konur, ardından traktör kendi yerine gider. Ağırlıklar dikkate alınmaz. Düğme bırakma işlemi için Otonom moduna geçer, ardından önceki mod kendiliğinden geri gelir (traktör park ettiğinde, durduğunda veya hata oluştuğunda)." />
+		<text name="fp_help_d1_4_title" text="İş Bitince Park Et" />
+		<text name="fp_help_d1_4_text" text="Araç ayarı «İş bitince park et» (Teslim et, Al ve teslim et): işin sonunda araç ve ekipman kendi yerlerine gider." />
+		<text name="fp_help_d2_title" text="Akıllı Sürücü" />
+		<text name="fp_help_d2_1_title" text="Frenleme ve Mesafe" />
+		<text name="fp_help_d2_1_text" text="Önündeki yolu izler ve bir engelden önce kademeli olarak yavaşlar. Daha yavaş bir aracı kendi hızında takip eder ve başka bir FarmPilot aracının 3 m arkasında durur. Kantar üzerindeki, sürücülü veya kuyruktaki bir aracın arkasında etrafından dolaşmadan bekler." />
+		<text name="fp_help_d2_2_title" text="Küçük Yana Kayma" />
+		<text name="fp_help_d2_2_text" text="Yalnızca tek taraftaki bir engelden (direk, koni, balya, park etmiş araba) durmadan hafif bir kaymayla kaçınır, ardından kendi hattına geri döner. Yolunuzun üzerindeki direkler hesaplama sırasında görülür: yol, araç kombinasyonunun genişliği artı 30 cm pay ile yanlarından geçer (hendek, şev, köprü veya duvarlar hariç)." />
+		<text name="fp_help_d2_3_title" text="Etrafından Dolaşma" />
+		<text name="fp_help_d2_3_text" text="Sabit bir nesneyle engellendiğinde (düşmüş nesne, alçak duvar, ağaç, uzun süre duran araç): geri gider, ardından ileride tekrar yoluna katılmak için bir rota hesaplar. Bir kapının önünde bekler. Ayarlar: engel etrafından dolaşma evet/hayır, gecikme, dolaşmadan önce geri gitme." />
+		<text name="fp_help_d2_4_title" text="Hareket Etmeden İtme" />
+		<text name="fp_help_d2_4_text" text="Sürmesi gerekirken 3 saniyede 50 cm ilerleyemezse, 3 ila 5 m geri gider ve boş taraftan yanından geçer. Hala itmeye devam ediyorsa, geri gider ve dolaşma rotası hesaplar." />
+		<text name="fp_help_d2_5_title" text="Tıkalı Geçiş" />
+		<text name="fp_help_d2_5_text" text="Aynı sabit nesnenin önünde iki başarısız dolaşma denemesinden sonra yavaşça ileri sürünür (2.5 km/sa). Takılı kalırsa, bu geçiş bu kombinasyon genişliği ve daha genişleri için tıkalı olarak kaydedilir (oyuna kaydedilir) ve başka bir yoldan geri döner. Sonraki başlatmalar bu geçişten kaçınır. Düzenleyicide noktaları taşınan bir geçiş unutulur. Her şeyi unutmak için: oyun kapalıyken kayıt klasöründen FarmPilot_PassagesBouches.xml dosyasını silin." />
+		<text name="fp_help_d3_title" text="Karşılıklı Geçiş" />
+		<text name="fp_help_d3_1_title" text="Çift Yönlü Yollarda" />
+		<text name="fp_help_d3_1_text" text="Burun buruna karşılaşmak üzere olan iki FarmPilot aracı uzaktan algılanır (250 m): yavaşlar ve uygun bir mesafede dururlar. Biri kenara çekilir (her iki kombinasyonun boyutuna, eğime, suya ve tarlalara göre hesaplanan yer), diğeri geçer veya biri geri gider. Önce boş araç yol verir, ardından römorksuz olan. Tabla römorku asla geri gitmez." />
+		<text name="fp_help_d3_2_title" text="Tek Şeritli Yollar" />
+		<text name="fp_help_d3_2_text" text="Öncelik yola halihazırda girmiş olanındır. Yol veren araç yol girişinden 15 m önce durur ve diğeri geçene kadar (artı 10 m) bekler. Geri gidemeyen araç başka bir yol kullanır ve daha sonra geri döner." />
+		<text name="fp_help_d3_3_title" text="Başarısız Olursa" />
+		<text name="fp_help_d3_3_text" text="İki başarısızlıktan sonra kırmızı uyarı mesajı ve çift için 5 dakikalık duraklama uygulanır. Ayarlar: karşılıklı geçiş evet/hayır, geçiş öncesi gecikme, azami geri gitme mesafesi, kombinasyonlar arası boşluk, sürüş yönü (sağ veya sol)." />
+		<text name="fp_help_d4_title" text="Kavşaklar" />
+		<text name="fp_help_d4_1_title" text="Kırmızı Noktalar" />
+		<text name="fp_help_d4_1_text" text="Tehlikeli geçişleri düzenleyicide Kavşak olarak işaretleyin (bkz. «Yol türleri»). Geçmeden veya yola katılmadan önce araç yavaşlar (önce 20, sonra 8 km/sa), şeritleri 120 m boyunca kontrol eder ve bir araç geliyorsa (trafik, traktör, oyuncu) ilk kırmızı noktadan hemen önce durur. Ardından durmadan geçer." />
+		<text name="fp_help_d4_2_title" text="Trafikteki Boşluk" />
+		<text name="fp_help_d4_2_text" text="Beklediği boşluk, kombinasyonun karşıya geçmesi için gereken süreye bağlıdır. 30 saniye bekledikten sonra daha esnek davranır. Çıkış doluysa hareket etmez. Ortada durursa: kendi hattına geri döner." />
+		<text name="fp_help_d5_title" text="Virajlar" />
+		<text name="fp_help_d5_1_title" text="Viraj Hızı" />
+		<text name="fp_help_d5_1_text" text="Hız virajın gerçek yarıçapına bağlıdır ve traktör viraja girmeden önce fren yapar. Örnek: yarıçap 12 m = 16 km/sa, yarıçap 40 m = 30 km/sa. Araç ayarı «Viraj hızı» (%50 ila %200)." />
+		<text name="fp_help_d5_2_title" text="Çok Dar Virajlar" />
+		<text name="fp_help_d5_2_text" text="Bir viraj önce sizin çizdiğiniz şekliyle simüle edilir: kombinasyon geçebiliyorsa olduğu gibi bırakılır. Aksi takdirde yolunuzdan en fazla 3 m uzakta, engel olmadan ve tekerlek asfalttan çıkmadan geçebileceği en geniş hatta yeniden çizilir." />
+		<text name="fp_help_d5_3_title" text="Çok Dar Yol Sonu" />
+		<text name="fp_help_d5_3_text" text="Hedeften önceki son viraj çok darsa, FarmPilot yola çıkmadan önce bir manevra (ileri, geri, tekrar ileri) veya dolaşma yoluyla başka bir varış rotası planlar ve en hızlısını seçer. Çekilir tip ekipmanla yalnızca düz geri gider, en fazla 8 m." />
+		<text name="fp_help_d5_4_title" text="Sinyal Lambaları" />
+		<text name="fp_help_d5_4_text" text="«Otomatik Sinyaller» açıkken, bir viraj veya kavşaktan önce ayarlanan mesafede («Sinyal Mesafesi», 20 ila 100 m) sinyal yanar ve traktör tekrar düzleşene kadar açık kalır. Yana kaymalarda sinyal verilmez. Motor kapandığında söner." />
+		<text name="fp_help_d6_title" text="Yol Türleri" />
+		<text name="fp_help_d6_1_title" text="Yol Türleri" />
+		<text name="fp_help_d6_1_text" text="- Ana yol (Birincil): normal yol.&#10;- İkincil: araç türüne bağlı olarak zaman kazandırıyorsa kullanılır (genel ayarlardaki dişli çark).&#10;- Üçüncül (toprak yol): özel yol, yalnızca o dişli çarkta izin verilen araç türleri içindir ve asla kestirme olarak kullanılmaz. Hız sınırlı («Üçüncül yollarda azami hız», varsayılan 30 km/sa): araç 30 m önceden yavaşlar.&#10;- Bağlantı: yalnızca ulaştığı noktaya (bir yer, silo vb.) varmak için kullanılır, asla transit geçiş için kullanılmaz.&#10;- Kavşak: araç geçmeden önce yavaşlar ve etrafını kontrol eder." />
+		<text name="fp_help_d6_2_title" text="Ayarlar (Genel Sekmesi)" />
+		<text name="fp_help_d6_2_text" text="- «İkincil yollar»: Otomatik = araç türüne göre (çark: tür başına Evet / Hayır); İzin veriliyor = zaman kazandırdığında kullanılır; Asla.&#10;- «Üçüncül yollar»: Otomatik = araç türüne göre (çark); İzin veriliyor; Asla.&#10;Tüm araçlar için tek seçim. Asla = yalnızca başka yol yoksa veya diğer yol çok darsa kullanılır." />
+		<text name="fp_help_d6_3_title" text="Dar Geçişler" />
+		<text name="fp_help_d6_3_text" text="Rota hesaplaması, başka bir yol mevcut olduğunda kombinasyon için çok dar olan bölümlerden (çift tekerlekler, geniş ekipman) kaçınır. Genişlik lastiklerden ölçülür; katlanır bir ekipman 2.4 m olarak sayılır." />
+		<text name="fp_help_d7_title" text="Tarlaya Giriş ve Çıkış" />
+		<text name="fp_help_d7_1_title" text="Tarladan Çıkış" />
+		<text name="fp_help_d7_1_text" text="Tarladan ayrılmak için araç, en yakın ağ noktası yerine (ekinin arkasında veya komşu tarlada olabilir) önce içinde bulunduğu tarlanın girişini hedefler. Aksi takdirde ekinin veya başka bir tarlanın üzerinden geçmeden en fazla 6 farklı nokta dener. Kapılardan hizalı geçilir: 12 ila 20 m önceden hizalanır." />
+		<text name="fp_help_d7_2_title" text="Katı Mod (Strict mode)" />
+		<text name="fp_help_d7_2_text" text="«Yol bulucuyu tarlayla sınırla» ve «Ekinden kaçın» ayarlarının Katı (Strict) değeri vardır: hesaplama kısıtlamayı asla kaldırmaz ve römork komşu tarlaya asla girmez. Unutulmuş küçük ekin adacıkları göz ardı edilir." />
+		<text name="fp_help_d7_3_title" text="Takılma" />
+		<text name="fp_help_d7_3_text" text="Takılan bir kombinasyon (etrafı ekinle çevrili, çok dar viraj) küçük ileri kavislerle kendini kurtarır. Sürekli engel oluşturan bir nokta 5 dakika boyunca girilmez bölge haline gelir." />
+		<text name="fp_help_cat_E" text="FarmPilot - Rota Düzenleyici" />
+		<text name="fp_help_e1_title" text="Düzenleyiciyi Açma" />
+		<text name="fp_help_e1_1_title" text="Düzenleyiciyi Aç" />
+		<text name="fp_help_e1_1_text" text="Arayüzdeki düzenleyici düğmesi (veya «FP - Düzenleme modunu etkinleştir» tuşu). Aracın etrafında yollar ve noktalar görünür ve arayüze düzenleme düğmeleri eklenir. Fareyi açmak için orta tıklayın. Düzenleyici düğmesine sağ tıklama: yalnızca yolları gösterir. «Çizgi yüksekliği» ayarı: yerde veya traktörün üzerinde çizgiler.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_e1_2_title" text="Düzenleme Düğmeleri" />
+		<text name="fp_help_e1_2_text" text="Kaydet, Rota yöneticisi, Hedef oluştur, Nokta sil (sağ tık: hedef sil), Hedefi yeniden adlandır." />
+		<text name="fp_help_e2_title" text="Sürüş Sırasında Yol Kaydetme" />
+		<text name="fp_help_e2_1_title" text="Kaydet Düğmesi" />
+		<text name="fp_help_e2_1_text" text="Sürün: arkanıza düzenli olarak bir nokta konulur. Tekrar tıklayın: kaydın sonu. Yol türü tıklamaya bağlıdır:&#10;- Sol tık: tek yön.&#10;- Sağ tık: çift yön.&#10;- Shift + sol / sağ tık: ikincil, tek yön / çift yön.&#10;- Ctrl + sol / sağ tık: aynı anda 2 yol (her iki tarafa birer tane), tek yön / çift yön.&#10;- Ctrl + Shift + tık: aynı anda 2 yol, ikincil.&#10;Kayıt sırasında geri gitmek geri vites yolu oluşturur (geri giderek park etmek için).&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_e2_2_title" text="Otomatik Bağlantı" />
+		<text name="fp_help_e2_2_text" text="Genel ayarlar «Otomatik bağlantı (başlangıç)» ve «Otomatik bağlantı (bitiş)»: kaydın başlangıcı ve sonu yakındaki noktaya bağlanır. Kullanıcı ayarı «Sürücüsüz kaydet»: araçtan inseniz bile kayıt devam eder." />
+		<text name="fp_help_e3_title" text="Fare ile Noktalar" />
+		<text name="fp_help_e3_1_title" text="Komutlar" />
+		<text name="fp_help_e3_1_text" text="Düzenleyicide fare etkinken (arayüzün yanında bir hatırlatma görünür):&#10;- Bir noktaya sol tık: seçer. 2. bir noktaya sol tık: onları bağlar veya bağlantıyı kaldırır.&#10;- 2. noktada Ctrl + sol tık: tek yön veya çift yön.&#10;- 2. noktada Shift + sağ tık: geri vites hattı.&#10;- Boş alana Ctrl + sol tık: nokta oluşturur (seçili noktaya bağlı).&#10;- Bir noktaya Alt + sol tık: siler.&#10;- Bir noktaya Shift + sol tık: türünü değiştirir (bkz. «Yol türleri ve renkler»).&#10;- Bir nokta üzerinde sağ tık (veya tekerlek) basılı tutma: noktayı taşır." />
+		<text name="fp_help_e3_2_title" text="Kavisler" />
+		<text name="fp_help_e3_2_text" text="Bir nokta seçiliyken diğerinin üzerine gelindiğinde: kavis önizlemesi görünür (yeşil = geçilebilir, kırmızı = çarpışma). Tıklama kavis ile bağlantıyı kurar." />
+		<text name="fp_help_e4_title" text="Bölümler" />
+		<text name="fp_help_e4_1_title" text="Tüm Bölüme İşlem Yapma" />
+		<text name="fp_help_e4_1_text" text="Bölüm = iki kavşak arasındaki noktalar zinciri. 1. noktayı seçin, sonuncunun üzerine gelin: bölüm aydınlanır.&#10;- Ctrl + tık: tüm bölümün yönünü değiştirir (tek yön, ters yön, çift yön).&#10;- Shift + tık: tüm bölümün türünü değiştirir.&#10;- Ctrl + Shift + Alt + tık: tüm bölümü siler." />
+		<text name="fp_help_e4_2_title" text="Alan Seçimi" />
+		<text name="fp_help_e4_2_text" text="Seçili bir nokta üzerinde Alt basılıyken + fare tekerleği: seçim alanını büyütür veya küçültür; tıklama: alandaki tüm noktaları siler." />
+		<text name="fp_help_e5_title" text="Yol Türleri ve Renkler" />
+		<text name="fp_help_e5_1_title" text="Türü Değiştirme" />
+		<text name="fp_help_e5_1_text" text="Bir noktaya veya bölüme Shift + sol tık yapmak türünü sırayla değiştirir (ana yol, ikincil, üçüncül, bağlantı, kavşak...).&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_e5_2_title" text="Renkler" />
+		<text name="fp_help_e5_2_text" text="Düzenleme modunda arayüzün yanında bu renkleri ve komutları gösteren bir «Düzenleyici hatırlatması» görünür.&#10;- Ana yol: yeşil (tek yön), mavi (çift yön).&#10;- İkincil: açık turuncu (tek yön), kahverengi (çift yön).&#10;- Üçüncül: pembe (tek yön), mor (çift yön).&#10;- Bağlantı: turuncu (tek yön), bej (çift yön).&#10;- Kavşak: kırmızı.&#10;- Geri: açık mavi.&#10;Renkler Ayarlar &gt; Kullanıcı &gt; «Özel renkler» bölümünden değiştirilir." />
+		<text name="fp_help_e6_title" text="Hedefler ve Klasörler" />
+		<text name="fp_help_e6_1_title" text="Hedef Oluşturma" />
+		<text name="fp_help_e6_1_text" text="Aracı istediğiniz yere getirin (bir noktanın üzerine), «Hedef oluştur» düğmesine basın ve adı yazın. Yeniden adlandırma: Yeniden adlandır düğmesi. Silme: Sil düğmesine sağ tıklayın. İpucu: her kullanım için net bir ad belirleyin («Tarla 56», «Çiftlik silosu», park yeri için «G_Mibzer 1»).&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_e6_2_title" text="Klasörler" />
+		<text name="fp_help_e6_2_text" text="«Klasörleri kullan» ayarı: hedefler klasörler halinde sıralanır (açık listede sürükle ve bırak yöntemiyle veya ayarlar üzerinden). Klasörler ayrıca alım-teslimat döngüsü ve römork değişimi için de kullanılır. Hedef filtresi: «FP - Hedef filtresi» tuşu." />
+		<text name="fp_help_e6_3_title" text="Haritada" />
+		<text name="fp_help_e6_3_text" text="«İşaretçileri göster» ayarı: menü haritasında ve/veya oyun içi haritada FarmPilot işaretçileri." />
+		<text name="fp_help_e7_title" text="Tarla Noktaları ve Rota Yöneticisi" />
+		<text name="fp_help_e7_1_title" text="Tarla Noktalarını Oluşturma" />
+		<text name="fp_help_e7_1_text" text="Ctrl + Shift + F: tarlaların kenarı boyunca noktalar oluşturur. Ayarlar: kaydırma (kenarın içi veya dışı) ve noktalar arası mesafe." />
+		<text name="fp_help_e7_2_title" text="Rota Yöneticisi" />
+		<text name="fp_help_e7_2_text" text="Ctrl + Alt + 1 (numpad): ağınızı bir ad altında dışa aktarın veya kayıtlı bir ağı içe aktarın (bir arkadaşınızla paylaşın, büyük değişikliklerden önce yedek alın).&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_cat_F" text="FarmPilot - Ayarlar ve İşlevler" />
+		<text name="fp_help_f1_title" text="Ayarları Açma" />
+		<text name="fp_help_f1_1_title" text="Ayarlar Penceresi" />
+		<text name="fp_help_f1_1_text" text="Ctrl + Alt + 0 (numpad) veya arayüz düğmesi. Sekmeler: Araç (içinde bulunduğunuz araç için), Biçerdöver boşaltma, Genel (tüm oyun), Kullanıcı (ekran görünümünüz), Çevre (ışıklar), Renkler, Hata Ayıklama. Her satırın bir ipucu balonu vardır. Shift + C / Shift + V ayarları bir araçtan diğerine kopyalar." />
+		<text name="fp_help_f2_title" text="Araç Ayarları" />
+		<text name="fp_help_f2_1_title" text="Sürüş" />
+		<text name="fp_help_f2_1_text" text="Viraj hızı, Yol bulucuyu tarlayla sınırla (Hayır / Evet / Katı), Ekinden kaçın (Hayır / Evet / Katı), Azami tetikleyici mesafesi." />
+		<text name="fp_help_f2_2_title" text="Yükleme" />
+		<text name="fp_help_f2_2_text" text="Boşaltma doluluk seviyesi (başlangıç seviyesi), Yükleme durduruldu: şu süre sonra ayrıl, Al ve teslim et döngüsü, Otomatik devirme yönü, Otomatik römork brandaları, Ekipmanları katla (satın alındığında Evet), Lastikleri şu seviyede değiştir (AutoSwitch ile, satın alındığında %20), Otomatik yükleme: Boşaltma konumu ve bekleme süresi, Namlu algılama (satın alındığında Hayır)." />
+		<text name="fp_help_f2_3_title" text="Biçerdöver" />
+		<text name="fp_help_f2_3_text" text="Boru mesafesi, Biçerdöver mesafesi, Tarlada park et, Boşaltıcıyı tarlayla sınırla." />
+		<text name="fp_help_f2_4_title" text="İş Sonu ve Bakım" />
+		<text name="fp_help_f2_4_text" text="İş bitince park et, Otomatik yakıt ikmali, Otomatik tamir." />
+		<text name="fp_help_f3_title" text="Genel Ayarlar" />
+		<text name="fp_help_f3_1_title" text="Trafik" />
+		<text name="fp_help_f3_1_text" text="Çarpışma algılama, Karşılıklı geçiş (+ gecikme, azami geri gitme mesafesi, boşluk, sürüş yönü), Engel etrafından dolaşma (+ gecikme, geri gitme), Azami dolaşma mesafesi, İkincil yollar ve Üçüncül yollar (+ araç türü başına dişli çark), Üçüncül yollarda azami hız." />
+		<text name="fp_help_f3_2_title" text="Çalışma" />
+		<text name="fp_help_f3_2_text" text="Tarlanın içinde bekler, Courseplay olmadan otonom, Sürücü maaşları, Yardımcıları otomatik başlat (yüklemede), Yığın Silo / Boşaltma Yöneticisi Menzili (araçlar sırayla gider)." />
+		<text name="fp_help_f3_3_title" text="Hesaplama ve Düzenleyici" />
+		<text name="fp_help_f3_3_text" text="Yol bulucu algoritması, Yol bulucu faktörü, Yerden çarpışma yüksekliği, Klasörleri kullan, Otomatik bağlantı (başlangıç) ve (bitiş), Sürüş yönünde / ters sürüş yönünde kayıt kaydırması, Tarla noktası kaydırması, tarla noktası azami mesafesi, Azami tetikleyici mesafesi, Sunucuda rota yöneticisi." />
+		<text name="fp_help_f4_title" text="Kullanıcı ve Çevre Ayarları" />
+		<text name="fp_help_f4_1_title" text="Görünüm" />
+		<text name="fp_help_f4_1_text" text="FarmPilot arayüzü için arayüz ölçeği, Bildirimler, Yardımı göster (F1'deki tuşlar), Sonraki rotayı göster, Çizgi yüksekliği, İpucu baloncuklarını göster, İşaretçileri göster (haritada), İşaretçilere geç, Arayüze ayarları ekle, Logo kişiselleştirme, Geniş arayüz, Ses, Çizgi ölçeği, Hedef adı ölçeği, Özel renkler, Sürücüsüz kaydet." />
+		<text name="fp_help_f4_2_title" text="Çevre (Işıklar)" />
+		<text name="fp_help_f4_2_text" text="Otomatik Sinyaller (Evet/Hayır), Sinyal Mesafesi, Motor Durdurma Gecikmesi (Asla, 10 s, 30 s, 1, 2 veya 5 dk), Tepe lambaları (tarla dışında), Yükleme / Boşaltma sırasında çalışma lambası, Yığın silodayken çalışma lambası, Dörtlü flaşörler (geri giderken), Kalan sürüş süresi (diğer modlar için hesaplama; oyun yavaşlarsa artırın veya kapatın)." />
+		<text name="fp_help_f5_title" text="Dahili İşlevler (Eski Addon)" />
+		<text name="fp_help_f5_1_title" text="Kantar" />
+		<text name="fp_help_f5_1_text" text="Araç tüm kombinasyonu kantarın ortasına hizalar, 5 saniye durur ve ürünü, yükü ve toplam ağırlığı gösterir, ardından yoluna devam eder. Kantar üzerinde elle 3 saniye durulduğunda da ağırlık gösterilir. AutoSwitch ile her tartım kendi kaydına işlenir.&#10;(Ekran Güncellemesi gelecektir)" />
+		<text name="fp_help_f5_2_title" text="Motor ve Işıklar" />
+		<text name="fp_help_f5_2_text" text="Ayarlanan gecikmeden sonra motor durdurulur. Motor kapandığında yalnızca temel ışıklar açık kalır, yeniden çalıştırıldığında her şey geri gelir." />
+		<text name="fp_help_f5_3_title" text="Boş Silo" />
+		<text name="fp_help_f5_3_text" text="Yüklemede, römorkta halihazırda bir miktar ürün varsa ve daha fazla ürün gelmiyorsa, «Yükleme durduruldu: şu süre sonra ayrıl» ayarına göre elindekiyle ayrılır." />
+		<text name="fp_help_f5_4_title" text="Arka Ekipman" />
+		<text name="fp_help_f5_4_text" text="Oyun başladığında her traktör arkasına takılı olan ekipmanı seçer." />
+		<text name="fp_help_f6_title" text="Otomatik Yakıt İkmali ve Tamir" />
+		<text name="fp_help_f6_1_title" text="Nasıl Çalışır" />
+		<text name="fp_help_f6_1_text" text="«Otomatik yakıt ikmali / tamir» açıkken araç ağa bağlı en yakın pompaya veya atölyeye gider, ancak bunu yalnızca mevcut iş bittikten sonra yapar (römork boşaltıldıktan, biçerdövere hizmet verildikten sonra). Asla ertelenmeyen durumlar: sizin talebiniz, Courseplay'in talebi, %5'in altındaki yakıt deposu veya %90 hasar." />
+		<text name="fp_help_f7_title" text="Uyumlu Modlar ve Çok Oyunculu" />
+		<text name="fp_help_f7_1_title" text="Uyumluluk" />
+		<text name="fp_help_f7_1_text" text="- Courseplay: Otonom mod rotaları, silaj makinesi, FarmPilot arayüzü ve düzenleyicisine bırakılan sağ tık.&#10;- AIVE ve oyun işçisi: hedefte yardımcı.&#10;- AutoSwitch: birleştirilmiş tarlalar, kantar kaydı.&#10;- Manuel bağlantı (attachImplementsManually): hortumlar ve kuyruk mili takılır ve çıkarılır.&#10;- autoTurnOffTurnLights: FarmPilot sürerken etkisi yoktur.&#10;- AutoDrive arayan modlar FarmPilot'u bulur." />
+		<text name="fp_help_f7_2_title" text="Çok Oyunculu" />
+		<text name="fp_help_f7_2_text" text="Tüm seçimler (ekipman, sonraki tarla, römork, römork değişimi, ekipman ayarları) diğer oyunculara gönderilir ve kayıt dosyasında saklanır." />
+		<text name="fp_help_f7_3_title" text="Kayıt Dosyaları" />
+		<text name="fp_help_f7_3_text" text="FarmPilot_config.xml (ağ), FarmPilot_Autonome.xml (saklanan rotalar), FarmPilot_RemorquesBalles.xml, FarmPilot_PassagesBouches.xml. modSettings/FS25_FarmPilot klasörü: dışa aktarılan rotalar, renkler." />
+		<text name="fp_help_f8_title" text="Çalışmıyor mu?" />
+		<text name="fp_help_f8_1_title" text="Başlamıyor" />
+		<text name="fp_help_f8_1_text" text="- Turuncu dişli çark: ekipman ayarlarını onaylayın.&#10;- «ekipman veya kombinasyon hareket halinde» mesajı: katlama tamamlanana kadar bekler.&#10;- Yalnızca damperli römorkla otonom mod: çalışan bir ekipman gereklidir.&#10;- Hedefe giden yol yok: düzenleyicideki bağlantıları kontrol edin." />
+		<text name="fp_help_f8_2_title" text="Tarlada Duruyor" />
+		<text name="fp_help_f8_2_text" text="Ekipman genişliğinde Courseplay rotası yok veya birden fazla var: Otonom rotalar penceresine bakın." />
+		<text name="fp_help_f8_3_title" text="Oyun Yüklendiğinde Hedef Değişmiş" />
+		<text name="fp_help_f8_3_text" text="Hedefler artık adlarıyla saklanıyor. Zaten kaymış bir kayıt dosyası için: hedefi bir kez yeniden seçin." />
+		<text name="fp_help_f8_4_title" text="Rapor Gönder" />
+		<text name="fp_help_f8_4_text" text="log.txt dosyasını ekleyin (Belgelerim/My Games/FarmingSimulator2025): [FarmPilot ...] ve [AD-...] satırları her sürücünün ne yaptığını gösterir." />
 	</texts>
 </l10n>

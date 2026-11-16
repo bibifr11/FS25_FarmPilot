@@ -27,6 +27,7 @@ AutoDrive.MODE_LOAD = 4
 AutoDrive.MODE_UNLOAD = 5
 AutoDrive.MODE_BGA = 6
 AutoDrive.MODE_AUTONOMOUS = 7 -- FarmPilot : Conduite puis parcours Courseplay de l'outil
+AutoDrive.MODE_COMPACT = 8 -- FarmPilot : tassage du silo couloir, voir Modes/SiloCompactorTask.lua (CompactMode) et Hud/HudSilo.lua
 
 AutoDrive.DC_NONE = 0
 AutoDrive.DC_VEHICLEINFO = 1

@@ -3,9 +3,10 @@
 -- Tasseur de silo couloir (16/11) : fenêtre « Tassage » (Gui/SiloCompactGUI.lua), réglages du tracteur, travail
 -- dans le silo, lame et rouleau, reprise au chargement de la partie.
 --
--- Lancement : roue dentée « Tassage » du HUD (mode « Conduire vers », tracteur sans benne, silo à moins de
--- GEAR_RANGE m ou tassage en cours) -> fenêtre -> Démarrer. Le tracteur va au silo (marqueur dans le silo, sinon
--- point du réseau le plus proche de l'entrée), puis tasse. Arrêt : bouton Arrêter de la fenêtre ou On/Off.
+-- Lancement : mode « Tassage » du HUD (bouton de mode, après « Autonome », Hud/HudSilo.lua) : 1re ligne = silo
+-- (tous les silos de la carte), 2e ligne = attente, roue dentée = fenêtre des réglages ; On/Off ou Démarrer de la
+-- fenêtre. Lancé de n'importe où : le tracteur va seul au silo par le réseau (marqueur dans le silo, sinon point du
+-- réseau le plus proche de l'entrée), puis tasse. Arrêt : On/Off ou bouton Arrêter de la fenêtre.
 -- Ancien lancement gardé : « Conduire vers » un marqueur dans le silo, tracteur sans benne.
 --
 -- Réglages (par tracteur, gardés dans la sauvegarde) :
@@ -23,6 +24,7 @@
 -- - bloqué STUCK_TIME sur le tas : bout du couloir pris comme atteint ; benne à moins de APPROACH m : il sort tout
 --   droit puis va à sa place d'attente ; benne repartie : il reprend le couloir où il en était.
 -- Enveloppes posées au chargement : DriveToMode:start, :handleFinishedTask, :reset ; ADSavegameResume.save / load.
+-- Mode « Tassage » (AutoDrive.MODE_COMPACT) : CompactMode, fils de DriveToMode (mêmes enveloppes).
 -- Une ligne dans Specialization.lua (AutoDrive:stopAutoDrive -> ADSiloJob.onStop).
 -- ============================================================================================================
 
@@ -55,15 +57,16 @@ local function nameOf(v)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- Réglages du tracteur : « dir;largeur;lame;arret;attente;marqueur;pousser »
+-- Réglages du tracteur : « dir;largeur;lame;arret;attente;marqueur;pousser;silo » (silo = « x:z » du centre)
 -- ------------------------------------------------------------------------------------------------------------
 function ADSiloJob.defaultCfg()
-    return { dir = ADSiloJob.DIR_FORWARD, width = 0, blade = 0, stop = false, wait = ADSiloJob.WAIT_SIDE, marker = nil, push = ADSiloJob.PUSH_AUTO }
+    return { dir = ADSiloJob.DIR_FORWARD, width = 0, blade = 0, stop = false, wait = ADSiloJob.WAIT_SIDE, marker = nil, push = ADSiloJob.PUSH_AUTO, sx = nil, sz = nil }
 end
 
 function ADSiloJob.cfgToText(cfg)
     local marker = cfg.marker ~= nil and string.gsub(cfg.marker, ";", ",") or ""
-    return string.format("%d;%.2f;%.2f;%d;%d;%s;%d", cfg.dir, cfg.width, cfg.blade, cfg.stop and 1 or 0, cfg.wait, marker, cfg.push or 0)
+    local silo = cfg.sx ~= nil and cfg.sz ~= nil and string.format("%.2f:%.2f", cfg.sx, cfg.sz) or ""
+    return string.format("%d;%.2f;%.2f;%d;%d;%s;%d;%s", cfg.dir, cfg.width, cfg.blade, cfg.stop and 1 or 0, cfg.wait, marker, cfg.push or 0, silo)
 end
 
 function ADSiloJob.textToCfg(text)
@@ -83,6 +86,8 @@ function ADSiloJob.textToCfg(text)
     cfg.marker = parts[6] ~= nil and parts[6] ~= "" and parts[6] or nil
     local push = tonumber(parts[7])
     cfg.push = (push == ADSiloJob.PUSH_WALL or push == ADSiloJob.PUSH_NONE) and push or ADSiloJob.PUSH_AUTO
+    local sx, sz = string.match(parts[8] or "", "^([%-%d%.]+):([%-%d%.]+)$")
+    cfg.sx, cfg.sz = tonumber(sx), tonumber(sz)
     return cfg
 end
 
@@ -121,6 +126,44 @@ function ADSiloJob.findSilo(x, z)
         end
     end
     return nil
+end
+
+-- numéro du silo sur la carte (silos rangés d'ouest en est puis du nord au sud, toujours le même)
+function ADSiloJob.siloNumber(silo)
+    local list = {}
+    for _, s in pairs(ADTriggerManager ~= nil and ADTriggerManager.getBunkerSilos() or {}) do
+        local x, z = ADSiloJob.center(s)
+        if x ~= nil then
+            table.insert(list, { silo = s, x = x, z = z })
+        end
+    end
+    table.sort(list, function(a, b)
+        if math.abs(a.x - b.x) > 1 then
+            return a.x < b.x
+        end
+        return a.z < b.z
+    end)
+    for i, e in ipairs(list) do
+        if e.silo == silo then
+            return i
+        end
+    end
+    return 0
+end
+
+-- silo choisi dans le HUD (réglage du tracteur), ou nil
+function ADSiloJob.selectedSilo(vehicle)
+    local cfg = ADSiloJob.getCfg(vehicle)
+    return ADSiloJob.findSilo(cfg.sx, cfg.sz)
+end
+
+function ADSiloJob.selectSilo(vehicle, silo)
+    local cfg = ADSiloJob.getCfg(vehicle)
+    if silo ~= nil then
+        cfg.sx, cfg.sz = ADSiloJob.center(silo)
+    else
+        cfg.sx, cfg.sz = nil, nil
+    end
 end
 
 -- silos par distance au tracteur : { { silo, g, dist }, ... }
@@ -343,8 +386,9 @@ function ADSiloJob.start(vehicle, silo)
         vehicle:stopAutoDrive()
     end
     local cx, cz = ADSiloJob.center(silo)
+    ADSiloJob.selectSilo(vehicle, silo)
     vehicle.ad.fpSiloJob = { x = cx, z = cz }
-    sm:setMode(AutoDrive.MODE_DRIVETO)
+    sm:setMode(AutoDrive.MODE_COMPACT or AutoDrive.MODE_DRIVETO)
     log("%s : demarre le tassage (silo %.0f, %.0f)", nameOf(vehicle), cx, cz)
     sm:getCurrentMode():start(AutoDrive.USER_PLAYER)
     return true
@@ -360,25 +404,11 @@ function ADSiloJob.stop(vehicle)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
--- HUD : roue dentée « Tassage » (même case que la roue du semoir, mode « Conduire vers »)
+-- HUD : roue dentée « Tassage » (même case que la roue du semoir, mode « Tassage » seulement)
 -- ------------------------------------------------------------------------------------------------------------
 function ADSiloJob.gearShown(vehicle)
-    if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_DRIVETO then
-        return false
-    end
-    if ADSiloJob.isRunning(vehicle) then
-        return true
-    end
-    if not ADSiloCompactor.isCompactorCandidate(vehicle) then
-        return false
-    end
-    -- contrôle léger : au plus une fois par seconde
-    local now = g_time or 0
-    if vehicle.ad.fpSiloGearAt == nil or now - vehicle.ad.fpSiloGearAt > 1000 then
-        vehicle.ad.fpSiloGearAt = now
-        vehicle.ad.fpSiloGearNear = #ADSiloJob.silosNear(vehicle, ADSiloJob.GEAR_RANGE) > 0
-    end
-    return vehicle.ad.fpSiloGearNear == true
+    return vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil
+        and AutoDrive.MODE_COMPACT ~= nil and vehicle.ad.stateModule:getMode() == AutoDrive.MODE_COMPACT
 end
 
 function ADSiloJob.hudGear(vehicle, status, toolTip)
@@ -778,6 +808,38 @@ local baseDriveToReset = DriveToMode.reset
 function DriveToMode:reset()
     self.fpSiloTask = nil
     return baseDriveToReset(self)
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Mode « Tassage » (bouton de mode du HUD) : départ de n'importe où vers le silo choisi en 1re ligne
+-- ------------------------------------------------------------------------------------------------------------
+CompactMode = ADInheritsFrom(DriveToMode)
+
+function CompactMode:new(vehicle)
+    local o = CompactMode:create()
+    o.vehicle = vehicle
+    DriveToMode.reset(o)
+    return o
+end
+
+function CompactMode:start(user)
+    local v = self.vehicle
+    if v.ad.fpSiloJob == nil and v.ad.stateModule.fpSiloJobText == nil then
+        local silo = ADSiloJob.selectedSilo(v)
+        local why = ADSiloJob.refusal(v, silo)
+        if why ~= nil then
+            log("%s : mode Tassage, depart refuse (%s)", nameOf(v), why)
+            AutoDriveMessageEvent.sendMessageOrNotification(v, ADMessagesManager.messageTypes.WARN, "$l10n_AD_Driver_of; %s: $l10n_" .. why .. ";", 5000, v.ad.stateModule:getName())
+            if v.ad.stateModule:isActive() then
+                v:stopAutoDrive()
+            end
+            return
+        end
+        local cx, cz = ADSiloJob.center(silo)
+        v.ad.fpSiloJob = { x = cx, z = cz }
+        log("%s : mode Tassage, silo %d (%.0f, %.0f)", nameOf(v), ADSiloJob.siloNumber(silo), cx, cz)
+    end
+    return DriveToMode.start(self, user) -- enveloppe ci-dessus : trajet jusqu'au silo puis tassage
 end
 
 -- arrêt (On/Off, fin, erreur) : le tassage demandé est oublié ; outils levés.

@@ -16,7 +16,7 @@ FarmPilot est publié sous licence **GNU GPL v3** (voir [LICENSE](LICENSE)). Fic
 - **Du hangar au champ, sans vous** : il va chercher l'outil choisi (marche arrière, attelage, flexibles et prise de force), roule jusqu'au champ et lance le parcours Courseplay du champ à la bonne largeur.
 - **Enchaînement des champs** : champ suivant et outil suivant dans le HUD. À la fin d'un champ, l'outil est reposé à sa place de parking, le tracteur prend l'outil suivant et part au champ suivant.
 - **Semoirs** : culture de saison et zone de plein réglées par champ ; plein au départ, et quand le semoir est vide il sort, refait le plein (palettes, big bags, silos), revient et reprend au dernier point.
-- **Épandeurs et pulvés** : produit, quantité « Plein » ou « Juste ce qu'il faut » et zone de plein ; le reste est gardé pour le champ suivant s'il prend le même produit, sinon vidé en big bags / IBC.
+- **Épandeurs et pulvés** : produit, quantité « Plein » ou « Juste ce qu'il faut » et zone de plein ; le reste est gardé pour le champ suivant s'il prend le même produit, sinon rendu au stock ou revendu au prix d'achat, sinon vendu à un point de vente (jamais de big bags ni d'IBC).
 - **Presse à balles** : suit au champ le tracé de la moissonneuse ou de l'andaineur passé avant.
 - **Remorque à balles** : ramasse les balles (toutes, enrubannées ou non), les dépose à la zone choisie (vente ou stockage) et revient tant qu'il en reste.
 - **Bennes** : une benne de la ferme est attelée au départ et reposée à sa place à la fin ; échange de bennes à la livraison.
@@ -68,7 +68,7 @@ FarmPilot is released under the **GNU GPL v3** (see [LICENSE](LICENSE)). Files c
 - **From the shed to the field, without you**: fetches the chosen tool (reversing, hitching, hoses and PTO), drives to the field and starts the field's Courseplay course at the right width.
 - **Field after field**: next field and next tool in the HUD. At the end of a field the tool is parked at its spot, the tractor takes the next tool and leaves for the next field.
 - **Seeders**: in-season crop and refill zone set per field; fills up before leaving, and when empty it leaves the field, refills (pallets, big bags, silos), comes back and resumes at the last point.
-- **Spreaders and sprayers**: product, "Full" or "Just enough" quantity and refill zone; leftovers are kept if the next field uses the same product, otherwise emptied into big bags / IBCs.
+- **Spreaders and sprayers**: product, "Full" or "Just enough" quantity and refill zone; leftovers are kept if the next field uses the same product, otherwise returned to storage or sold back at the purchase price, else sold at a selling point (never big bags or IBCs).
 - **Baler**: follows the track of the combine or windrower that went before.
 - **Bale trailer**: collects bales (all, wrapped or unwrapped), drops them at the chosen zone (sale or storage) and comes back while some are left.
 - **Trailers**: a farm trailer is hitched at the start and parked back at its spot at the end; trailer swap at delivery.

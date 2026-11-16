@@ -14,8 +14,9 @@
 --   sous la machine (« Champ 56 », comme AutonomousManagerFields.lua), sa 1re destination d'abord, sinon le plus
 --   proche ; sinon un marqueur posé dans ce champ. Ce marqueur devient aussi sa 1re destination (les bennes sont
 --   appelées par la machine qui a la même 1re destination). Pas de marqueur : message une fois, rien de plus.
--- - Destination de déchargement (2e destination) : celle déjà réglée sur le tracteur si un déchargement près d'elle
---   prend le produit ; sinon le stockage de la ferme (silo, silo couloir) qui le prend, le plus près du champ ;
+-- - Destination de déchargement (2e destination), (16/11) la ferme avant l'extérieur : celle déjà réglée sur le
+--   tracteur si c'est un stockage de la ferme qui prend le produit ; sinon le stockage de la ferme (silo, silo
+--   couloir) qui le prend, le plus près du champ ; sinon celle du tracteur (vente, production...) si elle le prend ;
 --   sinon le point de vente qui le paie le mieux. Toujours un marqueur du réseau à moins de PLACE_RADIUS m. Rien :
 --   ce tracteur n'est pas pris.
 -- - Remorque : de la ferme, dételée (ou attelée au tracteur candidat), benne qui bascule (pas un épandeur, une
@@ -528,17 +529,23 @@ function ADUnloaderAutoPick.destinations(ft, farmId, fx, fz)
     return out
 end
 
--- 2e destination de ce tracteur : la sienne si elle prend le produit, sinon la ferme ; nil si rien
+-- 2e destination de ce tracteur ; nil si rien
+-- (16/11) le stockage de la ferme passe avant l'extérieur : la sienne si c'est un stockage de la ferme ; sinon le
+-- stockage de la ferme le plus près du champ ; sinon la sienne (vente, production...) ; sinon le meilleur prix
 local function destinationFor(v, dests)
     local own = v.ad.stateModule:getSecondMarker()
-    if own ~= nil then
-        local place = ADUnloaderAutoPick.placeAtMarker(own, dests.places)
-        if place ~= nil then
-            return own, "la sienne (" .. place.kind .. ")"
-        end
+    local ownPlace = own ~= nil and ADUnloaderAutoPick.placeAtMarker(own, dests.places) or nil
+    if ownPlace ~= nil and ownPlace.kind == "stock" then
+        return own, "la sienne (stock)"
     end
     if dests.stock ~= nil then
+        if ownPlace ~= nil then
+            trace("%s : sa destination « %s » (%s) laissée, le stockage de la ferme passe avant", nameOf(v), tostring(own.name), ownPlace.kind)
+        end
         return dests.stock.marker, "stockage de la ferme"
+    end
+    if ownPlace ~= nil then
+        return own, "la sienne (" .. ownPlace.kind .. ", pas de stockage de la ferme qui le prend)"
     end
     if dests.sale ~= nil then
         return dests.sale.marker, string.format("meilleur prix (%s)", dests.sale.place.name)

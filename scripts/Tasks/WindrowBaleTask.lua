@@ -40,6 +40,12 @@
 --   branche reste un andain à part, fait après.
 -- - (17/11) Trou réuni par le balayage (andain.gaps, jusqu'à 10 m entre deux bouts alignés) : rien n'y est relu, la
 --   ligne continue tout droit, la fin de l'andain n'y est pas prise.
+-- - (18/11) Andain collé au bord : pendant le suivi et sur la ligne droite d'approche (pas les courbes de demi-tour),
+--   en champ strict, tracteur et presse (avec leurs demi-largeurs) peuvent sortir du sol du champ jusqu'à EDGE_GRASS m
+--   sur l'herbe du bord, jamais sur un autre champ ; objets fixes (arbres, souches, poteaux) jamais, dans tous les
+--   réglages. Contrôle devant, sur la trajectoire prévue du tracteur et de la presse (ligne suivie et ligne prévue,
+--   EDGE_LOOK m, tous les EDGE_STEP m) : ralenti avant, arrêt EDGE_STOP m avant ; le reste de l'andain devient un
+--   morceau à part, essayé plus tard par son autre bout s'il va, sinon laissé ; raison, distance et point au journal.
 -- - Fin de l'andain : plus d'andain lu sur END_GAP m devant et pick-up passé END_MARGIN m après le dernier andain vu.
 --   Puis l'andain suivant (demi-tour au rayon dans le champ par le chemin ci-dessus). Au-delà du bout du balayage, la
 --   ligne prolongée ne tourne pas (END_SHIFT + END_SPREAD par m) : un andain de fourrière en travers n'est pas suivi.
@@ -181,6 +187,15 @@ ADWindrowBaleTask.OBSTACLE_HEIGHT = 3       -- m de haut contrôlés au-dessus
 ADWindrowBaleTask.OBSTACLE_MARGIN = 0.3     -- m de plus de chaque côté du tracteur et de la presse
 ADWindrowBaleTask.EDGE_START = 10           -- m : ensemble arrêté au bord, un côté déjà dehors (milieu sur le champ) : ce
                                             -- côté toléré au plus sur ça au début d'une courbe, s'il rentre
+-- (18/11) andain collé au bord : suivi et ligne droite d'approche
+ADWindrowBaleTask.EDGE_GRASS = 3            -- m : champ strict, tracteur et presse au plus à ça hors du sol du champ (herbe
+                                            -- du bord, hors de tout autre champ, sans objet fixe)
+ADWindrowBaleTask.EDGE_SEARCH = 0.5         -- m entre deux lectures en cherchant le sol du champ (distance au bord)
+ADWindrowBaleTask.EDGE_LOOK = 12            -- m de ligne contrôlés devant le pick-up (trajectoire prévue du tracteur)...
+ADWindrowBaleTask.EDGE_STEP = 2             -- ... tous les EDGE_STEP m
+ADWindrowBaleTask.EDGE_STOP = 4             -- m : pick-up à moins de ça du point qui ne va pas = arrêt de l'andain
+ADWindrowBaleTask.EDGE_SLOW_SPEED = 4       -- km/h quand un point qui ne va pas est dans le contrôle devant
+ADWindrowBaleTask.EDGE_CHECK_INTERVAL = 300 -- ms entre deux contrôles devant
 
 local function log(fmt, ...)
     local ok, s = FarmPilotCall(string.format, fmt, ...)
@@ -870,6 +885,70 @@ function ADWindrowBaleTask:offFields(x, z)
     return not anyField
 end
 
+-- (18/11) point du bord : 0 sur le sol du champ de la tâche ; sinon distance (m) jusqu'au sol du champ, cherchée vers
+-- (inX, inZ) (un point sur le champ : l'andain) tous les EDGE_SEARCH m jusqu'à EDGE_GRASS m (math.huge au-delà) ;
+-- nil et la raison sur un autre champ
+function ADWindrowBaleTask:edgeOff(x, z, inX, inZ)
+    if next(self.fieldSet) == nil then
+        return 0
+    end
+    local n, anyField = self:fieldNumberAt(x, z)
+    local mine = n ~= nil and self.fieldSet[tonumber(n) or n] == true
+    if mine and self:fieldGround(x, z) then
+        return 0
+    end
+    if not mine and anyField then
+        return nil, "un autre champ"
+    end
+    local len = dist2(x, z, inX, inZ)
+    if len < 0.01 then
+        return math.huge
+    end
+    local ux, uz = (inX - x) / len, (inZ - z) / len
+    local step = ADWindrowBaleTask.EDGE_SEARCH
+    local d = step
+    while d <= math.min(len, ADWindrowBaleTask.EDGE_GRASS + step) + 1e-6 do
+        local qx, qz = x + ux * d, z + uz * d
+        local n2 = self:fieldNumberAt(qx, qz)
+        if n2 ~= nil and self.fieldSet[tonumber(n2) or n2] == true and self:fieldGround(qx, qz) then
+            return d
+        end
+        d = d + step
+    end
+    return math.huge
+end
+
+-- (18/11) ensemble en (x, z), sens (hx, hz), demi-largeur w (milieu et deux côtés) : le plus loin hors du sol du champ
+-- (m) et ce point ; nil, la raison et le point sur un autre champ
+function ADWindrowBaleTask:poseOff(x, z, hx, hz, w, inX, inZ)
+    local sx, sz = rightOf(hx, hz)
+    local worst, wx, wz = 0, x, z
+    for _, k in ipairs({ 0, 1, -1 }) do
+        local qx, qz = x + sx * w * k, z + sz * w * k
+        local off, why = self:edgeOff(qx, qz, inX, inZ)
+        if off == nil then
+            return nil, why, qx, qz
+        end
+        if off > worst then
+            worst, wx, wz = off, qx, qz
+        end
+    end
+    return worst, nil, wx, wz
+end
+
+-- (18/11) raison si l'ensemble (x, z, sens hx, hz, demi-largeur w) ne va pas sur l'herbe du bord (champ strict) ; nil
+-- s'il va. who : « le tracteur », « la presse »
+function ADWindrowBaleTask:edgeWhy(who, x, z, hx, hz, w, inX, inZ)
+    local off, why, px, pz = self:poseOff(x, z, hx, hz, w, inX, inZ)
+    if off == nil then
+        return string.format("%s irait sur %s en (%.0f, %.0f)", who, tostring(why), px, pz), px, pz, nil
+    end
+    if off > ADWindrowBaleTask.EDGE_GRASS then
+        return string.format("%s sortirait du champ de plus de %.0f m en (%.0f, %.0f)", who, ADWindrowBaleTask.EDGE_GRASS, px, pz), px, pz, off
+    end
+    return nil, px, pz, off
+end
+
 -- culture debout sous ce point (carte des cultures du chercheur de chemin) ; inconnue = pas de culture
 function ADWindrowBaleTask:hasCrop(x, z)
     if PathFinderModule == nil or PathFinderModule.getMapCropAt == nil then
@@ -966,6 +1045,7 @@ end
 -- estimé) ; nil si rien ne touche, sinon la raison. withField : chaque point (et les côtés) sur le champ, sans culture
 -- (17/11) withField : tracteur et presse avec leurs demi-largeurs ; « parti d'en dehors » seulement si l'ensemble
 -- démarre vraiment hors du champ (une fois entré, il n'en ressort plus) ; objets fixes tous les OBSTACLE_STEP m
+-- (18/11 : avec ou sans withField)
 function ADWindrowBaleTask:sweepProblem(path, withField)
     local geo = self.geo
     if path == nil or #path < 2 then
@@ -1089,20 +1169,21 @@ function ADWindrowBaleTask:sweepProblem(path, withField)
                 if not okB and (bIn or not self:offFields(bWhereX, bWhereZ)) then
                     return string.format("la presse sortirait du champ ou irait dans la culture en (%.0f, %.0f)", bWhereX, bWhereZ)
                 end
-                -- (17/11) objets fixes : tracteur (de son avant au dernier contrôle) et presse, tous les OBSTACLE_STEP m
-                obstAcc = obstAcc + d
-                if obstAcc >= ADWindrowBaleTask.OBSTACLE_STEP or i == #pts then
-                    obstAcc = 0
-                    local name = self:obstacleOn(obstX, obstZ, fx, fz, geo.halfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN)
-                    if name ~= nil then
-                        return string.format("le tracteur toucherait un objet fixe « %s » en (%.0f, %.0f)", name, p.x, p.z)
-                    end
-                    obstX, obstZ = p.x, p.z
-                    if not geo.rigid then
-                        local bname = self:obstacleOn(hX, hZ, rearX, rearZ, geo.balerHalfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN)
-                        if bname ~= nil then
-                            return string.format("la presse toucherait un objet fixe « %s » en (%.0f, %.0f)", bname, (hX + rearX) / 2, (hZ + rearZ) / 2)
-                        end
+            end
+            -- (17/11) objets fixes : tracteur (de son avant au dernier contrôle) et presse, tous les OBSTACLE_STEP m ;
+            -- (18/11) aussi sur le chemin du chercheur de chemin (presse traînée comprise) : les arbres jamais
+            obstAcc = obstAcc + d
+            if obstAcc >= ADWindrowBaleTask.OBSTACLE_STEP or i == #pts then
+                obstAcc = 0
+                local name = self:obstacleOn(obstX, obstZ, fx, fz, geo.halfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN)
+                if name ~= nil then
+                    return string.format("le tracteur toucherait un objet fixe « %s » en (%.0f, %.0f)", name, p.x, p.z)
+                end
+                obstX, obstZ = p.x, p.z
+                if not geo.rigid then
+                    local bname = self:obstacleOn(hX, hZ, rearX, rearZ, geo.balerHalfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN)
+                    if bname ~= nil then
+                        return string.format("la presse toucherait un objet fixe « %s » en (%.0f, %.0f)", bname, (hX + rearX) / 2, (hZ + rearZ) / 2)
                     end
                 end
             end
@@ -1196,22 +1277,40 @@ function ADWindrowBaleTask:makeLine(row, e)
         want = math.min(want, row.backCap[e])
     end
     local why = nil
-    for pass = 1, 2 do
+    -- (18/11) champ strict : une passe (herbe du bord jusqu'à EDGE_GRASS m, tracteur et presse avec leurs demi-largeurs)
+    for pass = 1, self.strict and 1 or 2 do
         local margin = pass == 2
         local back = want
         while back >= ADWindrowBaleTask.BACK_MIN - 0.01 do
             local ax, az = line.p0x - dx * back, line.p0z - dz * back
             local ok = true
-            -- début de ligne et ligne (tous les 2 m) sur le champ, pick-up compris
-            local k = 0
-            while k <= back do
-                if not self:pointAllowed(line.p0x - dx * (back - k), line.p0z - dz * (back - k), margin) then
-                    ok = false
-                    break
+            local edgeWhy = nil
+            if self.strict then
+                edgeWhy = self:approachProblem(line, back)
+                ok = edgeWhy == nil
+            else
+                -- début de ligne et ligne (tous les 2 m) sur le champ, pick-up compris
+                local k = 0
+                while k <= back do
+                    if not self:pointAllowed(line.p0x - dx * (back - k), line.p0z - dz * (back - k), margin) then
+                        ok = false
+                        break
+                    end
+                    k = k + 2
                 end
-                k = k + 2
             end
+            -- (18/11) objet fixe sur la ligne droite (presse comprise, jusqu'au tracteur entré dans l'andain) : jamais
+            local obstacle = nil
             if ok then
+                local hw = math.max(geo.halfWidth, geo.balerHalfWidth) + ADWindrowBaleTask.OBSTACLE_MARGIN
+                obstacle = self:obstacleOn(ax - dx * (geo.behind + geo.length), az - dz * (geo.behind + geo.length),
+                    ex + dx * (geo.behind + geo.front), ez + dz * (geo.behind + geo.front), hw)
+                ok = obstacle == nil
+            end
+            if obstacle ~= nil then
+                why = string.format("objet fixe « %s » sur la ligne d'approche", obstacle)
+                back = back - ADWindrowBaleTask.BACK_STEP
+            elseif ok then
                 -- pas de balle sur la ligne, du début (presse comprise) jusqu'à 3 m dans l'andain
                 local bx0, bz0 = ax - dx * (geo.behind + geo.length), az - dz * (geo.behind + geo.length)
                 local bale = self:baleInCorridor(bx0, bz0, ex + dx * 3, ez + dz * 3, math.max(geo.halfWidth, geo.balerHalfWidth))
@@ -1227,12 +1326,38 @@ function ADWindrowBaleTask:makeLine(row, e)
                     return line
                 end
             else
-                why = margin and "début de la ligne d'approche hors du champ (même au bord)" or "début de la ligne d'approche hors du champ"
+                if edgeWhy ~= nil then
+                    why = "ligne d'approche : " .. edgeWhy
+                else
+                    why = margin and "début de la ligne d'approche hors du champ (même au bord)" or "début de la ligne d'approche hors du champ"
+                end
                 back = back - ADWindrowBaleTask.BACK_STEP
             end
         end
     end
     return nil, why
+end
+
+-- (18/11) champ strict, ligne droite d'approche de longueur back : de l'essieu de la presse au début jusqu'au tracteur
+-- quand le pick-up arrive au bout, tous les 2 m, avec la plus grande demi-largeur ; raison si un point sort de plus de
+-- EDGE_GRASS m du sol du champ ou va sur un autre champ, nil sinon
+function ADWindrowBaleTask:approachProblem(line, back)
+    local geo = self.geo
+    local dx, dz = line.dx, line.dz
+    local w = math.max(geo.halfWidth, geo.balerHalfWidth)
+    local rearBack = geo.rigid and 0 or math.max(0, geo.hitchBack + geo.tow - geo.behind)
+    local from = -(back + rearBack)
+    local to = geo.behind
+    local k = from
+    while k <= to + 1e-6 do
+        local qx, qz = line.p0x + dx * k, line.p0z + dz * k
+        local why = self:edgeWhy("l'ensemble", qx, qz, dx, dz, w, line.ex, line.ez)
+        if why ~= nil then
+            return why
+        end
+        k = k + 2
+    end
+    return nil
 end
 
 -- andains à faire : (17/11) d'abord celui qui continue tout droit devant (bout à moins de AHEAD_DIST m de
@@ -1498,10 +1623,18 @@ function ADWindrowBaleTask:straightClear(line)
     local k = 0
     while k <= len do
         local qx, qz = tx + (line.ex - tx) * k / math.max(len, 0.1), tz + (line.ez - tz) * k / math.max(len, 0.1)
-        for _, side in ipairs({ 0, 1, -1 }) do
-            local px, pz = qx + sx * w * side, qz + sz * w * side
-            if not self:pointAllowed(px, pz, line.margin) then
-                return false, string.format("hors du champ ou dans la culture en (%.0f, %.0f)", px, pz)
+        if self.strict then
+            -- (18/11) champ strict : herbe du bord jusqu'à EDGE_GRASS m (ligne droite d'approche)
+            local why = self:edgeWhy("le tracteur", qx, qz, ux, uz, w, line.ex, line.ez)
+            if why ~= nil then
+                return false, why
+            end
+        else
+            for _, side in ipairs({ 0, 1, -1 }) do
+                local px, pz = qx + sx * w * side, qz + sz * w * side
+                if not self:pointAllowed(px, pz, line.margin) then
+                    return false, string.format("hors du champ ou dans la culture en (%.0f, %.0f)", px, pz)
+                end
             end
         end
         k = k + 2
@@ -1805,6 +1938,9 @@ function ADWindrowBaleTask:startFollow(line, how)
     self.stuckTimer = 0
     self.baleCheck = 0
     self.baleAhead = nil
+    self.edgeCheck = ADWindrowBaleTask.EDGE_CHECK_INTERVAL
+    self.edgeAhead = nil
+    self.edgeMax = 0
     self.stats = { n = 0, sum = 0, max = 0, dist = 0, speedSum = 0, t = 0 }
     self.followHow = how
     -- (journal) l'ensemble au début de la ligne : écart du tracteur à l'axe, biais du tracteur et de la presse
@@ -2275,6 +2411,22 @@ function ADWindrowBaleTask:updateLine(dt)
         end
     end
 
+    -- (18/11) devant, sur la trajectoire prévue : herbe du bord (champ strict), objets fixes (toujours)
+    self.edgeCheck = self.edgeCheck + dt
+    if self.edgeCheck >= ADWindrowBaleTask.EDGE_CHECK_INTERVAL then
+        self.edgeCheck = 0
+        local qBad, why, wx, wz, off = self:edgeAheadProblem(sP)
+        self.edgeAhead = nil
+        if qBad ~= nil then
+            if qBad - sig <= ADWindrowBaleTask.EDGE_STOP then
+                self:holdVehicle(dt)
+                self:edgeStop(sig, qBad, why, wx, wz, off)
+                return
+            end
+            self.edgeAhead = qBad
+        end
+    end
+
     -- bloqué sur la ligne (sans arrêt demandé par la presse)
     if kmh < 0.3 then
         self.stuckTimer = self.stuckTimer + dt
@@ -2326,6 +2478,9 @@ function ADWindrowBaleTask:updateLine(dt)
     if self.baleAhead ~= nil then
         speed = math.min(speed, ADWindrowBaleTask.BALE_SLOW_SPEED)
     end
+    if self.edgeAhead ~= nil then
+        speed = math.min(speed, ADWindrowBaleTask.EDGE_SLOW_SPEED)
+    end
     local st = self.stats
     st.speedSum, st.t = st.speedSum + kmh * dt, st.t + dt
     self.lastLateral = eP
@@ -2333,8 +2488,113 @@ function ADWindrowBaleTask:updateLine(dt)
         ADWindrowBaleTask.LINE_SLOW_ANGLE, ADWindrowBaleTask.LINE_SLOW_FACTOR)
 end
 
--- morceau de l'andain après l'abscisse sig (gardé pour plus tard, s'il est assez long)
-function ADWindrowBaleTask:splitRow(sig, why)
+-- (18/11) trajectoire prévue quand le pick-up est à l'abscisse s : tracteur (point suivi : ligne décalée de la distance
+-- tracteur -> pick-up dans le sens de la ligne) et son sens, attelage, essieu et sens de la presse (traînée : du pick-up
+-- vers l'attelage)
+function ADWindrowBaleTask:predictedPose(s)
+    local ref, geo = self.ref, self.geo
+    local function tractorAt(t)
+        local px, pz = Ref.point(ref, t)
+        local ux, uz = Ref.tangent(ref, t, 1)
+        local sx, sz = sideOf(geo.hand, ux, uz)
+        return px + ux * geo.behind - sx * geo.gx, pz + uz * geo.behind - sz * geo.gx, px, pz, ux, uz
+    end
+    local tx, tz, px, pz, ux, uz = tractorAt(s)
+    local ax2, az2 = tractorAt(s - 1)
+    local bx2, bz2 = tractorAt(s + 1)
+    local hx, hz = normalize(bx2 - ax2, bz2 - az2)
+    if hx == 0 and hz == 0 then
+        hx, hz = ux, uz
+    end
+    local pose = { tx = tx, tz = tz, hx = hx, hz = hz, px = px, pz = pz }
+    if not geo.rigid then
+        local hX, hZ = tx - hx * geo.hitchBack, tz - hz * geo.hitchBack
+        local bux, buz = normalize(hX - px, hZ - pz)
+        if bux == 0 and buz == 0 then
+            bux, buz = hx, hz
+        end
+        pose.hX, pose.hZ = hX, hZ
+        pose.bux, pose.buz = bux, buz
+        pose.ax, pose.az = hX - bux * geo.tow, hZ - buz * geo.tow
+    end
+    return pose
+end
+
+-- (18/11) contrôle devant le pick-up (abscisse sP) sur EDGE_LOOK m, tous les EDGE_STEP m, jusqu'au bout de l'andain
+-- (pick-up END_MARGIN m après le dernier andain vu) : abscisse depuis le bout d'entrée du premier point qui ne va pas,
+-- raison, point, distance hors du champ ; nil si tout va
+function ADWindrowBaleTask:edgeAheadProblem(sP)
+    local ref, geo = self.ref, self.geo
+    local sEndAbs = ref.s[self.endIdx] or self.endS or ref.s[ref.n]
+    local last = math.max(sEndAbs, ref.sE + (self.lastSeen or 0))
+    for _, g in ipairs(self.gaps or {}) do
+        if ref.sE + g.to > last and ref.sE + g.from <= last + ADWindrowBaleTask.END_GAP then
+            last = ref.sE + g.to
+        end
+    end
+    local sMax = math.min(sP + ADWindrowBaleTask.EDGE_LOOK, last + ADWindrowBaleTask.END_MARGIN)
+    local s = sP + ADWindrowBaleTask.EDGE_STEP
+    local tw = geo.halfWidth
+    local bw = geo.balerHalfWidth
+    local om = ADWindrowBaleTask.OBSTACLE_MARGIN
+    while s <= sMax + 1e-6 do
+        local p = self:predictedPose(s)
+        if self.strict then
+            local why, wx, wz, off = self:edgeWhy("le tracteur", p.tx, p.tz, p.hx, p.hz, geo.rigid and math.max(tw, bw) or tw, p.px, p.pz)
+            if why ~= nil then
+                return s - ref.sE, why, wx, wz, off
+            end
+            self.edgeMax = math.max(self.edgeMax, off or 0)
+            if not geo.rigid then
+                why, wx, wz, off = self:edgeWhy("la presse", p.ax, p.az, p.bux, p.buz, bw, p.px, p.pz)
+                if why ~= nil then
+                    return s - ref.sE, why, wx, wz, off
+                end
+                self.edgeMax = math.max(self.edgeMax, off or 0)
+            end
+        end
+        -- objets fixes : tracteur de l'attelage à l'avant, presse de l'attelage à l'arrière
+        local name = self:obstacleOn(p.tx - p.hx * geo.hitchBack, p.tz - p.hz * geo.hitchBack, p.tx + p.hx * geo.front, p.tz + p.hz * geo.front,
+            (geo.rigid and math.max(tw, bw) or tw) + om)
+        if name ~= nil then
+            return s - ref.sE, string.format("le tracteur toucherait un objet fixe « %s » en (%.0f, %.0f)", name, p.tx, p.tz), p.tx, p.tz, nil
+        end
+        if not geo.rigid then
+            local bname = self:obstacleOn(p.hX, p.hZ, p.hX - p.bux * geo.length, p.hZ - p.buz * geo.length, bw + om)
+            if bname ~= nil then
+                return s - ref.sE, string.format("la presse toucherait un objet fixe « %s » en (%.0f, %.0f)", bname, p.ax, p.az), p.ax, p.az, nil
+            end
+        end
+        s = s + ADWindrowBaleTask.EDGE_STEP
+    end
+    return nil
+end
+
+-- (18/11) arrêt avant le point qui ne va pas (abscisse qBad) : sur la ligne d'approche, ce bout est laissé ; sur
+-- l'andain, le reste devient un morceau à part (essayé par son autre bout s'il va, sinon laissé)
+function ADWindrowBaleTask:edgeStop(sig, qBad, why, wx, wz, off)
+    local row = self.line.row
+    local offText = ""
+    if off ~= nil then
+        offText = off < math.huge and string.format(", %.1f m hors du sol du champ", off)
+            or string.format(", plus de %.1f m hors du sol du champ", ADWindrowBaleTask.EDGE_GRASS + ADWindrowBaleTask.EDGE_SEARCH)
+    end
+    if not self.entered then
+        log("%s : andain %s : arrêt sur la ligne d'approche, %s%s, à %.0f m devant le pick-up : bout %s laissé", self:name(), tostring(row.id), tostring(why),
+            offText, qBad - sig, endName(self.line.e))
+        self:dropEnd(row, self.line.e, why)
+        self:setState("choose")
+        return
+    end
+    log("%s : andain %s : arrêt à %.0f m du bout d'entrée, %s%s (pick-up à %.0f m de là) : reste de l'andain à part",
+        self:name(), tostring(row.id), sig, tostring(why), offText, qBad - sig)
+    self:splitRow(sig, "reste avant le bord", why, row.why[3 - self.line.e])
+    self:endRow("bord")
+end
+
+-- morceau de l'andain après l'abscisse sig (gardé pour plus tard, s'il est assez long). (18/11) blockedWhy : son bout
+-- de coupe ne va pas (arrêt au bord) ; farWhy : son autre bout non plus (déjà laissé) ; les deux : morceau laissé
+function ADWindrowBaleTask:splitRow(sig, why, blockedWhy, farWhy)
     local ref = self.ref
     local row = self.line.row
     local from = ref.sE + math.max(0, sig)
@@ -2360,9 +2620,17 @@ function ADWindrowBaleTask:splitRow(sig, why)
             gaps[#gaps + 1] = { from = math.max(0, g.from - fromQ), to = g.to - fromQ, len = g.len }
         end
     end
-    self.rows[#self.rows + 1] = { id = id, points = pts, length = len, fillType = row.fillType, state = "todo", tries = { 0, 0 }, why = {},
+    local piece = { id = id, points = pts, length = len, fillType = row.fillType, state = "todo", tries = { 0, 0 }, why = { blockedWhy, farWhy },
         joins = { nil, self.exitJoin }, index = #self.rows + 1, gaps = gaps }
-    log("%s : andain %s : %s gardé pour plus tard (andain %s, %.0f m)", self:name(), tostring(row.id), tostring(why), id, len)
+    self.rows[#self.rows + 1] = piece
+    if blockedWhy ~= nil and farWhy ~= nil then
+        piece.state = "left"
+        log("%s : andain %s : %s laissé (andain %s, %.0f m) : aucun bout faisable (%s / %s)", self:name(), tostring(row.id), tostring(why), id, len,
+            tostring(blockedWhy), tostring(farWhy))
+        return
+    end
+    log("%s : andain %s : %s gardé pour plus tard (andain %s, %.0f m%s)", self:name(), tostring(row.id), tostring(why), id, len,
+        blockedWhy ~= nil and ", par son autre bout" or "")
 end
 
 -- balle posée sur l'andain devant le tracteur
@@ -2399,8 +2667,12 @@ function ADWindrowBaleTask:endRow(how)
             self:name(), tostring(row.id), self.rowWidth, self.widthMax or 0, self.geo.pickupWidth or 0, self.forkCount, self.sideCount, self.limitCount,
             self.residueCount or 0)
     end
+    if self.strict and (self.edgeMax or 0) > 0 then
+        log("%s : andain %s : sur l'herbe du bord au plus à %.1f m du sol du champ (prévu, %.0f m permis)", self:name(), tostring(row.id), self.edgeMax,
+            ADWindrowBaleTask.EDGE_GRASS)
+    end
     self.lastRow = { id = row.id, followed = followed, mean = st.n > 0 and st.sum / st.n or 0, max = st.max, entry = self.entry,
-        width = self.rowWidth, forks = self.forkCount }
+        width = self.rowWidth, forks = self.forkCount, edgeMax = self.edgeMax }
     self.history = self.history or {}
     self.history[#self.history + 1] = self.lastRow
     self.entry = nil

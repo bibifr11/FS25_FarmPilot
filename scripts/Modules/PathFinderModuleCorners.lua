@@ -380,8 +380,10 @@ PathFinderModule.CORRIDOR_SMOOTH_ROUNDS = 4 -- reprises locales vers le tracé d
 PathFinderModule.TIGHT_CURVE_SLACK = math.rad(30)
 
 -- benne de moissonneuse (pas l'ensileuse : ses règles restent celles du 21/10), strict, grille fine
+-- (17/11, Champ 7) aussi pour sa sortie de champ (exitCombine) : le trajet qui longe le bord du champ en biais faisait un
+-- escalier en cases de 2 m, refusé comme virages trop serrés, et la benne attendait sur place chantier fini
 function PathFinderModule:useCorridorSmoothing()
-    return self.goingToPipe == true and not self:isChopperWork() and (self.strictFruit or self.strictField)
+    return (self.goingToPipe == true or self.exitCombine == true) and not self:isChopperWork() and (self.strictFruit or self.strictField)
         and self.gridScaleStep ~= nil and self.gridScaleStep > 1
 end
 

@@ -121,6 +121,7 @@ function PathFinderModule:reset()
     self.fruitAreas = {}
     self.goingToNetwork  = false
     self.goingToPipe = false
+    self.exitCombine = false -- (17/11) set by the caller after reset(): field exit of a combine unloader, the route is judged like the way to the harvester (corridor smoothing, real curvature, nearest point)
     self.noFallback = false -- set by the caller after reset(): never lift field / fruit restrictions, fail instead
     self.allowCrop = false -- set by the caller after reset(): this one trip may cross crop (full trailer without a clean way out)
     self.stayOnField = false -- (16/11) set by the caller after reset(): exit of a full combine unloader, the route stays on the field (grass only near the ends)

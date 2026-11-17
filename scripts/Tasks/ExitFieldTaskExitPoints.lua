@@ -67,6 +67,16 @@ function ExitFieldTask.entranceOnly(vehicle)
     end
     return true
 end
+-- (17/11) benne de moissonneuse en mode Décharger (pas l'ensileuse), quel que soit le réglage « Sortie de champ »
+function ExitFieldTask.isCombineUnloader(vehicle)
+    if vehicle == nil or vehicle.ad == nil or vehicle.ad.stateModule == nil or vehicle.ad.stateModule.getMode == nil then
+        return false
+    end
+    if AutoDrive.MODE_UNLOAD == nil or vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_UNLOAD then
+        return false
+    end
+    return not (AutoDrive.isChopperUnloading ~= nil and AutoDrive.isChopperUnloading(vehicle))
+end
 ExitFieldTask.ENTRANCE_CROP_BONUS = 15 -- m of crop forgiven to the entrance when sorting the direct exit points
 ExitFieldTask.BEHIND_PENALTY = 60            -- m added to points behind the vehicle
 
@@ -292,6 +302,12 @@ function ExitFieldTask:startExitPlanning()
     pf.allowCrop = self.directExit == true
     -- the end of the route is judged for obstacles too (a wall between the field and the road)
     pf.exitToNetwork = true
+    -- (17/11, Champ 7) benne de moissonneuse : trajet jugé comme celui vers la moissonneuse (lissé le long du couloir,
+    -- courbure réelle au lieu des pas de la grille, au plus près puis nouveau calcul si un vrai virage est trop serré)
+    pf.exitCombine = ExitFieldTask.isCombineUnloader(self.vehicle)
+    if pf.exitCombine and not self.directExit then
+        pf.allowPartialPath = true
+    end
     -- (16/11, champ 52) benne de moissonneuse : d'abord un trajet qui reste dans le champ (demi-tour compris)
     pf.stayOnField = self:shouldStayOnField(candidate)
     self.stayOnFieldUsed = pf.stayOnField

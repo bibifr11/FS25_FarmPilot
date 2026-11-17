@@ -371,6 +371,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousHeaderYard.lua", g_currentModD
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderReturn.lua", g_currentModDirectory)) -- fin de champ : moissonneuse et remorque porte-barre gardent leur écart sur la route du retour
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderGate.lua", g_currentModDirectory)) -- la moissonneuse attend en face de l'entrée du champ, la barre est arrêtée devant elle
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderStuck.lua", g_currentModDirectory)) -- (16/11) tracteur de la remorque porte-barre bloqué par un objet fixe : endroit suivant, jamais d'attente sans fin
+source(Utils.getFilename("scripts/Modes/AutonomousHeaderFieldLead.lua", g_currentModDirectory)) -- (17/11) barre posée dans le champ, amenée au champ suivant : la plus près de la sortie part la première
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderHookup.lua", g_currentModDirectory)) -- gestes du chauffeur : brancher la barre, la verrouiller sur sa remorque
 source(Utils.getFilename("scripts/Modes/AutonomousHarvesterUnloaders.lua", g_currentModDirectory)) -- bennes qui suivent le champ de la moissonneuse
 source(Utils.getFilename("scripts/Modes/AutonomousUnloaderAutoPick.lua", g_currentModDirectory)) -- (16/11) machine au travail sans benne : tracteurs et remorques choisis et envoyés au champ

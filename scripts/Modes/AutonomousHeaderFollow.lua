@@ -216,6 +216,11 @@ end
 -- Départ : le tracteur est parti avec la remorque, devant la moissonneuse
 -- ------------------------------------------------------------------------------------------------------------
 function ADHeaderFlow.tractorAhead(job)
+    -- (17/11) elle est entre le tracteur et la sortie du champ : elle part la première, il attend derrière
+    -- (AutonomousHeaderFieldLead.lua)
+    if job.leadFirst and not job.trailerLeft then
+        return true
+    end
     if not job.trailerLeft then
         return false
     end

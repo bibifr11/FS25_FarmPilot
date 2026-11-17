@@ -151,14 +151,34 @@ function ADHeaderFlow.servingTrailer(v, header)
     if under ~= nil then
         return under, "posée dessus"
     end
+    -- (17/11) toute remorque porte-barre vide de la ferme où cette barre se pose (comme la fin de champ habituelle) ;
+    -- avant, seulement une place déjà mémorisée : sa remorque garée n'était pas trouvée (« aucune remorque porte-barre »)
     local trailer = ADHeaderFlow.findEmptyTrailer(v, header, nil)
-    if trailer ~= nil and ADHeaderFlow.lockPose ~= nil then
-        local pose = ADHeaderFlow.lockPose(trailer, header)
-        if pose ~= nil and (pose.exact or pose.remembered) then
-            return trailer, "a sa place"
+    if trailer ~= nil then
+        local pose = ADHeaderFlow.lockPose ~= nil and ADHeaderFlow.lockPose(trailer, header) or nil
+        local how = pose == nil and "remorque vide" or (pose.exact and "a sa place" or (pose.remembered and "place memorisee" or "place calculee"))
+        return trailer, how
+    end
+    ADHeaderFlow.logNoTrailer(v, header)
+    return nil
+end
+
+-- (17/11) pourquoi aucune remorque porte-barre : chaque remorque porte-barre vue et son refus
+function ADHeaderFlow.logNoTrailer(v, header)
+    local n = 0
+    local system = g_currentMission ~= nil and g_currentMission.vehicleSystem or nil
+    for _, t in pairs(system ~= nil and system.vehicles or {}) do
+        if ADHeaderFlow.isHeaderTrailer(t) and not isGone(t) then
+            n = n + 1
+            local empty = ADHeaderFlow.isEmptyTrailer(t)
+            local pose = ADHeaderFlow.lockPose ~= nil and ADHeaderFlow.lockPose(t, header) or nil
+            log("%s : remorque porte-barre « %s » : vide %s, place pour « %s » %s, ferme %s", nameOf(v), label(t), tostring(empty),
+                label(header), pose ~= nil and "oui" or "non", tostring(t.getOwnerFarmId ~= nil and t:getOwnerFarmId() or "?"))
         end
     end
-    return nil
+    if n == 0 then
+        log("%s : aucune remorque porte-barre dans la partie", nameOf(v))
+    end
 end
 
 -- ------------------------------------------------------------------------------------------------------------

@@ -744,6 +744,15 @@
 		<text name="AD_autonomous_nextToolListNone" text="Aynı" />
 		<text name="AD_fpFn_mass" text="Ağırlık" />
 		<text name="AD_autonomous_frontTool" text="Ön: %s" />
+		<text name="AD_autonomous_massAuto" text="Otomatik ağırlık" />
+		<text name="AD_autonomous_massAutoSwap" text="önerilen ağırlık %s kg: &quot;%s&quot; alınıyor" />
+		<text name="AD_autonomous_massAutoDrop" text="önerilen ağırlık %s kg: &quot;%s&quot; ağırlık alanına bırakılıyor" />
+		<text name="gui_ad_massZone" text="Ağırlık alanı" />
+		<text name="gui_ad_massZoneRemove" text="Ağırlık alanını kaldır" />
+		<text name="gui_ad_massZoneAdded" text="&quot;%s&quot; sonrasına ağırlık alanı eklendi (yerde beyaz kare)" />
+		<text name="gui_ad_massZoneRemoved" text="&quot;%s&quot; ağırlık alanı kaldırıldı" />
+		<text name="gui_ad_massZoneReverse" text="&quot;%s&quot; geri geri giriliyor: ağırlık alanı olamaz (ileri gidilen bir hedef gerekli)" />
+		<text name="gui_ad_massZoneImpossible" text="&quot;%s&quot;: ağırlık alanı olamaz (hedefe ulaşan yol yok)" />
 		<text name="AD_autonomous_frontToolNone" text="Ön: takılı olan" />
 		<text name="AD_autonomous_nextFrontTool" text="Sonraki ön: %s" />
 		<text name="AD_autonomous_nextFrontToolNone" text="Sonraki ön: aynısı" />

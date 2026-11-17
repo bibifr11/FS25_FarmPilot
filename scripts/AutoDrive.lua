@@ -605,6 +605,7 @@ function AutoDrive:saveSavegame()
 		if ADSprayerManager ~= nil then ADSprayerManager:saveToXml() end -- réglages des épandeurs, voir SprayerManager.lua
 		if ADBaleLoaderManager ~= nil then ADBaleLoaderManager:saveToXml() end -- réglages des remorques à balles, voir BaleLoaderManager.lua
 		if ADBalerManager ~= nil and ADBalerManager.saveToXml ~= nil then ADBalerManager:saveToXml() end -- (15/11) réglages des presses (zone de recharge), voir BalerManager.lua
+		if ADMassZone ~= nil then ADMassZone:saveToXml() end -- (17/11) zones des masses, voir MassZoneManager.lua
 		--        Logging.info("[AD] AutoDrive:saveSavegame g_server ~= nil end")
 	end
 	--    Logging.info("[AD] AutoDrive:saveSavegame end")
@@ -801,6 +802,7 @@ function AutoDrive:draw()
 	if ADChaseDisplay ~= nil and ADChaseDisplay.isEnabled() then
 		ADChaseDisplay.draw()
 	end
+	if ADMassZone ~= nil then FarmPilotCall(ADMassZone.draw) end -- (17/11) zones des masses : carré blanc au sol, voir MassZoneManager.lua
 	ADDrawingManager:draw()
 	ADMessagesManager:draw()
 end

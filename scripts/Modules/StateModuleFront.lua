@@ -5,7 +5,8 @@
 -- Contenu (10/11) :
 -- - outil avant à atteler avant le champ (ligne « Outil avant », nil = celui attelé) ;
 -- - outil avant du champ suivant (ligne « Outil avant suivant », nil = le même) ;
--- - masse posée à sa zone pour atteler un outil avant, à reprendre en fin de travail (après la dépose des outils).
+-- - masse posée à sa zone pour atteler un outil avant, à reprendre en fin de travail (après la dépose des outils) ;
+-- - (17/11) « Masse auto » : la masse avant suit le poids de l'outil (voir Modes/AutonomousMassAuto.lua).
 -- Champs de l'état, sauvegarde (xml), réseau, accesseurs. Un véhicule est gardé comme l'outil de la ligne « Outil » :
 -- objet, sinon son identifiant de sauvegarde (chargé après le tracteur), sinon son identifiant réseau (client).
 --
@@ -61,6 +62,7 @@ function ADStateModule:resetFrontState()
         self[slot .. "UniqueId"] = nil
         self[slot .. "NetId"] = nil
     end
+    self.fpFrontAuto = false
 end
 
 function ADStateModule:loadFrontState(xmlFile, key)
@@ -70,6 +72,7 @@ function ADStateModule:loadFrontState(xmlFile, key)
         local uid = xmlFile:getValue(key .. "#" .. slot)
         self[slot .. "UniqueId"] = (uid ~= nil and uid ~= "") and uid or nil
     end
+    self.fpFrontAuto = xmlFile:getValue(key .. "#fpFrontAuto") == true
 end
 
 function ADStateModule:saveFrontState(xmlFile, key)
@@ -79,6 +82,9 @@ function ADStateModule:saveFrontState(xmlFile, key)
         if uid ~= nil and uid ~= "" then
             xmlFile:setValue(key .. "#" .. slot, uid)
         end
+    end
+    if self.fpFrontAuto == true then
+        xmlFile:setValue(key .. "#fpFrontAuto", true)
     end
 end
 
@@ -91,6 +97,7 @@ function ADStateModule:writeFrontState(streamId)
             NetworkUtil.writeNodeObjectId(streamId, id)
         end
     end
+    streamWriteBool(streamId, self.fpFrontAuto == true)
 end
 
 function ADStateModule:readFrontState(streamId)
@@ -104,6 +111,7 @@ function ADStateModule:readFrontState(streamId)
             self[slot] = nil
         end
     end
+    self.fpFrontAuto = streamReadBool(streamId)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -134,4 +142,15 @@ end
 
 function ADStateModule:setFpMassReturn(v)
     self:setFrontSlot("fpMassReturn", v)
+end
+
+-- (17/11) « Masse auto » : la masse avant suit le poids de l'outil (ligne « Outil avant ») ; une masse ou un outil
+-- choisi à la main l'enlève
+function ADStateModule:getFpFrontAuto()
+    return self.fpFrontAuto == true
+end
+
+function ADStateModule:setFpFrontAuto(on)
+    self.fpFrontAuto = on == true
+    self:raiseDirtyFlag()
 end

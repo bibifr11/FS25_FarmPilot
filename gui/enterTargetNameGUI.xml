@@ -2,7 +2,7 @@
 <GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
     <GuiElement profile="newLayer"/>
     <Bitmap profile="dialogFullscreenBg"/>
-    <GuiElement profile="fs25_dialogBg" size="740px 280px">
+    <GuiElement profile="fs25_dialogBg" size="960px 280px">
         <ThreePartBitmap profile="fp_dialogBgMiddleSmall"/>
         <ThreePartBitmap profile="fp_dialogBgTopSmall"/>
         <ThreePartBitmap profile="fp_dialogBgBottom"/>
@@ -32,6 +32,8 @@
 
         <BoxLayout profile="ad_common_dialogButtonBoxOutsideContentContainer" id="buttonsEditElement">
             <Button profile="buttonActivate" text="$l10n_button_delete" onClick="onClickDelete" />
+            <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+            <Button profile="fp_buttonMassZone" text="$l10n_gui_ad_massZone" onClick="onClickMassZone" id="massZoneButton" />
             <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
             <Button profile="buttonCancel" text="$l10n_button_reset" onClick="onClickReset" />
             <Bitmap profile="fs25_dialogButtonBoxSeparator"/>

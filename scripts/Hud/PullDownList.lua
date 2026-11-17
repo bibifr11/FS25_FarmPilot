@@ -129,6 +129,18 @@ function ADPullDownList:fpGetTool(vehicle)
     return vehicle.ad.stateModule:getFpTool()
 end
 
+-- (17/11) ligne « Outil avant » d'un tracteur : dernier choix « Masse auto » (la masse suit le poids de l'outil, voir
+-- Modes/AutonomousMassAuto.lua)
+function ADPullDownList:fpMassAutoRow(vehicle)
+    return self.fpFront and not self.fpNext and not self.fpHeader and not self.fpTrailer and ADMassAuto ~= nil
+        and vehicle ~= nil and vehicle.ad ~= nil and vehicle.ad.stateModule.getFpFrontAuto ~= nil
+        and not (ADHeaderFlow ~= nil and ADHeaderFlow.isCombine ~= nil and ADHeaderFlow.isCombine(vehicle))
+end
+
+function ADPullDownList:fpMassAutoOn(vehicle)
+    return self:fpMassAutoRow(vehicle) and vehicle.ad.stateModule:getFpFrontAuto()
+end
+
 -- outils possédés dételés qui s'attellent à l'arrière de ce tracteur ; 1re ligne : celui attelé (rien à atteler),
 -- pour l'outil suivant : le même
 function ADPullDownList:createSelection_FpTool(vehicle)
@@ -151,6 +163,9 @@ function ADPullDownList:createSelection_FpTool(vehicle)
     for i, e in ipairs(list) do
         self.fpToolList[i] = e
         self.options[1][i + 1] = {displayName = e.name, returnValue = i}
+    end
+    if self:fpMassAutoRow(vehicle) then
+        self.options[1][#list + 2] = {displayName = g_i18n:getText("AD_autonomous_massAuto"), returnValue = -1} -- (17/11) « Masse auto »
     end
     self.fpToolOptions = true
 end
@@ -306,7 +321,8 @@ function ADPullDownList:onDraw(vehicle, uiScale)
                 if self:isFpTool(vehicle) then
                     local current = self:fpGetTool(vehicle)
                     local e = self.fpToolList ~= nil and self.fpToolList[listEntry.returnValue] or nil
-                    makeBold = (e ~= nil and e.tool == current) or (listEntry.returnValue == 0 and current == nil)
+                    local auto = self:fpMassAutoOn(vehicle) -- (17/11) « Masse auto »
+                    makeBold = (e ~= nil and e.tool == current) or (listEntry.returnValue == 0 and current == nil and not auto) or (listEntry.returnValue == -1 and auto)
                     makeSpecial = makeBold
                 elseif self.type == ADPullDownList.TYPE_FILLTYPE then
                     makeBold = table.contains(vehicle.ad.stateModule:getSelectedFillTypes(), listEntry.returnValue)
@@ -687,7 +703,9 @@ function ADPullDownList:getNewState_FillType(vehicle)
             self.text = ADHarvesterHud.collapsedText(self, vehicle) -- lignes « Barre » (moissonneuse, ensileuse), voir HudHarvester.lua
         elseif self.state == ADPullDownList.STATE_COLLAPSED and self.fpFront then
             local tool = self:fpGetTool(vehicle)
-            if tool ~= nil then
+            if self:fpMassAutoOn(vehicle) then
+                self.text = string.format(g_i18n:getText("AD_autonomous_frontTool"), g_i18n:getText("AD_autonomous_massAuto")) -- (17/11) « Masse auto »
+            elseif tool ~= nil then
                 local okL, label = FarmPilotCall(ADAutonomousManager.frontLabel, tool)
                 self.text = string.format(g_i18n:getText(self.fpNext and "AD_autonomous_nextFrontTool" or "AD_autonomous_frontTool"), okL and label or ADAutonomousManager.toolLabel(tool))
             else
@@ -935,7 +953,7 @@ function ADPullDownList:collapse(vehicle, setItem)
                 end
             elseif self:isFpTool(vehicle) then
                 local e = self.fpToolList ~= nil and self.fpToolList[selectedEntry.returnValue] or nil
-                ADAutonomousToolEvent.send(vehicle, e ~= nil and e.tool or nil, self.fpNext, self.fpTrailer, self.fpFront)
+                ADAutonomousToolEvent.send(vehicle, e ~= nil and e.tool or nil, self.fpNext, self.fpTrailer, self.fpFront, selectedEntry.returnValue == -1 and self:fpMassAutoRow(vehicle)) -- (17/11) -1 : « Masse auto »
             elseif self.type == ADPullDownList.TYPE_FILLTYPE then
                 -- AutoDrive.debugMsg(vehicle, "ADPullDownList:collapse self.hovered %s selectedEntry.returnValue %s", tostring(self.hovered), tostring(selectedEntry.returnValue))
                 AutoDriveHudInputEventEvent:sendFillTypeEvent(vehicle, selectedEntry.returnValue)
@@ -1010,6 +1028,10 @@ function ADPullDownList:setSelected(vehicle)
                 self.hovered = self.selected
                 break
             end
+        end
+        if self:fpMassAutoOn(vehicle) then
+            self.selected = #(self.fpToolList or {}) + 2 -- (17/11) « Masse auto » : dernière ligne
+            self.hovered = self.selected
         end
     elseif self.type == ADPullDownList.TYPE_FILLTYPE then
         local index = 1

@@ -345,6 +345,7 @@ source(Utils.getFilename("scripts/Manager/AutonomousManagerTools.lua", g_current
 source(Utils.getFilename("scripts/Manager/AutonomousManagerFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant (outils frontaux, masses)
 source(Utils.getFilename("scripts/Manager/AutonomousManagerCourses.lua", g_currentModDirectory)) -- mode Autonome : parcours enregistrés de Courseplay
 source(Utils.getFilename("scripts/Manager/SeederManager.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Manager/MassZoneManager.lua", g_currentModDirectory)) -- (17/11) zone des masses : carré au sol après une destination
 source(Utils.getFilename("scripts/Manager/BalerManager.lua", g_currentModDirectory)) -- presse : presse attelée, andains, ficelle / filet
 source(Utils.getFilename("scripts/Modes/AutonomousRefill.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousBalerRefill.lua", g_currentModDirectory)) -- (15/11) presse : recharge de la ficelle / du filet par le plein du semoir
@@ -360,6 +361,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousHeaderCross.lua", g_currentMod
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderClear.lua", g_currentModDirectory)) -- barre prise : le tracteur dégage d'abord, la moissonneuse repart ensuite
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderParkButton.lua", g_currentModDirectory)) -- bouton parking, moissonneuse avec sa barre : la barre d'abord sur sa remorque
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderChoice.lua", g_currentModDirectory)) -- barre choisie ou selon la culture, changement de barre
+source(Utils.getFilename("scripts/Modes/AutonomousMassAuto.lua", g_currentModDirectory)) -- (17/11) « Masse auto » : masse avant selon le poids de l'outil
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderGround.lua", g_currentModDirectory)) -- barre sans remorque (coupe à maïs) : posée par la moissonneuse
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderEntry.lua", g_currentModDirectory)) -- barre prise : entrée directe dans le champ, jamais de route trop étroite pour la barre
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderNextField.lua", g_currentModDirectory)) -- (16/11) champ suivant : la remorque porte-barre change de champ avec la moissonneuse

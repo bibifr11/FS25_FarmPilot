@@ -742,6 +742,15 @@
 		<text name="AD_autonomous_nextToolListNone" text="Le même" />
 		<text name="AD_fpFn_mass" text="Masse" />
 		<text name="AD_autonomous_frontTool" text="Outil AV : %s" />
+		<text name="AD_autonomous_massAuto" text="Masse auto" />
+		<text name="AD_autonomous_massAutoSwap" text="masse conseillée %s kg : va prendre « %s »" />
+		<text name="AD_autonomous_massAutoDrop" text="masse conseillée %s kg : pose « %s » dans la zone des masses" />
+		<text name="gui_ad_massZone" text="Zone des masses" />
+		<text name="gui_ad_massZoneRemove" text="Retirer la zone des masses" />
+		<text name="gui_ad_massZoneAdded" text="Zone des masses ajoutée après « %s » (carré blanc au sol)" />
+		<text name="gui_ad_massZoneRemoved" text="Zone des masses de « %s » retirée" />
+		<text name="gui_ad_massZoneReverse" text="« %s » se prend en marche arrière : pas de zone des masses possible (il faut une destination où l'on arrive en marche avant)" />
+		<text name="gui_ad_massZoneImpossible" text="« %s » : pas de zone des masses possible (aucune route n'arrive à la destination)" />
 		<text name="AD_autonomous_frontToolNone" text="Outil AV : celui attelé" />
 		<text name="AD_autonomous_nextFrontTool" text="Outil AV suivant : %s" />
 		<text name="AD_autonomous_nextFrontToolNone" text="Outil AV suivant : le même" />

@@ -28,13 +28,14 @@ function ADAutonomousToolEvent.emptyNew()
     return self
 end
 
-function ADAutonomousToolEvent.new(vehicle, tool, isNext, isTrailer, isFront)
+function ADAutonomousToolEvent.new(vehicle, tool, isNext, isTrailer, isFront, isAuto)
     local self = ADAutonomousToolEvent.emptyNew()
     self.vehicle = vehicle
     self.tool = tool
     self.isNext = isNext == true
     self.isTrailer = isTrailer == true
     self.isFront = isFront == true
+    self.isAuto = isAuto == true -- (17/11) « Masse auto » (ligne « Outil avant »)
     return self
 end
 
@@ -46,6 +47,7 @@ function ADAutonomousToolEvent:writeStream(streamId, connection)
     streamWriteBool(streamId, self.isNext == true)
     streamWriteBool(streamId, self.isTrailer == true)
     streamWriteBool(streamId, self.isFront == true)
+    streamWriteBool(streamId, self.isAuto == true)
     local toolId = self.tool ~= nil and NetworkUtil.getObjectId(self.tool) or nil
     streamWriteBool(streamId, toolId ~= nil)
     if toolId ~= nil then
@@ -58,6 +60,7 @@ function ADAutonomousToolEvent:readStream(streamId, connection)
     self.isNext = streamReadBool(streamId)
     self.isTrailer = streamReadBool(streamId)
     self.isFront = streamReadBool(streamId)
+    self.isAuto = streamReadBool(streamId)
     self.tool = nil
     if streamReadBool(streamId) then
         self.tool = NetworkUtil.getObject(NetworkUtil.readNodeObjectId(streamId))
@@ -83,10 +86,21 @@ function ADAutonomousToolEvent:run(connection)
         return
     end
     if self.isFront then
+        -- (17/11) « Masse auto » : la masse suit le poids de l'outil ; un choix à la main l'enlève
+        local canAuto = not self.isNext and self.vehicle.ad.stateModule.setFpFrontAuto ~= nil
+        if canAuto and self.isAuto then
+            self.vehicle.ad.stateModule:setFpFrontTool(nil)
+            self.vehicle.ad.stateModule:setFpFrontAuto(true)
+            ADAutonomousManager.log("%s : outil avant « masse auto » (selon le poids de l'outil)", tostring(self.vehicle.ad.stateModule:getName()))
+            return
+        end
         -- (10/11) attelage avant : outil frontal ou masse
         if tool ~= nil and not ADAutonomousManager.isFetchableFront(self.vehicle, tool) then
             ADAutonomousManager.log("%s : outil avant refusé (%s)", tostring(self.vehicle.ad.stateModule:getName()), tostring(tool.getName ~= nil and tool:getName() or "?"))
             return
+        end
+        if canAuto then
+            self.vehicle.ad.stateModule:setFpFrontAuto(false)
         end
         local label = tool ~= nil and ADAutonomousManager.frontLabel(tool) or nil
         if self.isNext then
@@ -115,8 +129,8 @@ end
 -- Envoi
 -- ------------------------------------------------------------------------------------------------------------
 -- client (ou serveur local) -> serveur
-function ADAutonomousToolEvent.send(vehicle, tool, isNext, isTrailer, isFront)
+function ADAutonomousToolEvent.send(vehicle, tool, isNext, isTrailer, isFront, isAuto)
     if g_client ~= nil then
-        g_client:getServerConnection():sendEvent(ADAutonomousToolEvent.new(vehicle, tool, isNext, isTrailer, isFront))
+        g_client:getServerConnection():sendEvent(ADAutonomousToolEvent.new(vehicle, tool, isNext, isTrailer, isFront, isAuto))
     end
 end

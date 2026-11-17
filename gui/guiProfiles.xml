@@ -11,6 +11,10 @@
     <Profile name="fp_dialogBgBottom" extends="fs25_dialogBgBottom">
         <imageColor value="0.004 0.006 0.010 0.95"/>
     </Profile>
+    <!-- FarmPilot : bouton « Zone des masses » de la fenêtre de la destination (MassZoneManager.lua) -->
+    <Profile name="fp_buttonMassZone" extends="buttonOK">
+        <inputAction value="MENU_EXTRA_1"/>
+    </Profile>
     <!-- FarmPilot : roue dentée dans une ligne de réglage, à gauche du choix (types de véhicules des routes, RoadTypesGUI.lua) -->
     <Profile name="fp_settingsGearButton" extends="fs25_settingsMultiTextOptionLocked">
         <size value="30px 30px"/>

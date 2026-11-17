@@ -744,6 +744,15 @@
 		<text name="AD_autonomous_nextToolListNone" text="The same" />
 		<text name="AD_fpFn_mass" text="Zavorra" />
 		<text name="AD_autonomous_frontTool" text="Anteriore: %s" />
+		<text name="AD_autonomous_massAuto" text="Auto weight" />
+		<text name="AD_autonomous_massAutoSwap" text="advised weight %s kg: fetching &quot;%s&quot;" />
+		<text name="AD_autonomous_massAutoDrop" text="advised weight %s kg: puts &quot;%s&quot; in the weight area" />
+		<text name="gui_ad_massZone" text="Weight area" />
+		<text name="gui_ad_massZoneRemove" text="Remove weight area" />
+		<text name="gui_ad_massZoneAdded" text="Weight area added after &quot;%s&quot; (white square on the ground)" />
+		<text name="gui_ad_massZoneRemoved" text="Weight area of &quot;%s&quot; removed" />
+		<text name="gui_ad_massZoneReverse" text="&quot;%s&quot; is reached in reverse: no weight area possible (it needs a destination reached forwards)" />
+		<text name="gui_ad_massZoneImpossible" text="&quot;%s&quot;: no weight area possible (no road reaches the destination)" />
 		<text name="AD_autonomous_frontToolNone" text="Anteriore: quello agganciato" />
 		<text name="AD_autonomous_nextFrontTool" text="Prossimo anteriore: %s" />
 		<text name="AD_autonomous_nextFrontToolNone" text="Prossimo anteriore: lo stesso" />

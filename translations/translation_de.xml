@@ -739,6 +739,15 @@
 		<text name="AD_autonomous_nextToolListNone" text="Dasselbe" />
 		<text name="AD_fpFn_mass" text="Gewicht" />
 		<text name="AD_autonomous_frontTool" text="Front: %s" />
+		<text name="AD_autonomous_massAuto" text="Gewicht auto" />
+		<text name="AD_autonomous_massAutoSwap" text="empfohlenes Gewicht %s kg: holt &quot;%s&quot;" />
+		<text name="AD_autonomous_massAutoDrop" text="empfohlenes Gewicht %s kg: stellt &quot;%s&quot; im Gewichtsbereich ab" />
+		<text name="gui_ad_massZone" text="Gewichtsbereich" />
+		<text name="gui_ad_massZoneRemove" text="Gewichtsbereich entfernen" />
+		<text name="gui_ad_massZoneAdded" text="Gewichtsbereich nach &quot;%s&quot; angelegt (weißes Quadrat am Boden)" />
+		<text name="gui_ad_massZoneRemoved" text="Gewichtsbereich von &quot;%s&quot; entfernt" />
+		<text name="gui_ad_massZoneReverse" text="&quot;%s&quot; wird rückwärts angefahren: kein Gewichtsbereich möglich (das Ziel muss vorwärts angefahren werden)" />
+		<text name="gui_ad_massZoneImpossible" text="&quot;%s&quot;: kein Gewichtsbereich möglich (keine Straße führt zum Ziel)" />
 		<text name="AD_autonomous_frontToolNone" text="Front: das angehängte" />
 		<text name="AD_autonomous_nextFrontTool" text="Nächstes Frontgerät: %s" />
 		<text name="AD_autonomous_nextFrontToolNone" text="Nächstes Frontgerät: dasselbe" />

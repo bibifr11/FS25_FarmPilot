@@ -63,12 +63,46 @@ function ADEnterTargetNameGui:onOpen()
 
     self.buttonsCreateElement:setVisible(not self.edit)
     self.buttonsEditElement:setVisible(self.edit)
+    -- (17/11) zone des masses de la destination (FarmPilot, MassZoneManager.lua)
+    if self.massZoneButton ~= nil then
+        local isZone = ADMassZone ~= nil and self.edit and ADMassZone.isZone(self.editName)
+        self.massZoneButton:setText(g_i18n:getText(isZone and "gui_ad_massZoneRemove" or "gui_ad_massZone"))
+        self.massZoneButton:setVisible(ADMassZone ~= nil and self.edit)
+    end
+end
+
+-- (17/11) bouton « Zone des masses » : ajoute ou retire le carré des masses après la destination (MassZoneManager.lua)
+function ADEnterTargetNameGui:onClickMassZone()
+    self:debugMsg("ADEnterTargetNameGui:onClickMassZone")
+    if ADMassZone == nil or not self.edit or self.editName == nil then
+        return
+    end
+    local ok, added, why = FarmPilotCall(ADMassZone.toggle, self.editName)
+    if not ok then
+        ADAutonomousManager.log("ERREUR zone des masses : %s", tostring(added))
+        added = nil
+    end
+    local vehicle = AutoDrive.getControlledVehicle()
+    local key, kind
+    if added == nil then
+        key, kind = why == "reverse" and "gui_ad_massZoneReverse" or "gui_ad_massZoneImpossible", ADMessagesManager.messageTypes.ERROR
+    else
+        key, kind = added and "gui_ad_massZoneAdded" or "gui_ad_massZoneRemoved", ADMessagesManager.messageTypes.INFO
+    end
+    if vehicle ~= nil then
+        local okT, txt = FarmPilotCall(string.format, g_i18n:getText(key), tostring(self.editName))
+        AutoDriveMessageEvent.sendMessageOrNotification(vehicle, kind, okT and txt or g_i18n:getText(key), 10000)
+    end
+    self:onClickBack()
 end
 
 function ADEnterTargetNameGui:onClickOk()
     self:debugMsg("ADEnterTargetNameGui:onClickOk")
     if self.edit then
         ADGraphManager:renameMapMarker(self.textInputElement.text, self.editId)
+        if ADMassZone ~= nil then
+            ADMassZone.rename(self.editName, self.textInputElement.text) -- (17/11) la zone des masses suit
+        end
     else
         ADGraphManager:createMapMarkerOnClosest(AutoDrive.getControlledVehicle(), self.textInputElement.text)
     end
@@ -78,6 +112,9 @@ end
 function ADEnterTargetNameGui:onClickDelete()
     self:debugMsg("ADEnterTargetNameGui:onClickDelete")
     ADGraphManager:removeMapMarker(self.editId)
+    if ADMassZone ~= nil then
+        ADMassZone.remove(self.editName) -- (17/11) sa zone des masses aussi
+    end
     self:onClickBack()
 end
 

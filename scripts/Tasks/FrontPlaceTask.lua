@@ -221,7 +221,7 @@ function ADFrontPlaceTask:update(dt)
         end
         local _, vl = sizeOf(self.vehicle)
         local _, fl = sizeOf(self.tool)
-        local d = vl + fl + ADFrontPlaceTask.ENTRY
+        local d = vl + fl + (self.slot.entry or ADFrontPlaceTask.ENTRY) -- (zone des masses : plus près, voir MassZoneManager.lua)
         local entry = { x = self.slot.x + self.slot.dirX * d, y = self.slot.y, z = self.slot.z + self.slot.dirZ * d }
         local pf = self.vehicle.ad.pathFinderModule
         pf:reset()

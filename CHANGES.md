@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.1.2): 92 files modified, 293 files added, 3 files removed.
+Summary (FarmPilot 1.1.1.3): 92 files modified, 294 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,7 +24,7 @@ Summary (FarmPilot 1.1.1.2): 92 files modified, 293 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+392 / -12)
+- register.lua (+393 / -12)
 - scripts/AutoDrive.lua (+69 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
@@ -235,6 +235,7 @@ Summary (FarmPilot 1.1.1.2): 92 files modified, 293 files added, 3 files removed
 - scripts/Modes/AutonomousHeaderCollect.lua
 - scripts/Modes/AutonomousHeaderCross.lua
 - scripts/Modes/AutonomousHeaderEntry.lua
+- scripts/Modes/AutonomousHeaderFieldLead.lua
 - scripts/Modes/AutonomousHeaderFollow.lua
 - scripts/Modes/AutonomousHeaderGate.lua
 - scripts/Modes/AutonomousHeaderGround.lua

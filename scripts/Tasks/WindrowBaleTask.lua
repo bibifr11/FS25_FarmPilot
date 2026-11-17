@@ -181,6 +181,11 @@ ADWindrowBaleTask.WIDTH_NARROW = 0.6        -- lecture plus étroite que ça x l
                                             -- comptée dans la largeur habituelle
 ADWindrowBaleTask.RESIDUE_PART = 0.15       -- morceau de moins de ça x les litres habituels d'une lecture = restes (passage
                                             -- d'une roue, d'un pick-up) : pas lu, la ligne continue tout droit
+ADWindrowBaleTask.THIN_NEAR = 0.5           -- m : (17/11) morceau mince qui touche la ligne suivie à ça près, rien d'autre lu :
+                                            -- andain plus mince (suite après un trou), suivi (recentrage limité)
+ADWindrowBaleTask.LOST_BRIDGE = 10          -- m : (17/11) plus rien relu mais l'andain du balayage continue : sa ligne regardée
+                                            -- sur tant devant ; paille dessus = tout droit sur la ligne jusque-là
+ADWindrowBaleTask.LOST_HALF_WIDTH = 1.0     -- m : demi-largeur regardée sur la ligne (LOST_BRIDGE)
 ADWindrowBaleTask.ANCHOR_RELEARN = 15       -- m de suite plus large que d'habitude sans fourche finie : largeur habituelle
                                             -- relue (mal apprise au début), bord plus suivi
 ADWindrowBaleTask.WIDE_MARGIN = 0.3         -- m : andain plus large que le pick-up + ça = andain large
@@ -1918,7 +1923,9 @@ function ADWindrowBaleTask:updatePlanning(dt)
     if path == nil or #path < 2 then
         problem = "pas de chemin du chercheur"
     else
-        problem, kind = self:sweepProblem(path, false)
+        -- (17/11) en Strict, chemin du chercheur revérifié avec le contrôle fin de l'ensemble (sa carte en cases de
+        -- plusieurs mètres laissait passer le gravier du bord : champ 52, demi-tour hors du champ)
+        problem, kind = self:sweepProblem(path, self:isStrict())
     end
     if problem == nil then
         if not self:tripRefused(path, "chercheur de chemin") then
@@ -2180,6 +2187,7 @@ function ADWindrowBaleTask:startFollow(line, how)
     self.wideLogged, self.limitLogged, self.limitCount = false, false, 0
     self.anchor, self.forkOn, self.forkCount, self.sideCount = nil, false, 0, 0
     self.rowLiters, self.anchorFrom, self.anchorN, self.anchorSum, self.residueCount = nil, nil, 0, 0, 0
+    self.thinCount, self.thinRead, self.missEmpty, self.missResidue, self.bridged, self.bridgeFrom = 0, false, 0, 0, 0, nil
     self.sHint = nil
     self.entered = false
     self.nextProbe = 0
@@ -2250,15 +2258,20 @@ end
 
 -- (17/11) morceaux lus en travers sans les restes (moins de RESIDUE_PART x les litres habituels d'une lecture : passage
 -- d'une roue, d'un pick-up en travers), une fois les litres habituels appris
-function ADWindrowBaleTask:dropResidue(pieces, q)
+function ADWindrowBaleTask:dropResidue(pieces, q, expect)
     local L = self.rowLiters
     if L == nil or L <= 0 or type(pieces) ~= "table" then
         return pieces or {}
     end
     local kept = {}
+    local thin = nil
     for _, p in ipairs(pieces) do
         if (p.l or 0) >= L * ADWindrowBaleTask.RESIDUE_PART then
             kept[#kept + 1] = p
+        elseif expect ~= nil and p.lo - ADWindrowBaleTask.THIN_NEAR <= expect and p.hi + ADWindrowBaleTask.THIN_NEAR >= expect then
+            if thin == nil or math.abs(p.c - expect) < math.abs(thin.c - expect) then
+                thin = p
+            end
         end
     end
     if #kept < #pieces then
@@ -2267,6 +2280,17 @@ function ADWindrowBaleTask:dropResidue(pieces, q)
             log("%s : andain %s : restes lus à %.0f m du bout d'entrée (moins de %.0f %% d'une lecture habituelle) : pas suivis",
                 self:name(), tostring(self.line.row.id), q or 0, ADWindrowBaleTask.RESIDUE_PART * 100)
         end
+    end
+    -- (17/11) rien d'autre lu, un morceau mince sur la ligne suivie : l'andain continue plus mince (suite après un trou,
+    -- moins de paille), pas des restes à côté : suivi, recentrage limité (champ 52 : arrêté à 84 m sur 130)
+    if #kept == 0 and thin ~= nil then
+        self.thinCount = self.thinCount + 1
+        if self.thinCount == 1 then
+            log("%s : andain %s : plus mince sur sa ligne à %.0f m du bout d'entrée (%.0f %% d'une lecture habituelle) : suivi tout droit",
+                self:name(), tostring(self.line.row.id), q or 0, (thin.l or 0) / L * 100)
+        end
+        self.thinRead = true
+        return { thin }
     end
     return kept
 end
@@ -2324,12 +2348,15 @@ function ADWindrowBaleTask:readCenter(px, pz, ux, uz, q, expect)
         end
         return nil
     end
+    self.thinRead = false
     local okP, pieces = callOf("ADWindrowScan", "crossPieces", px, pz, ux, uz, self.fillTypes, ADWindrowBaleTask.PROBE_HALF_SPAN)
     if not okP or type(pieces) ~= "table" or #pieces == 0 then
+        self.missEmpty = self.missEmpty + 1
         return nil
     end
-    pieces = self:dropResidue(pieces, q)
+    pieces = self:dropResidue(pieces, q, expect)
     if #pieces == 0 then
+        self.missResidue = self.missResidue + 1
         return nil
     end
     local piece, others = self:pickPiece(pieces, expect)
@@ -2340,7 +2367,9 @@ function ADWindrowBaleTask:readCenter(px, pz, ux, uz, q, expect)
         -- touche le bord de la lecture : relu plus large, pour toute sa largeur
         local okW, wide = callOf("ADWindrowScan", "crossPieces", px, pz, ux, uz, self.fillTypes, ADWindrowBaleTask.WIDE_HALF_SPAN)
         if okW and type(wide) == "table" and #wide > 0 then
-            local p2, o2 = self:pickPiece(self:dropResidue(wide, q), expect)
+            local thinBefore = self.thinRead
+            local p2, o2 = self:pickPiece(self:dropResidue(wide, q, expect), expect)
+            self.thinRead = self.thinRead and thinBefore
             if p2 ~= nil then
                 piece, others = p2, o2
             end
@@ -2503,6 +2532,13 @@ function ADWindrowBaleTask:probeAt(q)
     end
     self.lastSeen = math.max(self.lastSeen, q)
     self.seenCount = self.seenCount + 1
+    -- (17/11) andain plus mince sur sa ligne (lecture moins sûre) : recentrage limité
+    if self.thinRead then
+        self.thinRead = false
+        self.carry = self.carry + clamp(m, -ADWindrowBaleTask.END_SHIFT, ADWindrowBaleTask.END_SHIFT) * ADWindrowBaleTask.PROBE_BLEND
+        self:setOffset(i, self.carry)
+        return true
+    end
     -- près d'un bout arrêté contre un autre andain : celui-ci est lu en travers, décalage limité (pas gardé)
     if (self.exitJoin ~= nil and s > sEnd - ADWindrowBaleTask.END_ZONE) or (self.entryJoin ~= nil and q < ADWindrowBaleTask.END_ZONE) then
         local shift = clamp(m, -ADWindrowBaleTask.END_SHIFT, ADWindrowBaleTask.END_SHIFT) * ADWindrowBaleTask.PROBE_BLEND
@@ -2577,6 +2613,68 @@ function ADWindrowBaleTask:lineSpeed(sP, sig)
     return math.max(speed, 0.5)
 end
 
+-- (17/11) plus rien relu devant, mais l'andain du balayage continue au-delà : sa ligne (ligne suivie, puis celle du
+-- balayage) regardée sur LOST_BRIDGE m devant le pick-up ; paille dessus : tout droit sur la ligne jusqu'au bout de cette
+-- paille (andain mal relu : plus mince, décalé), sinon fin. Vrai si l'andain continue
+function ADWindrowBaleTask:bridgeAhead(sig, lastSeen)
+    local ref, base = self.ref, self.base
+    if base == nil or self.trustScan then
+        return false
+    end
+    local sEnd = ref.s[self.endIdx] or self.endS
+    local rowEnd = (sEnd or ref.s[ref.n]) - ref.sE
+    if rowEnd - lastSeen <= ADWindrowBaleTask.END_GAP then
+        return false
+    end
+    local step = ADWindrowBaleTask.PROBE_STEP
+    local from = math.max(lastSeen, sig) + step
+    local qMax = math.min(rowEnd, math.max(lastSeen, sig) + ADWindrowBaleTask.LOST_BRIDGE)
+    local first, last, onScan = nil, nil, false
+    local q = from
+    while q <= qMax do
+        local i = self:baseIndex(ref.sE + q)
+        local hit = false
+        if i ~= nil then
+            local nx, nz = base.nx[i], base.nz[i]
+            local ux, uz = nz, -nx
+            for k, off in ipairs({ self.carry, 0 }) do
+                local ok, amount = callOf("ADWindrowScan", "amountAt", base.x[i] + nx * off, base.z[i] + nz * off, ux, uz, self.fillTypes, 0.5,
+                    ADWindrowBaleTask.LOST_HALF_WIDTH)
+                if ok and type(amount) == "number" and amount > 0 then
+                    hit = true
+                    onScan = onScan or (k == 2)
+                    break
+                end
+                if math.abs(self.carry) < 0.3 then
+                    break
+                end
+            end
+        end
+        if hit then
+            first = first or q
+            last = q
+        elseif first ~= nil then
+            break
+        end
+        q = q + step
+    end
+    if last == nil then
+        return false
+    end
+    if self.bridgeFrom == nil then
+        self.bridgeFrom = lastSeen
+        log("%s : andain %s : plus rien relu après %.0f m du bout d'entrée (%d lecture(s) vide(s), %d que des restes) mais le balayage voit l'andain devant (paille sur sa ligne de %.0f à %.0f m, andain de %.0f m) : tout droit sur sa ligne",
+            self:name(), tostring(self.line.row.id), lastSeen, self.missEmpty, self.missResidue, first, last, rowEnd)
+    end
+    if onScan then
+        -- paille sur la ligne du balayage seulement : la ligne suivie y revient
+        self.carry = self.carry * 0.5
+    end
+    self.bridged = self.bridged + math.max(0, last - math.max(lastSeen, self.lastSeen))
+    self.lastSeen = math.max(self.lastSeen, last)
+    return true
+end
+
 function ADWindrowBaleTask:updateLine(dt)
     local ref, geo = self.ref, self.geo
     local row = self.line.row
@@ -2632,7 +2730,8 @@ function ADWindrowBaleTask:updateLine(dt)
                 end
             end
         end
-        if sig >= lastSeen + ADWindrowBaleTask.END_MARGIN and (sig + math.max(ADWindrowBaleTask.PROBE_AHEAD, look)) - lastSeen >= ADWindrowBaleTask.END_GAP then
+        if sig >= lastSeen + ADWindrowBaleTask.END_MARGIN and (sig + math.max(ADWindrowBaleTask.PROBE_AHEAD, look)) - lastSeen >= ADWindrowBaleTask.END_GAP
+            and not self:bridgeAhead(sig, lastSeen) then
             self:endRow("fin")
             return
         end
@@ -2955,6 +3054,11 @@ function ADWindrowBaleTask:endRow(how)
         log("%s : andain %s : largeur habituelle %.1f m (%.1f au plus), pick-up %.1f m ; %d fourche(s) ou jonction(s), %d fois deux tas côte à côte, %d recentrage(s) limité(s), %d lecture(s) avec des restes",
             self:name(), tostring(row.id), self.rowWidth, self.widthMax or 0, self.geo.pickupWidth or 0, self.forkCount, self.sideCount, self.limitCount,
             self.residueCount or 0)
+    end
+    if how == "fin" and followed < row.length - ADWindrowBaleTask.END_GAP then
+        log("%s : andain %s : arrêté %.0f m avant le bout du balayage : %d lecture(s) vide(s), %d que des restes, %d plus mince(s) suivie(s), %.0f m tout droit sur la ligne du balayage ; rien sur sa ligne sur %.0f m devant",
+            self:name(), tostring(row.id), row.length - followed, self.missEmpty or 0, self.missResidue or 0, self.thinCount or 0, self.bridged or 0,
+            ADWindrowBaleTask.LOST_BRIDGE)
     end
     if self.strict and (self.edgeMax or 0) > 0 then
         log("%s : andain %s : sur l'herbe du bord au plus à %.1f m du sol du champ (prévu, %.0f m permis)", self:name(), tostring(row.id), self.edgeMax,

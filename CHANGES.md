@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.1.3): 92 files modified, 294 files added, 3 files removed.
+Summary (FarmPilot 1.1.1.5): 92 files modified, 294 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 

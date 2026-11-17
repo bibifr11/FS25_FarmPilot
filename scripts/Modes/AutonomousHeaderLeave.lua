@@ -25,6 +25,10 @@
 --   seulement s'il est à plus de GUARD_NEAR m (on ne sait pas de quel champ il est le bord).
 -- - Seule exception : la coupe sans remorque (coupe à maïs) que la moissonneuse conduit elle-même à sa place
 --   (AutonomousHeaderGround.lua : parkTool, parkSide « front »).
+-- - (17/11 20:14, champ 21 -> « Champ 5 ») Coupe qu'elle vient de prendre sur la remorque amenée pour ce champ : la
+--   remorque n'avait pas de place à l'entrée et l'a posée au bord d'un champ voisin (28 m). Ce n'est pas un départ :
+--   elle va à son champ dès que le tracteur a dégagé (AutonomousHeaderClear.lua, job.deliveredGo). Avant, le
+--   garde-fou rappelait le tracteur pour reposer la coupe et elle attendait (« Attendre l'autre machine »).
 --
 -- Branché par : Modes/AutonomousHeader.lua (onStart : departCarry) ; enveloppes posées au chargement sur
 -- DriveToDestinationTask:setUp/:update et ExitFieldTask:setUp/:update. Chargé par register.lua après
@@ -105,6 +109,23 @@ function ADHeaderFlow.leavesField(v, destId)
     local field = ADAutonomousManager.fieldAt(x, z)
     if field == nil then
         return false
+    end
+    -- (17/11) coupe prise sur la remorque amenée pour ce champ : elle y va (exception, une seule fois par amenée)
+    local job = v.ad.fpHeaderJob
+    if job ~= nil and job.deliveredGo and job.combine == v and job.header == header then
+        local jm = job.fieldId ~= nil and ADGraphManager:getMapMarkerById(job.fieldId) or nil
+        local jwp = jm ~= nil and ADGraphManager:getWayPointById(jm.id) or nil
+        local jField = jwp ~= nil and ADAutonomousManager.fieldAt(jwp.x, jwp.z) or nil
+        local here = tonumber(ADAutonomousManager.fieldNumber(field))
+        local nums = jm ~= nil and numbersOf(jm.name) or nil
+        if (jField ~= nil and ADAutonomousManager.sameField(field, jField)) or (here ~= nil and nums ~= nil and inList(here, nums)) then
+            job.deliveredGo = nil -- arrivée sur son champ : l'exception est finie, le garde-fou reprend
+        else
+            local dm = destId ~= nil and ADGraphManager.getMapMarkerByWayPointId ~= nil and ADGraphManager:getMapMarkerByWayPointId(destId) or nil
+            if destId == nil or (jm ~= nil and (jm.id == destId or (dm ~= nil and dm.name == jm.name))) then
+                return false
+            end
+        end
     end
     local num = tonumber(ADAutonomousManager.fieldNumber(field))
     local here = string.format("champ %s", tostring(num or "?"))

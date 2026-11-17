@@ -11,6 +11,8 @@
 --   croise plus et ne remonte plus la route de la moissonneuse vers son champ (les CLEAR_ROUTE premiers mètres, à
 --   moins d'une demi-barre + CLEAR_MARGIN m). Même sens sur le même chemin : pas une gêne, elle suit derrière.
 -- - Tracteur arrêté (garé, arrêté à la main), ou CLEAR_TIMEOUT ms passés : elle repart de toute façon.
+-- - (17/11) Zone de CLEAR_DISTANCE = 50 m. Une fois partie, elle va à son champ même si la remorque a posé la coupe au
+--   bord d'un champ voisin : jamais de rappel du tracteur pour reposer la coupe (AutonomousHeaderLeave.lua).
 -- - Remorque reculée dans l'entrée du champ (AutonomousHeaderBackIn.lua) : après l'attelage la moissonneuse ne
 --   ressort pas de 18 m en marche arrière (elle traverserait le chemin), elle recule juste de quoi laisser partir
 --   la remorque (longueur de la barre + BACKIN_EXIT_MARGIN m).
@@ -23,7 +25,7 @@
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
 ADHeaderFlow.CLEAR_WAIT = true           -- false : la moissonneuse repart tout de suite, comme avant
-ADHeaderFlow.CLEAR_DISTANCE = 30         -- m entre la moissonneuse et le tracteur (ou sa remorque) avant qu'elle reparte
+ADHeaderFlow.CLEAR_DISTANCE = 50         -- m entre la moissonneuse et le tracteur (ou sa remorque) avant qu'elle reparte (17/11 : 50 m, avant 30)
 ADHeaderFlow.CLEAR_ROUTE = 200           -- m de la route de la moissonneuse vers son champ regardés
 ADHeaderFlow.CLEAR_TRACTOR_ROUTE = 500   -- m de la route qui reste au tracteur regardés
 ADHeaderFlow.CLEAR_MARGIN = 2.5          -- m en plus de la demi-largeur de la barre
@@ -178,6 +180,9 @@ function ADHeaderFlow.combineStage(mode, job, stage, result)
     end
     mode.headerStage = nil
     mode.headerTask = nil
+    -- (17/11) coupe prise sur la remorque amenée pour ce champ, même posée au bord d'un champ voisin : elle part à son
+    -- champ, pas de rappel du tracteur pour la reposer (AutonomousHeaderLeave.lua : leavesField)
+    job.deliveredGo = true
     mode:start()
 end
 

@@ -281,7 +281,8 @@ ADResumeStage.register("fuel", {
             mode.fuelThen = "back"
             mode.fuelStage = "back"
             mode.fuelTask = driveBackToField(mode)
-            log("%s : partie rechargée après le plein de carburant : retour au champ, Courseplay repartira au dernier point", name)
+            log("%s : partie rechargée après le plein de carburant : retour au champ, %s", name, (ADWindrowMode ~= nil and ADWindrowMode.isBaler(vehicle))
+                and "puis nouvelle recherche des andains et nouvelle tâche de la presse" or "Courseplay repartira au dernier point")
             return true
         end
         log("%s : partie rechargée pendant le plein de carburant : le plein reprend%s", name, after == "back" and ", puis retour au champ" or ", puis le champ suivant")

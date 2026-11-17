@@ -147,6 +147,13 @@
 		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
 		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
 		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
+		<text name="gui_ad_fpFuelWork" text="Tanken während der Arbeit unter" />
+		<text name="gui_ad_fpFuelWork_tooltip" text="Im Autonom-Modus: Fällt der niedrigste Tank (Diesel oder AdBlue) während der Arbeit (Presse, FarmPilot-Plan) unter diesen Wert, merkt sich der Traktor die Stelle, fährt zur nächsten Tankstelle, kommt zurück und macht weiter. Nie: kein Tanken während der Arbeit, nur am Feldende." />
+		<text name="gui_ad_fpFuelWork_off" text="Nie" />
+		<text name="gui_ad_fpFuelWork_5" text="5 %" />
+		<text name="gui_ad_fpFuelWork_10" text="10 %" />
+		<text name="gui_ad_fpFuelWork_15" text="15 %" />
+		<text name="gui_ad_fpFuelWork_20" text="20 %" />
 		<text name="gui_ad_findDriver"									text="Abfahrer finden" />
 		<text name="gui_ad_findDriver_tooltip"							text="Suche nach nahestem Abfahrer (Zieleinstellung ignorieren)" />
 		<text name="gui_ad_gui_scale"									text="GUI-Skalierung des FarmPilot-HUDs" />

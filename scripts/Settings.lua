@@ -554,6 +554,21 @@ AutoDrive.settings.fpExitField = {
     isCopyPaste = true
 }
 
+-- (17/11) « Plein pendant le travail sous » : réglage du tracteur, part du réservoir le plus bas (gazole, AdBlue...)
+-- en dessous de laquelle le travail s'arrête pour le plein (presse sans Courseplay, plan FarmPilot), puis reprend ;
+-- « Jamais » = pas de plein pendant le travail (seulement à la fin du champ). Lu par ADFuelRun.workThreshold.
+AutoDrive.settings.fpFuelDuringWork = {
+    values = {0, 0.05, 0.10, 0.15, 0.20},
+    texts = {"gui_ad_fpFuelWork_off", "gui_ad_fpFuelWork_5", "gui_ad_fpFuelWork_10", "gui_ad_fpFuelWork_15", "gui_ad_fpFuelWork_20"},
+    default = 2,
+    current = 2,
+    text = "gui_ad_fpFuelWork",
+    tooltip = "gui_ad_fpFuelWork_tooltip",
+    translate = true,
+    isVehicleSpecific = true,
+    isCopyPaste = true
+}
+
 AutoDrive.settings.showHelp = {
     values = {false, true},
     texts = {"gui_ad_no", "gui_ad_yes"},

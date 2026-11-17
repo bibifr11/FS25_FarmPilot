@@ -12,6 +12,9 @@
 -- - Pendant ce plein, le plein automatique d'AutoDrive entre deux tâches ne s'en mêle pas (fpFuelRun, lu par
 --   TaskModule.lua hasToRefuel).
 -- - Courseplay ne s'arrête que si son réglage « attendre le plein » est sur non ; sinon il attend sur place.
+-- - (17/11) Pendant le travail sans Courseplay (presse, plan FarmPilot) : plein seulement sous le seuil du réglage du
+--   tracteur « Plein pendant le travail sous » (fpFuelDuringWork : Jamais / 5 / 10 / 15 / 20 %, 5 % par défaut,
+--   workThreshold) ; au retour (« back »), la presse repart sur une nouvelle recherche (ADWindrowMode.afterFuel).
 --
 -- Branché par une ligne dans : ExternalInterface.lua (onCpFuelEmpty), AutonomousMode.lua (reset ;
 -- handleFinishedTask ; goToNextField), TaskModule.lua (hasToRefuel), Specialization.lua (stopAutoDrive : afterStop).
@@ -24,6 +27,7 @@ ADFuelRun = {}
 -- ------------------------------------------------------------------------------------------------------------
 ADFuelRun.FUEL_LOW = 0.20          -- part du réservoir : en dessous, plein avant le champ suivant
 ADFuelRun.EXIT_DISTANCE = 30       -- m : au champ et plus loin que ça de son marqueur = sortie du champ d'abord
+ADFuelRun.WORK_LOW = 0.05          -- part du réservoir : plein pendant le travail en dessous (réglage absent ou illisible)
 
 local function log(fmt, ...)
     ADAutonomousManager.log(fmt, ...)
@@ -54,6 +58,18 @@ function ADFuelRun.fuelLevel(vehicle)
                 low = p
             end
         end
+    end
+    return low
+end
+
+-- (17/11) réglage du tracteur « Plein pendant le travail sous » : part du réservoir (0 à 1) ; nil = Jamais
+function ADFuelRun.workThreshold(vehicle)
+    local ok, low = FarmPilotCall(AutoDrive.getSetting, "fpFuelDuringWork", vehicle)
+    if not ok or type(low) ~= "number" then
+        return ADFuelRun.WORK_LOW
+    end
+    if low <= 0 then
+        return nil
     end
     return low
 end
@@ -176,6 +192,7 @@ function ADFuelRun.handleStage(mode)
     else
         -- « back » : revenu au champ, Courseplay repart au dernier point (voir stopAutoDrive, fpRestartCp)
         ADFuelRun.reset(mode)
+        if ADWindrowMode ~= nil and ADWindrowMode.afterFuel ~= nil and ADWindrowMode.afterFuel(mode) then return end -- (17/11) presse sans Courseplay : nouvelle recherche des andains, voir AutonomousWindrow.lua
         log("%s : de retour au champ après le plein, Courseplay repart où il s'était arrêté", nameOf(vehicle))
         vehicle.ad.fpRestartCp = true
         vehicle.ad.taskModule:addTask(StopAndDisableADTask:new(vehicle, ADTaskModule.DONT_PROPAGATE))

@@ -147,6 +147,13 @@
 		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
 		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
 		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
+		<text name="gui_ad_fpFuelWork" text="Refuel during work below" />
+		<text name="gui_ad_fpFuelWork_tooltip" text="In Autonomous mode, when the lowest tank (diesel or DEF) drops below this level during work (baler, FarmPilot plan), the tractor remembers where it was, drives to the nearest fuel station, comes back and carries on. Never: no refuel during work, only at the end of the field." />
+		<text name="gui_ad_fpFuelWork_off" text="Never" />
+		<text name="gui_ad_fpFuelWork_5" text="5 %" />
+		<text name="gui_ad_fpFuelWork_10" text="10 %" />
+		<text name="gui_ad_fpFuelWork_15" text="15 %" />
+		<text name="gui_ad_fpFuelWork_20" text="20 %" />
 		<text name="gui_ad_findDriver"									text="Procurar motorista" />
 		<text name="gui_ad_findDriver_tooltip"							text="Pesquisar por motoristas próximos (Ignorar destino)" />
 		<text name="gui_ad_gui_scale"									text="Gui dimensionar FarmPilot HUD" />

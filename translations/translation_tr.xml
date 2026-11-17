@@ -147,6 +147,13 @@
 		<text name="gui_ad_fpSiloEmptyWait_60" text="1 dak" />
 		<text name="gui_ad_fpSiloEmptyWait_120" text="2 dak" />
 		<text name="gui_ad_fpSiloEmptyWait_300" text="5 dak" />
+		<text name="gui_ad_fpFuelWork" text="Çalışırken yakıt al: altında" />
+		<text name="gui_ad_fpFuelWork_tooltip" text="Otonom modda, en düşük depo (mazot veya AdBlue) çalışma sırasında (balya makinesi, FarmPilot planı) bu seviyenin altına düşünce traktör kaldığı yeri hatırlar, en yakın akaryakıt istasyonuna gider, geri döner ve devam eder. Asla: çalışırken yakıt alınmaz, yalnızca tarla bitince." />
+		<text name="gui_ad_fpFuelWork_off" text="Asla" />
+		<text name="gui_ad_fpFuelWork_5" text="5 %" />
+		<text name="gui_ad_fpFuelWork_10" text="10 %" />
+		<text name="gui_ad_fpFuelWork_15" text="15 %" />
+		<text name="gui_ad_fpFuelWork_20" text="20 %" />
 		<text name="gui_ad_findDriver"									text="Sürücü Bul" />
 		<text name="gui_ad_findDriver_tooltip"							text="Sürücülere göre yakın ara (Hedefi yoksay)" />
 		<text name="gui_ad_gui_scale"									text="FarmPilot HUD için Gui ölçeği" />

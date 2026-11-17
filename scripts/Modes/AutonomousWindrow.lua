@@ -22,6 +22,11 @@
 -- - Aucun andain à la première arrivée : message « noWindrow », arrêt et attente, comme avant. Après une recharge ou
 --   une reprise (le pressage avait commencé) : plus d'andain = champ fini.
 -- - Arrêt pendant le pressage (bouton Marche/Arrêt, erreur) : la presse est arrêtée, pick-up relevé (abort de la tâche).
+-- - (17/11) Carburant pendant le pressage (règle 9 : jamais de plein pendant une tâche, sauf sous le seuil) : lecture
+--   toutes les FUEL_CHECK ms ; sous le réglage du tracteur « Plein pendant le travail sous » (ADFuelRun.workThreshold,
+--   5 % par défaut, Jamais possible) : tâche finie « fuel », presse repliée (balle finie posée d'abord), plein à la
+--   pompe la plus proche (ADFuelRun.start « back »), retour au champ, puis nouvelle recherche et NOUVELLE tâche
+--   (afterFuel), jamais Courseplay. Plein incomplet au retour (pompe sans AdBlue...) : pas d'autre plein sur ce champ.
 -- - Reprise (partie rechargée, bouton Marche/Arrêt, relance d'AutoDrive) : étape « windrow » (AutonomousResumeStage.lua) ;
 --   on cherche de nouveau les andains sur place (ce qui est pressé a disparu) et la tâche repart. Pendant le trajet de
 --   recharge : étape « refill » existante, puis afterRefill au retour.
@@ -42,6 +47,7 @@ ADWindrowMode.SCAN_BUDGET = 300         -- lectures du sol par image pendant la 
 ADWindrowMode.SCAN_TIMEOUT = 180000     -- ms au plus pour la recherche : ce qui est trouvé est pris
 ADWindrowMode.SCAN_OPTS = { step = 1, minLength = 5, gap = 3, edge = 10 } -- voir WindrowScan.lua
 ADWindrowMode.RESCAN_MAX = 1            -- tâche finie « done » mais il reste des andains : nouvelles recherches au plus
+ADWindrowMode.FUEL_CHECK = 2000         -- ms entre deux lectures du carburant pendant le pressage
 
 local function log(fmt, ...)
     if ADBalerManager ~= nil and ADBalerManager.log ~= nil then
@@ -65,6 +71,13 @@ local function toolName(baler)
     return ok and tostring(n) or "?"
 end
 
+local function percent(level)
+    if level == nil then
+        return "?"
+    end
+    return string.format("%d %%", math.floor(level * 100 + 0.5))
+end
+
 -- ------------------------------------------------------------------------------------------------------------
 -- Remise à zéro (hook AutonomousMode:reset)
 -- ------------------------------------------------------------------------------------------------------------
@@ -72,7 +85,7 @@ function ADWindrowMode.reset(mode)
     mode.windrowStage = nil   -- « scan » (recherche des andains), « bale » (pressage), « empty » (balle posée avant la route) ; pendant la recharge : étapes refillStage
     mode.windrowCtx = nil
     mode.windrowTask = nil
-    mode.windrowAfterEmpty = nil -- (15/11) après « empty » : « finish » (champ fini) ou { refill = plan }
+    mode.windrowAfterEmpty = nil -- (15/11) après « empty » : « finish » (champ fini), { refill = plan } ou { fuel = true }
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -268,6 +281,7 @@ function ADWindrowMode.startBale(mode, windrows)
             FarmPilotCall(ADBalerControl.release, ctx.baler, false)
         end
     end
+    ADWindrowMode.watchFuel(mode, task)
     mode.windrowStage = "bale"
     mode.windrowTask = task
     log("%s : champ %s : la presse « %s » part sur les andains (%s, presse %s)", nameOf(vehicle), ctx.fieldText, toolName(ctx.baler),
@@ -304,6 +318,8 @@ function ADWindrowMode.afterBale(mode, task)
         ADWindrowMode.finishField(mode)
     elseif result == "refill" then
         ADWindrowMode.goRefill(mode)
+    elseif result == "fuel" then
+        ADWindrowMode.goFuel(mode)
     elseif result == "detached" then
         log("%s : presse dételée : arrêt et attente", nameOf(vehicle))
         message(vehicle, "ERROR", "AD_autonomous_windrowDetached")
@@ -362,7 +378,7 @@ function ADWindrowMode.waitEmpty(mode, baler, after)
         return false
     end
     log("%s : balle finie encore dans la presse « %s » : arrêt le temps qu'elle la pose, puis %s", nameOf(mode.vehicle), toolName(baler),
-        after == "finish" and "la suite du champ fini" or "la recharge")
+        after == "finish" and "la suite du champ fini" or (type(after) == "table" and after.fuel and "le plein de carburant") or "la recharge")
     mode.windrowStage = "empty"
     mode.windrowAfterEmpty = after
     mode.windrowTask = ADWindrowEmptyTask:new(mode.vehicle, baler)
@@ -373,10 +389,21 @@ end
 -- (hook AutonomousMode:handleRefillStage, fin de l'étape « back ») revenu au champ après la recharge : nouvelle
 -- recherche des andains et nouvelle tâche, jamais Courseplay ; true = pris ici (presse attelée)
 function ADWindrowMode.afterRefill(mode)
+    return ADWindrowMode.backToWork(mode, "refill")
+end
+
+-- (17/11, hook ADFuelRun.handleStage, fin de l'étape « back ») revenu au champ après le plein de carburant : comme
+-- après la recharge ; true = pris ici (presse attelée)
+function ADWindrowMode.afterFuel(mode)
+    return ADWindrowMode.backToWork(mode, "fuel")
+end
+
+function ADWindrowMode.backToWork(mode, why)
     local vehicle = mode.vehicle
+    local what = why == "fuel" and "du plein de carburant" or "de la recharge"
     local ok, ctx = FarmPilotCall(ADWindrowMode.makeContext, vehicle)
     if not ok then
-        log("ERREUR presse au retour de la recharge : %s", tostring(ctx))
+        log("ERREUR presse au retour %s : %s", what, tostring(ctx))
         return false
     end
     if ctx == nil then
@@ -385,16 +412,128 @@ function ADWindrowMode.afterRefill(mode)
     ctx.started = true
     mode.windrowCtx = ctx
     if ctx.fieldNum == nil then
-        log("%s : de retour de la recharge, pas de champ ici : arrêt et attente", nameOf(vehicle))
+        log("%s : de retour %s, pas de champ ici : arrêt et attente", nameOf(vehicle), what)
         message(vehicle, "ERROR", "AD_autonomous_noField")
         ADWindrowMode.stopAndWait(mode)
         return true
     end
-    local info = ADBalerManager.consumable(ctx.baler)
-    log("%s : de retour au champ %s après la recharge (%s) : nouvelle recherche des andains, puis nouvelle tâche (sans Courseplay)", nameOf(vehicle),
-        ctx.fieldText, ADBalerManager.levelText(info))
+    local state
+    if why == "fuel" then
+        local level = ADFuelRun ~= nil and ADFuelRun.fuelLevel ~= nil and ADFuelRun.fuelLevel(vehicle) or nil
+        local low = ADWindrowMode.fuelThreshold(vehicle)
+        state = "carburant " .. percent(level)
+        if level ~= nil and low ~= nil and level < low then
+            -- pompe sans AdBlue, plus d'argent... : pas d'aller-retour sans fin, le pressage continue sans autre plein ici
+            ctx.fuelSkip = true
+            state = state .. ", plein incomplet : pas d'autre plein sur ce champ"
+        end
+    else
+        state = ADBalerManager.levelText(ADBalerManager.consumable(ctx.baler))
+    end
+    log("%s : de retour au champ %s après %s (%s) : nouvelle recherche des andains, puis nouvelle tâche (sans Courseplay)", nameOf(vehicle),
+        ctx.fieldText, why == "fuel" and "le plein de carburant" or "la recharge", state)
     ADWindrowMode.startScan(mode)
     return true
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (17/11) Carburant pendant le pressage : plein seulement sous le seuil du tracteur, puis retour et nouvelle tâche
+-- ------------------------------------------------------------------------------------------------------------
+-- seuil du réglage du tracteur (0 à 1) ; nil = Jamais
+function ADWindrowMode.fuelThreshold(vehicle)
+    if ADFuelRun == nil then
+        return nil
+    end
+    if ADFuelRun.workThreshold == nil then
+        return ADFuelRun.WORK_LOW or 0.05
+    end
+    local ok, low = FarmPilotCall(ADFuelRun.workThreshold, vehicle)
+    if not ok then
+        return ADFuelRun.WORK_LOW or 0.05
+    end
+    return low
+end
+
+-- true = plein à faire maintenant (sous le seuil) ; au-dessus mais bas (sous FUEL_LOW) : noté une fois, plein à la fin du champ
+function ADWindrowMode.fuelLow(mode)
+    local vehicle, ctx = mode.vehicle, mode.windrowCtx
+    if ctx == nil or ctx.fuelSkip or ADFuelRun == nil or ADFuelRun.fuelLevel == nil then
+        return false
+    end
+    local okL, level = FarmPilotCall(ADFuelRun.fuelLevel, vehicle)
+    if not okL or type(level) ~= "number" then
+        return false
+    end
+    local low = ADWindrowMode.fuelThreshold(vehicle)
+    if low ~= nil and level < low then
+        log("%s : champ %s : carburant à %s (seuil du tracteur %s) : arrêt du pressage pour le plein", nameOf(vehicle), ctx.fieldText,
+            percent(level), percent(low))
+        return true
+    end
+    if level < (ADFuelRun.FUEL_LOW or 0.20) and not ctx.fuelNoted then
+        ctx.fuelNoted = true
+        log("%s : champ %s : carburant à %s : pas de plein pendant le pressage (%s), plein à la fin du champ s'il y a un champ suivant",
+            nameOf(vehicle), ctx.fieldText, percent(level), low ~= nil and ("seulement sous " .. percent(low)) or "réglage du tracteur : Jamais")
+    end
+    return false
+end
+
+-- lecture du carburant pendant la tâche de pressage (sa fonction update enveloppée) : sous le seuil, fin « fuel »
+function ADWindrowMode.watchFuel(mode, task)
+    local baseUpdate = task.update
+    local timer = 0
+    task.update = function(t, dt, ...)
+        if t.result == nil then
+            timer = timer + (dt or 0)
+            if timer >= ADWindrowMode.FUEL_CHECK then
+                timer = 0
+                local ok, low = FarmPilotCall(ADWindrowMode.fuelLow, mode)
+                if ok and low == true then
+                    if t.holdVehicle ~= nil then
+                        FarmPilotCall(t.holdVehicle, t, dt)
+                    end
+                    t:finish("fuel")
+                    return
+                end
+            end
+        end
+        return baseUpdate(t, dt, ...)
+    end
+end
+
+-- tâche finie « fuel » : presse repliée pour la route (balle finie posée d'abord), plein, retour (afterFuel)
+function ADWindrowMode.goFuel(mode)
+    local vehicle, ctx = mode.vehicle, mode.windrowCtx
+    FarmPilotCall(ADBalerControl.release, ctx.baler, true)
+    ctx.prepared = false
+    log("%s : carburant bas au champ %s : presse repliée, plein à la pompe la plus proche, puis retour et nouvelle tâche", nameOf(vehicle),
+        ctx.fieldText)
+    if ADWindrowMode.waitEmpty(mode, ctx.baler, { fuel = true }) then
+        return
+    end
+    ADWindrowMode.fuelGo(mode)
+end
+
+function ADWindrowMode.fuelGo(mode)
+    local vehicle, ctx = mode.vehicle, mode.windrowCtx
+    local fieldText = ctx ~= nil and ctx.fieldText or "?"
+    mode.windrowStage = nil -- le plein passe par les étapes de ADFuelRun (fuelStage), puis afterFuel au retour
+    mode.windrowTask = nil
+    mode.windrowAfterEmpty = nil
+    local level = ADFuelRun ~= nil and ADFuelRun.fuelLevel ~= nil and ADFuelRun.fuelLevel(vehicle) or nil
+    local why = string.format("presse au champ %s, carburant à %s", fieldText, percent(level))
+    local ok, started = false, nil
+    if ADFuelRun ~= nil and ADFuelRun.start ~= nil then
+        ok, started = FarmPilotCall(ADFuelRun.start, vehicle, "back", why)
+    end
+    if not ok or started ~= true then
+        -- pas de pompe connue : message déjà donné par ADFuelRun.start
+        log("%s : %s : pas de plein possible (%s) : arrêt et attente", nameOf(vehicle), why, ok and "pas de pompe" or tostring(started))
+        if mode.windrowCtx == nil then
+            mode.windrowCtx = ctx
+        end
+        ADWindrowMode.stopAndWait(mode)
+    end
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -436,6 +575,8 @@ function ADWindrowMode.handleStage(mode)
             ADWindrowMode.finishFieldGo(mode)
         elseif type(after) == "table" and after.refill ~= nil then
             ADWindrowMode.refillGo(mode, after.refill)
+        elseif type(after) == "table" and after.fuel then
+            ADWindrowMode.fuelGo(mode)
         else
             ADWindrowMode.stopAndWait(mode)
         end

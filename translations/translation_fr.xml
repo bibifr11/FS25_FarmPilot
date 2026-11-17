@@ -147,6 +147,13 @@
 		<text name="gui_ad_fpSiloEmptyWait_60" text="1 min" />
 		<text name="gui_ad_fpSiloEmptyWait_120" text="2 min" />
 		<text name="gui_ad_fpSiloEmptyWait_300" text="5 min" />
+		<text name="gui_ad_fpFuelWork" text="Plein pendant le travail sous" />
+		<text name="gui_ad_fpFuelWork_tooltip" text="En mode Autonome, quand le réservoir le plus bas (gazole ou AdBlue) passe sous ce niveau pendant le travail (presse, plan FarmPilot), le tracteur retient où il en est, va à la pompe la plus proche, revient et reprend. Jamais : pas de plein pendant le travail, seulement à la fin du champ." />
+		<text name="gui_ad_fpFuelWork_off" text="Jamais" />
+		<text name="gui_ad_fpFuelWork_5" text="5 %" />
+		<text name="gui_ad_fpFuelWork_10" text="10 %" />
+		<text name="gui_ad_fpFuelWork_15" text="15 %" />
+		<text name="gui_ad_fpFuelWork_20" text="20 %" />
 		<text name="gui_ad_findDriver"									text="Trouver un chauffeur" />
 		<text name="gui_ad_findDriver_tooltip"							text="Recherche du chauffeur le plus proche (Ignore la destination)." />
 		<text name="gui_ad_gui_scale"									text="Taille de l'ATH FarmPilot" />

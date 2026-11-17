@@ -548,6 +548,7 @@
 		<text name="AD_ty_parkFor" text="Kenara çekme nedeni:" />
 		<text name="AD_ty_crossing" text="Kavşak, bekleniyor:" />
 		<text name="AD_ty_queue" text="Arkasında kuyruk olundu:" />
+		<text name="AD_ty_blockedBy" text="Blocked by" />
 		<text name="AD_trafficYield_failed" text="karşıdan gelen aracın geçmesi için boş alan bulunamadı" />
 		<text name="AD_trafficYield_giveUp" text="karşıdan gelen araç geçemiyor, ne boş alan ne de kavşak bulundu: lütfen müdahale edin" />
 		<text name="gui_ad_trafficYieldMargin" text="Geçiş boşluğu / payı" />

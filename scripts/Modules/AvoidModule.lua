@@ -10,7 +10,8 @@
 --   et retiré progressivement avec la distance roulée, tenu jusqu'à ce que tout l'attelage ait passé l'obstacle.
 --   Vitesse limitée pendant ce temps.
 -- - Seulement sur le réseau de routes : jamais dans un champ, jamais pendant un plan de face à face (TrafficYield)
---   ni pendant un contournement d'obstacle. Un véhicule ne compte comme obstacle qu'après VEHICLE_STILL_TIME à
+--   ni pendant un contournement d'obstacle. Exception (17/11) : celui qui passe dans un croisement s'écarte d'un objet
+--   fixe, ou de son partenaire garé (ou reculé) qui l'attend, si le couloir décalé est libre (isParkedPartner). Un véhicule ne compte comme obstacle qu'après VEHICLE_STILL_TIME à
 --   l'arrêt.
 -- - Voiture du trafic arrêtée devant, en travers du couloir (nez à nez : elle nous attend et on l'attend) :
 --   changement de voie. Le véhicule recule juste ce qu'il faut (STATE_BACKING, comme le contournement), se décale
@@ -208,6 +209,37 @@ function ADAvoidModule:isPasserInPlan()
     return true
 end
 
+-- 17/11 (MF 7S.210 stopped 6 m before the 7R Gen2 350 parked for it, half on a narrow dirt track): the vehicle that
+-- passes in a head-on plan may shift beside its partner once that one is parked (or backed off) and waits for it.
+-- The shifted corridor is still tested, so it only happens where both trains fit side by side
+ADAvoidModule.PARTNER_WAIT_STATES = nil
+function ADAvoidModule:isParkedPartner(root)
+    if root == nil or root.ad == nil or root.ad.trafficYieldModule == nil or ADTrafficYieldModule == nil then
+        return false
+    end
+    local tym = self.vehicle.ad.trafficYieldModule
+    if tym == nil or tym.partner ~= root or not self:isPasserInPlan() then
+        return false
+    end
+    if ADAvoidModule.PARTNER_WAIT_STATES == nil then
+        ADAvoidModule.PARTNER_WAIT_STATES = {
+            [ADTrafficYieldModule.STATE_PARKER_WAIT] = true,
+            [ADTrafficYieldModule.STATE_REVERSER_WAIT] = true,
+            [ADTrafficYieldModule.STATE_REVERSER_HIDE] = true
+        }
+    end
+    return ADAvoidModule.PARTNER_WAIT_STATES[root.ad.trafficYieldModule.state] == true
+end
+
+function ADAvoidModule:isParkedPartnerHit(hit)
+    if hit == nil or not hit.isVehicle or hit.object == nil then
+        return false
+    end
+    local object = hit.object
+    local root = object.getRootVehicle ~= nil and object:getRootVehicle() or object
+    return self:isParkedPartner(root)
+end
+
 -- hit: the obstacle the shift is for; a fixed object (not a vehicle, not a traffic car) lets the passer of a
 -- head-on plan shift, the 60 m corridor test still keeps it in lane when someone comes the other way
 function ADAvoidModule:isBusyElsewhere(hit)
@@ -217,6 +249,7 @@ function ADAvoidModule:isBusyElsewhere(hit)
     end
     if ad.trafficYieldModule ~= nil and ad.trafficYieldModule.isBusy ~= nil and ad.trafficYieldModule:isBusy() then
         local fixed = (hit ~= nil and not hit.isVehicle and not hit.isTraffic) or (hit == nil and self.passerShift == true)
+            or self:isParkedPartnerHit(hit)
         -- a shift already under way for a fixed object goes on when the plan just ended (only its cooldown left)
         local planEnded = hit == nil and self.passerShift == true and ad.trafficYieldModule.state == ADTrafficYieldModule.STATE_IDLE
         if not (fixed and (self:isPasserInPlan() or planEnded)) then
@@ -224,8 +257,13 @@ function ADAvoidModule:isBusyElsewhere(hit)
         end
         if hit ~= nil and not self.passerLogged then
             self.passerLogged = true
-            print(string.format("[AD-Ecart] %s: croisement en cours, je suis celui qui passe : je contourne l'objet fixe '%s'",
-                ADTrafficYieldModule.getName(self.vehicle), tostring(hit.name or hit.objectName or "?")))
+            if hit.isVehicle then
+                print(string.format("[AD-Ecart] %s: croisement en cours, je suis celui qui passe : je m'ecarte de '%s' gare pour moi",
+                    ADTrafficYieldModule.getName(self.vehicle), tostring(hit.name or hit.objectName or "?")))
+            else
+                print(string.format("[AD-Ecart] %s: croisement en cours, je suis celui qui passe : je contourne l'objet fixe '%s'",
+                    ADTrafficYieldModule.getName(self.vehicle), tostring(hit.name or hit.objectName or "?")))
+            end
         end
     end
     if ad.obstacleDetourModule ~= nil and ad.obstacleDetourModule:isControlling() then
@@ -250,12 +288,13 @@ function ADAvoidModule:isVehicleStill(hit, dt)
     local root = object.getRootVehicle ~= nil and object:getRootVehicle() or object
     local speed = math.abs(root.lastSpeedReal or 0) * 3600
     local still = speed < ADAvoidModule.VEHICLE_STILL_SPEED
-    if root.ad ~= nil and root.ad.trafficYieldModule ~= nil and root.ad.trafficYieldModule.partner == self.vehicle then
+    local parkedPartner = self:isParkedPartner(root)
+    if root.ad ~= nil and root.ad.trafficYieldModule ~= nil and root.ad.trafficYieldModule.partner == self.vehicle and not parkedPartner then
         still = false
     end
     -- S5 (28/10 17:42): an AutoDrive vehicle that waits its turn my way (single track, crossing) is the head of
     -- the queue: I stay behind it, never around it
-    if still and self:isWaitingMyWay(root) then
+    if still and not parkedPartner and self:isWaitingMyWay(root) then
         self:logLimited(hit, "attend son tour dans mon sens, je reste derriere")
         still = false
     end
@@ -465,12 +504,12 @@ function ADAvoidModule:tryStart(dt)
             self:logLimited(hit, string.format("voiture arretee dans mon sens depuis %.0f s, rien devant elle : je la double", standing / 1000))
         end
     end
-    if hit.side == 0 and (hit.isTraffic or not hit.isVehicle) then
+    if hit.side == 0 and (hit.isTraffic or not hit.isVehicle or self:isParkedPartnerHit(hit)) then
         -- traffic car stopped across my line (it waits for me), or an object across the corridor (service kit,
         -- pallet, bale on the road): a lane change, after backing up when too close. A wall or a gate across the
         -- road fails the corridor test and goes to the detour as before
         if not self:isBusyElsewhere(hit) and not self:isOnField() then
-            self.passerShift = not hit.isVehicle and not hit.isTraffic and self:isPasserInPlan()
+            self.passerShift = (not hit.isVehicle and not hit.isTraffic and self:isPasserInPlan()) or self:isParkedPartnerHit(hit)
             self:tryLaneChange(hit, distance, speed)
         end
         return
@@ -487,7 +526,7 @@ function ADAvoidModule:tryStart(dt)
     if self:isBusyElsewhere(hit) or self:isOnField() then
         return
     end
-    self.passerShift = not hit.isVehicle and not hit.isTraffic and self:isPasserInPlan()
+    self.passerShift = (not hit.isVehicle and not hit.isTraffic and self:isPasserInPlan()) or self:isParkedPartnerHit(hit)
     local sign = -hit.side
     local range = math.max(ADAvoidModule.CLEAR_RANGE, distance + self:getTrainLength() + ADAvoidModule.PASS_MARGIN)
     for _, e in ipairs(ADAvoidModule.OFFSETS) do

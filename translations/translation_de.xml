@@ -528,6 +528,7 @@
 		<text name="AD_ty_parkFor" text="Weicht aus für" />
 		<text name="AD_ty_crossing" text="Kreuzung, wartet:" />
 		<text name="AD_ty_queue" text="Wartet in der Schlange hinter" />
+		<text name="AD_ty_blockedBy" text="Blockiert durch" />
 		<text name="AD_trafficYield_failed" text="hat keinen Platz zum Ausweichen gefunden" />
 		<text name="AD_trafficYield_giveUp" text="kann dem entgegenkommenden Fahrzeug nicht ausweichen, kein Platz und keine Abzweigung gefunden: bitte eingreifen" />
 		<text name="gui_ad_trafficYieldMargin" text="Abstand beim Ausweichen" />

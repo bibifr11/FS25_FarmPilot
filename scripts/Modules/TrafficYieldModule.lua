@@ -298,6 +298,12 @@ function ADTrafficYieldModule:setState(newState)
         ]==]
         self.state = newState
         self.stateTimer:timer(false)
+        -- 17/11: the stop of the approach is over once a plan runs (the HUD showed "waits for X to pass" to the
+        -- passer for the whole plan, while X was parked for it)
+        if newState ~= ADTrafficYieldModule.STATE_IDLE then
+            self.anticipationHoldFor = nil
+        end
+        self.passerStoppedMs = nil
     end
 end
 
@@ -397,6 +403,11 @@ function ADTrafficYieldModule:handle(dt, obstacleDetected)
     -- while driving inside a plan (passing / approaching), keep anticipating any OTHER oncoming vehicle
     if self:holdForOtherOncoming(dt) then
         return true
+    end
+
+    -- the passer stopped with nothing explaining it (17/11): trace, then the roles are swapped
+    if self:watchPasserStopped(dt) then
+        return self:isControlling()
     end
 
     -- stopped face to face by a vehicle that the route comparison could not see
@@ -667,6 +678,16 @@ function ADTrafficYieldModule.getWaitInfo(vehicle)
         end
         if m.anticipationHoldFor ~= nil and stopped then
             return waitFor(m.anticipationHoldFor, "toPass")
+        end
+        -- 17/11: the passer stopped by its parked partner says so (it was shown as a queue behind it)
+        if partner ~= nil and stopped and (state == ADTrafficYieldModule.STATE_REVERSER_PASS or state == ADTrafficYieldModule.STATE_PARKER_PASS) then
+            local am = vehicle.ad.approachModule
+            local hit = am ~= nil and am.getHit ~= nil and am:getHit() or nil
+            local object = hit ~= nil and hit.object or nil
+            local root = object ~= nil and object.getRootVehicle ~= nil and object:getRootVehicle() or object
+            if root ~= nil and root == partner then
+                return "$l10n_AD_ty_blockedBy; " .. getName(partner)
+            end
         end
     end
     -- red points (Intersection): what it waits for there

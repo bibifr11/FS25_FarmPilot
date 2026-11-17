@@ -256,6 +256,7 @@ source(Utils.getFilename("scripts/Modules/TrafficYieldModuleTrain.lua", g_curren
 source(Utils.getFilename("scripts/Modules/TrafficYieldModuleRoute.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/TrafficYieldModuleAnticipation.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/TrafficYieldModuleDeadlock.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/TrafficYieldModulePassWatch.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/TrafficYieldModuleEarlyPlan.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/TrafficYieldModuleApproach.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/TrafficYieldModuleSingleTrack.lua", g_currentModDirectory))

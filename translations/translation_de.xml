@@ -939,6 +939,8 @@
 		<text name="gui_ad_seeder_no" text="Nein" />
 		<text name="gui_ad_seeder_refill" text="Nachfüllpunkt" />
 		<text name="gui_ad_seeder_refillNone" text="zu wählen" />
+		<text name="gui_ad_seeder_gameBuys" text="vom Spiel gekauft" />
+		<text name="gui_ad_seeder_refillOptional" text="optional (das Spiel kauft)" />
 		<text name="gui_ad_seeder_statusOk" text="Einstellungen bestätigt: Start erlaubt." />
 		<text name="gui_ad_seeder_statusTodo" text="Noch nicht bestätigt: Start verweigert, bis Sie auf Bestätigen klicken." />
 		<text name="gui_ad_seeder_choose" text="Wählen" />

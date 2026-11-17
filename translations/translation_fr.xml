@@ -942,6 +942,8 @@
 		<text name="gui_ad_seeder_no" text="Non" />
 		<text name="gui_ad_seeder_refill" text="Zone de ravitaillement" />
 		<text name="gui_ad_seeder_refillNone" text="à choisir" />
+		<text name="gui_ad_seeder_gameBuys" text="acheté par le jeu" />
+		<text name="gui_ad_seeder_refillOptional" text="facultative (le jeu achète)" />
 		<text name="gui_ad_seeder_statusOk" text="Réglages validés : départ autorisé." />
 		<text name="gui_ad_seeder_statusTodo" text="Pas encore validé : départ refusé tant que vous n'avez pas cliqué sur Valider." />
 		<text name="gui_ad_seeder_choose" text="Choisir" />

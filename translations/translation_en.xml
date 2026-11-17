@@ -944,6 +944,8 @@
 		<text name="gui_ad_seeder_no" text="No" />
 		<text name="gui_ad_seeder_refill" text="Refill point" />
 		<text name="gui_ad_seeder_refillNone" text="to choose" />
+		<text name="gui_ad_seeder_gameBuys" text="bought by the game" />
+		<text name="gui_ad_seeder_refillOptional" text="optional (the game buys)" />
 		<text name="gui_ad_seeder_statusOk" text="Settings validated: start allowed." />
 		<text name="gui_ad_seeder_statusTodo" text="Not validated yet: start refused until you click Validate." />
 		<text name="gui_ad_seeder_choose" text="Choose" />

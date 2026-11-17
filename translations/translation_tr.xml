@@ -944,6 +944,8 @@
 		<text name="gui_ad_seeder_no" text="Hayır" />
 		<text name="gui_ad_seeder_refill" text="Dolum Noktası" />
 		<text name="gui_ad_seeder_refillNone" text="seçiniz:" />
+		<text name="gui_ad_seeder_gameBuys" text="oyun tarafından satın alınır" />
+		<text name="gui_ad_seeder_refillOptional" text="isteğe bağlı (oyun satın alır)" />
 		<text name="gui_ad_seeder_statusOk" text="Ayarlar onaylandı: başlatmaya izin verildi." />
 		<text name="gui_ad_seeder_statusTodo" text="Henüz onaylanmadı: Onayla'ya tıklayana kadar başlatma reddedildi." />
 		<text name="gui_ad_seeder_choose" text="Seç" />

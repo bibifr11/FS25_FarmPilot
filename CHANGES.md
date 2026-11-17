@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.0.8): 91 files modified, 290 files added, 3 files removed.
+Summary (FarmPilot 1.1.0.9): 91 files modified, 290 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -81,24 +81,24 @@ Summary (FarmPilot 1.1.0.8): 91 files modified, 290 files added, 3 files removed
 - scripts/XML.lua (+46 / -12)
 - textures/ad_gui.dds (binary, replaced)
 - textures/ad_gui.xml (+17 / -0)
-- translations/translation_br.xml (+1099 / -90)
-- translations/translation_cs.xml (+1100 / -91)
-- translations/translation_ct.xml (+1101 / -92)
-- translations/translation_cz.xml (+1099 / -90)
-- translations/translation_da.xml (+1100 / -91)
-- translations/translation_de.xml (+1109 / -95)
-- translations/translation_ea.xml (+1101 / -92)
-- translations/translation_en.xml (+1111 / -92)
-- translations/translation_es.xml (+1101 / -92)
-- translations/translation_fr.xml (+1163 / -146)
-- translations/translation_hu.xml (+1100 / -91)
-- translations/translation_it.xml (+1092 / -83)
-- translations/translation_nl.xml (+1101 / -92)
-- translations/translation_pl.xml (+1100 / -91)
-- translations/translation_pt.xml (+1101 / -92)
-- translations/translation_ru.xml (+1101 / -92)
-- translations/translation_tr.xml (+1203 / -184)
-- translations/translation_uk.xml (+1101 / -92)
+- translations/translation_br.xml (+1101 / -90)
+- translations/translation_cs.xml (+1102 / -91)
+- translations/translation_ct.xml (+1103 / -92)
+- translations/translation_cz.xml (+1101 / -90)
+- translations/translation_da.xml (+1102 / -91)
+- translations/translation_de.xml (+1111 / -95)
+- translations/translation_ea.xml (+1103 / -92)
+- translations/translation_en.xml (+1113 / -92)
+- translations/translation_es.xml (+1103 / -92)
+- translations/translation_fr.xml (+1165 / -146)
+- translations/translation_hu.xml (+1102 / -91)
+- translations/translation_it.xml (+1094 / -83)
+- translations/translation_nl.xml (+1103 / -92)
+- translations/translation_pl.xml (+1102 / -91)
+- translations/translation_pt.xml (+1103 / -92)
+- translations/translation_ru.xml (+1103 / -92)
+- translations/translation_tr.xml (+1205 / -184)
+- translations/translation_uk.xml (+1103 / -92)
 
 ## New files (written for FarmPilot)
 

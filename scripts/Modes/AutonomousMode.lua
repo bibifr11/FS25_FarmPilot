@@ -1187,6 +1187,10 @@ function AutonomousMode.onCpEmpty(vehicle)
     local plan = ADSeederManager.prepare(vehicle)
     plan = plan or (ADSprayerManager ~= nil and ADSprayerManager.preparePlan(vehicle, "back") or nil) -- épandeur / pulvé vide : même plein que le semoir, voir SprayerManager.lua
     plan = plan or (ADBalerManager ~= nil and ADBalerManager.preparePlan ~= nil and ADBalerManager.preparePlan(vehicle, "back") or nil) -- (15/11) presse sans ficelle / filet : recharge à sa zone, voir BalerManager.lua
+    if plan ~= nil and plan.gameBuys and plan.marker == nil then
+        ADAutonomousManager.log("%s : Courseplay arrêté (cuve vide), le jeu achète les produits pour l'ouvrier (options du jeu) et pas de zone de ravitaillement : arrêt", name) -- (17/11) voir SeederManager.lua
+        return false
+    end
     if plan == nil or plan.marker == nil then
         ADAutonomousManager.log("%s : Courseplay arrêté (cuve vide), pas de semoir réglé attelé : arrêt", name)
         return false

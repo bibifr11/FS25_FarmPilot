@@ -186,7 +186,8 @@ function ADSprayerSettingsGui:refreshItems()
         info = string.format(g_i18n:getText("gui_ad_sprayer_head"), okL and label or ADAutonomousManager.toolLabel(self.ctx.tool), tostring(self.ctx.field))
         local d = self.draft
         -- produit
-        local productValue = d.fillType ~= nil and ADSprayerManager.productTitle(d.fillType) or g_i18n:getText("gui_ad_seeder_refillNone")
+        local buys = ADSprayerManager.helperBuys(self.ctx.tool) -- (17/11) le jeu achète le produit : produit et zone facultatifs
+        local productValue = d.fillType ~= nil and ADSprayerManager.productTitle(d.fillType) or g_i18n:getText(buys and "gui_ad_seeder_gameBuys" or "gui_ad_seeder_refillNone")
         if #(self.products or {}) > 1 or d.fillType == nil then
             productValue = productValue .. "  >"
         end
@@ -202,12 +203,12 @@ function ADSprayerSettingsGui:refreshItems()
         -- zone de ravitaillement
         self.rows[#self.rows + 1] = {
             kind = "refill", text = g_i18n:getText("gui_ad_seeder_refill"),
-            value = (d.refill or g_i18n:getText("gui_ad_seeder_refillNone")) .. "  >"
+            value = (d.refill or g_i18n:getText(buys and "gui_ad_seeder_refillOptional" or "gui_ad_seeder_refillNone")) .. "  >"
         }
         local status
         if self.message ~= nil then
             status = self.message
-        elseif self.saved ~= nil and ADSprayerManager.isValid(self.saved) and self:draftEqualsSaved() then
+        elseif self.saved ~= nil and ADSprayerManager.isValid(self.saved, self.ctx.tool) and self:draftEqualsSaved() then
             status = g_i18n:getText("gui_ad_seeder_statusOk")
         else
             status = g_i18n:getText("gui_ad_seeder_statusTodo")
@@ -299,7 +300,7 @@ function ADSprayerSettingsGui:onClickValidate()
     if self.mode ~= "settings" or self.ctx == nil or self.draft == nil then
         return
     end
-    local missing = ADSprayerManager.missing(self.draft)
+    local missing = ADSprayerManager.missing(self.draft, self.ctx.tool)
     if missing == "product" or missing == "none" then
         self.message = g_i18n:getText("gui_ad_sprayer_needProduct")
         self:refreshItems()

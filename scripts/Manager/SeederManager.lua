@@ -273,22 +273,93 @@ function ADSeederManager:set(field, tool, s)
     return entry
 end
 
--- ce qui manque : nil si c'est bon, sinon « fill » (aucun produit) ou « refill » (zone absente ou effacée)
-function ADSeederManager.missing(s)
+-- ------------------------------------------------------------------------------------------------------------
+-- (17/11) Achat automatique par le jeu (options du jeu : l'ouvrier achète les semences, l'engrais ; source du
+-- lisier et du fumier) : ce que le jeu achète pendant le travail n'est jamais chargé. Plus rien à charger = zone
+-- de ravitaillement et produits facultatifs (roue dentée verte sans réglage), et pas de trajet de plein.
+-- ------------------------------------------------------------------------------------------------------------
+local function unitTakes(tool, unit, fillTypeIndex)
+    if unit == nil or fillTypeIndex == nil or tool.getFillUnitSupportsFillType == nil then
+        return false
+    end
+    local ok, r = FarmPilotCall(tool.getFillUnitSupportsFillType, tool, unit, fillTypeIndex)
+    return ok and r == true
+end
+
+-- le jeu achète les semences de ce semoir pour l'ouvrier
+function ADSeederManager.gameBuysSeeds(tool)
+    local mi = g_currentMission ~= nil and g_currentMission.missionInfo or nil
+    return mi ~= nil and mi.helperBuySeeds == true and tool ~= nil and tool.spec_sowingMachine ~= nil
+end
+
+-- le jeu achète ce produit (index) pour l'ouvrier, sur cet outil : semence de la cuve du semoir, engrais d'un semoir
+-- fertiliseur, produit d'un épandeur / pulvé (ADSprayerManager.helperBuys)
+function ADSeederManager.gameBuys(tool, fillTypeIndex)
+    if tool == nil or fillTypeIndex == nil then
+        return false
+    end
+    local sow = tool.spec_sowingMachine
+    if sow ~= nil and ADSeederManager.gameBuysSeeds(tool) then
+        if unitTakes(tool, sow.fillUnitIndex, fillTypeIndex) or (sow.fillUnitIndex == nil and FillType ~= nil and fillTypeIndex == FillType.SEEDS) then
+            return true
+        end
+    end
+    local spray = tool.spec_sprayer
+    if spray ~= nil and ADSprayerManager ~= nil and ADSprayerManager.helperBuys ~= nil and ADSprayerManager.helperBuys(tool) then
+        if unitTakes(tool, spray.fillUnitIndex, fillTypeIndex) then
+            return true
+        end
+    end
+    return false
+end
+
+-- produits choisis qui restent à charger (noms) : ceux que le jeu achète sont enlevés ; sans outil : tous
+function ADSeederManager.toLoad(s, tool)
+    local out = {}
+    for _, name in ipairs(s ~= nil and s.fillTypes or {}) do
+        local idx = g_fillTypeManager:getFillTypeIndexByName(name)
+        if tool == nil or not ADSeederManager.gameBuys(tool, idx) then
+            out[#out + 1] = name
+        end
+    end
+    return out
+end
+
+-- pour le journal : ce que le jeu achète parmi les produits du semoir
+function ADSeederManager.boughtText(s, tool)
+    local out = {}
+    if ADSeederManager.gameBuysSeeds(tool) then
+        out[#out + 1] = "semences"
+    end
+    for _, name in ipairs(s ~= nil and s.fillTypes or {}) do
+        if name ~= "SEEDS" and ADSeederManager.gameBuys(tool, g_fillTypeManager:getFillTypeIndexByName(name)) then
+            out[#out + 1] = name
+        end
+    end
+    return #out > 0 and table.concat(out, "+") or "-"
+end
+
+-- ce qui manque : nil si c'est bon, sinon « none » (jamais réglé), « fill » (aucun produit) ou « refill » (zone
+-- absente ou effacée) ; tool (le semoir) : ce que le jeu achète ne demande ni produit ni zone
+function ADSeederManager.missing(s, tool)
+    local buys = tool ~= nil and ADSeederManager.gameBuysSeeds(tool)
     if s == nil then
-        return "none"
+        return (not buys) and "none" or nil
     end
     if s.fillTypes == nil or #s.fillTypes == 0 then
-        return "fill"
+        return (not buys) and "fill" or nil
     end
     if s.refill == nil or ADGraphManager:getMapMarkerByName(s.refill) == nil then
+        if tool ~= nil and #ADSeederManager.toLoad(s, tool) == 0 then
+            return nil
+        end
         return "refill"
     end
     return nil
 end
 
-function ADSeederManager.isValid(s)
-    return ADSeederManager.missing(s) == nil
+function ADSeederManager.isValid(s, tool)
+    return ADSeederManager.missing(s, tool) == nil
 end
 
 -- roue dentée du HUD : « none » (pas de semoir sur la ligne), « ok » (validé), « todo » (à régler)
@@ -297,7 +368,7 @@ function ADSeederManager.status(vehicle, isNext)
     if ctx == nil then
         return "none"
     end
-    if ADSeederManager.isValid(ADSeederManager:get(ctx.field, ctx.toolKey)) then
+    if ADSeederManager.isValid(ADSeederManager:get(ctx.field, ctx.toolKey), ctx.tool) then
         return "ok"
     end
     return "todo"
@@ -307,7 +378,7 @@ end
 function ADSeederManager.startBlock(vehicle)
     for _, isNext in ipairs({ false, true }) do
         local ctx = ADSeederManager.context(vehicle, isNext)
-        if ctx ~= nil and not ADSeederManager.isValid(ADSeederManager:get(ctx.field, ctx.toolKey)) then
+        if ctx ~= nil and not ADSeederManager.isValid(ADSeederManager:get(ctx.field, ctx.toolKey), ctx.tool) then
             local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, ctx.tool)
             return { label = okL and label or ADAutonomousManager.toolLabel(ctx.tool), field = ctx.field, isNext = isNext }
         end
@@ -419,10 +490,15 @@ function ADSeederManager.prepare(vehicle)
         return nil
     end
     local s = ADSeederManager:get(ctx.field, ctx.toolKey)
-    if not ADSeederManager.isValid(s) then
+    local tool = ctx.tool
+    if not ADSeederManager.isValid(s, tool) then
         return nil
     end
-    local tool = ctx.tool
+    if s == nil then
+        -- (17/11) jamais réglé, le jeu achète les semences : rien à charger, culture du semoir gardée
+        log("%s : semences achetées par le jeu pour l'ouvrier (options du jeu), pas de réglage : pas de plein", tostring(vehicle.ad.stateModule:getName()))
+        return nil
+    end
     if s.fruit ~= nil and tool.setSeedFruitType ~= nil and g_fruitTypeManager ~= nil then
         local ft = g_fruitTypeManager:getFruitTypeByName(s.fruit)
         if ft ~= nil and ADSeederManager.currentFruit(tool) ~= s.fruit then
@@ -430,12 +506,19 @@ function ADSeederManager.prepare(vehicle)
             log("culture « %s » mise sur le semoir", tostring(s.fruit))
         end
     end
-    local fillTypes = ADSeederManager.fillTypeIndices(s)
-    FarmPilotCall(ADSeederManager.applyCpSettings, vehicle, s, fillTypes)
-    local marker = ADGraphManager:getMapMarkerByName(s.refill)
+    FarmPilotCall(ADSeederManager.applyCpSettings, vehicle, s, ADSeederManager.fillTypeIndices(s))
+    -- (17/11) ce que le jeu achète n'est pas chargé ; plus rien à charger = pas de plein
+    local loadNames = ADSeederManager.toLoad(s, tool)
+    local fillTypes = ADSeederManager.fillTypeIndices({ fillTypes = loadNames })
+    local gameBuys = ADSeederManager.gameBuysSeeds(tool) or #loadNames < #(s.fillTypes or {})
+    if gameBuys then
+        log("%s : produits achetés par le jeu pour l'ouvrier (options du jeu) : %s ; à charger : %s", tostring(vehicle.ad.stateModule:getName()),
+            ADSeederManager.boughtText(s, tool), #loadNames > 0 and table.concat(loadNames, "+") or "rien, pas de plein")
+    end
+    local marker = s.refill ~= nil and ADGraphManager:getMapMarkerByName(s.refill) or nil
     return {
-        tool = tool, settings = s, marker = marker, fillTypes = fillTypes, field = ctx.field,
-        needsFill = not ADSeederManager.productsFull(tool, fillTypes, vehicle)
+        tool = tool, settings = s, marker = marker, fillTypes = fillTypes, field = ctx.field, gameBuys = gameBuys,
+        needsFill = #fillTypes > 0 and not ADSeederManager.productsFull(tool, fillTypes, vehicle)
     }
 end
 

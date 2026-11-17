@@ -202,20 +202,25 @@ function ADSeederSettingsGui:refreshItems()
         self.rows[#self.rows + 1] = { kind = "fruit", text = g_i18n:getText("gui_ad_seeder_fruit"), value = fruitValue }
         -- produits à charger (choix multiple)
         for _, e in ipairs(self.loads or {}) do
+            local value = g_i18n:getText(hasFill(d, e.name) and "gui_ad_seeder_yes" or "gui_ad_seeder_no")
+            if ADSeederManager.gameBuys(self.ctx.tool, g_fillTypeManager:getFillTypeIndexByName(e.name)) then
+                value = value .. " · " .. g_i18n:getText("gui_ad_seeder_gameBuys") -- (17/11) acheté par le jeu : jamais chargé
+            end
             self.rows[#self.rows + 1] = {
                 kind = "fill", name = e.name, text = string.format(g_i18n:getText("gui_ad_seeder_load"), tostring(e.title)),
-                value = g_i18n:getText(hasFill(d, e.name) and "gui_ad_seeder_yes" or "gui_ad_seeder_no")
+                value = value
             }
         end
-        -- zone de ravitaillement
+        -- zone de ravitaillement ; (17/11) facultative quand le jeu achète tout ce qui est à charger
+        local optional = ADSeederManager.missing({ fillTypes = d.fillTypes }, self.ctx.tool) == nil
         self.rows[#self.rows + 1] = {
             kind = "refill", text = g_i18n:getText("gui_ad_seeder_refill"),
-            value = (d.refill or g_i18n:getText("gui_ad_seeder_refillNone")) .. "  >"
+            value = (d.refill or g_i18n:getText(optional and "gui_ad_seeder_refillOptional" or "gui_ad_seeder_refillNone")) .. "  >"
         }
         local status
         if self.message ~= nil then
             status = self.message
-        elseif self.saved ~= nil and ADSeederManager.isValid(self.saved) and self:draftEqualsSaved() then
+        elseif self.saved ~= nil and ADSeederManager.isValid(self.saved, self.ctx.tool) and self:draftEqualsSaved() then
             status = g_i18n:getText("gui_ad_seeder_statusOk")
         else
             status = g_i18n:getText("gui_ad_seeder_statusTodo")
@@ -333,7 +338,7 @@ function ADSeederSettingsGui:onClickValidate()
     if self.mode ~= "settings" or self.ctx == nil or self.draft == nil then
         return
     end
-    local missing = ADSeederManager.missing(self.draft)
+    local missing = ADSeederManager.missing(self.draft, self.ctx.tool)
     if missing == "fill" then
         self.message = g_i18n:getText("gui_ad_seeder_needFill")
         self:refreshItems()

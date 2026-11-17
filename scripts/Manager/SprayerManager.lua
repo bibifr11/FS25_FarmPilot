@@ -419,21 +419,27 @@ function ADSprayerManager:set(field, tool, s)
 end
 
 -- ce qui manque : nil si c'est bon, sinon « none », « product » (aucun produit) ou « refill » (zone absente ou effacée)
-function ADSprayerManager.missing(s)
+-- tool (l'épandeur) : (17/11) le jeu achète le produit pour l'ouvrier (options du jeu) = produit et zone facultatifs
+function ADSprayerManager.missing(s, tool)
+    local buys = tool ~= nil and ADSprayerManager.helperBuys(tool)
     if s == nil then
-        return "none"
+        return (not buys) and "none" or nil
     end
     if s.fillType == nil or g_fillTypeManager:getFillTypeIndexByName(s.fillType) == nil then
-        return "product"
+        if not buys then
+            return "product"
+        end
     end
     if s.refill == nil or ADGraphManager:getMapMarkerByName(s.refill) == nil then
-        return "refill"
+        if not buys then
+            return "refill"
+        end
     end
     return nil
 end
 
-function ADSprayerManager.isValid(s)
-    return ADSprayerManager.missing(s) == nil
+function ADSprayerManager.isValid(s, tool)
+    return ADSprayerManager.missing(s, tool) == nil
 end
 
 -- roue dentée : « none » (pas d'épandeur sur la ligne), « ok » (validé), « todo » (à régler)
@@ -442,7 +448,7 @@ function ADSprayerManager.status(vehicle, isNext)
     if ctx == nil then
         return "none"
     end
-    if ADSprayerManager.isValid(ADSprayerManager:get(ctx.field, ctx.toolKey)) then
+    if ADSprayerManager.isValid(ADSprayerManager:get(ctx.field, ctx.toolKey), ctx.tool) then
         return "ok"
     end
     return "todo"
@@ -462,7 +468,7 @@ end
 function ADSprayerManager.startBlock(vehicle)
     for _, isNext in ipairs({ false, true }) do
         local ctx = ADSprayerManager.context(vehicle, isNext)
-        if ctx ~= nil and not ADSprayerManager.isValid(ADSprayerManager:get(ctx.field, ctx.toolKey)) then
+        if ctx ~= nil and not ADSprayerManager.isValid(ADSprayerManager:get(ctx.field, ctx.toolKey), ctx.tool) then
             local okL, label = FarmPilotCall(ADAutonomousManager.toolShortLabel, ctx.tool)
             return { label = okL and label or ADAutonomousManager.toolLabel(ctx.tool), field = ctx.field, isNext = isNext }
         end
@@ -549,17 +555,27 @@ function ADSprayerManager.plan(vehicle, after)
         return nil
     end
     local s = ADSprayerManager:get(ctx.field, ctx.toolKey)
-    if not ADSprayerManager.isValid(s) then
+    local tool = ctx.tool
+    if not ADSprayerManager.isValid(s, tool) then
         return nil
     end
     local name = tostring(vehicle.ad.stateModule:getName())
-    local tool = ctx.tool
+    if ADSprayerManager.helperBuys(tool) then
+        -- (17/11) le jeu achète le produit pendant le travail : pas de plein, zone et produit facultatifs
+        log("%s : le jeu achète le produit pour l'ouvrier (options du jeu) : pas de plein", name)
+        if s == nil then
+            return nil
+        end
+        local unit = ADSprayerManager.fillUnit(tool)
+        return {
+            kind = "sprayer", tool = tool, settings = { fillTypes = { s.fillType } }, marker = s.refill ~= nil and ADGraphManager:getMapMarkerByName(s.refill) or nil,
+            fillTypes = {}, field = ctx.field, needsFill = false, gameBuys = true, fillUnit = unit,
+            fillKey = "AD_autonomous_sprayerFill", emptyKey = "AD_autonomous_sprayerEmpty"
+        }
+    end
     local ftIndex = g_fillTypeManager:getFillTypeIndexByName(s.fillType)
     local unit, cap = ADSprayerManager.fillUnit(tool)
     FarmPilotCall(ADSprayerManager.applyCpSettings, vehicle)
-    if ADSprayerManager.helperBuys(tool) then
-        log("%s : le jeu achète le produit pour l'ouvrier (options du jeu) : la cuve ne se videra pas au champ", name)
-    end
     local level, inTank = ADSprayerManager.content(tool)
     if inTank ~= nil and inTank ~= ftIndex then
         level = 0

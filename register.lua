@@ -394,6 +394,7 @@ source(Utils.getFilename("scripts/Modes/TrailerHitch.lua", g_currentModDirectory
 source(Utils.getFilename("scripts/Hud/HudLoadPoint.lua", g_currentModDirectory)) -- chargement : produits du point de chargement, remorque adaptée
 source(Utils.getFilename("scripts/Modes/TrailerSwap.lua", g_currentModDirectory)) -- échange de bennes à la livraison
 source(Utils.getFilename("scripts/Modes/AutonomousParkUnload.lua", g_currentModDirectory)) -- bouton parking : benne pas vide, vidée d'abord
+source(Utils.getFilename("scripts/Modes/AutonomousUnloaderReclaim.lua", g_currentModDirectory)) -- (17/11) benne qui rentre au garage reprise par la machine qui cherche une benne
 source(Utils.getFilename("scripts/Modes/AutonomousFieldExit.lua", g_currentModDirectory)) -- mode Autonome : départ depuis un champ, sortie par l'entrée du champ d'abord (enveloppe les tâches de route)
 
 source(Utils.getFilename("scripts/Sensors/VirtualSensors.lua", g_currentModDirectory))

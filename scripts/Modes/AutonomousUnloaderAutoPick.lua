@@ -25,6 +25,9 @@
 -- - Tracteur : de la ferme, à l'arrêt, pas conduit par le joueur, pas actif (FarmPilot, Courseplay, ouvrier), rien
 --   d'autre d'attelé que la remorque ou une masse, pas une moissonneuse, pas de l'équipe d'une autre machine, pas
 --   le tracteur d'une remorque porte-barre, attelage arrière libre du type de la remorque.
+-- - (17/11) Exception : tracteur à qui il ne reste que « vider puis garage » ou « garage » (bouton parking, fin de
+--   chantier) : libre, sa benne compte comme vide ; il finit de vider puis vient au lieu du garage
+--   (AutonomousUnloaderReclaim.lua).
 -- - Puissance : POWER_PER_TONNE ch par tonne de la remorque pleine (masse à vide + capacité × masse au litre du
 --   produit), jamais moins (un 100 ch ne part pas avec une remorque de 50 t). Pour chaque remorque, le plus petit
 --   tracteur qui suffit (les gros restent pour les grosses remorques). D'abord les tracteurs déjà attelés à une
@@ -315,13 +318,18 @@ function ADUnloaderAutoPick.fieldMarker(h)
 end
 
 -- une benne la sert déjà : tracteur actif en « Décharger moissonneuse » pour elle, vers son champ (marker) ou vers
--- sa 1re destination
-function ADUnloaderAutoPick.hasUnloader(h, marker)
+-- sa 1re destination ; (17/11) ou tracteur qui rentrait au garage, repris pour elle (AutonomousUnloaderReclaim.lua).
+-- except : ce tracteur ne compte pas
+function ADUnloaderAutoPick.hasUnloader(h, marker, except)
     local own = h.ad.stateModule:getFirstMarker()
     local drv = driverOf(h)
     for _, v in pairs(vehicles()) do
         local sm = v.ad ~= nil and v.ad.stateModule or nil
-        if v ~= h and v ~= drv and sm ~= nil and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:isActive() then
+        if v ~= except and v ~= h and v ~= drv and v.ad ~= nil and not isGone(v)
+            and ((v.ad.fpReclaim ~= nil and v.ad.fpReclaim.h == h) or (v.ad.fpReclaimPending ~= nil and v.ad.fpReclaimPending.h == h)) then
+            return true, v
+        end
+        if v ~= except and v ~= h and v ~= drv and sm ~= nil and sm:getMode() == AutoDrive.MODE_UNLOAD and sm:isActive() then
             local mode = unloadModeOf(v)
             local first = sm:getFirstMarker()
             if (mode ~= nil and mode.combine == h) or (first ~= nil and (first == marker or first == own)) then
@@ -573,7 +581,9 @@ local function massPerLiter(ft)
 end
 
 -- { trailer, capacity (l), empty (t), full (t), needHp } ; nil et la raison si elle ne convient pas
-function ADUnloaderAutoPick.trailerInfo(o, ft)
+-- emptying (17/11) : benne d'un tracteur qui finit de vider avant de venir (AutonomousUnloaderReclaim.lua) : son
+-- chargement ne compte pas
+function ADUnloaderAutoPick.trailerInfo(o, ft, emptying)
     if ADHeaderFlow ~= nil and ADHeaderFlow.isHeaderTrailer ~= nil and ADHeaderFlow.isHeaderTrailer(o) then
         return nil, "remorque porte-barre"
     end
@@ -591,7 +601,7 @@ function ADUnloaderAutoPick.trailerInfo(o, ft)
     for i = 1, #units do
         if safe(o.getFillUnitSupportsFillType, o, i, ft) then
             capacity = capacity + (safe(o.getFillUnitCapacity, o, i) or 0)
-            local level = safe(o.getFillUnitFillLevel, o, i) or 0
+            local level = emptying and 0 or (safe(o.getFillUnitFillLevel, o, i) or 0)
             if level > ADUnloaderAutoPick.MIN_LITERS then
                 if safe(o.getFillUnitFillType, o, i) ~= ft then
                     return nil, "chargée d'un autre produit"
@@ -737,8 +747,13 @@ local function tractorRefusal(v, h, farmId, teamOf, headerTractor)
     if AutoDrive.getIsEntered ~= nil and AutoDrive:getIsEntered(rootOf(v)) then
         return "conduit par le joueur"
     end
-    if sm:isActive() or (AutoDrive.getIsCPActive ~= nil and AutoDrive:getIsCPActive(v))
-        or (v.getIsAIActive ~= nil and v:getIsAIActive()) then
+    -- (17/11) il ne lui reste que vider puis garage, ou garage : libre (AutonomousUnloaderReclaim.lua)
+    local home = ADUnloaderReclaim ~= nil and ADUnloaderReclaim.homeStage(v) or nil
+    if v.ad.fpReclaim ~= nil or v.ad.fpReclaimPending ~= nil then
+        return string.format("déjà repris pour « %s »", nameOf((v.ad.fpReclaim or v.ad.fpReclaimPending).h))
+    end
+    if home == nil and (sm:isActive() or (AutoDrive.getIsCPActive ~= nil and AutoDrive:getIsCPActive(v))
+        or (v.getIsAIActive ~= nil and v:getIsAIActive())) then
         return "actif (FarmPilot, Courseplay ou ouvrier)"
     end
     if v.ad.fpHeaderJob ~= nil or headerTractor[v] then
@@ -752,10 +767,10 @@ local function tractorRefusal(v, h, farmId, teamOf, headerTractor)
     if failedLaunch(v) then
         return string.format("remorque pas attelée au dernier départ, pas repris avant %d min", ADUnloaderAutoPick.LAUNCH_GUARD / 60000)
     end
-    if v.getLastSpeed ~= nil and (safe(v.getLastSpeed, v) or 0) > 1 then
+    if home == nil and v.getLastSpeed ~= nil and (safe(v.getLastSpeed, v) or 0) > 1 then
         return "roule"
     end
-    return nil
+    return nil, home
 end
 
 -- ------------------------------------------------------------------------------------------------------------
@@ -777,8 +792,9 @@ function ADUnloaderAutoPick.choose(h, fieldMarker, ft, wanted)
     local freeTrailers = {}
     for _, o in pairs(vehicles()) do
         if not isGone(o) and ADTrailerHitch ~= nil and ADTrailerHitch.isTrailerObject(o) and farmOf(o) == farmId then
-            local info, why = ADUnloaderAutoPick.trailerInfo(o, ft)
             local attacher = o.getAttacherVehicle ~= nil and o:getAttacherVehicle() or nil
+            local emptying = attacher ~= nil and ADUnloaderReclaim ~= nil and ADUnloaderReclaim.homeStage(attacher) == "unload"
+            local info, why = ADUnloaderAutoPick.trailerInfo(o, ft, emptying)
             if info == nil then
                 refuse(o, why)
             elseif attacher ~= nil and (attacher.ad == nil or attacher.ad.stateModule == nil or rootOf(o) ~= attacher) then
@@ -802,7 +818,7 @@ function ADUnloaderAutoPick.choose(h, fieldMarker, ft, wanted)
         if not isGone(v) and v ~= h and v ~= driverOf(h) and v.ad ~= nil and v.ad.stateModule ~= nil and v.spec_motorized ~= nil
             and v.spec_combine == nil and not (ADHeaderFlow ~= nil and ADHeaderFlow.isCombine(v)) and farmOf(v) == farmId
             and rootOf(v) == v then
-            local why = tractorRefusal(v, h, farmId, teamOf, headerTractor)
+            local why, home = tractorRefusal(v, h, farmId, teamOf, headerTractor)
             local hp = nil
             local hitched = why == nil and hitchedOf(v) or {}
             local own = nil
@@ -838,7 +854,7 @@ function ADUnloaderAutoPick.choose(h, fieldMarker, ft, wanted)
                 refuse(v, why)
             else
                 local vx, vz = posOf(v)
-                local entry = { tractor = v, hp = hp, dest = dest, destHow = destHow, x = vx, z = vz }
+                local entry = { tractor = v, hp = hp, dest = dest, destHow = destHow, x = vx, z = vz, home = home }
                 if own ~= nil then
                     entry.trailer, entry.info, entry.attached = own, trailerOk[own], true
                     entry.d = dist(vx, vz, fx, fz)
@@ -885,7 +901,8 @@ function ADUnloaderAutoPick.choose(h, fieldMarker, ft, wanted)
         end
         if best ~= nil then
             used[best] = true
-            chosen[#chosen + 1] = { tractor = best.tractor, hp = best.hp, dest = best.dest, destHow = best.destHow, trailer = info.trailer, info = info, attached = false }
+            chosen[#chosen + 1] = { tractor = best.tractor, hp = best.hp, dest = best.dest, destHow = best.destHow, trailer = info.trailer, info = info, attached = false,
+                home = best.home }
         else
             local why = (info.onlyFor ~= nil and free == 0) and string.format("choisie par « %s », pas libre", nameOf(info.onlyFor))
                 or free == 0 and "plus de tracteur libre" or (strong == 0 and "aucun tracteur libre assez puissant" or "attelage d'aucun tracteur assez puissant du bon type")
@@ -900,6 +917,9 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 -- nil = parti ; sinon la raison
 function ADUnloaderAutoPick.launch(h, pair, fieldMarker)
+    if pair.home ~= nil and ADUnloaderReclaim ~= nil then
+        return ADUnloaderReclaim.take(h, pair, fieldMarker) -- (17/11) il rentrait au garage : vidé d'abord, voir AutonomousUnloaderReclaim.lua
+    end
     local v = pair.tractor
     local sm = v.ad.stateModule
     local mode = unloadModeOf(v)
@@ -1037,8 +1057,9 @@ function ADUnloaderAutoPick.check(h)
             trace("%s:   %s pas parti (%s)", name, nameOf(pair.tractor), why)
         else
             count = count + 1
-            trace("%s:   %s choisi : %d ch, remorque %s%s, %.1f t pleine (%.1f t a vide + %d l), %.1f ch/t (%d ch au moins), vidage %s (%s)",
-                name, nameOf(pair.tractor), math.floor(pair.hp + 0.5), trailerName(pair.trailer), pair.attached and " (attelee)" or " (a atteler)",
+            trace("%s:   %s choisi%s : %d ch, remorque %s%s, %.1f t pleine (%.1f t a vide + %d l), %.1f ch/t (%d ch au moins), vidage %s (%s)",
+                name, nameOf(pair.tractor), pair.home == "unload" and " (rentrait au garage, vide d'abord)" or (pair.home == "park" and " (rentrait au garage)" or ""),
+                math.floor(pair.hp + 0.5), trailerName(pair.trailer), pair.attached and " (attelee)" or " (a atteler)",
                 pair.info.full, pair.info.empty, math.floor(pair.info.capacity + 0.5), ratio, math.ceil(pair.info.needHp),
                 tostring(pair.dest.name), tostring(pair.destHow))
         end

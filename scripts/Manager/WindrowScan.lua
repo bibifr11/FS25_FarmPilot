@@ -14,14 +14,24 @@
 -- - Extraction : trous d'une case bouchés ; amincissement (squelette d'une case de large, centré) ; graphe (bouts,
 --   croisements) ; bavures de moins de SPUR m et petites boucles (trou dans un tas) enlevées ; à un croisement, les
 --   deux branches qui se suivent le mieux (écart < MAX_TURN) forment le même andain, les autres s'y arrêtent (bout
---   d'andain qui touche l'andain de fourrière) ; tour de fourrière fermé = un andain fermé (closed), coupé au virage
+--   d'andain qui touche l'andain de fourrière) ; (17/11) sens d'une branche pris loin du croisement (DIR_NEAR à DIR_FAR
+--   m) : à une fourche en Y, le squelette coude vers le milieu des deux tas, la branche dans l'axe est bien celle qui
+--   continue l'andain ; tour de fourrière fermé = un andain fermé (closed), coupé au virage
 --   le plus serré ; bouts libres prolongés dans l'axe tant qu'il y a de l'andain (l'amincissement les raccourcit) ;
---   deux bouts libres face à face à moins de GAP m (à la case près) réunis ; morceaux de moins de MIN_LENGTH m
---   ignorés ; ligne lissée, un point tous les POINT_SPACING m (2 m).
+--   deux bouts libres face à face à moins de GAP m (à la case près) réunis ; (17/11) trou plus long, jusqu'à
+--   ALIGNED_GAP m (10 m), réuni seulement si les deux bouts sont alignés : face à face à moins de ALIGN_ANGLE°, la
+--   ligne qui les relie dans l'axe des deux (même écart), chaque bout à moins de ALIGN_LATERAL m de l'axe de l'autre
+--   (jamais deux andains parallèles voisins) ; morceaux de moins de MIN_LENGTH m ignorés ; ligne lissée, un point
+--   tous les POINT_SPACING m (2 m).
 -- - Andain : { id, points = { {x=, z=}, ... } (ligne médiane ordonnée, à suivre de points[1] à points[#points]),
---   length (m), fillType, liters, closed } ; un andain fermé finit sur son premier point.
+--   length (m), fillType, liters, closed, gaps } ; un andain fermé finit sur son premier point ; gaps (17/11) = trous
+--   réunis de plus de GAP_MARK m : { { from = m, to = m, len = m }, ... } (abscisses le long de points, depuis
+--   points[1]) : la presse y continue tout droit sur la ligne.
 -- - centerOffset : bandes de CROSS_STEP m en travers de la direction, milieu (pondéré par les litres) de l'andain le
 --   plus proche de la direction ; + = à droite de la direction (droite de (dx, dz) = (-dz, dx)).
+-- - crossPieces (17/11) : mêmes bandes que centerOffset, tous les morceaux en travers (milieu, bords, litres, coupé
+--   au bord de la lecture) : la presse y prend toute la largeur d'un andain large et la branche de la ligne suivie à
+--   une fourche (WindrowBaleTask.lua).
 -- - amountAt : même lecture que ADBalerManager.hasWindrow (getFillLevelAtArea sur un parallélogramme centré).
 -- - anyLeft : contrôle rapide par grands blocs (ANY_BLOCK m), vrai dès qu'un bloc du groupe a ANY_MIN_LITERS l.
 -- - Journal [FarmPilot Presse] : début et fin du scan (andains, longueurs, images, lectures).
@@ -47,9 +57,16 @@ ADWindrowScan.CELL_INSET = 0.05      -- m : case lue un peu plus petite (pas de 
 ADWindrowScan.SPUR = 3               -- m : branche de squelette vers un bout libre plus courte = bavure
 ADWindrowScan.LOOP_MIN = 8           -- m : petite boucle de squelette (trou dans le tas) enlevée
 ADWindrowScan.DIR_DIST = 4           -- m : direction d'une branche prise à cette distance du croisement
+ADWindrowScan.DIR_NEAR = 3           -- m : (17/11) branche assez longue : direction prise de DIR_NEAR à DIR_FAR m du croisement
+ADWindrowScan.DIR_FAR = 10           -- m   (loin du coude que le squelette fait au croisement d'une fourche)
 ADWindrowScan.MAX_TURN = 60          -- ° : à un croisement de 3 branches ou plus, deux branches se suivent sous cet écart
 ADWindrowScan.MAX_TURN_2 = 100       -- ° : deux branches seules (bavures enlevées) : se suivent sauf demi-tour franc
 ADWindrowScan.JOIN_ANGLE = 50        -- ° : trou réuni si les deux bouts se font face sous cet écart
+ADWindrowScan.ALIGNED_GAP = 10       -- m : trou plus long que GAP réuni jusqu'à tant, si les deux bouts sont alignés (17/11)
+ADWindrowScan.ALIGN_ANGLE = 20       -- ° : bouts alignés = face à face, et ligne qui les relie dans leur axe, sous cet écart
+ADWindrowScan.ALIGN_LATERAL = 1.2    -- m : chaque bout à moins de tant de l'axe de l'autre (pas deux andains voisins)
+ADWindrowScan.ALIGN_DIR_DIST = 8     -- m : sens d'un bout pris sur tant (plus long que pour GAP : moins de bruit)
+ADWindrowScan.GAP_MARK = 1.5         -- m : trou réuni plus long que tant gardé dans andain.gaps (suivi tout droit)
 ADWindrowScan.END_EXTEND = 3         -- m : bout libre prolongé dans l'axe au plus de tant
 ADWindrowScan.SMOOTH = 1.5           -- m : lissage de la ligne médiane (moyenne sur ± SMOOTH)
 ADWindrowScan.LITERS_RADIUS = 3      -- m : case comptée dans l'andain dont un point est à moins de tant
@@ -602,13 +619,14 @@ ADWindrowScan.Scan = Scan
 
 -- fieldNums : numéros des champs du groupe, ensemble { [n] = true } ou liste { n1, n2 } ; fillTypes : produits
 -- (ADBalerManager.windrowTypes, liste ou ensemble) ;
--- opts : { step = 1, minLength = 5, gap = 3, edge = 10 } (m)
+-- opts : { step = 1, minLength = 5, gap = 3, edge = 10, alignedGap = 10 } (m)
 function ADWindrowScan.newScan(fieldNums, fillTypes, opts)
     opts = type(opts) == "table" and opts or {}
     local self = setmetatable({}, Scan)
     self.step = num(opts.step, ADWindrowScan.STEP, 0.1)
     self.minLength = num(opts.minLength, ADWindrowScan.MIN_LENGTH, 0)
     self.gap = num(opts.gap, ADWindrowScan.GAP, 0)
+    self.alignedGap = num(opts.alignedGap, ADWindrowScan.ALIGNED_GAP, 0)
     self.edge = num(opts.edge, ADWindrowScan.EDGE, 0)
     self.spacing = num(opts.pointSpacing, ADWindrowScan.POINT_SPACING, 0.5)
     self.block = max(1, floor(num(opts.block, ADWindrowScan.BLOCK, 1)))
@@ -620,6 +638,7 @@ function ADWindrowScan.newScan(fieldNums, fillTypes, opts)
     self.failed = nil
     self.frames, self.reads, self.used, self.budget = 0, 0, 0, ADWindrowScan.BUDGET
     self.cells, self.dropped, self.joined, self.progress = 0, 0, 0, 0
+    self.joinedLong = 0
     if coroutine ~= nil and coroutine.create ~= nil then
         self.co = coroutine.create(function()
             self:run()
@@ -693,6 +712,7 @@ end
 function Scan:run()
     self.windrows = {}
     self.reads, self.cells, self.dropped, self.joined = 0, 0, 0, 0
+    self.joinedLong = 0
     if not heapReady() then
         log("andains : lecture du tas au sol indisponible (DensityMapHeightUtil), aucun andain")
         return
@@ -1193,6 +1213,26 @@ function Scan:extract()
                 break
             end
         end
+        -- (17/11) branche assez longue : sens pris de DIR_NEAR à DIR_FAR m du croisement (pas le coude du squelette)
+        local nearP, farP = nil, nil
+        local dn, df = ADWindrowScan.DIR_NEAR, ADWindrowScan.DIR_FAR
+        for i = i0 + st, i1, st do
+            local dx, dz = pts[i][1] - x0, pts[i][2] - z0
+            local d2 = dx * dx + dz * dz
+            if nearP == nil and d2 >= dn * dn then
+                nearP = pts[i]
+            end
+            if d2 >= df * df then
+                farP = pts[i]
+                break
+            end
+        end
+        if nearP ~= nil and farP ~= nil then
+            local ux, uz = unit(farP[1] - nearP[1], farP[2] - nearP[2])
+            if ux ~= nil then
+                return ux, uz
+            end
+        end
         local ux, uz = unit(fx - x0, fz - z0)
         return ux or 0, uz or 0
     end
@@ -1438,19 +1478,31 @@ function Scan:extract()
     end
     local maxD = self.gap + s
     local cosJoin = math.cos(math.rad(ADWindrowScan.JOIN_ANGLE))
+    -- (17/11) trous plus longs (jusqu'à alignedGap m) : seulement entre deux bouts alignés (sens pris plus loin)
+    local maxA = max(self.alignedGap + s, maxD)
+    local cosAlign = math.cos(math.rad(ADWindrowScan.ALIGN_ANGLE))
+    local latA = ADWindrowScan.ALIGN_LATERAL
+    for _, en in ipairs(ends) do
+        local q = inner(en.st.pts, en.atStart, ADWindrowScan.ALIGN_DIR_DIST)
+        en.lx, en.lz = unit(en.x - q[1], en.z - q[2])
+        if en.lx == nil then
+            en.lx, en.lz = en.tx, en.tz
+        end
+    end
+    local bsize = max(self.alignedGap > self.gap and maxA or maxD, 0.5)
     local buckets = {}
     local function bkey(bx, bz)
         return (bx + 100000) * 1000000 + bz + 100000
     end
     for _, en in ipairs(ends) do
-        local k = bkey(floor(en.x / max(maxD, 0.5)), floor(en.z / max(maxD, 0.5)))
+        local k = bkey(floor(en.x / bsize), floor(en.z / bsize))
         buckets[k] = buckets[k] or {}
         table.insert(buckets[k], en)
     end
     local pairsList = {}
-    if self.gap > 0 then
+    if self.gap > 0 or self.alignedGap > 0 then
         for _, a in ipairs(ends) do
-            local bx, bz = floor(a.x / max(maxD, 0.5)), floor(a.z / max(maxD, 0.5))
+            local bx, bz = floor(a.x / bsize), floor(a.z / bsize)
             for ox = -1, 1 do
                 for oz = -1, 1 do
                     for _, b in ipairs(buckets[bkey(bx + ox, bz + oz)] or {}) do
@@ -1458,15 +1510,29 @@ function Scan:extract()
                             local dx, dz = b.x - a.x, b.z - a.z
                             local d = sqrt(dx * dx + dz * dz)
                             local face = -(a.tx * b.tx + a.tz * b.tz)
-                            if d <= maxD and face >= cosJoin then
-                                local ok = d < 1.5 * s
+                            local ok, long = false, false
+                            if self.gap > 0 and d <= maxD and face >= cosJoin then
+                                ok = d < 1.5 * s
                                 if not ok then
                                     local ux, uz = dx / d, dz / d
                                     ok = (a.tx * ux + a.tz * uz) >= cosJoin and -(b.tx * ux + b.tz * uz) >= cosJoin
                                 end
-                                if ok then
-                                    pairsList[#pairsList + 1] = { a = a, b = b, cost = d + (1 - face) * 5 }
+                            end
+                            if not ok and self.alignedGap > 0 and d <= maxA and d >= 1e-6 then
+                                -- bouts alignés : face à face, la ligne qui les relie dans l'axe des deux, et chaque
+                                -- bout sur l'axe de l'autre (deux andains parallèles voisins : jamais)
+                                local ux, uz = dx / d, dz / d
+                                local faceL = -(a.lx * b.lx + a.lz * b.lz)
+                                local offA = math.abs(dx * a.lz - dz * a.lx)
+                                local offB = math.abs(dx * b.lz - dz * b.lx)
+                                if faceL >= cosAlign and (a.lx * ux + a.lz * uz) >= cosAlign and -(b.lx * ux + b.lz * uz) >= cosAlign
+                                    and offA <= latA and offB <= latA then
+                                    ok, long = true, true
+                                    face = faceL
                                 end
+                            end
+                            if ok then
+                                pairsList[#pairsList + 1] = { a = a, b = b, d = d, long = long, cost = d + (1 - face) * 5 }
                             end
                         end
                     end
@@ -1494,6 +1560,13 @@ function Scan:extract()
         parent[st.index] = st.index
         chainLen[st.index] = st.len
     end
+    local function joinedLog(pr)
+        pr.a.gapLen, pr.b.gapLen = pr.d, pr.d
+        if pr.long then
+            self.joinedLong = self.joinedLong + 1
+            log("andains : trou de %.1f m réuni en (%.0f, %.0f) - (%.0f, %.0f) : bouts alignés (plus de %.0f m)", pr.d, pr.a.x, pr.a.z, pr.b.x, pr.b.z, self.gap)
+        end
+    end
     for _, pr in ipairs(pairsList) do
         local a, b = pr.a, pr.b
         if a.partner == nil and b.partner == nil then
@@ -1503,9 +1576,11 @@ function Scan:extract()
                 parent[rb] = ra
                 chainLen[ra] = chainLen[ra] + chainLen[rb]
                 self.joined = self.joined + 1
+                joinedLog(pr)
             elseif chainLen[ra] >= 4 * max(self.gap, self.minLength) then
                 a.partner, b.partner = b, a   -- tour de fourrière coupé une fois : refermé
                 self.joined = self.joined + 1
+                joinedLog(pr)
             end
         end
     end
@@ -1513,8 +1588,10 @@ function Scan:extract()
 
     -- chaînes de traits
     local chains, done = {}, {}
+    local gapMark = ADWindrowScan.GAP_MARK
     local function chainFrom(st0, enterAtStart)
         local pts = {}
+        local gaps = {}
         local cur, inStart = st0, enterAtStart
         local closed = false
         while true do
@@ -1539,9 +1616,13 @@ function Scan:extract()
                 closed = nx.st == st0
                 break
             end
+            -- trou réuni : ses deux bouts gardés (abscisses sur la ligne finale, plus bas)
+            if (exitEnd.gapLen or 0) > gapMark then
+                gaps[#gaps + 1] = { exitEnd.x, exitEnd.z, nx.x, nx.z, exitEnd.gapLen }
+            end
             cur, inStart = nx.st, nx.atStart
         end
-        return { pts = pts, closed = closed }
+        return { pts = pts, closed = closed, gaps = gaps }
     end
     for _, st in ipairs(strokes) do
         if not done[st] then
@@ -1562,6 +1643,33 @@ function Scan:extract()
     end
 
     -- 9) ligne lissée, un point tous les ~spacing m ; morceaux trop courts ignorés
+    -- (17/11) trous réunis : abscisses de leurs deux bouts sur la ligne finale (projection)
+    local function along(points, x, z)
+        local best, bestS, acc = huge, 0, 0
+        for i = 2, #points do
+            local a, b = points[i - 1], points[i]
+            local ex, ez = b.x - a.x, b.z - a.z
+            local l2 = ex * ex + ez * ez
+            local l = sqrt(l2)
+            local t = l2 > 0 and max(0, min(1, ((x - a.x) * ex + (z - a.z) * ez) / l2)) or 0
+            local px, pz = a.x + ex * t - x, a.z + ez * t - z
+            local d = px * px + pz * pz
+            if d < best then
+                best, bestS = d, acc + l * t
+            end
+            acc = acc + l
+        end
+        return bestS
+    end
+    local function gapsAlong(points, list)
+        local out = {}
+        for _, g in ipairs(list or {}) do
+            local s1, s2 = along(points, g[1], g[2]), along(points, g[3], g[4])
+            out[#out + 1] = { from = min(s1, s2), to = max(s1, s2), len = g[5] }
+        end
+        table.sort(out, function(p, q) return p.from < q.from end)
+        return out
+    end
     local windrows = {}
     for _, c in ipairs(chains) do
         local pts = c.pts
@@ -1574,7 +1682,8 @@ function Scan:extract()
             points = self:recenter(points, c.closed)
             local L = lineLength(points)
             if L >= self.minLength and #points >= 2 then
-                windrows[#windrows + 1] = { points = points, length = L, closed = c.closed, liters = 0, byType = {} }
+                windrows[#windrows + 1] = { points = points, length = L, closed = c.closed, liters = 0, byType = {},
+                    gaps = (not c.closed) and gapsAlong(points, c.gaps) or {} }
             else
                 self.dropped = self.dropped + 1
             end
@@ -1709,17 +1818,17 @@ function Scan:report()
     if #self.windrows > ADWindrowScan.MAX_LOGGED then
         lens[#lens + 1] = "..."
     end
-    log("andains : scan fini en %d images (%d lectures, %d cases d'andain) : %d andain(s), longueurs %s m (total %.0f m) ; %d morceau(x) de moins de %.0f m ignoré(s), %d trou(s) réuni(s)",
+    log("andains : scan fini en %d images (%d lectures, %d cases d'andain) : %d andain(s), longueurs %s m (total %.0f m) ; %d morceau(x) de moins de %.0f m ignoré(s), %d trou(s) réuni(s)%s",
         self.frames, self.reads, self.cells, #self.windrows, #lens > 0 and table.concat(lens, ", ") or "-", total,
-        self.dropped, self.minLength, self.joined)
+        self.dropped, self.minLength, self.joined,
+        (self.joinedLong or 0) > 0 and string.format(" dont %d de plus de %.0f m (bouts alignés, jusqu'à %.0f m)", self.joinedLong, self.gap, self.alignedGap) or "")
 end
 
 -- ============================================================================================================
 -- Lectures directes (suivi de l'andain, fin du champ)
 -- ============================================================================================================
--- écart latéral (m, + = droite de la direction) du milieu de l'andain en travers de la direction au point x, z ;
--- nil = pas d'andain sur ± halfSpan. Deuxième valeur : litres de l'andain retenu sur la bande lue.
-function ADWindrowScan.centerOffset(x, z, dirX, dirZ, fillTypes, halfSpan)
+-- profil en travers : litres par bande de CROSS_STEP m sur ± halfSpan ; nil si rien (ou lecture impossible)
+local function crossProfile(x, z, dirX, dirZ, fillTypes, halfSpan)
     if not heapReady() or tonumber(x) == nil or tonumber(z) == nil then
         return nil
     end
@@ -1753,8 +1862,13 @@ function ADWindrowScan.centerOffset(x, z, dirX, dirZ, fillTypes, halfSpan)
         end
         prof[i] = sum
     end
-    -- morceaux d'andain en travers (une bande vide au milieu tolérée), le plus proche de la direction
-    local best, bestD, bestL = nil, huge, 0
+    return prof, n, w, halfSpan
+end
+
+-- morceaux d'andain en travers (une bande vide au milieu tolérée), de gauche à droite : { c (milieu pondéré par les
+-- litres), lo, hi (bords), l (litres), cutLo / cutHi (touche le bord de la lecture) }
+local function crossSplit(prof, n, w, halfSpan)
+    local pieces = {}
     local i = 1
     while i <= n do
         if prof[i] > 0 then
@@ -1772,16 +1886,45 @@ function ADWindrowScan.centerOffset(x, z, dirX, dirZ, fillTypes, halfSpan)
                 sw = sw + prof[k]
                 sl = sl + prof[k] * lat
             end
-            local c = sl / sw
-            if math.abs(c) < bestD - 1e-9 then
-                best, bestD, bestL = c, math.abs(c), sw
-            end
+            pieces[#pieces + 1] = { c = sl / sw, l = sw, lo = -halfSpan + (first - 1) * w, hi = -halfSpan + last * w,
+                cutLo = first == 1, cutHi = last == n }
             i = last + 1
         else
             i = i + 1
         end
     end
+    return pieces
+end
+
+-- écart latéral (m, + = droite de la direction) du milieu de l'andain en travers de la direction au point x, z ;
+-- nil = pas d'andain sur ± halfSpan. Deuxième valeur : litres de l'andain retenu sur la bande lue.
+function ADWindrowScan.centerOffset(x, z, dirX, dirZ, fillTypes, halfSpan)
+    local prof, n, w, hs = crossProfile(x, z, dirX, dirZ, fillTypes, halfSpan)
+    if prof == nil then
+        return nil
+    end
+    -- morceau d'andain le plus proche de la direction
+    local best, bestD, bestL = nil, huge, 0
+    for _, p in ipairs(crossSplit(prof, n, w, hs)) do
+        if math.abs(p.c) < bestD - 1e-9 then
+            best, bestD, bestL = p.c, math.abs(p.c), p.l
+        end
+    end
     return best, bestL
+end
+
+-- (17/11) tous les morceaux d'andain en travers de la direction au point x, z (+ = à droite, comme centerOffset) :
+-- liste de gauche à droite { c, lo, hi, l, cutLo, cutHi } (voir crossSplit) ; nil = pas d'andain sur ± halfSpan
+function ADWindrowScan.crossPieces(x, z, dirX, dirZ, fillTypes, halfSpan)
+    local prof, n, w, hs = crossProfile(x, z, dirX, dirZ, fillTypes, halfSpan)
+    if prof == nil then
+        return nil
+    end
+    local pieces = crossSplit(prof, n, w, hs)
+    if #pieces == 0 then
+        return nil
+    end
+    return pieces
 end
 
 -- litres de tas (produits de la presse) sur le parallélogramme centré sur x, z : halfLen le long de la direction,

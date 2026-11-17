@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.1.9): 92 files modified, 294 files added, 3 files removed.
+Summary (FarmPilot 1.1.2.0): 92 files modified, 296 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -24,7 +24,7 @@ Summary (FarmPilot 1.1.1.9): 92 files modified, 294 files added, 3 files removed
 - gui/scanConfirmationGUI.xml (+3 / -3)
 - gui/vehicleSettingsPage.xml (+19 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+393 / -12)
+- register.lua (+395 / -12)
 - scripts/AutoDrive.lua (+69 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
@@ -55,7 +55,7 @@ Summary (FarmPilot 1.1.1.9): 92 files modified, 294 files added, 3 files removed
 - scripts/Modules/TrailerModule.lua (+0 / -8)
 - scripts/PathCalculation.lua (+39 / -10)
 - scripts/Settings.lua (+180 / -12)
-- scripts/Specialization.lua (+195 / -37)
+- scripts/Specialization.lua (+196 / -37)
 - scripts/Sync.lua (+1 / -1)
 - scripts/Tasks/AbstractTask.lua (+26 / -0)
 - scripts/Tasks/CatchCombinePipeTask.lua (+107 / -12)
@@ -82,24 +82,24 @@ Summary (FarmPilot 1.1.1.9): 92 files modified, 294 files added, 3 files removed
 - scripts/XML.lua (+46 / -12)
 - textures/ad_gui.dds (binary, replaced)
 - textures/ad_gui.xml (+17 / -0)
-- translations/translation_br.xml (+1114 / -90)
-- translations/translation_cs.xml (+1115 / -91)
-- translations/translation_ct.xml (+1116 / -92)
-- translations/translation_cz.xml (+1114 / -90)
-- translations/translation_da.xml (+1115 / -91)
-- translations/translation_de.xml (+1124 / -95)
-- translations/translation_ea.xml (+1116 / -92)
-- translations/translation_en.xml (+1126 / -92)
-- translations/translation_es.xml (+1116 / -92)
-- translations/translation_fr.xml (+1178 / -146)
-- translations/translation_hu.xml (+1115 / -91)
-- translations/translation_it.xml (+1107 / -83)
-- translations/translation_nl.xml (+1116 / -92)
-- translations/translation_pl.xml (+1115 / -91)
-- translations/translation_pt.xml (+1116 / -92)
-- translations/translation_ru.xml (+1116 / -92)
-- translations/translation_tr.xml (+1218 / -184)
-- translations/translation_uk.xml (+1116 / -92)
+- translations/translation_br.xml (+1115 / -90)
+- translations/translation_cs.xml (+1116 / -91)
+- translations/translation_ct.xml (+1117 / -92)
+- translations/translation_cz.xml (+1115 / -90)
+- translations/translation_da.xml (+1116 / -91)
+- translations/translation_de.xml (+1125 / -95)
+- translations/translation_ea.xml (+1117 / -92)
+- translations/translation_en.xml (+1127 / -92)
+- translations/translation_es.xml (+1117 / -92)
+- translations/translation_fr.xml (+1179 / -146)
+- translations/translation_hu.xml (+1116 / -91)
+- translations/translation_it.xml (+1108 / -83)
+- translations/translation_nl.xml (+1117 / -92)
+- translations/translation_pl.xml (+1116 / -91)
+- translations/translation_pt.xml (+1117 / -92)
+- translations/translation_ru.xml (+1117 / -92)
+- translations/translation_tr.xml (+1219 / -184)
+- translations/translation_uk.xml (+1117 / -92)
 
 ## New files (written for FarmPilot)
 
@@ -262,6 +262,7 @@ Summary (FarmPilot 1.1.1.9): 92 files modified, 294 files added, 3 files removed
 - scripts/Modes/AutonomousResumeStage.lua
 - scripts/Modes/AutonomousSprayerDump.lua
 - scripts/Modes/AutonomousUnloaderAutoPick.lua
+- scripts/Modes/AutonomousUnloaderReclaim.lua
 - scripts/Modes/AutonomousWindrow.lua
 - scripts/Modes/AutonomousYardZone.lua
 - scripts/Modes/CombineUnloaderJobDoneGuard.lua
@@ -339,6 +340,7 @@ Summary (FarmPilot 1.1.1.9): 92 files modified, 294 files added, 3 files removed
 - scripts/Modules/TrafficYieldModuleEarlyPlan.lua
 - scripts/Modules/TrafficYieldModuleObstacles.lua
 - scripts/Modules/TrafficYieldModuleParker.lua
+- scripts/Modules/TrafficYieldModulePassWatch.lua
 - scripts/Modules/TrafficYieldModuleReverser.lua
 - scripts/Modules/TrafficYieldModuleRoute.lua
 - scripts/Modules/TrafficYieldModuleSingleTrack.lua

@@ -4,6 +4,10 @@
 -- - Pas de trajet : nouvel essai avec des cases plus petites, 9 m -> 6 m -> 4,5 m -> 2 m (les virages du trajet
 --   final gardent le vrai rayon, voir PathFinderModuleCorners.lua).
 -- - Recherche bloquée vers la moissonneuse : plus de pas n'y changerait rien.
+-- - (17/11, Lexion vers sa remorque à coupe, champ 5 : 4 grilles de plus en plus fines, 30 s à 10 FPS chacune, cible
+--   dans la haie) Recherche bloquée et cible emmurée (toutes les cases vues autour d'elle refusées pour obstacle, pente
+--   ou hors de la zone permise) : pas de grille plus fine, échec tout de suite (isTargetWalledIn). Seulement pour
+--   les recherches sans secours (pf.noFallback : remorque à coupe), ailleurs les petites cases passent entre les murs.
 -- - Liste ouverte de l'A* gardée dans un tas binaire (rapide sur les grandes grilles).
 -- - Courbe directe (Dubins) : refusée si elle boucle, ou si, en strict, la bande du train touche la culture.
 --
@@ -155,4 +159,42 @@ function PathFinderModule:checkDirectCurve(path)
         end
     end
     return ADDubins.EDUBOK
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- Cible emmurée : une grille plus fine n'y changerait rien (17/11)
+-- ------------------------------------------------------------------------------------------------------------
+-- the search ended blocked and every cell seen around the target (the goal area of reachedGoal) was refused for an
+-- obstacle, a slope or the field limit (not for crop nor a vehicle, which may move): the target itself is unreachable
+function PathFinderModule:isTargetWalledIn()
+    -- only the searches that never fall back (the header trailer, the tractor into the field): elsewhere smaller
+    -- cells still find their way between buildings
+    if not self.noFallback or not self.completelyBlocked or self.cachedNodes == nil or self.nodeGoal == nil then
+        return false
+    end
+    -- the target cell itself, tested if the search never got there
+    local goal = self.nodeGoal
+    if goal.isRestricted == nil and goal.direction ~= nil then
+        pcall(self.isDriveableAstar, self, goal)
+    end
+    local goalRefused = goal.isRestricted == true and not goal.hasFruit and not goal.hasVehicleCollision
+    local seen, refused = 0, 0
+    for dz = -1, 1 do
+        local row = self.cachedNodes[self.nodeGoal.z + dz]
+        for dx = -1, 1 do
+            local node = row ~= nil and row[self.nodeGoal.x + dx] or nil
+            if node ~= nil and node.isRestricted ~= nil and not node.isBlockedGoal then
+                seen = seen + 1
+                if node.isRestricted and not node.hasFruit and not node.hasVehicleCollision then
+                    refused = refused + 1
+                end
+            end
+        end
+    end
+    if goalRefused or (seen > 0 and refused == seen) then
+        print(string.format("[AD-Fin] %s: cible %.0f,%.0f emmuree (case de la cible refusee %s, %d/%d case(s) vues autour refusees : obstacle, pente ou hors zone), pas de grille plus fine : abandon tout de suite",
+            self:getLogName(), self.target ~= nil and self.target.x or 0, self.target ~= nil and self.target.z or 0, tostring(goalRefused), refused, seen))
+        return true
+    end
+    return false
 end

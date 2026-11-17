@@ -17,6 +17,9 @@
 -- - Arrivée trop de côté (MISS_LATERAL) : elle recule dans l'axe et recommence, au plus RETRIES fois.
 -- - Pas bloquée après MOUNT_TIMEOUT : échec (la moissonneuse s'arrête, la remorque ne part pas avec une barre libre).
 -- - Le résultat (self.result = "ok" ou la raison de l'échec) est lu par Modes/AutonomousHeader.lua.
+-- - (17/11) Avant de chercher son chemin, la moissonneuse contrôle la vraie place de la barre et son point d'approche
+--   (ADHeaderFlow.approachCheck, Modes/AutonomousHeaderCollect.lua) : hors du champ ou encombré = pas de recherche,
+--   « noPath » tout de suite (la remorque va ailleurs).
 -- - (15/11) Rien ne roule dans une culture : ces recherches de chemin (le tracteur vers la moissonneuse, la
 --   moissonneuse vers la remorque) n'utilisent jamais le secours qui traverse la culture (pf.noFallback) ; pas de
 --   chemin = endroit suivant ou nouvel essai (Modes/AutonomousHeaderCollect.lua).
@@ -433,6 +436,16 @@ function ADHeaderDropTask:update(dt)
             return
         end
         local start = { x = goal.x - goal.dirX * ADHeaderDropTask.APPROACH, y = goal.pose.y, z = goal.z - goal.dirZ * ADHeaderDropTask.APPROACH }
+        -- (17/11) point d'approche dans la haie : pas de recherche de chemin (4 grilles, lag), la remorque va ailleurs
+        if ADHeaderFlow.approachCheck ~= nil then
+            local ok, why = ADHeaderFlow.withCombineCropRules(self.vehicle, self.vehicle, ADHeaderFlow.approachCheck, self.vehicle, self.header, self.trailer, start)
+            if not ok then
+                ADHeaderFlow.log("%s : chemin vers la remorque pas cherché, place %s (%.0f, %.0f) : %s", name, goal.pose.exact and "prévue" or "générale",
+                    start.x, start.z, tostring(why))
+                self:finish("noPath")
+                return
+            end
+        end
         local pf = self.vehicle.ad.pathFinderModule
         pf:reset()
         -- (15/11) rien ne roule dans une culture : jamais le secours qui la traverse, pas de chemin = la remorque va

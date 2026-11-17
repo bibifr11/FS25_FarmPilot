@@ -24,6 +24,12 @@
 --   COLLECT_RETRY_TIME ; la moissonneuse attend (WAIT_TIMEOUT au plus).
 -- - La moissonneuse ne trouve pas de chemin jusqu'à la remorque : l'endroit est écarté, la remorque va au suivant
 --   (COLLECT_MOVES fois au plus).
+-- - (17/11, champ 5 : la Lexion cherchait son chemin vers un point d'approche dans la haie, 4 grilles, 10 FPS, en
+--   boucle) Remorque garée : la VRAIE place de la barre est relue sur la remorque (lockPose) et contrôlée avant de
+--   prévenir la moissonneuse (approachCheck) : la moissonneuse derrière la place, l'axe d'approche et le point
+--   d'approche dans le champ, côté du cadre dégagé. Sinon l'endroit est écarté et la remorque va au suivant, sans
+--   calcul de chemin pour la moissonneuse (COLLECT_MOVES contrôles ratés au plus, ensuite la moissonneuse essaie).
+--   La moissonneuse refait le même contrôle avant de chercher son chemin (Tasks/HeaderDropTask.lua).
 --
 -- Branché par : Modes/AutonomousHeader.lua (tractorStage : collectEnter, collectPlaced, collectRetry,
 -- collectMoveOn ; combineStage : collectDropFailed). Tâche : Tasks/HeaderDropTask.lua (ADHeaderPlaceTask, liste
@@ -255,6 +261,43 @@ function ADHeaderFlow.collectSpotsRaw(tractor, combine, header, trailer, rejecte
     return wide, table.concat(parts, ", ")
 end
 
+-- (17/11) la vraie place de la barre sur la remorque garée : la moissonneuse peut-elle y arriver ? ok, raison.
+-- start : point d'approche de la moissonneuse (nil = calculé depuis la place). Le contrôle des obstacles n'est fait
+-- que si la moissonneuse n'est pas elle-même dans la zone contrôlée
+function ADHeaderFlow.approachCheck(combine, header, trailer, start)
+    if isGone(combine) or isGone(trailer) then
+        return false, "moissonneuse ou remorque partie"
+    end
+    local pose = ADHeaderFlow.lockPose(trailer, header)
+    if pose == nil then
+        return false, "place de la barre inconnue"
+    end
+    local cx, _, cz = getWorldTranslation(combine.components[1].node)
+    -- le cadre tourné vers elle : elle est derrière la place de la barre
+    if (cx - pose.x) * pose.dirX + (cz - pose.z) * pose.dirZ > 0 then
+        return false, "moissonneuse devant la place de la barre (cadre tourné de l'autre côté)"
+    end
+    local combineLength = (combine.size ~= nil and combine.size.length) or ADHeaderFlow.DEFAULT_COMBINE_LENGTH or 10
+    local depth = combineLength + ADHeaderDropTask.APPROACH
+    if onField(cx, cz) then
+        if not axisOnField(pose, depth) then
+            return false, string.format("axe d'approche hors du champ (place de la barre %.0f, %.0f, direction %.0f°)", pose.x, pose.z, math.deg(yawOf(pose.dirX, pose.dirZ)))
+        end
+        if start ~= nil and not onField(start.x, start.z) then
+            return false, string.format("point d'approche (%.0f, %.0f) hors du champ", start.x, start.z)
+        end
+    end
+    -- obstacles : seulement quand la moissonneuse est hors de la zone (elle se verrait elle-même)
+    local along = (pose.x - cx) * pose.dirX + (pose.z - cz) * pose.dirZ
+    local tractor = trailer.getAttacherVehicle ~= nil and trailer:getAttacherVehicle() or nil
+    local withObstacles = along > depth + ADHeaderFlow.SIDE_EXTRA + combineLength
+    local free, why = ADHeaderFlow.isSideFree(withObstacles and tractor or nil, combine, header, pose, ADHeaderFlow.COLLECT_NARROW)
+    if not free then
+        return false, string.format("côté du cadre pas dégagé (%s)", tostring(why))
+    end
+    return true, nil
+end
+
 -- la remorque est déjà bien placée près de la moissonneuse (même terrain, côté du cadre dégagé jusqu'à elle)
 function ADHeaderFlow.collectIsPlaced(tractor, job)
     local combine = job.combine
@@ -332,6 +375,18 @@ end
 function ADHeaderFlow.collectPlaced(mode, job, result)
     if result == "ok" then
         job.collectFails = nil
+        -- (17/11) la vraie place de la barre, relue sur la remorque garée
+        local ok, why = ADHeaderFlow.withCombineCropRules(mode.vehicle, job.combine, ADHeaderFlow.approachCheck, job.combine, job.header, job.trailer)
+        if not ok and (job.collectChecks or 0) < ADHeaderFlow.COLLECT_MOVES then
+            job.collectChecks = (job.collectChecks or 0) + 1
+            log("%s : remorque garée, mais la moissonneuse n'y arrivera pas : %s ; endroit suivant (%d/%d)", nameOf(mode.vehicle),
+                tostring(why), job.collectChecks, ADHeaderFlow.COLLECT_MOVES)
+            ADHeaderFlow.collectMoveOn(mode, job)
+            return
+        end
+        if not ok then
+            log("%s : remorque garée, place de la barre douteuse (%s), plus d'autre essai : la moissonneuse essaie quand même", nameOf(mode.vehicle), tostring(why))
+        end
         ADHeaderFlow.tractorWait(mode, job)
         return
     end

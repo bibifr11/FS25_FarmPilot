@@ -780,6 +780,10 @@ function PathFinderModule:update(dt)
         local retryAllowed = self.destinationId ~= nil and self.retryCounter < self.PATHFINDER_MAX_RETRIES
         -- 27/10 20:46: the follower must refine the grid too
         local smallerGridAllowed = (not self.chasingVehicle or self.followingTrack) and (not self.isSecondChasingVehicle or self.followingTrack) and self.gridScaleStep ~= nil and self.gridScaleStep < PathFinderModule.GRID_STEPS
+        -- 17/11: target walled in by obstacles or out of the allowed area: smaller cells would only lag (PathFinderModuleGrid.lua)
+        if smallerGridAllowed and self:isTargetWalledIn() then
+            smallerGridAllowed = false
+        end
 
         if not smallerGridAllowed and self.gridScaleStep ~= nil then
             print(string.format("[AD-Fin] %s: pas de chemin avec des cases de %.1f m (%s)", self:getLogName(), self.minTurnRadius, self:getDiagText()))

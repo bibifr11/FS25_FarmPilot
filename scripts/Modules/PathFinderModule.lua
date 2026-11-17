@@ -125,6 +125,7 @@ function PathFinderModule:reset()
     self.noFallback = false -- set by the caller after reset(): never lift field / fruit restrictions, fail instead
     self.allowCrop = false -- set by the caller after reset(): this one trip may cross crop (full trailer without a clean way out)
     self.stayOnField = false -- (16/11) set by the caller after reset(): exit of a full combine unloader, the route stays on the field (grass only near the ends)
+    self.headerOnField = nil -- (17/11) set by the caller after reset(): combine with its header mounted, the route never leaves its field, header included (PathFinderModuleField.lua)
     self.exitToNetwork = false -- set by the caller after reset(): exit of a field to a network point, the end of the route is judged for obstacles too (wall, post)
     self.edgeOnly = false -- set by the caller after reset(): close to a forage harvester, crop edge following only (no grid)
     self.startPose = nil -- set by the caller after reset(): plan from this pose {x, y, z, rx, rz} instead of the vehicle (next piece of a route)
@@ -2545,6 +2546,15 @@ function PathFinderModule:isDriveableAstar(cell)
         end
     end
 
+    -- (17/11) moissonneuse avec sa barre : l'avant de la barre et ses bouts restent sur le champ (cap de la case)
+    if not cell.isRestricted and self.headerOnField ~= nil and cell.incoming ~= nil then
+        local prev = self:gridLocationToWorldLocation(cell.incoming)
+        if self:isHeaderOffField(worldPos.x, worldPos.z, cell.isOnField, worldPos.x - prev.x, worldPos.z - prev.z) then
+            cell.isRestricted = true
+            self.headerRefusals = (self.headerRefusals or 0) + 1
+        end
+    end
+
     local gridFactor = PathFinderModule.GRID_SIZE_FACTOR
     if self.isSecondChasingVehicle then
         gridFactor = PathFinderModule.GRID_SIZE_FACTOR_SECOND_UNLOADER
@@ -2954,6 +2964,15 @@ function PathFinderModule:isDriveableDubins(cell)
             PathFinderModule.debugMsg(self.vehicle, "PFM:isDriveableDubins not cell.isOnField xz %d,%d "
                 , cell.x, cell.z
             )
+        end
+    end
+
+    -- (17/11) moissonneuse avec sa barre : l'avant de la barre et ses bouts restent sur le champ (cap de la courbe)
+    if not cell.isRestricted and self.headerOnField ~= nil and cell.incoming ~= nil then
+        local prev = cell.incoming.worldPos
+        if self:isHeaderOffField(cell.worldPos.x, cell.worldPos.z, cell.isOnField, cell.worldPos.x - prev.x, cell.worldPos.z - prev.z) then
+            cell.isRestricted = true
+            self.headerRefusals = (self.headerRefusals or 0) + 1
         end
     end
 

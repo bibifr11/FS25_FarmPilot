@@ -20,6 +20,9 @@
 -- - (17/11) Avant de chercher son chemin, la moissonneuse contrôle la vraie place de la barre et son point d'approche
 --   (ADHeaderFlow.approachCheck, Modes/AutonomousHeaderCollect.lua) : hors du champ ou encombré = pas de recherche,
 --   « noPath » tout de suite (la remorque va ailleurs).
+-- - (17/11) Barre montée : le chemin vers la remorque reste sur le champ, barre comprise (jamais l'herbe ni le chemin
+--   du bord, même en strict ; pf.headerOnField, PathFinderModuleField.lua). Champ 5 : la courbe directe vers le point
+--   d'approche sortait du champ et menait la moissonneuse dans la haie.
 -- - (15/11) Rien ne roule dans une culture : ces recherches de chemin (le tracteur vers la moissonneuse, la
 --   moissonneuse vers la remorque) n'utilisent jamais le secours qui traverse la culture (pf.noFallback) ; pas de
 --   chemin = endroit suivant ou nouvel essai (Modes/AutonomousHeaderCollect.lua).
@@ -370,6 +373,18 @@ function ADHeaderDropTask.goalFor(vehicle, header, trailer)
         ahead = ahead, pose = pose }
 end
 
+-- (17/11) emprise de la barre pour la recherche de chemin : demi-largeur, distance de l'avant de la barre au véhicule
+ADHeaderDropTask.HEADER_DEFAULT_WIDTH = 9 -- m si la barre n'a pas de taille connue
+function ADHeaderDropTask.headerFootprint(header, goal)
+    local size = header ~= nil and header.size or nil
+    local width = size ~= nil and tonumber(size.width) or nil
+    if width == nil or width <= 0 then
+        width = ADHeaderDropTask.HEADER_DEFAULT_WIDTH
+    end
+    local length = size ~= nil and tonumber(size.length) or 2
+    return { half = width / 2, ahead = math.max(0, (goal ~= nil and goal.ahead or 6)) + length / 2 }
+end
+
 -- barre par rapport à sa place : le long de l'axe (< 0 : pas encore arrivée), de côté, écart d'angle (°)
 function ADHeaderDropTask:headerError(pose)
     local hx, _, hz = getWorldTranslation(self.header.components[1].node)
@@ -451,14 +466,19 @@ function ADHeaderDropTask:update(dt)
         -- (15/11) rien ne roule dans une culture : jamais le secours qui la traverse, pas de chemin = la remorque va
         -- ailleurs (AutonomousHeaderCollect.lua : collectDropFailed)
         pf.noFallback = true
+        -- (17/11) barre montée : le trajet reste sur le champ, barre comprise (pas l'herbe ni le chemin du bord, même
+        -- en strict), voir PathFinderModuleField.lua (isHeaderOffField)
+        pf.headerOnField = ADHeaderDropTask.headerFootprint(self.header, goal)
         pf:startPathPlanningTo(start, { x = goal.dirX, z = goal.dirZ })
-        ADHeaderFlow.log("%s : chemin vers la remorque, place %s (%.0f, %.0f)", name, goal.pose.exact and "prévue" or "générale", start.x, start.z)
+        ADHeaderFlow.log("%s : chemin vers la remorque, place %s (%.0f, %.0f), gardé dans le champ avec la barre (%.1f m de large, avant à %.1f m)", name,
+            goal.pose.exact and "prévue" or "générale", start.x, start.z, pf.headerOnField.half * 2, pf.headerOnField.ahead)
         self:setState(ADHeaderDropTask.STATE_PLANNING)
     elseif self.state == ADHeaderDropTask.STATE_PLANNING then
         local pf = self.vehicle.ad.pathFinderModule
         if pf:hasFinished() then
             local path = pf:getPath()
             if path == nil or #path == 0 then
+                ADHeaderFlow.log("%s : pas de chemin vers la remorque en gardant la barre dans le champ (%d case(s) refusées pour la barre)", name, pf.headerRefusals or 0)
                 self:finish("noPath")
                 return
             end

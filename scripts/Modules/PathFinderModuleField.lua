@@ -9,6 +9,8 @@
 -- - Restriction au champ d'une position : normal = seulement sur le champ ; strict = partout sauf sur un autre
 --   champ (l'herbe et les bas-côtés restent permis), côtés du train compris.
 -- - Réglages stricts posés au départ de chaque trajet.
+-- - (17/11) Moissonneuse avec sa barre montée (pose de la barre sur la remorque) : le trajet reste sur son champ,
+--   barre comprise, réglage strict ou non (isHeaderOffField).
 --
 -- Règle : les réglages « strict » (rester sur le champ, éviter la culture) ne sont jamais levés par les modes de
 -- secours d'AutoDrive, quel que soit le trajet ; le champ est reconnu par son contour sur la carte (un champ peut
@@ -287,9 +289,60 @@ function PathFinderModule:isOffFieldRefusedToStay(x, z)
     return true
 end
 
+-- ------------------------------------------------------------------------------------------------------------
+-- (17/11) Moissonneuse avec sa barre montée : jamais hors du champ, barre comprise
+-- ------------------------------------------------------------------------------------------------------------
+-- Champ 5 (1.1.2.1) : pour poser la barre, la Lexion allait au point d'approche de la remorque par une courbe
+-- directe ; en strict l'herbe et les chemins du bord sont permis (règle des bennes du 15/11), la courbe est sortie du
+-- champ et l'a menée à pleine vitesse dans la haie (buissons sans collision). Règle : une moissonneuse ne quitte
+-- jamais un champ avec la coupe montée.
+-- self.headerOnField = { half = demi-largeur de la barre (m), ahead = m entre le véhicule et l'avant de la barre },
+-- posé par l'appelant après reset() (HeaderDropTask.lua). Refusé : le centre hors du champ, un point du champ à
+-- moins d'une demi-largeur de barre du bord (la barre dépasserait de côté), et quand le cap est connu (grille, courbe
+-- directe) l'avant de la barre et ses deux bouts hors du champ. Près du départ (OFF_FIELD_NEAR_ENDS) : la barre n'est
+-- pas contrôlée (la moissonneuse est où elle est), le centre non plus si elle part de hors du champ (elle y revient).
+function PathFinderModule:isHeaderOffField(x, z, isOnField, dirX, dirZ)
+    local h = self.headerOnField
+    if h == nil then
+        return false
+    end
+    if isOnField == nil then
+        isOnField = PathFinderModule.getMapOnFieldAt(x, z)
+    end
+    if self.headerStartX ~= nil and MathUtil.vector2Length(x - self.headerStartX, z - self.headerStartZ) < PathFinderModule.OFF_FIELD_NEAR_ENDS then
+        return self.headerStartOnField == true and not isOnField
+    end
+    if not isOnField then
+        return true
+    end
+    local r = h.half or 0
+    if r > 0 then
+        for i = 0, 7 do
+            local a = i * math.pi / 4
+            if not PathFinderModule.getMapOnFieldAt(x + math.cos(a) * r, z + math.sin(a) * r) then
+                return true
+            end
+        end
+    end
+    if dirX ~= nil and dirZ ~= nil and (dirX ~= 0 or dirZ ~= 0) then
+        local len = MathUtil.vector2Length(dirX, dirZ)
+        dirX, dirZ = dirX / len, dirZ / len
+        local fx, fz = x + dirX * (h.ahead or 0), z + dirZ * (h.ahead or 0)
+        for _, s in ipairs({ -1, 0, 1 }) do
+            if not PathFinderModule.getMapOnFieldAt(fx + dirZ * s * r, fz - dirX * s * r) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 function PathFinderModule:isFieldPositionAllowed(x, z, isOnField)
     if isOnField == nil then
         isOnField = PathFinderModule.getMapOnFieldAt(x, z)
+    end
+    if self.headerOnField ~= nil and self:isHeaderOffField(x, z, isOnField) then
+        return false -- (17/11) moissonneuse avec sa barre : jamais hors du champ
     end
     if not isOnField and self.stayOnField and PathFinderModule.isOffFieldRefusedToStay(self, x, z) then
         return false
@@ -338,6 +391,9 @@ end
 -- the centre line of the route is checked by isFieldPositionAllowed. Returns allowed, onOtherField
 function PathFinderModule:isTrainSideAllowed(x, z)
     local isOnField = PathFinderModule.getMapOnFieldAt(x, z)
+    if self.headerOnField ~= nil and not isOnField then
+        return not self:isHeaderOffField(x, z, false), false -- (17/11) barre montée : pas d'herbe du bord (sauf près du départ hors du champ)
+    end
     if not isOnField and self.stayOnField and PathFinderModule.isOffFieldRefusedToStay(self, x, z) then
         return false, false -- (16/11) sortie de la benne : pas de côté du train sur l'herbe en tournant
     end
@@ -383,6 +439,13 @@ function PathFinderModule:setupStrictChecks(vehicleWorldX, vehicleWorldZ, target
                 PathFinderModule.debugMsg(self.vehicle, "PFM:startPathPlanningTo strict field area xz %.1f,%.1f samples %d capped %s", pos.x, pos.z, area.count, tostring(area.capped))
             end
         end
+    end
+    if self.headerOnField ~= nil then
+        -- (17/11) moissonneuse avec sa barre : le champ est contrôlé sur tout le trajet, réglage strict ou non
+        self.restrictToField = true
+        self.headerStartX, self.headerStartZ = vehicleWorldX, vehicleWorldZ
+        self.headerStartOnField = PathFinderModule.getMapOnFieldAt(vehicleWorldX, vehicleWorldZ) == true
+        self.headerRefusals = 0
     end
     self.islandCache = {}
     self.strictFruitRefusals = 0

@@ -54,6 +54,9 @@
 --   dessus au champ fini, tracteur rappelé même garé, puis amenée) ; travail de la barre resté d'avant (amenée
 --   annulée, tracteur garé) réglé au départ, plus jamais pris pour « barre prise, attend que le tracteur ait dégagé »
 --   (AutonomousHeaderNextField.lua).
+-- - (17/11) Une moissonneuse ne quitte jamais un champ avec la coupe montée, dans aucun cas : départ d'un champ qui
+--   n'est pas sa destination = coupe reposée sur sa remorque sur place, puis amenée ; garde-fou sur les routes et
+--   sorties de champ (AutonomousHeaderLeave.lua).
 -- - La barre est choisie seule (pas de ligne en plus dans le HUD). Le travail en cours n'est pas sauvegardé : partie
 --   rechargée pendant la récolte = remorque retrouvée à la fin du champ (celle du départ si elle est vide, sinon la
 --   remorque porte-barre vide la plus proche qui a une place pour cette barre).
@@ -498,6 +501,19 @@ function ADHeaderFlow.onStart(mode)
             local okC, handled = FarmPilotCall(ADHeaderFlow.nextFieldCarry, mode, header)
             if not okC then
                 log("ERREUR remorque porte-barre au champ suivant : %s", tostring(handled))
+                handled = nil
+            end
+            if handled ~= nil then
+                return handled
+            end
+        end
+        -- (17/11) une moissonneuse ne quitte jamais un champ avec la coupe montée : départ d'un champ qui n'est pas sa
+        -- destination = barre reposée sur sa remorque ici, remorque amenée ensuite ; personne de libre = elle reste
+        -- (AutonomousHeaderLeave.lua : departCarry)
+        if changeable and v.ad.fpHeaderPrevField == nil and ADHeaderFlow.departCarry ~= nil then
+            local okD, handled = FarmPilotCall(ADHeaderFlow.departCarry, mode, header)
+            if not okD then
+                log("ERREUR départ du champ avec la coupe : %s", tostring(handled))
                 handled = nil
             end
             if handled ~= nil then

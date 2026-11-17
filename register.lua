@@ -365,6 +365,7 @@ source(Utils.getFilename("scripts/Modes/AutonomousMassAuto.lua", g_currentModDir
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderGround.lua", g_currentModDirectory)) -- barre sans remorque (coupe à maïs) : posée par la moissonneuse
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderEntry.lua", g_currentModDirectory)) -- barre prise : entrée directe dans le champ, jamais de route trop étroite pour la barre
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderNextField.lua", g_currentModDirectory)) -- (16/11) champ suivant : la remorque porte-barre change de champ avec la moissonneuse
+source(Utils.getFilename("scripts/Modes/AutonomousHeaderLeave.lua", g_currentModDirectory)) -- (17/11) une moissonneuse ne quitte jamais un champ avec la coupe montée
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderRoadBack.lua", g_currentModDirectory)) -- remorque porte-barre reculée tout droit jusqu'à la route, barre prise au croisement
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderYard.lua", g_currentModDirectory)) -- remorque porte-barre posée hors de la route près du bout quand rien ne va le long de la route
 source(Utils.getFilename("scripts/Modes/AutonomousHeaderReturn.lua", g_currentModDirectory)) -- fin de champ : moissonneuse et remorque porte-barre gardent leur écart sur la route du retour

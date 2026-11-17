@@ -832,6 +832,10 @@
 		<text name="AD_autonomous_headerNextNoTractor" text="champ suivant : aucun tracteur libre pour amener la remorque porte-barre « %s » : reste ici avec la barre (jamais de route avec), nouvel essai toutes les minutes" />
 		<text name="AD_autonomous_headerNextNoTrailer" text="champ suivant : aucune remorque porte-barre vide pour « %s » : reste ici avec la barre (jamais de route avec), nouvel essai toutes les minutes" />
 		<text name="AD_autonomous_headerNextStay" text="champ suivant : « %s » ne peut pas être reposée sur sa remorque pour l'instant : reste ici avec la barre, nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerLeaveNoTractor" text="la coupe ne quitte jamais le champ montée : aucun tracteur libre pour amener la remorque porte-barre « %s », reste ici, nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerLeaveNoTrailer" text="la coupe ne quitte jamais le champ montée : aucune remorque porte-barre pour « %s », reste ici (posez une remorque porte-barre vide et relancez)" />
+		<text name="AD_autonomous_headerLeaveStay" text="la coupe ne quitte jamais le champ montée : « %s » ne peut pas être reposée sur sa remorque pour l'instant, reste ici, nouvel essai toutes les minutes" />
+		<text name="AD_autonomous_headerNeverLeave" text="une moissonneuse ne quitte jamais un champ avec la coupe montée (« %s ») : arrêt ici" />
 		<text name="gui_ad_headerTractor_title" text="Transport de la barre" />
 		<text name="gui_ad_headerTractor_tooltip" text="Véhicule de la remorque porte-barre" />
 		<text name="gui_ad_headerTractor_auto" text="Tracteur libre le plus proche" />

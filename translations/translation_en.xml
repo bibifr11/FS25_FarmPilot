@@ -834,6 +834,10 @@
 		<text name="AD_autonomous_headerNextNoTractor" text="next field: no free tractor to bring the header trailer « %s »: staying here with the header (never on the road with it), new try every minute" />
 		<text name="AD_autonomous_headerNextNoTrailer" text="next field: no empty header trailer for « %s »: staying here with the header (never on the road with it), new try every minute" />
 		<text name="AD_autonomous_headerNextStay" text="next field: « %s » cannot be put back on its trailer for now: staying here with the header, new try every minute" />
+		<text name="AD_autonomous_headerLeaveNoTractor" text="the header never leaves the field mounted: no free tractor to bring the header trailer « %s », staying here, new try every minute" />
+		<text name="AD_autonomous_headerLeaveNoTrailer" text="the header never leaves the field mounted: no header trailer for « %s », staying here (park an empty header trailer and restart)" />
+		<text name="AD_autonomous_headerLeaveStay" text="the header never leaves the field mounted: « %s » cannot be put back on its trailer for now, staying here, new try every minute" />
+		<text name="AD_autonomous_headerNeverLeave" text="a harvester never leaves a field with its header mounted (« %s »): stopping here" />
 		<text name="gui_ad_headerTractor_title" text="Header transport" />
 		<text name="gui_ad_headerTractor_tooltip" text="Vehicle for the header trailer" />
 		<text name="gui_ad_headerTractor_auto" text="Nearest free tractor" />

@@ -183,17 +183,22 @@ function ADHeaderFlow.nextFieldCarry(mode, header)
 end
 
 -- tracteur appelé (true), ou attente sur place (true aussi : rien ne part avec la barre)
-function ADHeaderFlow.startCarry(v, header, retry)
+-- (17/11) depart : départ du mode Autonome d'un champ qui n'est pas la destination (AutonomousHeaderLeave.lua),
+-- mêmes étapes, textes « quitter le champ »
+function ADHeaderFlow.startCarry(v, header, retry, depart)
     local sm = v.ad.stateModule
     local carry = v.ad.fpHeaderCarry
     if not retry or carry == nil or carry.header ~= header then
-        carry = { header = header, prevField = v.ad.fpHeaderPrevField, field = sm:getFirstMarkerId(), tries = 0 }
+        carry = { header = header, prevField = v.ad.fpHeaderPrevField, field = sm:getFirstMarkerId(), tries = 0, depart = depart == true }
         v.ad.fpHeaderCarry = carry
     end
+    local what = carry.depart and "départ du champ" or "champ suivant"
+    local keys = carry.depart and { "AD_autonomous_headerLeaveNoTractor", "AD_autonomous_headerLeaveNoTrailer", "AD_autonomous_headerLeaveStay" }
+        or { "AD_autonomous_headerNextNoTractor", "AD_autonomous_headerNextNoTrailer", "AD_autonomous_headerNextStay" }
     local started, why, trailer = ADHeaderFlow.startCollect(v, header, true, nil, true)
     if started then
         if carry.tries > 0 then
-            log("%s : champ suivant, un tracteur est libre après %d essai(s) : « %s » va être reposée", nameOf(v), carry.tries, label(header))
+            log("%s : " .. what .. ", un tracteur est libre après %d essai(s) : « %s » va être reposée", nameOf(v), carry.tries, label(header))
         end
         v.ad.fpHeaderCarry = nil
         return true
@@ -201,18 +206,18 @@ function ADHeaderFlow.startCarry(v, header, retry)
     carry.tries = carry.tries + 1
     trailer = trailer or ADHeaderFlow.servingTrailer(v, header)
     if carry.tries <= ADHeaderFlow.CARRY_LOG_MAX or carry.tries % 10 == 0 or carry.why ~= why then
-        print(string.format("[AD-Coupe] %s: champ suivant, barre %s pas reposee (%s) : reste au champ fini, nouvel essai dans %d s (essai %d)",
-            nameOf(v), label(header), tostring(why), ADHeaderFlow.CARRY_RETRY / 1000, carry.tries))
+        print(string.format("[AD-Coupe] %s: %s, barre %s pas reposee (%s) : reste dans le champ, nouvel essai dans %d s (essai %d)",
+            nameOf(v), carry.depart and "depart du champ" or "champ suivant", label(header), tostring(why), ADHeaderFlow.CARRY_RETRY / 1000, carry.tries))
     end
     if carry.tries == 1 or carry.why ~= why then
-        log("%s : champ suivant, « %s » pas reposée (%s) : reste ici avec la barre (jamais de route avec), nouvel essai toutes les %d s",
+        log("%s : " .. what .. ", « %s » pas reposée (%s) : reste ici avec la barre (jamais de route avec), nouvel essai toutes les %d s",
             nameOf(v), label(header), tostring(why), ADHeaderFlow.CARRY_RETRY / 1000)
         if why == "noTractor" then
-            AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 15000, "AD_autonomous_headerNextNoTractor", label(trailer))
+            AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 15000, keys[1], label(trailer))
         elseif why == "noTrailer" then
-            AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 15000, "AD_autonomous_headerNextNoTrailer", label(header))
+            AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 15000, keys[2], label(header))
         else
-            AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 15000, "AD_autonomous_headerNextStay", label(header))
+            AutonomousMode.message(v, ADMessagesManager.messageTypes.WARN, 15000, keys[3], label(header))
         end
     end
     carry.why = why
@@ -250,7 +255,7 @@ function ADHeaderFlow.carryRetry(mode, result)
         return
     end
     v.ad.fpHeaderPrevField = carry.prevField -- la remorque vient au champ fini (startCollect)
-    local ok, err = FarmPilotCall(ADHeaderFlow.startCarry, v, header, true)
+    local ok, err = FarmPilotCall(ADHeaderFlow.startCarry, v, header, true, carry.depart)
     v.ad.fpHeaderPrevField = nil
     if not ok then
         log("ERREUR remorque porte-barre au champ suivant, nouvel essai : %s", tostring(err))

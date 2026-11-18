@@ -195,6 +195,9 @@ function ADIntersectionModule.isTrafficComing(vehicle, zone, horizon)
             end
         elseif (waitingAtItsLine or parkedByYield) and d > 1.5 then
             -- pas un danger
+        elseif d > self.PARKED_DIST and closing ~= nil and closing < -self.MOVING_MS then
+            -- (18/11) véhicule passé qui s'éloigne du croisement : plus un danger (il restait « sur le croisement »
+            -- jusqu'à 8 m, puis 2 s d'attente : plus de 5 s avant de repartir)
         elseif d <= self.CLOSE_DIST and (d <= self.PARKED_DIST or not (stopped and (speed ~= nil or closing ~= nil))) then
             -- 27/10 06:50 (942, MT635 : « Krampe sur le croisement (8 m) », « 7R sur le croisement (4 m) », véhicules arrêtés par
             -- le joueur à côté du croisement) : un véhicule arrêté (vitesse connue) à plus de 4 m d'un point du croisement est à côté,

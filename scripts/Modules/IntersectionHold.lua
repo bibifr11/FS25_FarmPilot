@@ -27,7 +27,7 @@ ADIntersectionHold = {}
 -- ------------------------------------------------------------------------------------------------------------
 -- Réglages
 -- ------------------------------------------------------------------------------------------------------------
-ADIntersectionHold.RELEASE_CLEAR_MS = 2000      -- ms sans danger avant de lâcher un véhicule tenu loin de sa ligne
+ADIntersectionHold.RELEASE_CLEAR_MS = 500       -- ms sans danger avant de lâcher un véhicule tenu loin de sa ligne (18/11 : 2 s trop long)
 ADIntersectionHold.RETREAT_TO_STOP = 1          -- m : après un raté, l'avant revient à 1 m de la ligne
 ADIntersectionHold.RETREAT_MIN = 1              -- m : recul minimal d'un vrai raté
 ADIntersectionHold.NOT_MISSED_LOG_MS = 10000    -- ms entre deux lignes « pas un raté » pour le même véhicule

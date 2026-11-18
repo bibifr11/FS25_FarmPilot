@@ -390,6 +390,19 @@ local function resumeCombine(mode, d, name)
             log("%s : partie rechargée, remorque au champ : va atteler « %s »", name, label(job.header))
             ADHeaderFlow.goToHeader(mode, job.header)
         elseif d.stage == "waitLeave" or d.stage == "follow" or d.stage == "followWait" then
+            -- (18/11, LEXION 6900 : « attend que ARION 570 parte devant », l'ARION garé à GT6, arrêté : attente sans
+            -- fin) tracteur à l'arrêt sans reprise à lui : rappelé pour la remorque ; s'il ne part pas, départ habituel (un autre
+            -- tracteur libre est choisi)
+            local tsm = job.tractor ~= nil and job.tractor.ad ~= nil and job.tractor.ad.stateModule or nil
+            if tsm ~= nil and not tsm:isActive() and tsm.fpAutoStage == nil then
+                if ADHeaderFlow.callTractor(job) then
+                    log("%s : partie rechargée, « %s » était à l'arrêt : rappelé pour la remorque « %s »", name, nameOf(job.tractor), label(job.trailer))
+                else
+                    ADHeaderFlow.endJob(job)
+                    log("%s : partie rechargée, « %s » à l'arrêt ne repart pas : départ habituel (autre tracteur)", name, nameOf(job.tractor))
+                    return false
+                end
+            end
             log("%s : partie rechargée, attend que « %s » parte devant avec la barre, puis le suit", name, nameOf(job.tractor))
             ADHeaderFlow.startWaitLeave(mode, job)
         else

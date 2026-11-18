@@ -4,7 +4,7 @@ FarmPilot is a modified version of AutoDrive 3.0.1.4 (https://github.com/Stephan
 Every file listed below as "modified" or "new" was changed or written for FarmPilot. Files not listed are unchanged from AutoDrive 3.0.1.4.
 The full history of each change is in the git log of this repository and in CHANGELOG.md.
 
-Summary (FarmPilot 1.1.4.4): 92 files modified, 297 files added, 3 files removed.
+Summary (FarmPilot 1.1.4.5): 94 files modified, 298 files added, 3 files removed.
 
 ## Modified files (lines added / removed)
 
@@ -22,16 +22,17 @@ Summary (FarmPilot 1.1.4.4): 92 files modified, 297 files added, 3 files removed
 - gui/notificationsHistoryGUI.xml (+3 / -3)
 - gui/routesManagerGUI.xml (+3 / -3)
 - gui/scanConfirmationGUI.xml (+3 / -3)
+- gui/userSettingsPage.xml (+0 / -6)
 - gui/vehicleSettingsPage.xml (+25 / -5)
 - modDesc.xml (+93 / -36)
-- register.lua (+396 / -12)
+- register.lua (+397 / -12)
 - scripts/AutoDrive.lua (+69 / -2)
 - scripts/Events/HudInputEvent.lua (+12 / -0)
 - scripts/ExternalInterface.lua (+85 / -0)
 - scripts/Gui.lua (+38 / -0)
 - scripts/Gui/EnterTargetNameGUI.lua (+37 / -0)
 - scripts/Gui/SettingsPage.lua (+2 / -0)
-- scripts/Hud.lua (+206 / -35)
+- scripts/Hud.lua (+210 / -39)
 - scripts/Hud/HudButton.lua (+99 / -1)
 - scripts/Hud/HudHarvesterInfo.lua (+1 / -1)
 - scripts/Hud/HudIcon.lua (+152 / -11)
@@ -54,6 +55,7 @@ Summary (FarmPilot 1.1.4.4): 92 files modified, 297 files added, 3 files removed
 - scripts/Modules/TaskModule.lua (+78 / -1)
 - scripts/Modules/TrailerModule.lua (+0 / -8)
 - scripts/PathCalculation.lua (+39 / -10)
+- scripts/Sensors/CollSensor.lua (+5 / -0)
 - scripts/Settings.lua (+195 / -12)
 - scripts/Specialization.lua (+196 / -37)
 - scripts/Sync.lua (+1 / -1)
@@ -296,6 +298,7 @@ Summary (FarmPilot 1.1.4.4): 92 files modified, 297 files added, 3 files removed
 - scripts/Modules/CornerModuleBends.lua
 - scripts/Modules/CornerModuleEndManoeuvre.lua
 - scripts/Modules/CornerModuleEndRoute.lua
+- scripts/Modules/DecorPassThrough.lua
 - scripts/Modules/DrivePathModuleCurveSpeed.lua
 - scripts/Modules/DrivePathModuleObstacles.lua
 - scripts/Modules/DrivePathModuleStuck.lua

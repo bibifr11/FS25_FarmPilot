@@ -20,8 +20,8 @@
 -- ------------------------------------------------------------------------------------------------------------
 -- FarmPilot : ordre des modes au bouton, avec « Autonome » juste après « Conduite »
 -- (le numéro 6, BGA, reste hors du cycle comme avant)
--- (16/11) « Tassage » juste après « Autonome », puis « Chargeur »
-ADStateModule.MODE_CYCLE = {AutoDrive.MODE_DRIVETO, AutoDrive.MODE_AUTONOMOUS, AutoDrive.MODE_COMPACT, AutoDrive.MODE_LOADER, AutoDrive.MODE_PICKUPANDDELIVER, AutoDrive.MODE_DELIVERTO, AutoDrive.MODE_LOAD, AutoDrive.MODE_UNLOAD}
+-- (18/11) Conduite, Autonome, Décharger moissonneuse, Chargement et livraison, Livraison, Chargement, Tassage, Chargeur
+ADStateModule.MODE_CYCLE = {AutoDrive.MODE_DRIVETO, AutoDrive.MODE_AUTONOMOUS, AutoDrive.MODE_UNLOAD, AutoDrive.MODE_PICKUPANDDELIVER, AutoDrive.MODE_DELIVERTO, AutoDrive.MODE_LOAD, AutoDrive.MODE_COMPACT, AutoDrive.MODE_LOADER}
 
 function ADStateModule:isModeAllowed(mode)
     if mode == AutoDrive.MODE_UNLOAD and self.vehicle.spec_locomotive then

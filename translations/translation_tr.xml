@@ -665,7 +665,7 @@
 		<text name="adAddon_player" text="Oyuncu"/>
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Otonom" />
-		<text name="AD_MODE_COMPACT" text="Compacting" />
+		<text name="AD_MODE_COMPACT" text="Compacting / Leveling" />
 		<text name="AD_MODE_LOADER" text="Loader" />
 		<text name="gui_ad_loader_srcSilo" text="Silo %d: %s (%s)" />
 		<text name="gui_ad_loader_srcHeap" text="Heap: %s (%s)" />

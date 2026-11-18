@@ -660,7 +660,7 @@
 		<text name="AD_obstacleDetour_reroute" text="merkt sich diese Durchfahrt als blockiert und nimmt einen anderen Weg" />
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonom" />
-		<text name="AD_MODE_COMPACT" text="Verdichten" />
+		<text name="AD_MODE_COMPACT" text="Verdichten / Planieren" />
 		<text name="AD_MODE_LOADER" text="Loader" />
 		<text name="gui_ad_loader_srcSilo" text="Silo %d: %s (%s)" />
 		<text name="gui_ad_loader_srcHeap" text="Heap: %s (%s)" />

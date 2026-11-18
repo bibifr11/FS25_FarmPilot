@@ -663,7 +663,7 @@
 		<text name="adAddon_player" text="Joueur"/>
 			<!-- FarmPilot mode Autonome -->
 		<text name="AD_MODE_AUTONOMOUS" text="Autonome" />
-		<text name="AD_MODE_COMPACT" text="Tassage" />
+		<text name="AD_MODE_COMPACT" text="Tassage / Nivelage" />
 		<text name="AD_MODE_LOADER" text="Chargeur" />
 		<text name="gui_ad_loader_srcSilo" text="Silo %d : %s (%s)" />
 		<text name="gui_ad_loader_srcHeap" text="Tas : %s (%s)" />

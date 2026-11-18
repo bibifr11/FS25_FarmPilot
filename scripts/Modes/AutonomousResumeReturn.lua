@@ -28,6 +28,8 @@
 --   lieu dans les RESTART_VALID ms (arrêté entre-temps) est oubliée.
 -- - Bouton parking lancé depuis un autre mode (Chargement, Livraison… : le mode d'avant revient à l'arrêt, voir
 --   AutonomousParkButton.lua) : la relance après blocage reste celle d'avant (ce mode-là reprend son travail).
+-- - (18/11) Mission donnée par FarmPilot (barre de moissonneuse, chargeur, silo : fpHeaderJob, fpLoaderJob, fpSiloJob) :
+--   le retour gardé est oublié, la mission part (avant : le tracteur appelé repartait se garer).
 -- - Journal : « [FarmPilot Reprise] <véhicule> : … il continue de rentrer … ».
 --
 -- Branché par : enveloppes posées au chargement de ce fichier sur ADSavegameResume.save / .load
@@ -206,6 +208,16 @@ if AutonomousMode ~= nil and AutonomousMode.start ~= nil then
         if why == "restart" and ((g_time or 0) < (sm.fpAutoReturnTime or 0) or (g_time or 0) - (sm.fpAutoReturnTime or 0) > ADResumeReturn.RESTART_VALID) then
             why = nil -- relance pas faite (arrêté entre-temps) : départ habituel
             sm.fpAutoReturn = nil
+        end
+        -- (18/11, LEXION 6900 : 7R puis ARION 570 appelés pour la remorque porte-barre, tous deux repartis se garer avec
+        -- le retour gardé d'avant le chargement : « aucun tracteur libre ») : mission donnée par FarmPilot = le vieux
+        -- retour est oublié, la mission part
+        local ad = self.vehicle.ad
+        if why ~= nil and (ad.fpHeaderJob ~= nil or ad.fpLoaderJob ~= nil or ad.fpSiloJob ~= nil) then
+            sm.fpAutoReturn = nil
+            log("%s : nouvelle mission (%s) : le retour d'avant le chargement est oublié", nameOf(self.vehicle),
+                ad.fpHeaderJob ~= nil and "barre de moissonneuse" or (ad.fpLoaderJob ~= nil and "chargeur" or "silo"))
+            why = nil
         end
         if why ~= nil then
             sm.fpAutoReturn = nil -- une seule fois

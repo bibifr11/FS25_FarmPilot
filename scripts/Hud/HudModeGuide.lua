@@ -287,7 +287,8 @@ function ADModeGuide:onDraw(vehicle, uiScale)
     end
 end
 
--- nom du mode à côté de la colonne (côté opposé au HUD)
+-- nom du mode à côté de la colonne, (18/11) côté HUD, par-dessus le HUD : de l'autre côté il passait sous les
+-- fenêtres d'autres mods dessinées après (panneau des pneus)
 function ADModeGuide:drawName(mode, c)
     local key = ADModeGuide.NAME[mode]
     if key == nil or c == nil then
@@ -298,7 +299,7 @@ function ADModeGuide:drawName(mode, c)
     local padW, padH = getNormalizedScreenValues(ADModeGuide.TIP_PAD_PX * self.uiScale, ADModeGuide.TIP_PAD_PX * self.uiScale * 0.6)
     local tw = getTextWidth(size, text) + 2 * padW
     local th = getTextHeight(size, text) + 2 * padH
-    local x = self.onLeft and (self.position.x - self.L.padW - tw) or (self.position.x + self.size.width + self.L.padW)
+    local x = self.onLeft and (self.position.x + self.size.width + self.L.padW) or (self.position.x - self.L.padW - tw)
     local y = c.y + (self.L.iconH - th) / 2
     rounded(x, y, tw, th, self.uiScale * 0.5, color("ad_color_header"))
     setTextAlignment(RenderText.ALIGN_LEFT)

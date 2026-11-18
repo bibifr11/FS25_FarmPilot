@@ -283,6 +283,10 @@ function ADApproachModule:isIgnored(object, node)
         -- unknown shape (traffic sign...) ignored the same way the sensors do
         return not ADSensor.isElementBlockingVehicle(self, node)
     end
+    -- FarmPilot (18/11) : pont-bascule, on roule dessus (DriveOverObjects.lua)
+    if ADDriveOver ~= nil and ADDriveOver.isDriveOver(object) then
+        return true
+    end
     local root = self.vehicle:getRootVehicle()
     if object == self.vehicle or object == root or AutoDrive:checkIsConnected(root, object) then
         return true

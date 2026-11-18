@@ -274,6 +274,7 @@ source(Utils.getFilename("scripts/Modules/ObstacleDetourQueue.lua", g_currentMod
 source(Utils.getFilename("scripts/Modules/ObstacleDetourEscape.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/DecorPassThrough.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ObstacleDetourModule.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/DriveOverObjects.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ApproachModule.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/ApproachModuleWidth.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/CornerModule.lua", g_currentModDirectory))

@@ -75,6 +75,11 @@ function ADCollSensorSplit:collisionTestCallbackSplit(transformId)
         end
     end
 
+    -- FarmPilot (18/11) : pont-bascule, on roule dessus (DriveOverObjects.lua)
+    if collisionObject ~= nil and ADDriveOver ~= nil and ADDriveOver.isDriveOver(collisionObject) then
+        return true -- objet suivant
+    end
+
     if collisionObject ~= nil then
         if collisionObject ~= self and collisionObject ~= self.vehicle and not AutoDrive:checkIsConnected(self.vehicle:getRootVehicle(), collisionObject) then
             if unloadDriver == nil or (collisionObject ~= unloadDriver and (not AutoDrive:checkIsConnected(unloadDriver:getRootVehicle(), collisionObject))) then

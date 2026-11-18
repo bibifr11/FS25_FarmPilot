@@ -11,7 +11,7 @@
 --   1. ralentissement selon l'angle du point visé PROGRESSIF (de 0,75 fois l'angle limite à 1,5 fois l'angle
 --      limite) au lieu d'un seuil ; même vitesse au bout qu'avant ;
 --   2. vitesse demandée lissée : une baisse est prise tout de suite (sécurité) et gardée 1,5 s ; elle ne remonte
---      qu'ensuite, en rampe (3 km/h par seconde). Une limite qui saute 4/6/4/6 donne 4 stable ;
+--      qu'ensuite, en rampe (9 km/h par seconde depuis le 18/11). Une limite qui saute 4/6/4/6 donne 4 stable ;
 --   3. accélérateur dosé selon l'écart entre la vitesse demandée et la vitesse prévue dans 2 s (un attelage lourd
 --      continue d'accélérer après qu'on a levé le pied) : plein loin en dessous, 30 % en arrivant, presque relâché
 --      si on va dépasser ; le limiteur du moteur (VehicleMotor:setSpeedLimit) tient la vitesse sans « plein gaz puis coupure ».
@@ -28,7 +28,7 @@
 -- Réglages / constantes
 -- ------------------------------------------------------------------------------------------------------------
 AutoDrive.SMOOTH_DRIVE = true                 -- false = comportement d'origine
-AutoDrive.SMOOTH_RAMP_UP = 3                  -- km/h par seconde : montée de la vitesse demandée
+AutoDrive.SMOOTH_RAMP_UP = 9                  -- km/h par seconde : montée de la vitesse demandée (18/11 : 3 trop mou)
 AutoDrive.SMOOTH_HOLD_MS = 1500               -- ms : une baisse de la vitesse demandée est gardée au moins ce temps
 AutoDrive.SMOOTH_RAMP_START = 1               -- km/h au-dessus de la vitesse actuelle d'où repart la rampe
 AutoDrive.SMOOTH_PEDAL_MIN = 0.3              -- accélérateur quand on arrive à la vitesse demandée
@@ -44,6 +44,9 @@ AutoDrive.SMOOTH_SKIP_TASKS = {                -- suivi de moissonneuse / ensile
     DriveToVehicleTask = true,
 }
 AutoDrive.SMOOTH_NO_SLOW_ANGLE = 180          -- angle passé au jeu : son seuil d'origine ne joue plus
+AutoDrive.SMOOTH_ROAD_SPEED = 15              -- (18/11) km/h : vitesse demandée à partir de laquelle l'accélération d'origine
+                                              -- (plein gaz jusqu'à la limite) est gardée ; le lissage reste pour les manœuvres
+AutoDrive.SMOOTH_FULL_BELOW = 2               -- (18/11) km/h : plus loin que ça sous la vitesse demandée, plein gaz
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -89,7 +92,9 @@ end
 -- vitesse, jamais sous SMOOTH_PEDAL_MIN (le limiteur du moteur tient la vitesse, le freinage reste à l'appelant)
 function AutoDrive.smoothDrivePedal(err, boost, maxPedal)
     local pedal
-    if err < 0 then
+    if err > AutoDrive.SMOOTH_FULL_BELOW then
+        return maxPedal
+    elseif err < 0 then
         -- on va dépasser : accélérateur presque relâché
         pedal = AutoDrive.SMOOTH_PEDAL_LOW + boost
     else
@@ -116,7 +121,9 @@ function AutoDrive.smoothDriveInputs(vehicle, dt, acceleration, slowAcceleration
     st.lastTime = now
 
     -- arrêt, freinage demandé ou suivi de moissonneuse : tel quel, la rampe repartira de la vitesse actuelle
+    -- (18/11) route et grands trajets : accélération d'origine, tout le moteur
     if not allowedToDrive or maxSpeed == nil or maxSpeed <= 0 or acceleration == nil or acceleration <= 0
+        or maxSpeed >= AutoDrive.SMOOTH_ROAD_SPEED
         or AutoDrive.smoothDriveIsHarvesterFollow(vehicle) then
         st.target = nil
         st.hold = nil

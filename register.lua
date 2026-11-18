@@ -119,6 +119,7 @@ source(Utils.getFilename("scripts/Events/ExperimentalFeaturesEvent.lua", g_curre
 source(Utils.getFilename("scripts/Events/MessageEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/InputEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/HudInputEvent.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Hud/HudModeGuide.lua", g_currentModDirectory)) -- (18/11) guide des modes : colonne des icônes de mode à droite du HUD
 source(Utils.getFilename("scripts/Events/AutonomousToolEvent.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Events/TrailerSwapEvent.lua", g_currentModDirectory)) -- dossier des places de l'échange de bennes
 source(Utils.getFilename("scripts/Events/HeaderTractorEvent.lua", g_currentModDirectory)) -- véhicule de la remorque porte-barre

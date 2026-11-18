@@ -427,6 +427,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 	end
 
 	if ADEditorReminder ~= nil then ADEditorReminder.addTo(self, uiScale) end -- fenêtre « Rappel éditeur » (bouton « ? »), voir HudEditorReminder.lua
+	if ADModeGuide ~= nil then ADModeGuide.addTo(self, uiScale) end -- (18/11) guide des modes : colonne des icônes de mode à droite du HUD, voir Hud/HudModeGuide.lua
 	-- Refreshing layer sequence must be called, after all elements have been added
 	self:refreshHudElementsLayerSequence()
 end

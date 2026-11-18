@@ -1417,7 +1417,7 @@
 		<text name="fp_help_f3_3_text" text="Pathfinder algorithm, Pathfinder factor, Collisionheigth over ground, Use folders, Auto connect (start) and (end), Record offset in driving direction / in opposite driving direction, Fieldpoint Offset, field point max. distance, Maximum trigger distance, Routemanager on Server." />
 		<text name="fp_help_f4_title" text="User and environment settings" />
 		<text name="fp_help_f4_1_title" text="Display" />
-		<text name="fp_help_f4_1_text" text="Gui scale for FarmPilot HUD, Notifications, Display help (keys in F1), Show next path, Line height, Show tooltips, Show markers (on the map), Switch to markers, Add settings to HUD, Logo personalization, Wide HUD, Sound, Scale Lines, Scale Destination Name, Custom colors, Record without driver." />
+		<text name="fp_help_f4_1_text" text="Gui scale for FarmPilot HUD, Notifications, Display help (keys in F1), Show next path, Line height, Show tooltips, Show markers (on the map), Switch to markers, Add settings to HUD, Wide HUD, Sound, Scale Lines, Scale Destination Name, Custom colors, Record without driver." />
 		<text name="fp_help_f4_2_title" text="Environment (lights)" />
 		<text name="fp_help_f4_2_text" text="Turnlight Automatic (Yes/No), Turnlight Distance, Engine Stop Delay (Never, 10 s, 30 s, 1, 2 or 5 min), Beacon lights (outside fields), Worklight when Loading / Unloading, Worklight when in a Silo Bunker, Hazard Lights (when reversing), Remaining Drive time (calculation for other mods; increase or turn off if the game slows down)." />
 		<text name="fp_help_f5_title" text="Built-in functions (former Addon)" />

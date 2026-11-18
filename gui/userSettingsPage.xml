@@ -64,12 +64,6 @@
 				<Text profile="fs25_settingsMultiTextOptionTitle" text="$l10n_gui_ad_addSettingsToHUD"/>
 			</Bitmap>
 			<Bitmap profile="fs25_multiTextOptionContainer" onCreate="onCreateAutoDriveSettingRow">
-				<MultiTextOption profile="fs25_settingsMultiTextOption" onClick="onOptionChange" onCreate="onCreateAutoDriveSetting" name="iconSetToUse" id="iconSetToUse">
-					<Text profile="fs25_multiTextOptionTooltip" name="ignore" text="$l10n_gui_ad_iconSetToUse_tooltip"/>
-				</MultiTextOption>
-				<Text profile="fs25_settingsMultiTextOptionTitle" text="$l10n_gui_ad_iconSetToUse"/>
-			</Bitmap>
-			<Bitmap profile="fs25_multiTextOptionContainer" onCreate="onCreateAutoDriveSettingRow">
 				<BinaryOption profile="fs25_settingsBinaryOption" onClick="onOptionChange" onCreate="onCreateAutoDriveSetting" name="wideHUD" id="wideHUD">
 					<Text profile="fs25_multiTextOptionTooltip" name="ignore" text="$l10n_gui_ad_wideHUD_tooltip"/>
 				</BinaryOption>

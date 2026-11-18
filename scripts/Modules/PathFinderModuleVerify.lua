@@ -124,6 +124,50 @@ function PathFinderModule:isStretchClear(a, b, inner, narrow, obstaclesOnly)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
+-- Objets déjà au contact du train là où il est (18/11)
+-- ------------------------------------------------------------------------------------------------------------
+-- tracteur arrêté sous un arbre ou contre une haie : ses branches touchent déjà la boîte du train, le premier tronçon
+-- était refusé pour elles et aucun trajet ne partait (champ 52, presse coincée dans un coin, « obstacle » à 1 m).
+-- Ces objets-là (ids) ne comptent pas au départ ; tout autre objet compte toujours.
+PathFinderModule.START_TOUCH_MARGIN = 0.5 -- m autour du tracteur
+function PathFinderModule:objectsTouchingStart()
+    local ids = {}
+    local vehicle = self.vehicle
+    if vehicle == nil or vehicle.components == nil or vehicle.components[1] == nil or overlapBox == nil
+        or localDirectionToWorld == nil or getTerrainHeightAtWorldPos == nil then
+        return ids
+    end
+    local node = vehicle.components[1].node
+    local x, _, z = getWorldTranslation(node)
+    local dx, _, dz = localDirectionToWorld(node, 0, 0, 1)
+    local halfLength = ((vehicle.size ~= nil and vehicle.size.length) or 5) / 2 + PathFinderModule.START_TOUCH_MARGIN
+    local halfWidth = (self.trainHalfWidth or ((vehicle.size ~= nil and vehicle.size.width or 3) / 2)) + PathFinderModule.START_TOUCH_MARGIN
+    local offset = (vehicle.size ~= nil and vehicle.size.lengthOffset) or 0
+    local cx, cz = x + dx * offset, z + dz * offset
+    local angleRad = AutoDrive.normalizeAngle(math.atan2(-dz, dx))
+    local y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, cx, 1, cz)
+    local probe = {}
+    probe.touchCallback = function(_, transformId)
+        if transformId ~= 0 and transformId ~= g_currentMission.terrainRootNode then
+            local o = g_currentMission.getNodeObject ~= nil and g_currentMission:getNodeObject(transformId) or nil
+            if o == nil or o.rootVehicle ~= vehicle then
+                ids[transformId] = true
+            end
+        end
+        return true
+    end
+    overlapBox(cx, y + self.vehicleMinHeight / 2, cz, 0, angleRad, 0, halfLength, self.vehicleMinHeight / 2, halfWidth, "touchCallback", probe, self.mask, true, true, true, true)
+    local n = 0
+    for _ in pairs(ids) do
+        n = n + 1
+    end
+    if n > 0 then
+        print(string.format("[AD-Fin] %s: %d objet(s) deja au contact du train au depart (%.0f,%.0f) : pas comptes au debut du trajet", self:getLogName(), n, x, z))
+    end
+    return ids
+end
+
+-- ------------------------------------------------------------------------------------------------------------
 -- Premier tronçon refusé d'un trajet
 -- ------------------------------------------------------------------------------------------------------------
 -- the first meters (at the vehicle) and the last meters (next to the target) are not judged
@@ -153,17 +197,25 @@ function PathFinderModule:findBlockedStretch()
         skipTo = total
     end
     local done = 0
+    local startIds = nil
     for i = 1, #wps - 1 do
         local a, b = wps[i], wps[i + 1]
         local dx, dz = b.x - a.x, b.z - a.z
         local length = math.sqrt(dx * dx + dz * dz)
         local from = math.max(0, skipFrom - done)
         local to = math.min(length, skipTo - done)
-        -- start turn: crop and field edge not judged, obstacles still are
+        -- start turn: crop and field edge not judged, obstacles still are ; (18/11) except the ones the train already
+        -- touches where it stands (branches above the tractor: champ 52, the baler stuck in a corner)
         local startTo = math.min(length, skipFrom - done, skipTo - done)
         if startTo > 0.5 then
             local pb = {x = a.x + dx * startTo / length, z = a.z + dz * startTo / length}
-            if not self:isStretchClear(a, pb, nil, true, true) then
+            if startIds == nil then
+                startIds = self:objectsTouchingStart()
+            end
+            self.ignoreHitIds = startIds
+            local okStart = self:isStretchClear(a, pb, nil, true, true)
+            self.ignoreHitIds = nil
+            if not okStart then
                 return i, "obstacle"
             end
         end

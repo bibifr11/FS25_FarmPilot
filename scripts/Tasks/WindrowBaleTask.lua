@@ -136,6 +136,13 @@ ADWindrowBaleTask.DIRECT_ROOM = 15          -- m droits au moins devant le pick-
 ADWindrowBaleTask.UTURN_ANGLE = 100         -- degrés de virage et plus = demi-tour (journal)
 ADWindrowBaleTask.BALE_RADIUS = 1.0         -- m : rayon d'une balle posée (avec marge)
 ADWindrowBaleTask.BALE_ZONE = 1.5           -- m : zone interdite autour d'une balle pour le chercheur de chemin
+ADWindrowBaleTask.OWN_BALE_BEHIND = 4       -- (18/11) m derrière l'arrière de la presse : balle qu'elle vient de poser (goulotte)
+ADWindrowBaleTask.START_TOUCH_IGNORE = 12   -- (18/11) m du départ où les objets déjà au contact de l'ensemble ne comptent pas
+ADWindrowBaleTask.BACKOUT_DISTANCES = { 10, 6, 4 } -- (18/11) m de recul tout droit quand elle est coincée (le plus long possible)
+ADWindrowBaleTask.BACKOUT_MAX = 2           -- (18/11) reculs au plus avant qu'un trajet reparte
+ADWindrowBaleTask.BACKOUT_MAX_ANGLE = 12    -- (18/11) degrés entre tracteur et presse au plus pour reculer (sinon elle part de côté)
+ADWindrowBaleTask.BACKOUT_SPEED = 4         -- (18/11) km/h en recul
+ADWindrowBaleTask.BACKOUT_TIMEOUT = 25000   -- (18/11) ms au plus pour un recul
 ADWindrowBaleTask.BALE_LOOK = 25            -- m devant l'avant du tracteur : balle sur l'andain = ralentir
 ADWindrowBaleTask.BALE_STOP = 4             -- m + rayon de braquage entre l'avant du tracteur et la balle : arrêt de
                                             -- l'andain là (place pour tourner sans toucher la balle)
@@ -997,15 +1004,50 @@ function ADWindrowBaleTask:bales()
     return list
 end
 
+-- (18/11) balles de la presse elle-même : au contact du tracteur ou de la presse, ou posées juste derrière elle (sur
+-- la goulotte, OWN_BALE_BEHIND m au plus). Champ 52 : la presse coincée dans un coin refusait ses courbes de départ
+-- et ses andains à cause de sa propre balle. behindNose : aussi toutes les balles derrière l'avant du tracteur (pour
+-- le contrôle « balle devant sur la ligne », une balle derrière lui n'est jamais devant). Renvoie { [indice] = true }
+function ADWindrowBaleTask:ownBales(bales, behindNose)
+    local own = {}
+    local geo = self.geo
+    if geo == nil or bales == nil then
+        return own
+    end
+    local tx, _, tz, hx, hz = self:tractorPose()
+    local hitchBack = geo.hitchBack or 0
+    local hitchX, hitchZ = tx - hx * hitchBack, tz - hz * hitchBack
+    local fx, fz = tx + hx * geo.front, tz + hz * geo.front
+    local rearX, rearZ
+    if geo.rigid then
+        rearX, rearZ = tx - hx * ((geo.behind or 0) + ADWindrowBaleTask.OWN_BALE_BEHIND), tz - hz * ((geo.behind or 0) + ADWindrowBaleTask.OWN_BALE_BEHIND)
+    else
+        local ux, uz = self:balerDir()
+        local back = (geo.length or 0) + ADWindrowBaleTask.OWN_BALE_BEHIND
+        rearX, rearZ = hitchX - ux * back, hitchZ - uz * back
+    end
+    local tHalf = geo.halfWidth + ADWindrowBaleTask.BALE_RADIUS + ADWindrowBaleTask.SWEEP_MARGIN
+    local bHalf = geo.balerHalfWidth + ADWindrowBaleTask.BALE_RADIUS + ADWindrowBaleTask.SWEEP_MARGIN
+    for i, c in ipairs(bales) do
+        if segDist(c.x, c.z, fx, fz, hitchX, hitchZ) < tHalf or segDist(c.x, c.z, hitchX, hitchZ, rearX, rearZ) < bHalf then
+            own[i] = true
+        elseif behindNose and (c.x - fx) * hx + (c.z - fz) * hz < -ADWindrowBaleTask.BALE_RADIUS then
+            own[i] = true
+        end
+    end
+    return own
+end
+
 -- une balle dans le couloir (largeur halfWidth + rayon de balle) de a à b ; renvoie la balle et son abscisse
-function ADWindrowBaleTask:baleInCorridor(ax, az, bx, bz, halfWidth)
+-- (18/11) skip : balles à ne pas compter (indices dans self:bales())
+function ADWindrowBaleTask:baleInCorridor(ax, az, bx, bz, halfWidth, skip)
     local ux, uz = normalize(bx - ax, bz - az)
     local len = dist2(ax, az, bx, bz)
     local best, bestAlong = nil, math.huge
-    for _, c in ipairs(self:bales()) do
+    for i, c in ipairs(self:bales()) do
         local rx, rz = c.x - ax, c.z - az
         local along = rx * ux + rz * uz
-        if along >= -ADWindrowBaleTask.BALE_RADIUS and along <= len + ADWindrowBaleTask.BALE_RADIUS
+        if (skip == nil or not skip[i]) and along >= -ADWindrowBaleTask.BALE_RADIUS and along <= len + ADWindrowBaleTask.BALE_RADIUS
             and math.abs(rx * uz - rz * ux) < halfWidth + ADWindrowBaleTask.BALE_RADIUS and along < bestAlong then
             best, bestAlong = c, along
         end
@@ -1016,7 +1058,8 @@ end
 -- (17/11) objet fixe (arbre, souche, poteau, bâtiment) dans la boîte de a à b, demi-largeur halfWidth, de
 -- OBSTACLE_GROUND à OBSTACLE_HEIGHT m au-dessus du sol (overlapBox, comme le chercheur de chemin) ; les véhicules (le
 -- nôtre compris) et les balles (contrôlées à part) ne comptent pas. Renvoie le nom du premier objet, nil si rien
-function ADWindrowBaleTask:obstacleOn(ax, az, bx, bz, halfWidth)
+-- (18/11) ignore : objets (ids) à ne pas compter ; collect : table remplie avec les ids touchés
+function ADWindrowBaleTask:obstacleOn(ax, az, bx, bz, halfWidth, ignore, collect)
     if overlapBox == nil or g_currentMission == nil or g_currentMission.terrainRootNode == nil then
         return nil
     end
@@ -1031,7 +1074,7 @@ function ADWindrowBaleTask:obstacleOn(ax, az, bx, bz, halfWidth)
     y = (okY and tonumber(y)) or 0
     local probe = { hits = 0 }
     probe.callback = function(pr, id)
-        if id ~= 0 and id ~= terrain then
+        if id ~= 0 and id ~= terrain and not (ignore ~= nil and ignore[id]) then
             local object = nil
             if g_currentMission.getNodeObject ~= nil then
                 local okO, o = FarmPilotCall(g_currentMission.getNodeObject, g_currentMission, id)
@@ -1040,6 +1083,9 @@ function ADWindrowBaleTask:obstacleOn(ax, az, bx, bz, halfWidth)
             local isBale = object ~= nil and Bale ~= nil and object.isa ~= nil and object:isa(Bale)
             if not isBale and (object == nil or object.rootVehicle == nil) then
                 pr.hits = pr.hits + 1
+                if collect ~= nil then
+                    collect[id] = true
+                end
                 if pr.name == nil then
                     local okN, n = FarmPilotCall(function()
                         if object ~= nil and object.getName ~= nil then
@@ -1082,16 +1128,12 @@ function ADWindrowBaleTask:sweepProblem(path, withField)
         local ux, uz = self:balerDir()
         ax, az = hitchX - ux * tow, hitchZ - uz * tow
     end
-    -- balles déjà au contact de l'ensemble au départ (balle qu'il vient de poser derrière) : pas comptées
+    -- balles déjà au contact de l'ensemble au départ (balle qu'il vient de poser derrière) : pas comptées ; (18/11)
+    -- aussi celle posée juste derrière la presse, sur sa goulotte (ownBales)
     local tHalf = geo.halfWidth + ADWindrowBaleTask.BALE_RADIUS + ADWindrowBaleTask.SWEEP_MARGIN
     local bHalf = geo.balerHalfWidth + ADWindrowBaleTask.BALE_RADIUS + ADWindrowBaleTask.SWEEP_MARGIN
-    local ignore = {}
-    for i, c in ipairs(bales) do
-        if segDist(c.x, c.z, tx + hx * geo.front, tz + hz * geo.front, hitchX, hitchZ) < tHalf
-            or (not geo.rigid and segDist(c.x, c.z, hitchX, hitchZ, hitchX + (ax - hitchX) * geo.length / math.max(tow, 0.1), hitchZ + (az - hitchZ) * geo.length / math.max(tow, 0.1)) < bHalf) then
-            ignore[i] = true
-        end
-    end
+    local ignore = self:ownBales(bales)
+    local ownSweep = (geo.behind or 0) + (geo.length or 0) + ADWindrowBaleTask.OWN_BALE_BEHIND + 2
     -- points tous les mètres
     local pts = {}
     for i = 1, #path do
@@ -1128,6 +1170,15 @@ function ADWindrowBaleTask:sweepProblem(path, withField)
     end
     local travelled = 0
     local obstX, obstZ, obstAcc = tx, tz, 0
+    -- (18/11) objets fixes déjà au contact de l'ensemble là où il est (branches au-dessus du tracteur, haie contre la
+    -- presse) : pas comptés sur les START_TOUCH_IGNORE premiers mètres (champ 52, presse coincée dans un coin)
+    local startIds = {}
+    self:obstacleOn(tx - hx * (geo.hitchBack or 0), tz - hz * (geo.hitchBack or 0), tx + hx * geo.front, tz + hz * geo.front,
+        geo.halfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN, nil, startIds)
+    if not geo.rigid then
+        local ux, uz = self:balerDir()
+        self:obstacleOn(hitchX, hitchZ, hitchX - ux * geo.length, hitchZ - uz * geo.length, geo.balerHalfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN, nil, startIds)
+    end
     for i, p in ipairs(pts) do
         local d = dist2(p.x, p.z, lastX, lastZ)
         if d >= 0.3 then
@@ -1141,8 +1192,11 @@ function ADWindrowBaleTask:sweepProblem(path, withField)
                 ax, az = hX - ux * tow, hZ - uz * tow
                 rearX, rearZ = hX - ux * geo.length, hZ - uz * geo.length
             end
+            -- (18/11) balles de la presse (au contact, sur la goulotte) ignorées seulement au début : une courbe qui
+            -- revient plus loin sur elles est refusée
+            local ownOff = travelled > ownSweep
             for k, c in ipairs(bales) do
-                if not ignore[k] then
+                if ownOff or not ignore[k] then
                     if segDist(c.x, c.z, fx, fz, hX, hZ) < tHalf then
                         return string.format("le tracteur passerait sur une balle (%.0f, %.0f)", c.x, c.z), "balle"
                     end
@@ -1197,13 +1251,14 @@ function ADWindrowBaleTask:sweepProblem(path, withField)
             obstAcc = obstAcc + d
             if obstAcc >= ADWindrowBaleTask.OBSTACLE_STEP or i == #pts then
                 obstAcc = 0
-                local name = self:obstacleOn(obstX, obstZ, fx, fz, geo.halfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN)
+                local skipIds = travelled <= ADWindrowBaleTask.START_TOUCH_IGNORE and startIds or nil
+                local name = self:obstacleOn(obstX, obstZ, fx, fz, geo.halfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN, skipIds)
                 if name ~= nil then
                     return string.format("le tracteur toucherait un objet fixe « %s » en (%.0f, %.0f)", name, p.x, p.z), "objet"
                 end
                 obstX, obstZ = p.x, p.z
                 if not geo.rigid then
-                    local bname = self:obstacleOn(hX, hZ, rearX, rearZ, geo.balerHalfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN)
+                    local bname = self:obstacleOn(hX, hZ, rearX, rearZ, geo.balerHalfWidth + ADWindrowBaleTask.OBSTACLE_MARGIN, skipIds)
                     if bname ~= nil then
                         return string.format("la presse toucherait un objet fixe « %s » en (%.0f, %.0f)", bname, (hX + rearX) / 2, (hZ + rearZ) / 2), "objet"
                     end
@@ -1620,6 +1675,11 @@ function ADWindrowBaleTask:updateChoose(dt)
         log("%s : plus d'andain de %.0f m ou plus faisable : les %d petit(s) andain(s) maintenant", self:name(), ADWindrowBaleTask.SMALL_ROW, smallKept)
         return
     end
+    -- (18/11) andains laissés faute de trajet (chercheur, courbe) : recul tout droit sur sa trace si la place est libre,
+    -- puis ils sont repris depuis là
+    if self:retryAfterBackout() then
+        return
+    end
     -- aucun bout retenu : ce qui reste à faire est laissé
     for _, row in ipairs(self.rows) do
         if row.state == "todo" then
@@ -1967,6 +2027,135 @@ function ADWindrowBaleTask:updatePlanning(dt)
     self:setState("choose")
 end
 
+-- (18/11) ni chemin du chercheur, ni courbe, ni approche directe, plus rien de faisable faute de trajet : la presse recule
+-- tout droit sur sa trace (BACKOUT_DISTANCES m, le plus long qui est libre derrière elle : balles, objets fixes, champ en
+-- Strict), puis nouveau choix. Champ 52 : arrêtée le nez au bord dans un coin, arbre contre le tracteur, aucun trajet
+-- accepté, elle recommençait sans fin. Presse pas dans l'axe du tracteur : pas de recul (elle partirait de côté).
+function ADWindrowBaleTask:retryAfterBackout()
+    local rows, why = {}, nil
+    for _, row in ipairs(self.rows) do
+        if row.state ~= "done" and not row.smallSkip then
+            for e = 1, 2 do
+                local w = row.why ~= nil and row.why[e] or nil
+                if w ~= nil and (string.find(w, "chercheur", 1, true) or string.find(w, "courbe", 1, true)) then
+                    rows[#rows + 1] = row
+                    why = why or w
+                    break
+                end
+            end
+        end
+    end
+    if #rows == 0 or not self:tryBackout(string.format("%d andain(s) sans trajet", #rows), why) then
+        return false
+    end
+    for _, row in ipairs(rows) do
+        row.state, row.why, row.tries, row.later = "todo", {}, { 0, 0 }, nil
+    end
+    return true
+end
+
+function ADWindrowBaleTask:tryBackout(problem, why)
+    local geo = self.geo
+    if geo == nil then
+        return false
+    end
+    local tx, _, tz, hx, hz = self:tractorPose()
+    if (self.backoutCount or 0) >= ADWindrowBaleTask.BACKOUT_MAX then
+        if not self.backoutMaxLogged then
+            self.backoutMaxLogged = true
+            log("%s : coincée en (%.0f, %.0f), déjà %d recul(s) sans trajet : plus de recul", self:name(), tx, tz, self.backoutCount)
+        end
+        return false
+    end
+    local ux, uz = hx, hz
+    local hitchX, hitchZ = tx - hx * (geo.hitchBack or 0), tz - hz * (geo.hitchBack or 0)
+    local rearX, rearZ
+    if geo.rigid then
+        rearX, rearZ = tx - hx * (geo.behind or 0), tz - hz * (geo.behind or 0)
+    else
+        ux, uz = self:balerDir()
+        rearX, rearZ = hitchX - ux * (geo.length or 0), hitchZ - uz * (geo.length or 0)
+    end
+    local angle = angleBetween(hx, hz, ux, uz)
+    local reason = nil
+    if angle > ADWindrowBaleTask.BACKOUT_MAX_ANGLE then
+        reason = string.format("presse pas dans l'axe du tracteur (%.0f°)", angle)
+    else
+        local w = math.max(geo.halfWidth, geo.balerHalfWidth)
+        local sx, sz = rightOf(ux, uz)
+        for _, dist in ipairs(ADWindrowBaleTask.BACKOUT_DISTANCES) do
+            local ex, ez = rearX - ux * dist, rearZ - uz * dist
+            local bale = self:baleInCorridor(rearX, rearZ, ex, ez, w)
+            local name = bale == nil and self:obstacleOn(rearX, rearZ, ex, ez, w + ADWindrowBaleTask.OBSTACLE_MARGIN) or nil
+            local fieldOk = true
+            if bale == nil and name == nil and self.strict then
+                for _, k in ipairs({ 0.5, 1 }) do
+                    local px, pz = rearX - ux * dist * k, rearZ - uz * dist * k
+                    for _, side in ipairs({ 0, 1, -1 }) do
+                        if fieldOk and not self:pointAllowed(px + sx * w * side, pz + sz * w * side, false) then
+                            fieldOk = false
+                        end
+                    end
+                end
+            end
+            if bale == nil and name == nil and fieldOk then
+                self.backoutCount = (self.backoutCount or 0) + 1
+                local target = { x = tx - hx * (dist + 100), z = tz - hz * (dist + 100) }
+                local okY, ty = FarmPilotCall(getTerrainHeightAtWorldPos, g_currentMission.terrainRootNode, target.x, 1, target.z)
+                target.y = (okY and tonumber(ty)) or 0
+                self.backout = { x = tx, z = tz, hx = hx, hz = hz, dist = dist, target = target, t = 0 }
+                log("%s : coincée en (%.0f, %.0f) (%s : %s) : recul tout droit de %.0f m sur sa trace (presse à %.0f° du tracteur), recul %d/%d",
+                    self:name(), tx, tz, tostring(problem), tostring(why), dist, angle, self.backoutCount, ADWindrowBaleTask.BACKOUT_MAX)
+                self.vehicle.ad.specialDrivingModule:reset()
+                self:setState("backout")
+                return true
+            end
+            reason = bale ~= nil and string.format("balle derrière la presse en (%.0f, %.0f)", bale.x, bale.z)
+                or name ~= nil and string.format("objet fixe « %s » derrière la presse", name)
+                or "derrière la presse, hors du champ"
+        end
+    end
+    log("%s : coincée en (%.0f, %.0f) : pas de recul possible (%s)", self:name(), tx, tz, tostring(reason))
+    return false
+end
+
+-- (18/11) recul tout droit en cours : jusqu'à la distance voulue, l'arrière bloqué ou BACKOUT_TIMEOUT ms, puis choix
+function ADWindrowBaleTask:updateBackout(dt)
+    local b = self.backout
+    if b == nil then
+        self:setState("choose")
+        return
+    end
+    local tx, _, tz = self:tractorPose()
+    local back = (b.x - tx) * b.hx + (b.z - tz) * b.hz
+    b.t = b.t + dt
+    local cdm = self.vehicle.ad.collisionDetectionModule
+    local rearBlocked = cdm ~= nil and cdm.checkReverseCollision ~= nil and cdm:checkReverseCollision() == true
+    -- presse traînée qui se met en portefeuille : arrêt tout de suite
+    local bent = 0
+    if self.geo ~= nil and not self.geo.rigid then
+        local _, _, _, hx, hz = self:tractorPose()
+        local ux, uz = self:balerDir()
+        bent = angleBetween(hx, hz, ux, uz)
+    end
+    local folding = bent > ADWindrowBaleTask.BACKOUT_MAX_ANGLE + 8
+    if back >= b.dist - 0.3 or rearBlocked or folding or b.t > ADWindrowBaleTask.BACKOUT_TIMEOUT then
+        log("%s : recul fini : %.1f m sur %.0f (arrière bloqué %s, presse à %.0f°, temps dépassé %s), nouveau choix", self:name(), back, b.dist,
+            tostring(rearBlocked), bent, tostring(b.t > ADWindrowBaleTask.BACKOUT_TIMEOUT))
+        self.backout = nil
+        self:holdVehicle(dt)
+        self:setState("choose")
+        return
+    end
+    local sdm = self.vehicle.ad.specialDrivingModule
+    sdm:releaseVehicle()
+    -- recul guidé (presse tenue dans l'axe) ; sans nœud de recul utilisable : volant droit
+    local ok = FarmPilotCall(sdm.reverseToTargetLocation, sdm, dt, b.target, ADWindrowBaleTask.BACKOUT_SPEED)
+    if not ok then
+        sdm:driveReverse(dt, ADWindrowBaleTask.BACKOUT_SPEED, 0.5, false)
+    end
+end
+
 -- courbe la plus courte (6 formes de Dubins) du tracteur au début de la ligne, sur le champ, hors culture, loin des
 -- balles ; nil et la raison sinon
 function ADWindrowBaleTask:dubinsPath(line)
@@ -2082,6 +2271,7 @@ end
 
 function ADWindrowBaleTask:startDrive(path, how)
     local line = self.line
+    self.backoutCount = 0
     local len = pathLength(path)
     local est = self.choice ~= nil and self.choice.est ~= nil and string.format(", trajet %.0f m pour %.0f estimés", len + line.back + self.geo.behind, self.choice.est) or ""
     if self.uTurn then
@@ -2147,6 +2337,7 @@ end
 -- ------------------------------------------------------------------------------------------------------------
 function ADWindrowBaleTask:startFollow(line, how)
     local geo = self.geo
+    self.backoutCount = 0
     local pre = line.back + geo.behind + ADWindrowBaleTask.REF_EXTRA
     -- départ loin derrière (approche directe : derrière le pick-up)
     local px, _, pz = self:pickupPosition()
@@ -2756,16 +2947,18 @@ function ADWindrowBaleTask:updateLine(dt)
         local sCut = math.min(sFar, math.max(sNose, self.endS or ref.s[ref.n]))
         local bale, along = nil, nil
         local nx, nz = fx, fz
+        -- (18/11) balles de la presse et balles derrière l'avant du tracteur : jamais « devant sur la ligne »
+        local skip = self:ownBales(self:bales(), true)
         if sCut > sNose + 0.5 then
             local mx, mz = Ref.point(ref, sCut)
             local ox, oz = Ref.point(ref, sNose)
-            bale, along = self:baleInCorridor(ox, oz, mx, mz, w)
+            bale, along = self:baleInCorridor(ox, oz, mx, mz, w, skip)
             nx, nz = mx, mz
         else
             sCut = sNose
         end
         if bale == nil and sFar > sCut + 0.5 then
-            local b2, a2 = self:baleInCorridor(nx, nz, nx + hx * (sFar - sCut), nz + hz * (sFar - sCut), w)
+            local b2, a2 = self:baleInCorridor(nx, nz, nx + hx * (sFar - sCut), nz + hz * (sFar - sCut), w, skip)
             if b2 ~= nil then
                 bale, along = b2, (sCut - sNose) + a2
             end
@@ -3020,6 +3213,12 @@ end
 -- balle posée sur l'andain devant le tracteur
 function ADWindrowBaleTask:baleOnRow(bale, baleSig)
     local row = self.line.row
+    -- (18/11) où est la balle par rapport au tracteur (devant / de côté), pour le journal
+    local tx, _, tz, hx, hz = self:tractorPose()
+    local ahead = (bale.x - tx) * hx + (bale.z - tz) * hz - (self.geo ~= nil and self.geo.front or 0)
+    local side = (bale.x - tx) * hz - (bale.z - tz) * hx
+    log("%s : balle en (%.0f, %.0f) : %.1f m devant l'avant du tracteur, %.1f m de côté ; tracteur en (%.0f, %.0f), cap (%.2f, %.2f)", self:name(),
+        bale.x, bale.z, ahead, side, tx, tz, hx, hz)
     if not self.entered then
         log("%s : blocage : balle posée sur la ligne d'approche de l'andain %s (%.0f, %.0f)", self:name(), tostring(row.id), bale.x, bale.z)
         self:dropEnd(row, self.line.e, string.format("balle posée sur la ligne d'approche (%.0f, %.0f)", bale.x, bale.z))
@@ -3116,7 +3315,7 @@ function ADWindrowBaleTask:update(dt)
     end
     -- arrêt demandé par la presse (pleine, éjection, enrubannage) : on attend sur place
     local okS, stop = callOf("ADBalerControl", "mustStop", self.baler)
-    if okS and stop == true and self.state ~= "planning" and self.state ~= "rescan" then
+    if okS and stop == true and self.state ~= "planning" and self.state ~= "rescan" and self.state ~= "backout" then
         self:holdVehicle(dt)
         if self.stopSince == nil then
             self.stopSince = g_time or 0
@@ -3140,6 +3339,8 @@ function ADWindrowBaleTask:update(dt)
         self:updateLine(dt)
     elseif self.state == "rescan" then
         self:updateRescan(dt)
+    elseif self.state == "backout" then
+        self:updateBackout(dt)
     else
         self:holdVehicle(dt)
     end

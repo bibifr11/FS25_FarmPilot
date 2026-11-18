@@ -3149,6 +3149,10 @@ function PathFinderModule:getDubinsPath()
 end
 
 function PathFinderModule:collisionTestCallback(transformId)
+    -- (18/11) objets déjà au contact du train au départ (branches au-dessus du tracteur) : pas comptés au début du trajet
+    if self.ignoreHitIds ~= nil and self.ignoreHitIds[transformId] then
+        return true
+    end
     if transformId ~= 0 and transformId ~= g_currentMission.terrainRootNode then
         local collisionObject = g_currentMission:getNodeObject(transformId)
         if (collisionObject == nil) or (collisionObject ~= nil and not (collisionObject.rootVehicle == self.vehicle)) then

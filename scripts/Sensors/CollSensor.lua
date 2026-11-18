@@ -80,6 +80,11 @@ function ADCollSensor:collisionTestCallback(transformId)
             end
         end
     elseif self:isElementBlockingVehicle(transformId) then
+        -- FarmPilot (18/11) : objet de décor déjà traversé au pas sans contact ignoré (DecorPassThrough.lua)
+        if ADDecorPassThrough ~= nil and ADDecorPassThrough.isIgnored(transformId, self.vehicle) then
+            return
+        end
+        if ADDecorPassThrough ~= nil then ADDecorPassThrough.noteHit(self.vehicle, transformId) end
         self.newHit = true
     end
 end

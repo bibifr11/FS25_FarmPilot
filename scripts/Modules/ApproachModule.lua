@@ -322,6 +322,13 @@ function ADApproachModule:overlapCallback(node)
     if self:isIgnored(object, node) then
         return true
     end
+    -- FarmPilot (18/11) : objet de décor déjà traversé au pas sans contact ignoré (DecorPassThrough.lua)
+    if object == nil and ADDecorPassThrough ~= nil then
+        if ADDecorPassThrough.isIgnored(node, self.vehicle) then
+            return true
+        end
+        ADDecorPassThrough.noteHit(self.vehicle, node)
+    end
     self.scanHit = true
     self.scanHitObject = object
     self.scanHitNode = node

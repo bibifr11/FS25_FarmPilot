@@ -260,6 +260,10 @@ function ADObstacleDetourEscape.creepOverride(dpm, dt, obstacleDetected)
     end
     if moved >= c.need or (moved >= ADObstacleDetourEscape.CREEP_MIN_MOVE and c.clear >= ADObstacleDetourEscape.CREEP_CLEAR_TIME) then
         log("%s : passé au pas (%.1f m), la route continue", nameOf(odm.vehicle), moved)
+        if ADDecorPassThrough ~= nil then
+            odm.creepEndX, odm.creepEndZ = x, z
+            FarmPilotCall(ADDecorPassThrough.rememberCreep, odm, nameOf(odm.vehicle))
+        end
         odm.creep = nil
         odm.attemptsHere = 0
         odm.lastAttemptPos = nil

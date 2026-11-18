@@ -14,9 +14,10 @@
 --   TYPE_FP_MODE). Souris sur une icône : son nom à côté de la colonne.
 -- - Taille fixe (ne change pas avec le mode, pour que les icônes ne bougent pas sous la souris), bas aligné sur le
 --   bas du HUD ; s'il n'y a pas la place à droite de l'écran, à gauche du HUD.
+-- - Le HUD n'est jamais moins haut que la colonne (ADModeGuide.fitHud) ; plus haut, oui.
 -- - Même style que le HUD (fond aux coins arrondis, ADHudIcon.drawRounded).
 --
--- Branché par : Hud.lua (createHudAt : ajout aux éléments du HUD). Chargé par register.lua après HudInputEvent.lua.
+-- Branché par : Hud.lua (createHudAt : hauteur minimum du HUD, ajout aux éléments du HUD). Chargé par register.lua après HudInputEvent.lua.
 -- ============================================================================================================
 
 ADModeGuide = ADInheritsFrom(ADGenericHudElement)
@@ -80,6 +81,57 @@ function ADModeGuide.iconOf(vehicle, mode)
         return ADHudButton.HARVESTER_ICON ~= nil and ADHudButton.HARVESTER_ICON[kind] or 7
     end
     return ADModeGuide.ICON[mode] or 1
+end
+
+-- ------------------------------------------------------------------------------------------------------------
+-- (18/11) Le HUD n'est jamais moins haut que la colonne : il peut être plus haut (Autonome), jamais plus petit
+-- (Conduite) ; la place en plus est une bande vide entre les boutons du bas et les lignes de listes, le titre reste
+-- collé aux lignes.
+-- ------------------------------------------------------------------------------------------------------------
+ADModeGuide.ROW_KEYS = { "row2", "row3", "row4", "rowHeader", "rowFpNextTool", "rowFpNextFront", "rowFpFront",
+    "rowSiloFront", "rowSiloRear", "rowLoaderTool", "rowLoaderQty" }
+
+function ADModeGuide.columnHeight(uiScale)
+    local s = uiScale or 1
+    local n = #modes()
+    local _, iconH = getNormalizedScreenValues(ADModeGuide.ICON_PX * s, ADModeGuide.ICON_PX * s)
+    local _, gapH = getNormalizedScreenValues(ADModeGuide.GAP_PX * s, ADModeGuide.GAP_PX * s)
+    local _, padH = getNormalizedScreenValues(ADModeGuide.PAD_PX * s, ADModeGuide.PAD_PX * s)
+    return n * iconH + (n - 1) * gapH + 2 * padH
+end
+
+local function shiftRows(hud, dy)
+    for _, k in ipairs(ADModeGuide.ROW_KEYS) do
+        if type(hud[k]) == "number" then
+            hud[k] = hud[k] + dy
+        end
+    end
+end
+
+-- appelée par createHudAt, lignes placées, avant le fond et le titre
+function ADModeGuide.fitHud(hud, uiScale)
+    hud.fpGuideExtra = 0
+    if hud.rowHeader == nil or hud.posY == nil or hud.headerHeight == nil then
+        return
+    end
+    local extra = hud.posY + ADModeGuide.columnHeight(uiScale) - (hud.rowHeader + hud.headerHeight)
+    if extra <= 0 then
+        return
+    end
+    shiftRows(hud, extra)
+    hud.height = hud.height + extra
+    hud.fpGuideExtra = extra
+    -- le titre doit tenir en haut de l'écran (même marge que HudAnchor.lua) : tout le HUD descend un peu
+    local over = hud.rowHeader + hud.headerHeight + 3 * (hud.gapHeight or 0) - 1
+    if over > 0 then
+        local down = math.min(over, math.max(0, hud.posY - 2 * (hud.gapHeight or 0)))
+        hud.posY = hud.posY - down
+        shiftRows(hud, -down)
+    end
+    if ADModeGuide.lastExtraLog ~= string.format("%.4f", extra) then
+        ADModeGuide.lastExtraLog = string.format("%.4f", extra)
+        log("HUD rehausse de %.1f px pour la colonne des modes (%s)", extra * (g_screenHeight or 1080), tostring(hud.fpRowKind))
+    end
 end
 
 -- ------------------------------------------------------------------------------------------------------------

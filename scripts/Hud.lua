@@ -232,6 +232,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		self.rowHeader = rowAt(5)
 	end
 
+	if ADModeGuide ~= nil and ADModeGuide.fitHud ~= nil then ADModeGuide.fitHud(self, uiScale) end -- (18/11) HUD jamais moins haut que la colonne des modes, voir Hud/HudModeGuide.lua
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.posY - 0 * self.gapHeight, self.width, self.height + 5 * self.gapHeight, "ad_gui.Background", 0, "background"))
 	table.insert(self.hudElements, ADHudIcon:new(self.posX, self.rowHeader, self.width, self.headerHeight, "ad_gui.Header", 1, "header"))
 

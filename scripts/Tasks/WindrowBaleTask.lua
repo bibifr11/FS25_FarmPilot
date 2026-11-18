@@ -143,6 +143,9 @@ ADWindrowBaleTask.BACKOUT_MAX = 2           -- (18/11) reculs au plus avant qu'u
 ADWindrowBaleTask.BACKOUT_MAX_ANGLE = 12    -- (18/11) degrés entre tracteur et presse au plus pour reculer (sinon elle part de côté)
 ADWindrowBaleTask.BACKOUT_SPEED = 4         -- (18/11) km/h en recul
 ADWindrowBaleTask.BACKOUT_TIMEOUT = 25000   -- (18/11) ms au plus pour un recul
+ADWindrowBaleTask.ENTER_MAX = 30            -- (18/11) m tout droit au plus pour entrer sur le champ (arrivé à côté, champ strict)
+ADWindrowBaleTask.ENTER_EXTRA = 2           -- (18/11) m de plus une fois tout l'ensemble sur le sol du champ
+ADWindrowBaleTask.ENTER_TIMEOUT = 30000     -- (18/11) ms au plus pour l'entrée tout droit
 ADWindrowBaleTask.BALE_LOOK = 25            -- m devant l'avant du tracteur : balle sur l'andain = ralentir
 ADWindrowBaleTask.BALE_STOP = 4             -- m + rayon de braquage entre l'avant du tracteur et la balle : arrêt de
                                             -- l'andain là (place pour tourner sans toucher la balle)
@@ -1649,6 +1652,10 @@ function ADWindrowBaleTask:updateChoose(dt)
     end
     self.geo.rho = self:turnRadius()
     self.strict = self:isStrict()
+    -- (18/11) arrivé à côté du champ (chemin, herbe de la parcelle) : il entre d'abord tout droit, puis il calcule
+    if self:tryEnterStraight() then
+        return
+    end
     local list, nearest, smallKept = self:candidates()
     local picked = {}
     for _, c in ipairs(list) do
@@ -2154,6 +2161,130 @@ function ADWindrowBaleTask:updateBackout(dt)
     if not ok then
         sdm:driveReverse(dt, ADWindrowBaleTask.BACKOUT_SPEED, 0.5, false)
     end
+end
+
+-- (18/11) ensemble droit, tracteur en (x, z) sens (hx, hz) : tracteur (milieu et côtés) et essieu de la presse (milieu
+-- et côtés) sur le sol du champ, sans culture
+function ADWindrowBaleTask:trainOnField(x, z, hx, hz)
+    local geo = self.geo
+    local sx, sz = rightOf(hx, hz)
+    for _, k in ipairs({ 0, 1, -1 }) do
+        if not self:pointAllowed(x + sx * geo.halfWidth * k, z + sz * geo.halfWidth * k, false) then
+            return false
+        end
+    end
+    if not geo.rigid then
+        local back = (geo.hitchBack or 0) + (geo.tow or 0)
+        local ax, az = x - hx * back, z - hz * back
+        for _, k in ipairs({ 0, 1, -1 }) do
+            if not self:pointAllowed(ax + sx * geo.balerHalfWidth * k, az + sz * geo.balerHalfWidth * k, false) then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+-- (18/11) champ 7 : ensemble arrivé sur le chemin à côté du champ (hors du sol du champ, champ strict) : toutes les
+-- courbes refusées dès le premier mètre (le chemin est dans la parcelle, pas sur le sol du champ) et le chercheur de
+-- chemin sans trajet, la presse restait là. Au premier choix, s'il n'est pas sur le champ : il entre d'abord tout droit
+-- (ENTER_MAX m au plus) jusqu'à ce que tracteur et presse soient sur le sol du champ, puis il calcule son trajet. Tout
+-- droit refusé : autre champ, culture, balle, objet fixe, ou ressortir du champ une fois entré ; alors comme avant.
+function ADWindrowBaleTask:tryEnterStraight()
+    if self.enterChecked then
+        return false
+    end
+    self.enterChecked = true
+    local geo = self.geo
+    if geo == nil or not self.strict or next(self.fieldSet) == nil then
+        return false
+    end
+    local tx, _, tz, hx, hz = self:tractorPose()
+    if self:trainOnField(tx, tz, hx, hz) then
+        return false
+    end
+    local sx, sz = rightOf(hx, hz)
+    local w = geo.halfWidth
+    local front = geo.front or 0
+    local entered, dist, reason = false, nil, nil
+    for d = 1, ADWindrowBaleTask.ENTER_MAX do
+        local px, pz = tx + hx * d, tz + hz * d
+        for _, k in ipairs({ 0, 1, -1 }) do
+            local qx, qz = px + sx * w * k, pz + sz * w * k
+            local n, anyField = self:fieldNumberAt(qx, qz)
+            local mine = n ~= nil and self.fieldSet[tonumber(n) or n] == true
+            if reason == nil and anyField and not mine then
+                reason = string.format("autre champ en (%.0f, %.0f)", qx, qz)
+            elseif reason == nil and mine and self:hasCrop(qx, qz) then
+                reason = string.format("culture en (%.0f, %.0f)", qx, qz)
+            end
+        end
+        if reason ~= nil then
+            break
+        end
+        local inNow = self:pointAllowed(px, pz, false)
+        if entered and not inNow then
+            reason = string.format("ressortirait du champ en (%.0f, %.0f)", px, pz)
+            break
+        end
+        entered = entered or inNow
+        if dist == nil and self:trainOnField(px, pz, hx, hz) then
+            dist = d
+        end
+        if dist ~= nil and d >= dist + ADWindrowBaleTask.ENTER_EXTRA then
+            break
+        end
+    end
+    if reason == nil and dist == nil then
+        reason = string.format("pas sur le champ à %.0f m", ADWindrowBaleTask.ENTER_MAX)
+    end
+    if reason == nil then
+        dist = dist + ADWindrowBaleTask.ENTER_EXTRA
+        local fx, fz = tx + hx * front, tz + hz * front
+        local ex, ez = tx + hx * (dist + front), tz + hz * (dist + front)
+        local bale = self:baleInCorridor(fx, fz, ex, ez, w)
+        local name = bale == nil and self:obstacleOn(fx, fz, ex, ez, w + ADWindrowBaleTask.OBSTACLE_MARGIN) or nil
+        if bale ~= nil then
+            reason = string.format("balle devant en (%.0f, %.0f)", bale.x, bale.z)
+        elseif name ~= nil then
+            reason = string.format("objet fixe « %s » devant", name)
+        end
+    end
+    if reason ~= nil then
+        log("%s : arrivé hors du sol du champ en (%.0f, %.0f), pas d'entrée tout droit (%s) : trajet calculé d'ici", self:name(), tx, tz, reason)
+        return false
+    end
+    local _, ty = self:tractorPose()
+    local pts = {}
+    for d = 1, dist do
+        pts[#pts + 1] = { x = tx + hx * d, y = ty, z = tz + hz * d, isPathFinderPoint = true }
+    end
+    self.enter = { x = tx, z = tz, hx = hx, hz = hz, dist = dist, t = 0 }
+    log("%s : arrivé hors du sol du champ en (%.0f, %.0f) : il entre d'abord tout droit sur le champ (%.0f m), puis il calcule son trajet", self:name(), tx, tz, dist)
+    self.vehicle.ad.drivePathModule:setWayPoints(pts)
+    self:setState("enter")
+    return true
+end
+
+-- (18/11) entrée tout droit en cours : jusqu'au bout, ENTER_TIMEOUT ms au plus, puis choix
+function ADWindrowBaleTask:updateEnter(dt)
+    local e = self.enter
+    if e == nil then
+        self:setState("choose")
+        return
+    end
+    e.t = e.t + dt
+    local tx, _, tz = self:tractorPose()
+    local done = (tx - e.x) * e.hx + (tz - e.z) * e.hz
+    local dpm = self.vehicle.ad.drivePathModule
+    if dpm:isTargetReached() or done >= e.dist - 0.3 or e.t > ADWindrowBaleTask.ENTER_TIMEOUT then
+        log("%s : entrée tout droit finie : %.1f m sur %.0f (temps dépassé %s), calcul du trajet", self:name(), done, e.dist, tostring(e.t > ADWindrowBaleTask.ENTER_TIMEOUT))
+        self.enter = nil
+        self:holdVehicle(dt)
+        self:setState("choose")
+        return
+    end
+    dpm:update(dt)
 end
 
 -- courbe la plus courte (6 formes de Dubins) du tracteur au début de la ligne, sur le champ, hors culture, loin des
@@ -3341,6 +3472,8 @@ function ADWindrowBaleTask:update(dt)
         self:updateRescan(dt)
     elseif self.state == "backout" then
         self:updateBackout(dt)
+    elseif self.state == "enter" then
+        self:updateEnter(dt)
     else
         self:holdVehicle(dt)
     end

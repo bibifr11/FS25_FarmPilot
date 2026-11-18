@@ -375,7 +375,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 				local usedHelper = vehicle.ad.stateModule:getUsedHelper()
 				local state = (usedHelper * 2) - 1
 				self.buttonCounter = self.buttonCounter - 1
-				self:AddButton("input_startHelper", "input_toggleUsedHelper", nil, nil, nil, nil, nil, nil, "hud_startHelper", state, true)
+				self.buttonCounter = self.buttonCounter + 1 -- case vide : bouton « Démarrer l'ouvrier » retiré du HUD (18/11)
 			end
 		end
 
@@ -392,7 +392,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 			if vehicle then
 				local usedHelper = vehicle.ad.stateModule:getUsedHelper()
 				local state = (usedHelper * 2) - 1
-				self:AddButton("input_startHelper", "input_toggleUsedHelper", nil, nil, nil, nil, nil, nil, "hud_startHelper", state, true)
+				self.buttonCounter = self.buttonCounter + 1 -- case vide : bouton « Démarrer l'ouvrier » retiré du HUD (18/11)
 			end
 
 			self:AddSettingsButton("rotateTargets", "gui_ad_rotateTargets", 1, true)
@@ -404,7 +404,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 				local usedHelper = vehicle.ad.stateModule:getUsedHelper()
 				local state = (usedHelper * 2) - 1
 				self.buttonCounter = self.buttonCounter - 1
-				self:AddButton("input_startHelper", "input_toggleUsedHelper", nil, nil, nil, nil, nil, nil, "hud_startHelper", state, true)
+				self.buttonCounter = self.buttonCounter + 1 -- case vide : bouton « Démarrer l'ouvrier » retiré du HUD (18/11)
 			end
 		end
 
@@ -423,7 +423,7 @@ function AutoDriveHud:createHudAt(hudX, hudY)
 		if vehicle then
 			local usedHelper = vehicle.ad.stateModule:getUsedHelper()
 			local state = (usedHelper * 2) - 1
-			self:AddButton("input_startHelper", "input_toggleUsedHelper", nil, nil, nil, nil, nil, nil, "hud_startHelper", state, true)
+			self.buttonCounter = self.buttonCounter + 1 -- case vide : bouton « Démarrer l'ouvrier » retiré du HUD (18/11)
 		end
 	end
 

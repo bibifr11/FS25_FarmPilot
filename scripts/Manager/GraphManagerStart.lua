@@ -57,6 +57,9 @@ ADGraphManager.JOINED_TIME = 60000      -- ms : …et s'il a été noté depuis 
 ADGraphManager.ARRIVED_MOVED = 12       -- m : le point d'arrivée sert de départ tant que le véhicule n'a pas bougé de plus que ça…
 ADGraphManager.ARRIVED_RANGE = 35       -- m : …s'il en est à moins que ça ; les points du début derrière lui sont sautés dans cette portée
 ADGraphManager.ARRIVED_NOSE = 0         -- m devant l'avant du tracteur : un point plus près est « sous lui »
+ADGraphManager.GARAGE_MARKER_RANGE = 25 -- (18/11) m : marqueur à moins que ça de l'outil attelé = son garage
+ADGraphManager.GARAGE_MOVED = 40        -- (18/11) m : la sortie du garage sert de départ tant que le tracteur n'a pas bougé de plus que ça…
+ADGraphManager.GARAGE_RANGE = 60        -- (18/11) m : …et qu'il en est à moins que ça
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Points de départ possibles
@@ -239,6 +242,40 @@ function ADGraphManager.noteArrival(vehicle, id)
     vehicle.ad.fpArrivedWayPoint = { id = id, x = x, z = z, time = g_time or 0 }
 end
 
+-- (18/11) outil attelé à son garage (marqueur de destination à moins de GARAGE_MARKER_RANGE de l'outil) : la route
+-- suivante part de ce marqueur et suit la route qui sort du garage, au lieu du point du réseau le mieux placé devant
+-- le nez après la manœuvre d'attelage (essai du 18/11 19:08 : 728 + Arcusin au garage G_ARcusin, parti sur une route
+-- de la cour qui ne passait pas avec la remorque, coincé, tours dans la cour). Les points derrière ou sous le tracteur
+-- sont sautés comme pour un point d'arrivée ; pas de route depuis le marqueur : départ habituel.
+function ADGraphManager.noteGarageExit(vehicle, tool)
+    if vehicle == nil or vehicle.ad == nil or tool == nil or tool.components == nil or tool.components[1] == nil
+        or vehicle.components == nil or vehicle.components[1] == nil then
+        return
+    end
+    local ox, _, oz = getWorldTranslation(tool.components[1].node)
+    local best, bestD = nil, ADGraphManager.GARAGE_MARKER_RANGE
+    for _, marker in pairs(ADGraphManager:getMapMarkers() or {}) do
+        local wp = marker.id ~= nil and ADGraphManager.wayPoints[marker.id] or nil
+        if wp ~= nil and wp.x ~= nil then
+            local d = MathUtil.vector2Length(wp.x - ox, wp.z - oz)
+            if d < bestD then
+                best, bestD = marker, d
+            end
+        end
+    end
+    if best == nil then
+        return
+    end
+    local x, _, z = getWorldTranslation(vehicle.components[1].node)
+    vehicle.ad.fpArrivedWayPoint = { id = best.id, x = x, z = z, time = g_time or 0, moved = ADGraphManager.GARAGE_MOVED,
+        range = ADGraphManager.GARAGE_RANGE, why = string.format("sortie du garage « %s »", tostring(best.name)) }
+    if ADAutonomousManager ~= nil and ADAutonomousManager.log ~= nil then
+        local name = vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule.getName ~= nil and vehicle.ad.stateModule:getName() or "?"
+        ADAutonomousManager.log("%s : outil attelé au garage « %s » (marqueur à %.0f m de l'outil) : la route suivante sort par ce garage",
+            tostring(name), tostring(best.name), bestD)
+    end
+end
+
 local function traceArrival(fmt, ...)
     if ADTraces ~= nil then -- traces privées
         ADTraces.log("[AD-Route] " .. fmt, ...)
@@ -256,7 +293,8 @@ function ADGraphManager:pathFromArrival(vehicle, targetId, x, z)
     local p0 = self.wayPoints[a.id]
     local moved = MathUtil.vector2Length(a.x - x, a.z - z)
     local distance = p0 ~= nil and MathUtil.vector2Length(p0.x - x, p0.z - z) or nil
-    if distance == nil or moved > ADGraphManager.ARRIVED_MOVED or distance > ADGraphManager.ARRIVED_RANGE then
+    local maxMoved, maxRange = a.moved or ADGraphManager.ARRIVED_MOVED, a.range or ADGraphManager.ARRIVED_RANGE
+    if distance == nil or moved > maxMoved or distance > maxRange then
         vehicle.ad.fpArrivedWayPoint = nil
         traceArrival("%s : point d'arrivée %s oublié (à %s m, véhicule déplacé de %.1f m depuis l'arrivée)", name, tostring(a.id),
             distance ~= nil and string.format("%.1f", distance) or "?", moved)
@@ -271,7 +309,7 @@ function ADGraphManager:pathFromArrival(vehicle, targetId, x, z)
         traceArrival("%s : pas de route vers le point %s depuis le point d'arrivée %s : départ habituel", name, tostring(targetId), tostring(a.id))
         return nil
     end
-    if wp[2] ~= nil and self:isReverseRoad(wp[1], wp[2]) then
+    if wp[2] ~= nil and self:isReverseRoad(wp[1], wp[2]) and a.why == nil then
         return wp, a.id, string.format("point d'arrivée de la route précédente, à %.1f m, départ en marche arrière", distance)
     end
     -- premier point devant le nez du tracteur ; ceux d'avant sont derrière lui ou sous lui
@@ -284,7 +322,7 @@ function ADGraphManager:pathFromArrival(vehicle, targetId, x, z)
             first = i
             break
         end
-        if MathUtil.vector2Length(p.x - x, p.z - z) > ADGraphManager.ARRIVED_RANGE or (wp[i + 1] ~= nil and self:isReverseRoad(p, wp[i + 1])) then
+        if MathUtil.vector2Length(p.x - x, p.z - z) > maxRange or (wp[i + 1] ~= nil and self:isReverseRoad(p, wp[i + 1])) then
             break -- la route repart en arrière : pas depuis ce point
         end
     end
@@ -296,7 +334,7 @@ function ADGraphManager:pathFromArrival(vehicle, targetId, x, z)
     for i = math.max(1, first - 1), #wp do
         out[#out + 1] = wp[i] -- le dernier point sous lui gardé en tête : le chauffeur vise le suivant, devant lui
     end
-    return out, a.id, string.format("point d'arrivée de la route précédente, à %.1f m, %d point(s) derrière ou sous lui sautés", distance, math.max(0, first - 2))
+    return out, a.id, string.format("%s, à %.1f m, %d point(s) derrière ou sous lui sautés", a.why or "point d'arrivée de la route précédente", distance, math.max(0, first - 2))
 end
 
 -- ------------------------------------------------------------------------------------------------------------

@@ -825,6 +825,9 @@ function ADFetchToolTask:tryAttach(distance)
 end
 
 function ADFetchToolTask:onAttached()
+    if self.state ~= ADFetchToolTask.STATE_ATTACHED and ADGraphManager.noteGarageExit ~= nil then
+        FarmPilotCall(ADGraphManager.noteGarageExit, self.vehicle, self.tool) -- (18/11) la route suivante sort par le garage de l'outil
+    end
     if self.state ~= ADFetchToolTask.STATE_ATTACHED then
         self:setState(ADFetchToolTask.STATE_ATTACHED)
     end

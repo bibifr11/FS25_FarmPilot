@@ -10,7 +10,8 @@
 --      (08/11 : le plus large qui passe, gain de temps), le vrai rayon en dernier ; le premier qui passe remplace le
 --      virage ;
 --   3. sinon, manœuvre : arrêt à un point avant le virage, recul tout droit de REVERSE_DISTANCES m, virage pris de là
---      (point marqué cornerReverse, conduit par ADCornerModule:handle) ;
+--      (point marqué cornerReverse, conduit par ADCornerModule:handle) ; (18/11) avec un outil traîné, la place pour
+--      reculer est contrôlée avec REVERSE_TRAILER_MARGIN m de plus de chaque côté : il peut partir de côté ;
 --   4. (15/11, portail du champ 38) « prendre large quand ça ne passe pas » : le virage est repris en débordant
 --      sur l'herbe à l'extérieur du virage (SWING_DEVIATION_MAX m au plus de la route dessinée, jamais dans une
 --      culture), pour entrer bien droit. Quand la route finit sur un champ juste après le virage (entrée de champ
@@ -50,6 +51,7 @@ ADCornerModule.ARC_STEP = 2.5                  -- m between two inserted points 
 ADCornerModule.LINE_STEP = 5                   -- m between two inserted points on a straight
 ADCornerModule.SIM_TAIL = 12                   -- m simulated after the end of the bend (the trailer comes through)
 ADCornerModule.REVERSE_DISTANCES = {8, 14, 20} -- m backed up before the bend (manoeuvre)
+ADCornerModule.REVERSE_TRAILER_MARGIN = 1.5    -- (18/11) m de plus de chaque côté du train pour reculer avec un outil traîné
 ADCornerModule.SWING_DEVIATION_MAX = 16        -- (15/11) m a wide swing may move away from the drawn route (verge, grass)
 ADCornerModule.SWING_TESTS_MAX = 40            -- candidates simulated at most for the wide swing
 ADCornerModule.FIELD_EXTEND_MAX = 30           -- m the end of the route may be continued into the field, in its axis
@@ -349,13 +351,23 @@ function ADCornerModule:bestPath(starts, wayPoints, exits, drawnAfter, drawn, be
 end
 
 -- straight back from x, z (heading a) over distance: room for the whole train
+-- (18/11) outil traîné : en reculant il part de côté (broyeur traîné coincé contre un lampadaire) ; ses caisses et
+-- celle du tracteur sont contrôlées avec REVERSE_TRAILER_MARGIN m de plus de chaque côté. Un poteau, une clôture trop
+-- près de la ligne de recul : ce recul est refusé (autre distance, sinon virage gardé). Outil porté : inchangé.
 function ADCornerModule:isReverseClear(x, z, a, distance, reference)
     local s, c = math.sin(a), math.cos(a)
     local start = self:straightPose(x, z, a)
+    local extra = nil
+    if self.geo ~= nil and self.geo.trailer > 0 then
+        extra = ADCornerModule.REVERSE_TRAILER_MARGIN
+    end
     for d = 0, distance, ADCornerModule.CHECK_STEP do
         local pose = {x = start.x - s * d, z = start.z - c * d, a = a, tx = start.tx - s * d, tz = start.tz - c * d}
-        local ok, reason = self:checkPose(pose, reference, true)
+        local ok, reason = self:checkPose(pose, reference, true, extra)
         if not ok then
+            if extra ~= nil then
+                reason = string.format("%s, %.0f m back (implement: %.1f m more each side)", tostring(reason), d, extra)
+            end
             return false, reason
         end
     end

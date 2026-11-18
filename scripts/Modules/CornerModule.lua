@@ -24,7 +24,8 @@
 --   3. sinon, chaque candidat est simulé de la même façon, le plus grand rayon d'abord ; le premier qui passe
 --      remplace le virage ;
 --   4. sinon, manœuvre : l'attelage s'arrête à un point avant le virage, recule tout droit de quelques mètres (la
---      place derrière est contrôlée) et prend le virage de là ;
+--      place derrière est contrôlée) et prend le virage de là ; (18/11) avec un outil traîné, son angle avec le
+--      tracteur est surveillé pendant le recul, et l'outil est redressé en avançant tout droit quand il part de côté ;
 --   5. quand rien ne passe, le virage reste tel quel (log « nothing fits »).
 -- Les points insérés sont des points de type pathfinder (sans id), comme le fait déjà le contournement d'obstacle.
 --
@@ -35,7 +36,13 @@
 -- - 11/11 : tous les outils attelés comptent, avec ou sans cuve ; dans la simulation le tracteur braque au rayon de
 --   ses roues ; quand il peut tourner le virage dessiné, il suit la ligne et seul l'outil ou la remorque derrière est
 --   contrôlé sur la route dessinée ;
--- - 07/11 et 08/11 : fin de route trop serrée : manœuvre avant d'arriver ou autre chemin d'arrivée, le plus rapide.
+-- - 07/11 et 08/11 : fin de route trop serrée : manœuvre avant d'arriver ou autre chemin d'arrivée, le plus rapide ;
+-- - 18/11 : recul de manœuvre avec un outil traîné (broyeur traîné coincé contre un lampadaire) : le recul part
+--   seulement si l'outil est droit (moins de REVERSE_START_ANGLE). Au-delà de REVERSE_ANGLE_MAX pendant le recul,
+--   arrêt, STRAIGHTEN_DISTANCE m tout droit en avant pour le redresser, puis le recul reprend vers la même ligne.
+--   STRAIGHTEN_MAX redressements au plus, ensuite le virage est pris de là. Jamais plus de STRAIGHTEN_DISTANCE m
+--   devant le point d'arrêt (le virage est juste après). La place pour reculer est contrôlée avec une marge de plus
+--   de chaque côté (REVERSE_TRAILER_MARGIN, CornerModuleBends.lua).
 --
 -- Ce fichier : la table, les réglages communs, les outils partagés, la géométrie de l'attelage, les contrôles du
 -- terrain, la simulation de l'attelage le long d'une ligne, les plus courts chemins arc-droite-arc, et la conduite à
@@ -74,6 +81,14 @@ ADCornerModule.REAR_BLOCKED_TIME = 1500        -- ms the rear sensor must stay b
 ADCornerModule.ROAD_RAY_HEIGHT = 3             -- m above the terrain for the road mesh raycast
 ADCornerModule.TYPES = {{1, 1}, {-1, -1}, {1, -1}, {-1, 1}} -- arc, straight, arc: turning sides (+1 = increasing angle)
 ADCornerModule.FOLLOW_LINE = true               -- (11/11) tracteur qui peut tourner le virage : il suit la ligne dessinée
+ADCornerModule.REVERSE_ANGLE_MAX = math.rad(15)   -- (18/11) outil traîné : au-delà pendant le recul, il est redressé
+ADCornerModule.REVERSE_START_ANGLE = math.rad(10) -- (18/11) outil traîné : le recul part, ou reprend, en dessous seulement
+ADCornerModule.STRAIGHTEN_DISTANCE = 5            -- (18/11) m tout droit en avant pour redresser l'outil (et au plus
+                                                  -- devant le point d'arrêt)
+ADCornerModule.STRAIGHTEN_MAX = 3                 -- (18/11) redressements au plus ; au-delà, le virage est pris de là
+ADCornerModule.STRAIGHTEN_SPEED = 5               -- (18/11) km/h en avant pendant un redressement
+ADCornerModule.STRAIGHTEN_TIMEOUT = 15000         -- (18/11) ms au plus pour un redressement
+ADCornerModule.STRAIGHTEN_LOOK_AHEAD = 30         -- (18/11) m : point visé loin devant, sur la ligne de recul
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Outils partagés (angles, distances, points du réseau)
@@ -148,6 +163,7 @@ function ADCornerModule:new(vehicle)
     o.reversing = false
     o.backTimer = AutoDriveTON:new()
     o.rearBlockedTimer = AutoDriveTON:new()
+    o.straightenTimer = AutoDriveTON:new()
     return o
 end
 
@@ -370,7 +386,8 @@ function ADCornerModule:isOnField(x, z)
 end
 
 -- one body (box seen from x, z, heading a) against static obstacles
-function ADCornerModule:isBodyClear(x, z, a, box)
+-- (18/11) extra : marge en plus de chaque côté (recul avec un outil traîné), facultative
+function ADCornerModule:isBodyClear(x, z, a, box, extra)
     local s, c = math.sin(a), math.cos(a)
     local mid = (box.front + box.rear) / 2
     local cx, cz = x + s * mid, z + c * mid
@@ -378,7 +395,7 @@ function ADCornerModule:isBodyClear(x, z, a, box)
     self.hits = 0
     self.hitName = nil
     local halfHeight = math.max(0.5, self.height - ADCornerModule.GROUND_CLEARANCE) / 2
-    overlapBox(cx, y + ADCornerModule.GROUND_CLEARANCE + halfHeight, cz, 0, a, 0, box.half + ADCornerModule.BODY_MARGIN, halfHeight, (box.front - box.rear) / 2,
+    overlapBox(cx, y + ADCornerModule.GROUND_CLEARANCE + halfHeight, cz, 0, a, 0, box.half + ADCornerModule.BODY_MARGIN + (extra or 0), halfHeight, (box.front - box.rear) / 2,
         "collisionCallback", self, AutoDrive.collisionMaskTerrain, true, true, true, true)
     return self.hits == 0
 end
@@ -460,17 +477,18 @@ function ADCornerModule:trailerHeading(pose)
 end
 
 -- checks one simulated pose: bodies against obstacles, axles on the ground allowed
-function ADCornerModule:checkPose(pose, reference, ground)
+-- (18/11) extra : marge en plus de chaque côté des caisses (facultative, voir isReverseClear)
+function ADCornerModule:checkPose(pose, reference, ground, extra)
     local geo = self.geo
     -- (11/11) route dessinée qu'il peut tourner : le tracteur suit la ligne, pas contrôlé (reference.tractorFollowsLine)
     local follows = reference.tractorFollowsLine == true
-    if not follows and not self:isBodyClear(pose.x, pose.z, pose.a, geo.tractorBox) then
+    if not follows and not self:isBodyClear(pose.x, pose.z, pose.a, geo.tractorBox, extra) then
         return false, "obstacle '" .. tostring(self.hitName) .. "' (tractor)"
     end
     local b = nil
     if geo.trailer > 0 and geo.trailerBox ~= nil then
         b = self:trailerHeading(pose)
-        if not self:isBodyClear(pose.tx, pose.tz, b, geo.trailerBox) then
+        if not self:isBodyClear(pose.tx, pose.tz, b, geo.trailerBox, extra) then
             return false, "obstacle '" .. tostring(self.hitName) .. "' (trailer)"
         end
     end
@@ -647,6 +665,9 @@ end
 function ADCornerModule:stopReversing()
     if self.reversing then
         self.reversing = false
+        self.straightenFrom = nil
+        self.straightenTarget = nil
+        self.trailed = nil
         if self.vehicle.ad ~= nil and self.vehicle.ad.specialDrivingModule ~= nil then
             self.vehicle.ad.specialDrivingModule:reset()
         end
@@ -656,6 +677,70 @@ end
 function ADCornerModule:reset()
     self:stopReversing()
     self:stopEndManoeuvre()
+end
+
+-- (18/11) l'outil traîné : le premier véhicule attelé au tracteur, derrière lui, sur ses roues (comme le cherche
+-- ADSpecialDrivingModule:getReverseNode) ; nil sans outil traîné
+function ADCornerModule:trailedUnit()
+    local v = self.vehicle
+    if v.getAttachedImplements == nil or v.components == nil or v.components[1] == nil or worldToLocal == nil then
+        return nil
+    end
+    local root = v.components[1].node
+    for _, implement in ipairs(v:getAttachedImplements() or {}) do
+        local unit = implement.object
+        if unit ~= nil and unit ~= v and unit.spec_wheels ~= nil and unit.components ~= nil and unit.components[1] ~= nil then
+            local ux, uy, uz = getWorldTranslation(unit.components[1].node)
+            local _, _, lz = worldToLocal(root, ux, uy, uz)
+            if lz < 0 then
+                return unit
+            end
+        end
+    end
+    return nil
+end
+
+-- (18/11) angle (rad, signé) entre le tracteur et l'outil traîné, lu sur leurs nœuds dans le jeu
+function ADCornerModule:trailerAngle(unit)
+    local tx, _, tz = localDirectionToWorld(self.vehicle.components[1].node, 0, 0, 1)
+    local ux, _, uz = localDirectionToWorld(unit.components[1].node, 0, 0, 1)
+    local angle = wrap(headingOf(tx, tz) - headingOf(ux, uz))
+    -- (18/11) nœud d'un outil tourné d'un demi-tour : un attelage ne plie jamais autant
+    if math.abs(angle) > math.rad(120) then
+        angle = wrap(angle + PI)
+    end
+    return angle
+end
+
+local function unitName(unit)
+    if unit.getName ~= nil then
+        return tostring(unit:getName())
+    end
+    return tostring(unit.name)
+end
+
+-- (18/11) début d'un redressement : le point visé est loin devant, sur la ligne de recul (STRAIGHTEN_LOOK_AHEAD m),
+-- pris une fois. Le tracteur avance presque roues droites et revient dans l'axe de la ligne contrôlée (isReverseClear)
+-- au lieu de s'en écarter ; le recul reprend dans l'axe, sans gros coup de volant pour rattraper le cap.
+function ADCornerModule:startStraightening(r, back)
+    local ahead = ADCornerModule.STRAIGHTEN_LOOK_AHEAD - back
+    local tx, tz = r.gx + r.hx * ahead, r.gz + r.hz * ahead
+    self.straightenFrom = back
+    self.straightenTarget = {x = tx, y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, tx, 300, tz), z = tz}
+    self.straightenTimer:timer(false)
+end
+
+-- (18/11) redressement de l'outil : tout droit en avant (sans contrôle d'obstacle devant : c'est la route qu'il vient
+-- de faire, et le poteau à côté de l'outil l'arrêterait)
+function ADCornerModule:driveStraightOn(dt)
+    self.vehicle.ad.specialDrivingModule:driveToPoint(dt, self.straightenTarget, 3, false, 0.6, ADCornerModule.STRAIGHTEN_SPEED, true)
+end
+
+-- (18/11) fin du recul : le virage est pris de là
+function ADCornerModule:endReversing(wp, dpm)
+    wp.cornerReverseDone = true
+    self:stopReversing()
+    dpm:switchToNextWayPoint()
 end
 
 function ADCornerModule:handle(dt)
@@ -678,20 +763,86 @@ function ADCornerModule:handle(dt)
         sdm:reset()
         local tx, tz = r.gx - r.hx * (r.distance + 100), r.gz - r.hz * (r.distance + 100)
         self.reverseTarget = {x = tx, y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, tx, 300, tz), z = tz}
-        self:log("manoeuvre: backing up %.0f m before the bend", r.distance)
+        -- (18/11) outil traîné : son angle avec le tracteur est surveillé pendant tout le recul
+        self.trailed = nil
+        if self.geo ~= nil and self.geo.trailer > 0 then
+            self.trailed = self:trailedUnit()
+        end
+        self.straightenFrom = nil
+        self.straightenCount = 0
+        self.needStraight = true
+        self.maxTrailerAngle = 0
+        if self.trailed ~= nil then
+            self:log("manoeuvre: backing up %.0f m before the bend (implement %s at %.0f deg)", r.distance, unitName(self.trailed),
+                math.deg(math.abs(self:trailerAngle(self.trailed))))
+        else
+            self:log("manoeuvre: backing up %.0f m before the bend", r.distance)
+        end
     end
     local x, _, z = getWorldTranslation(self.vehicle.components[1].node)
     local back = (r.gx - x) * r.hx + (r.gz - z) * r.hz
+    local angle = nil
+    if self.trailed ~= nil then
+        angle = math.abs(self:trailerAngle(self.trailed))
+    end
+    -- (18/11) redressement en cours : STRAIGHTEN_DISTANCE m tout droit en avant (jamais plus loin devant le point
+    -- d'arrêt), puis le recul reprend
+    if self.straightenFrom ~= nil then
+        local moved = self.straightenFrom - back
+        local stuck = self.straightenTimer:timer(true, ADCornerModule.STRAIGHTEN_TIMEOUT, dt)
+        if moved < ADCornerModule.STRAIGHTEN_DISTANCE and back > -ADCornerModule.STRAIGHTEN_DISTANCE and not stuck then
+            self:driveStraightOn(dt)
+            return true
+        end
+        self.straightenFrom = nil
+        self.straightenTimer:timer(false)
+        self.rearBlockedTimer:timer(false)
+        -- (18/11) le recul reprend seulement avec l'outil droit, et sans l'élan de la commande d'avant (terme
+        -- dérivé de reverseToPoint)
+        self.needStraight = true
+        sdm.lastAngleToPoint = nil
+        self:log("manoeuvre: straightening %d/%d, %.1f m forward%s, implement now at %.0f deg", self.straightenCount, ADCornerModule.STRAIGHTEN_MAX,
+            moved, stuck and " (timeout)" or "", math.deg(angle or 0))
+    end
     local timedOut = self.backTimer:timer(true, ADCornerModule.REVERSE_TIMEOUT, dt)
     local cdm = self.vehicle.ad.collisionDetectionModule
     local rearBlocked = cdm ~= nil and cdm.checkReverseCollision ~= nil and cdm:checkReverseCollision() == true
     local rearStop = self.rearBlockedTimer:timer(rearBlocked, ADCornerModule.REAR_BLOCKED_TIME, dt)
     if back >= r.distance - 0.5 or rearStop or timedOut then
-        self:log("manoeuvre: backed up %.1f m (rear blocked %s, timeout %s), taking the bend", back, tostring(rearStop), tostring(timedOut))
-        wp.cornerReverseDone = true
-        self:stopReversing()
-        dpm:switchToNextWayPoint()
+        local implement = ""
+        if self.trailed ~= nil then
+            implement = string.format(", %d straightening(s), implement at most %.0f deg", self.straightenCount, math.deg(self.maxTrailerAngle))
+        end
+        self:log("manoeuvre: backed up %.1f m (rear blocked %s, timeout %s%s), taking the bend", back, tostring(rearStop), tostring(timedOut), implement)
+        self:endReversing(wp, dpm)
         return false
+    end
+    -- (18/11) outil traîné : pas droit pour partir (REVERSE_START_ANGLE), ou il part en portefeuille pendant le recul
+    -- (REVERSE_ANGLE_MAX) : arrêt du recul, redressement en avant, STRAIGHTEN_MAX fois au plus
+    if angle ~= nil then
+        self.maxTrailerAngle = math.max(self.maxTrailerAngle, angle)
+        local limit = self.needStraight and ADCornerModule.REVERSE_START_ANGLE or ADCornerModule.REVERSE_ANGLE_MAX
+        if angle > limit then
+            local why = nil
+            if self.straightenCount >= ADCornerModule.STRAIGHTEN_MAX then
+                why = string.format("after %d straightening(s)", self.straightenCount)
+            elseif back <= 0.5 - ADCornerModule.STRAIGHTEN_DISTANCE then
+                why = string.format("%.0f m ahead of the stop point already, no room to straighten it", -back)
+            end
+            if why ~= nil then
+                self:log("manoeuvre: implement at %.0f deg (limit %.0f) %s, backed up %.1f m, stopping here, taking the bend",
+                    math.deg(angle), math.deg(limit), why, back)
+                self:endReversing(wp, dpm)
+                return false
+            end
+            self.straightenCount = self.straightenCount + 1
+            self:startStraightening(r, back)
+            self:log("manoeuvre: implement at %.0f deg (limit %.0f) after %.1f m back, straightening %d/%d: %.0f m straight forward",
+                math.deg(angle), math.deg(limit), back, self.straightenCount, ADCornerModule.STRAIGHTEN_MAX, ADCornerModule.STRAIGHTEN_DISTANCE)
+            self:driveStraightOn(dt)
+            return true
+        end
+        self.needStraight = false
     end
     if rearBlocked then
         sdm:stopAndHoldVehicle(dt)

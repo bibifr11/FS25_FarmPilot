@@ -1888,7 +1888,16 @@ end
 -- ne sont pas touchés.
 AutoDrive.HAZARD_KMH = 1 -- km/h
 
+-- une trace par véhicule et par message toutes les 10 s au plus : si un autre script remet les feux de
+-- détresse à chaque image, la trace écrite à chaque image saturait le fichier de traces
+local hazardTraceAt = {}
 local function traceHazard(vehicle, what, speed)
+    local now = g_time or 0
+    local key = tostring(vehicle) .. what
+    if hazardTraceAt[key] ~= nil and now - hazardTraceAt[key] < 10000 then
+        return
+    end
+    hazardTraceAt[key] = now
     if ADTraces ~= nil then -- traces privées, voir FarmPilotTraces.lua
         local name = vehicle.ad ~= nil and vehicle.ad.stateModule ~= nil and vehicle.ad.stateModule:getName() or "?"
         ADTraces.log("[AD-Warning] %s : feux de détresse %s (%.1f km/h, sens %s)", tostring(name), what, speed, tostring(vehicle.movingDirection))
@@ -1935,7 +1944,7 @@ function AutoDrive:updateAutoDriveLights(switchOff)
                     self:setTurnLightState(Lights.TURNLIGHT_OFF)
                 elseif not backward and speed >= AutoDrive.HAZARD_KMH and state == Lights.TURNLIGHT_HAZARD then
                     traceHazard(self, "éteints, il roule en avant", speed)
-                    self:setTurnLightState(Lights.TURNLIGHT_OFF)
+                    self:setTurnLightState(Lights.TURNLIGHT_OFF, true)
                 end
             end
         end

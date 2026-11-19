@@ -339,6 +339,7 @@ source(Utils.getFilename("scripts/Modes/CombineUnloaderModeTracks.lua", g_curren
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeCourseplay.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeChopperChase.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/CombineUnloaderModeCutLine.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modes/CombineUnloaderModePlaceGuard.lua", g_currentModDirectory)) -- (19/11) place sous la goulotte jamais sur un autre champ
 source(Utils.getFilename("scripts/Modes/AutonomousMode.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modes/AutonomousFront.lua", g_currentModDirectory)) -- mode Autonome : attelage avant (outils frontaux, masses)
 source(Utils.getFilename("scripts/Modes/AutonomousNoseIn.lua", g_currentModDirectory)) -- mode Autonome : entrée le nez en avant dans une place prise en marche arrière

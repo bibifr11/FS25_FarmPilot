@@ -19,6 +19,12 @@
 --   3. « Replier les outils » = non : un repli vu en cours puis arrêté en route est terminé (jamais de départ à moitié
 --      replié) ; un outil déplié qui ne bouge pas reste tel quel (réglage respecté).
 --
+-- (19/11) Pas de repli quand le départ reprend le travail au champ sur place (Lexion 6900 + Convio Flex 1080 arrêtée
+-- en pleine ligne du champ 80 puis remise en marche : « repli refusé, outil allumé » en boucle, elle ne repartait
+-- jamais) : étape « plan » ou « travail » du mode Autonome, tâche de travail au champ (FarmPilot) en cours ou en
+-- attente, « déjà dans le champ », ou outil allumé et baissé sur un champ. Le garde reste entier pour les départs
+-- sur route. Un repli refusé parce que l'outil est allumé : l'outil est éteint d'abord, puis replié.
+--
 -- Appelé au début d'AutoDrive:onUpdate (Specialization.lua, une ligne), avant la mise à jour des tâches : il rend
 -- « pas de mise à jour des tâches, arrêter le véhicule » tant qu'il retient le départ.
 -- ============================================================================================================
@@ -153,6 +159,99 @@ function ADFoldGuard.describe(guard)
 end
 
 -- ------------------------------------------------------------------------------------------------------------
+-- Reprise du travail au champ sur place : pas de repli (rend la raison, ou nil)
+-- ------------------------------------------------------------------------------------------------------------
+ADFoldGuard.FIELD_TASKS = {"FieldWorkTask", "ADFieldPlanTask"}
+
+function ADFoldGuard.isFieldTask(task)
+    if task == nil then
+        return false
+    end
+    if task.inField == true then
+        return true -- « déjà dans le champ » (AutonomousMode:departToField)
+    end
+    for _, name in ipairs(ADFoldGuard.FIELD_TASKS) do
+        local class = rawget(_G, name)
+        if class ~= nil then
+            local mt = getmetatable(task)
+            local c = mt ~= nil and mt.__index or nil
+            local guardLoop = 0
+            while type(c) == "table" and guardLoop < 10 do
+                if c == class then
+                    return true
+                end
+                local cmt = getmetatable(c)
+                c = cmt ~= nil and cmt.__index or nil
+                guardLoop = guardLoop + 1
+            end
+        end
+    end
+    return false
+end
+
+-- outil allumé et baissé (au travail), véhicule sur un champ
+function ADFoldGuard.isToolWorking(vehicle, objects)
+    if ADAutonomousManager == nil or ADAutonomousManager.fieldAt == nil or vehicle.components == nil or vehicle.components[1] == nil then
+        return false
+    end
+    local working = false
+    for _, object in pairs(objects) do
+        if object.getIsTurnedOn ~= nil and object.getIsLowered ~= nil and object:getIsTurnedOn() and object:getIsLowered() then
+            working = true
+            break
+        end
+    end
+    if not working then
+        return false
+    end
+    local x, _, z = getWorldTranslation(vehicle.components[1].node)
+    return ADAutonomousManager.fieldAt(x, z) ~= nil
+end
+
+function ADFoldGuard.fieldResumeReason(vehicle, objects)
+    local ad = vehicle.ad
+    local mode = ad.stateModule ~= nil and ad.stateModule.getCurrentMode ~= nil and ad.stateModule:getCurrentMode() or nil
+    if mode ~= nil then
+        if mode.fieldWorkStage == "plan" or mode.fieldWorkStage == "work" then
+            return "etape travail au champ (" .. mode.fieldWorkStage .. ")"
+        end
+        if mode.driveToDestinationTask ~= nil and mode.driveToDestinationTask.inField == true then
+            return "deja dans le champ de travail"
+        end
+    end
+    local tm = ad.taskModule
+    if tm ~= nil then
+        if ADFoldGuard.isFieldTask(tm.activeTask) then
+            return "tache de travail au champ en cours"
+        end
+        if tm.tasks ~= nil and tm.tasks.GetItems ~= nil then
+            for _, task in ipairs(tm.tasks:GetItems() or {}) do
+                if ADFoldGuard.isFieldTask(task) then
+                    return "tache de travail au champ en attente"
+                end
+            end
+        end
+    end
+    local ok, working = FarmPilotCall(ADFoldGuard.isToolWorking, vehicle, objects)
+    if ok and working then
+        return "outil au travail sur le champ"
+    end
+    return nil
+end
+
+-- outil (ou machine) allumé : le jeu refuse de le replier ; rend true s'il a fallu éteindre
+function ADFoldGuard.turnOffIfOn(vehicle, object)
+    local done = false
+    for _, v in ipairs({object, vehicle}) do
+        if v ~= nil and v.getIsTurnedOn ~= nil and v.setIsTurnedOn ~= nil and v:getIsTurnedOn() then
+            v:setIsTurnedOn(false)
+            done = true
+        end
+    end
+    return done
+end
+
+-- ------------------------------------------------------------------------------------------------------------
 -- Relance du repli
 -- ------------------------------------------------------------------------------------------------------------
 function ADFoldGuard.raiseIfLowered(object)
@@ -194,6 +293,9 @@ function ADFoldGuard.relaunchFold(vehicle, object, part, guard, now)
         object:setFoldState(direction, false)
         part.reason = nil
         action = "je relance le repli vers la position route"
+    elseif ADFoldGuard.turnOffIfOn(vehicle, object) then
+        part.reason = "outil allume, je l'eteins d'abord" .. (warning ~= nil and (" (" .. tostring(warning) .. ")") or "")
+        action = part.reason
     elseif ADFoldGuard.raiseIfLowered(object) then
         part.reason = "outil baisse, je le releve d'abord"
         action = part.reason
@@ -230,6 +332,20 @@ function ADFoldGuard.update(vehicle, dt, allowTaskUpdate, shouldStopVehicle)
 
     local foldOn = AutoDrive.getSetting("FoldImplements", vehicle) == true
     local objects = AutoDrive.getAllImplements(vehicle, true) or {}
+    -- reprise du travail au champ sur place : coupe dépliée et machine allumée sont normales, pas de repli
+    local okR, resume = FarmPilotCall(ADFoldGuard.fieldResumeReason, vehicle, objects)
+    if okR and resume ~= nil then
+        guard.active = false
+        ad.foldStartTime = 0 -- ni attente ni repli d'AutoDrive (AutoDrive:onUpdate, Specialization.lua)
+        local seen = {}
+        for _, object in pairs(objects) do
+            seen[object] = true
+        end
+        print(string.format("[AD-Repli] %s: reprise du travail au champ sur place (%s) : pas de repli exige, depart (%s)",
+            ADFoldGuard.nameOf(vehicle), resume, ADFoldGuard.describe({parts = seen})))
+        local alDelay = ad.ALDelayStartTime ~= nil and AutoDrive.ALDelayTimeout ~= nil and ad.ALDelayStartTime + AutoDrive.ALDelayTimeout >= now
+        return not alDelay, shouldStopVehicle or alDelay
+    end
     local moving = false
     local blocking = {}
     for _, object in pairs(objects) do

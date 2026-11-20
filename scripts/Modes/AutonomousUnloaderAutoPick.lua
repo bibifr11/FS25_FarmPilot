@@ -204,6 +204,11 @@ function ADUnloaderAutoPick.isHarvesting(h)
     if drv.getIsMotorStarted ~= nil and not safe(drv.getIsMotorStarted, drv) then
         return false, "moteur coupé"
     end
+    -- (20/11) ensileuse de notre plan arrêtée au départ de la première fourrière, éjection ouverte : elle attend sa
+    -- benne, rien encore coupé : comptée comme une machine qui récolte (sinon aucune benne n'est jamais appelée)
+    if ADFpChopperSignals ~= nil and ADFpChopperSignals.isWaiting ~= nil and safe(ADFpChopperSignals.isWaiting, h) == true then
+        return true
+    end
     if h.getIsTurnedOn ~= nil and not safe(h.getIsTurnedOn, h) then
         return false, "battage coupé"
     end

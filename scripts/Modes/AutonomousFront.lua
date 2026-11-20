@@ -19,7 +19,8 @@
 --   courbe calculée (plus de demi-tour sur place devant la place, voir AutonomousNoseIn.lua : exitPlan).
 -- - Outil avant sans place rangé dans une place prise en marche arrière (devant l'outil arrière) : repris comme
 --   s'il y avait sa place, par les routes puis la courbe, le nez en avant.
--- - Une masse attelée n'est jamais posée en fin de travail.
+-- - Une masse attelée n'est jamais posée en fin de travail (sauf « Masse auto » : rangée dans une zone des masses,
+--   voir AutonomousMassAuto.lua).
 -- - Place prise en marche arrière (toutes les places de parking en général) : un outil avant y va À CONTRESENS,
 --   le nez en avant, sur la ligne de la place, et il y est posé au fond (comme la masse à la place du tracteur) ;
 --   pour le reprendre, pareil : jamais par la route de la place, qui amène le tracteur l'arrière vers l'outil.
@@ -623,7 +624,8 @@ function ADFrontFlow.runQueue(vehicle, steps, tractorMarker)
         parts[#parts + 1] = s.kind == "park" and ("tracteur à « " .. tostring(s.marker.name) .. " »")
             or (s.kind == "backoff" and string.format("recul de %.0f m", s.distance))
             or (s.kind == "fetch" and ("reprendre « " .. label(s.tool) .. " »")
-            or ("poser « " .. label(s.tool) .. " »" .. (s.marker ~= nil and (" à « " .. tostring(s.marker.name) .. " »") or " devant l'outil arrière, dans sa place (sinon à côté)")))
+            or ("poser « " .. label(s.tool) .. " »" .. (s.marker ~= nil and (" à « " .. tostring(s.marker.name) .. " »")
+                or (s.placeName ~= nil and (" dans « " .. tostring(s.placeName) .. " »") or " devant l'outil arrière, dans sa place (sinon à côté)"))))
     end
     ADAutonomousManager.log("%s : champ fini : %s", name, table.concat(parts, ", "))
     ADFrontFlow.nextStep(mode)
@@ -643,6 +645,11 @@ function ADFrontFlow.nextStep(mode)
     if step.kind == "drop" then
         if not isAttached(step.tool) then
             ADFrontFlow.nextStep(mode)
+            return
+        end
+        if step.side == "front" and step.slot ~= nil then
+            -- place calculée d'avance (masse rangée dans une zone des masses, voir AutonomousMassAuto.lua)
+            ADFrontFlow.startDropAt(mode, step.tool, step.slot, step.placeName, step.back)
             return
         end
         if step.side == "front" then

@@ -20,10 +20,14 @@
 --   destination de la zone, puis le nez en avant), puis la nouvelle est attelée (par la route de la zone), puis
 --   l'outil arrière comme avant. Pas de place libre : il garde sa masse. Pas de zone : il garde sa masse.
 -- - Un outil avant de travail attelé (faucheuse frontale...) : rien ne change. Moissonneuse : jamais.
--- - Fin de travail : la masse reste attelée (comme avant).
+-- - (20/11) Fin de travail : la masse est gardée pendant tout le travail, puis rangée à la fin. Au retour, l'outil
+--   arrière est posé à sa place (comme avant), puis la masse va dans une place libre de la zone la plus proche de la
+--   place du tracteur (par la route de la zone, nez en avant, recul), puis le tracteur se gare. Zones pleines (ou pas
+--   de zone) : il garde sa masse et le dit au journal. Masse choisie à la main (pas « Masse auto ») : reste attelée.
 --
 -- Branché par enveloppes (posées au chargement) : ADFrontFlow.checkStart (le choix), ADFrontFlow.startDropAt
--- (route de la zone d'abord), ADFrontFlow.fetchRoutePoint (masse dans une zone : par la route de la zone).
+-- (route de la zone d'abord), ADFrontFlow.fetchRoutePoint (masse dans une zone : par la route de la zone),
+-- ADFrontFlow.parkWithFront (fin de travail : masse rangée).
 -- Chargé par register.lua après AutonomousFront.lua et MassZoneManager.lua.
 -- ============================================================================================================
 
@@ -510,6 +514,37 @@ function ADMassAuto.dropSlot(vehicle, d)
     return slot, len + ml + ADMassZone.EXIT_MARGIN
 end
 
+-- (20/11) fin de travail : place libre pour ranger la masse attelée ; { slot, back, zone } ou nil, pourquoi
+-- near : { x, z } d'où chercher la zone la plus proche (place du tracteur, sinon le tracteur)
+function ADMassAuto.endDrop(vehicle, near)
+    local sm = vehicle.ad.stateModule
+    if sm.getFpFrontAuto == nil or not sm:getFpFrontAuto() then
+        return nil, "« Masse auto » pas choisie"
+    end
+    if ADHeaderFlow ~= nil and ADHeaderFlow.isCombine ~= nil and ADHeaderFlow.isCombine(vehicle) then
+        return nil, "moissonneuse"
+    end
+    local current = ADAutonomousManager.frontObject(vehicle)
+    if current == nil or not ADAutonomousManager.isMass(current) then
+        return nil, "pas de masse attelée"
+    end
+    local zones = ADMassZone.list()
+    if #zones == 0 then
+        return nil, "pas de zone des masses"
+    end
+    table.sort(zones, function(a, b)
+        return MathUtil.vector2Length(a.wp.x - near.x, a.wp.z - near.z) < MathUtil.vector2Length(b.wp.x - near.x, b.wp.z - near.z)
+    end)
+    for _, g in ipairs(zones) do
+        local p = ADMassZone.freePlace(g, { vehicle, current })
+        if p ~= nil then
+            local slot, back = ADMassAuto.dropSlot(vehicle, { slot = p, zone = g, drop = current })
+            return { slot = slot, back = back, zone = g, mass = current }
+        end
+    end
+    return nil, "toutes les places des zones des masses sont prises"
+end
+
 function ADMassAuto.install()
     if ADFrontFlow == nil or ADMassAuto.installed then
         return
@@ -574,6 +609,62 @@ function ADMassAuto.install()
             end
         end
         return baseStartDropAt(mode, tool, slot, placeName, back)
+    end
+
+    -- (20/11) fin de travail : outil arrière à sa place, masse rangée dans une zone, tracteur garé
+    local baseParkWithFront = ADFrontFlow.parkWithFront
+    function ADFrontFlow.parkWithFront(vehicle, forcedTool)
+        local handled = baseParkWithFront(vehicle, forcedTool)
+        if handled ~= nil or (forcedTool ~= nil and ADAutonomousManager.isMass(forcedTool)) then
+            return handled
+        end
+        local sm = vehicle.ad.stateModule
+        if sm.getFpFrontAuto == nil or not sm:getFpFrontAuto() then
+            return nil
+        end
+        local current = ADAutonomousManager.frontObject(vehicle)
+        if current == nil or not ADAutonomousManager.isMass(current) then
+            return nil
+        end
+        local name = nameOf(vehicle)
+        -- outil arrière : mêmes conditions que la fin de travail habituelle (sinon comme avant : message, rien)
+        local tools = forcedTool ~= nil and { forcedTool } or ADAutonomousManager.workTools(vehicle)
+        local rear = tools[1]
+        local attacher = rear ~= nil and rear.getAttacherVehicle ~= nil and rear:getAttacherVehicle() or nil
+        local rearPark = rear ~= nil and rear.advd ~= nil and rear.advd.parkDestination or -1
+        local rearMarker = rearPark ~= nil and rearPark >= 1 and ADGraphManager:getMapMarkerById(rearPark) or nil
+        if #tools ~= 1 or attacher ~= vehicle or rearMarker == nil then
+            return nil
+        end
+        local tractorPark = vehicle.advd ~= nil and vehicle.advd.parkDestination or -1
+        local tractorMarker = tractorPark ~= nil and tractorPark >= 1 and tractorPark ~= rearPark and ADGraphManager:getMapMarkerById(tractorPark) or nil
+        if tractorMarker == nil then
+            return nil
+        end
+        local twp = ADGraphManager:getWayPointById(tractorMarker.id)
+        local near
+        if twp ~= nil and twp.x ~= nil then
+            near = { x = twp.x, z = twp.z }
+        else
+            local vx, _, vz = getWorldTranslation(vehicle.components[1].node)
+            near = { x = vx, z = vz }
+        end
+        local ok, drop, why = FarmPilotCall(ADMassAuto.endDrop, vehicle, near)
+        if not ok then
+            log("ERREUR rangement de la masse : %s", tostring(drop))
+            return nil
+        end
+        if drop == nil then
+            log("%s : fin de travail, masse « %s » gardée : %s", name, label(current), tostring(why))
+            return nil
+        end
+        log("%s : fin de travail, masse « %s » rangée dans la zone « %s »", name, label(current), tostring(drop.zone.name))
+        local steps = {
+            { kind = "drop", tool = rear, marker = rearMarker, side = "rear" },
+            { kind = "drop", tool = drop.mass, side = "front", slot = drop.slot, placeName = drop.zone.name, back = drop.back },
+            { kind = "park", marker = tractorMarker },
+        }
+        return ADFrontFlow.runQueue(vehicle, steps, tractorMarker)
     end
 
     -- masse posée dans une zone : par la route de la destination de la zone

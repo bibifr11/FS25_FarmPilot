@@ -300,18 +300,26 @@ local function savegameFile()
     return path .. "/" .. ADMassZone.FILE_NAME
 end
 
+-- (20/11) lu seulement quand la sauvegarde est connue, et relu si la partie change : lu trop tôt (dossier de la
+-- sauvegarde pas encore connu), les zones restaient vides et la sauvegarde suivante écrivait un fichier vide
 function ADMassZone:loadFromXml()
-    if self.loaded then
+    local file = savegameFile()
+    if file == nil then
         return
     end
-    self.loaded = true
+    if (self.loaded and self.loadedFile == file) or self.failedFile == file then
+        return
+    end
     self.zones = {}
-    local file = savegameFile()
-    if file == nil or not fileExists(file) then
+    if not fileExists(file) then
+        self.loaded = true
+        self.loadedFile = file
         return
     end
     local xml = loadXMLFile("fpMasses", file)
     if xml == nil or xml == 0 then
+        log("ERREUR lecture de %s : zones pas chargées (fichier gardé tel quel)", tostring(file))
+        self.failedFile = file
         return
     end
     local i = 0
@@ -327,14 +335,15 @@ function ADMassZone:loadFromXml()
         i = i + 1
     end
     delete(xml)
+    self.loaded = true
+    self.loadedFile = file
+    log("%d zone(s) des masses chargée(s) depuis %s", i, ADMassZone.FILE_NAME)
 end
 
 function ADMassZone:saveToXml()
-    if not self.loaded then
-        return
-    end
     local file = savegameFile()
-    if file == nil then
+    -- (20/11) seulement le fichier vraiment lu (ou absent) : jamais une liste vide par-dessus des zones pas lues
+    if not self.loaded or file == nil or self.loadedFile ~= file then
         return
     end
     local xml = createXMLFile("fpMasses", file, "farmPilotMasses")

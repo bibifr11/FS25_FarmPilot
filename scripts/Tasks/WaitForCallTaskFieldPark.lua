@@ -388,6 +388,7 @@ function WaitForCallTask:planToNextSpot()
         end
         self.state = WaitForCallTask.STATE_WAITING
         self.retryTime = 0
+        if self.waitAtOffFieldPoint ~= nil and self:waitAtOffFieldPoint("aucune place atteignable dans le champ") then return end -- voir WaitForCallTaskOffFieldPoint.lua
         local roadside = self.spots ~= nil and self.spots[1] ~= nil and self.spots[1].roadside
         if self.spotIndex == 1 and not roadside and self.noPlaceRoadside then
             -- already backed off on the road for that reason: just wait and look again later, no more backing off

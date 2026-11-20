@@ -57,6 +57,7 @@ end
 -- the field point holds on the road before the entrance while another unloader of this harvester is in the entrance
 -- zone and not on the field (the called one not yet in place, or one still waiting at the entrance)
 function DriveToDestinationTask:isZoneBusyHold(dt)
+    if self.isOffFieldWaitPoint ~= nil and self:isOffFieldWaitPoint() then return false end -- point d'attente hors du champ : elle y va, voir WaitForCallTaskOffFieldPoint.lua
     local mode = self.vehicle.ad.modes ~= nil and self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD] or nil
     if mode == nil or ADFieldPark == nil or not ADFieldPark.isEnabled() or self.vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_UNLOAD
         or mode.state ~= mode.STATE_DRIVE_TO_START or self.routeIsPartial then
@@ -133,6 +134,7 @@ end
 -- drive up to the entrance (where it blocks it, nose in the field, with no clean way to the roadside), it stops on the
 -- road before the entrance and WaitForCallTask parks it beside the road from there
 function DriveToDestinationTask:isFieldFullStop(dt)
+    if self.isOffFieldWaitPoint ~= nil and self:isOffFieldWaitPoint() then return false end -- point d'attente hors du champ : elle y va, voir WaitForCallTaskOffFieldPoint.lua
     local mode = self.vehicle.ad.modes ~= nil and self.vehicle.ad.modes[AutoDrive.MODE_UNLOAD] or nil
     if mode == nil or ADFieldPark == nil or not ADFieldPark.isEnabled() or self.vehicle.ad.stateModule:getMode() ~= AutoDrive.MODE_UNLOAD
         or mode.state ~= mode.STATE_DRIVE_TO_START or self.routeIsPartial then
@@ -199,6 +201,7 @@ function DriveToDestinationTask:getEntrancePose(wp)
 end
 
 function DriveToDestinationTask:isNoPlaceStop(dt)
+    if self.isOffFieldWaitPoint ~= nil and self:isOffFieldWaitPoint() then return false end -- point d'attente hors du champ : elle y va, voir WaitForCallTaskOffFieldPoint.lua
     if self.noPlaceDone then
         return false
     end

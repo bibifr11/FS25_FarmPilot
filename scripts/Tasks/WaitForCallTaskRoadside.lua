@@ -44,6 +44,7 @@ function WaitForCallTask:goRoadsideIfFieldFull()
         print(string.format("[AD-File] %s: champ complet mais aucune place atteignable au bord de la route : je libere l'entree, place dans le champ derriere les autres", tostring(self.vehicle:getName())))
         return false
     end
+    if self.waitAtOffFieldPoint ~= nil and self:waitAtOffFieldPoint("champ complet") then return true end -- voir WaitForCallTaskOffFieldPoint.lua
     print(string.format("[AD-File] %s: champ complet (%d bennes), attente au bord de la route", tostring(self.vehicle:getName()), ADFieldPark.FIELD_CAPACITY))
     return self:goRoadside(harvester)
 end

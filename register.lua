@@ -217,6 +217,7 @@ source(Utils.getFilename("scripts/Tasks/EmptyHarvesterTask.lua", g_currentModDir
 source(Utils.getFilename("scripts/Tasks/WaitForCallTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/WaitForCallTaskFieldPark.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/WaitForCallTaskRoadside.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Tasks/WaitForCallTaskOffFieldPoint.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/ClearCropTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/CatchCombinePipeTask.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Tasks/CatchCombinePipeTaskClear.lua", g_currentModDirectory))

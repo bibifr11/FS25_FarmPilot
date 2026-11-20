@@ -48,7 +48,7 @@ function PathFinderModule:getTrainWidth()
             if unit.size ~= nil and unit.size.width ~= nil then
                 local w = unit.size.width
                 if unit ~= self.vehicle then
-                    w = ADPathCalculator.unitWidth(unit, w) -- (20/11) outil replié : largeur de transport
+                    w = (ADPathCalculator ~= nil and ADPathCalculator.unitWidth ~= nil) and ADPathCalculator.unitWidth(unit, w) or w -- (20/11) outil replié : largeur de transport
                 end
                 width = math.max(width, w)
             end

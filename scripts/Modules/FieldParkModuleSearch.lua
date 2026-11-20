@@ -401,6 +401,7 @@ function ADFieldPark.addCandidates(search, radius, angle)
     if not ADFieldPark.isOnField(cx, py, cz) then
         return
     end
+    if ADFieldPark.isOtherField ~= nil and ADFieldPark.isOtherField(search, cx, cz) then return end -- champ de la moissonneuse seulement, voir FieldParkModuleSameField.lua
     -- always parallel to the border: the heading is the direction of the border itself, the train
     -- stands about 1 m away from it
     local bx, bz, tx, tz, nx, nz = ADFieldPark.findBorder(cx, cz, py)

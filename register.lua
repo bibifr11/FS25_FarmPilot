@@ -288,6 +288,7 @@ source(Utils.getFilename("scripts/Modules/FieldParkModule.lua", g_currentModDire
 source(Utils.getFilename("scripts/Modules/FieldParkModuleHarvester.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModuleMemo.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModuleSearch.lua", g_currentModDirectory))
+source(Utils.getFilename("scripts/Modules/FieldParkModuleSameField.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModulePath.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/FieldParkModuleEntrance.lua", g_currentModDirectory))
 source(Utils.getFilename("scripts/Modules/BandTurnModule.lua", g_currentModDirectory))

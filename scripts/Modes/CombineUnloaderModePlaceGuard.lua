@@ -55,6 +55,7 @@ local function otherFieldAt(x, z, field, area)
     end
     return nil
 end
+ADPipePlaceGuard.otherFieldAt = otherFieldAt -- aussi pour la place d'attente, voir FieldParkModuleSameField.lua
 
 -- un point de la remorque : nil si permis, sinon la raison
 function ADPipePlaceGuard.pointRefusal(x, z, field, area)

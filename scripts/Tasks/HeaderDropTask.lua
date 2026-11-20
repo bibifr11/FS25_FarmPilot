@@ -344,6 +344,15 @@ ADHeaderDropTask.STOP_TIMEOUT = 8000    -- ms
 ADHeaderDropTask.SETTLE_TIME = 1500     -- ms à l'arrêt avant de dételer
 ADHeaderDropTask.MOUNT_FORCE_TIME = 5000 -- ms : barre posée mais pas encore bloquée, on demande au jeu de la bloquer
 ADHeaderDropTask.MOUNT_TIMEOUT = 15000  -- ms
+-- (20/11, Champ 76, remorque Legacy) barre posée de biais : la place est figée quand la moissonneuse commence son
+-- approche (remorque verrouillée : son tracteur reste freiné, ADHeaderWaitTask) ; si la remorque bouge, ou si avant
+-- de baisser la barre n'est pas au-dessus du plateau (de côté, le long, en biais), la moissonneuse s'arrête, recule et
+-- refait l'approche sur la position réelle de la remorque (RETRIES essais)
+ADHeaderDropTask.TRAILER_MOVE = 0.3     -- m : la place a bougé de plus que ça depuis le début de l'approche
+ADHeaderDropTask.TRAILER_TURN = 3       -- ° : la place a tourné de plus que ça
+ADHeaderDropTask.DROP_SIDE = 0.5        -- m de côté au plus pour baisser la barre
+ADHeaderDropTask.DROP_ALONG = 0.6       -- m le long de l'axe au plus (avant ou après la place)
+ADHeaderDropTask.DROP_ANGLE = 5         -- ° de biais au plus entre la moissonneuse et la place
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Création, géométrie
@@ -413,8 +422,74 @@ function ADHeaderDropTask:setState(state)
     self.timer = 0
 end
 
+-- la place a bougé depuis le début de l'approche (remorque poussée, tracteur qui a roulé) : nil, sinon la raison
+function ADHeaderDropTask:placeMoved(pose)
+    local locked = self.lockedPose
+    if locked == nil or pose == nil then
+        return nil
+    end
+    local d = MathUtil.vector2Length(pose.x - locked.x, pose.z - locked.z)
+    local cosA = math.max(-1, math.min(1, pose.dirX * locked.dirX + pose.dirZ * locked.dirZ))
+    local turn = math.deg(math.acos(cosA))
+    if d > ADHeaderDropTask.TRAILER_MOVE or turn > ADHeaderDropTask.TRAILER_TURN then
+        return string.format("la remorque a bougé de %.2f m et %.1f° depuis le début de l'approche", d, turn)
+    end
+    return nil
+end
+
+-- avant de baisser : la barre au-dessus du plateau ? nil si oui, sinon la raison
+function ADHeaderDropTask:dropRefusal(goal)
+    local moved = self:placeMoved(goal.pose)
+    if moved ~= nil then
+        return moved
+    end
+    local along, side, angle = self:headerError(goal.pose)
+    if math.abs(side) > ADHeaderDropTask.DROP_SIDE then
+        return string.format("barre de côté de %.2f m (%.2f m au plus)", side, ADHeaderDropTask.DROP_SIDE)
+    end
+    if math.abs(along) > ADHeaderDropTask.DROP_ALONG then
+        return string.format("barre décalée de %.2f m le long de la remorque (%.2f m au plus)", along, ADHeaderDropTask.DROP_ALONG)
+    end
+    if angle > ADHeaderDropTask.DROP_ANGLE then
+        return string.format("barre en biais de %.1f° (%d° au plus)", angle, ADHeaderDropTask.DROP_ANGLE)
+    end
+    return nil
+end
+
+-- (20/11) barre levée au plus haut pendant l'approche : elle passe au-dessus du plateau sans toucher ni pousser la
+-- remorque (elle est dételée sans être baissée, elle tombe sur le plateau)
+function ADHeaderDropTask:raiseHeader(name)
+    local v = self.vehicle
+    if v.getAttacherJointIndexFromObject == nil or v.setJointMoveDown == nil then
+        return
+    end
+    local ok, index = FarmPilotCall(v.getAttacherJointIndexFromObject, v, self.header)
+    if not ok or index == nil then
+        return
+    end
+    local down = v.getJointMoveDown ~= nil and select(2, FarmPilotCall(v.getJointMoveDown, v, index)) or nil
+    if down ~= false then
+        FarmPilotCall(v.setJointMoveDown, v, index, false, false)
+        ADHeaderFlow.log("%s : barre levée au plus haut pour passer au-dessus du plateau", name)
+    end
+end
+
+-- pas posée : recul et nouvelle approche sur la position réelle de la remorque, au plus RETRIES fois
+function ADHeaderDropTask:retryApproach(why, name)
+    self.lockedPose = nil
+    if self.retries < ADHeaderDropTask.RETRIES then
+        self.retries = self.retries + 1
+        ADHeaderFlow.log("%s : barre pas posée (%s), recule et refait l'approche sur la remorque (%d/%d)", name, why, self.retries, ADHeaderDropTask.RETRIES)
+        self:setState(ADHeaderDropTask.STATE_BACK)
+        return
+    end
+    ADHeaderFlow.log("%s : barre pas posée (%s), abandon après %d essais", name, why, ADHeaderDropTask.RETRIES)
+    self:finish("missed")
+end
+
 function ADHeaderDropTask:setUp()
     self.retries = 0
+    self.lockedPose = nil
     self:setState(ADHeaderDropTask.STATE_PLAN)
     self.vehicle.ad.specialDrivingModule:stopVehicle()
 end
@@ -499,14 +574,30 @@ function ADHeaderDropTask:update(dt)
         self:holdVehicle(dt)
         if math.abs(self.vehicle.lastSpeedReal or 0) < 0.0015 or self.timer > ADHeaderDropTask.STOP_TIMEOUT then
             self:setState(ADHeaderDropTask.STATE_ALIGN)
+            -- place figée pour l'approche (remorque verrouillée) : la position réelle du moment
+            local p = goal.pose
+            self.lockedPose = { x = p.x, z = p.z, dirX = p.dirX, dirZ = p.dirZ }
+            self:raiseHeader(name)
+            ADHeaderFlow.log("%s : approche de la remorque, place figée en (%.1f, %.1f), cap %.0f°", name, p.x, p.z, math.deg(math.atan2(p.dirX, p.dirZ)))
         end
     elseif self.state == ADHeaderDropTask.STATE_ALIGN then
+        local moved = self:placeMoved(goal.pose)
+        if moved ~= nil then
+            self:holdVehicle(dt)
+            self:retryApproach(moved, name)
+            return
+        end
         self:updateAlign(dt, goal, name)
     elseif self.state == ADHeaderDropTask.STATE_BACK then
         self:updateBack(dt, goal)
     elseif self.state == ADHeaderDropTask.STATE_SETTLE then
         self:holdVehicle(dt)
         if math.abs(self.vehicle.lastSpeedReal or 0) < 0.0015 and self.timer >= ADHeaderDropTask.SETTLE_TIME then
+            local refusal = self:dropRefusal(goal)
+            if refusal ~= nil then
+                self:retryApproach(refusal, name)
+                return
+            end
             if self:detach(name) then
                 self:setState(ADHeaderDropTask.STATE_MOUNT)
             else
@@ -559,14 +650,7 @@ function ADHeaderDropTask:updateAlign(dt, goal, name)
 end
 
 function ADHeaderDropTask:miss(along, side, name)
-    if self.retries < ADHeaderDropTask.RETRIES then
-        self.retries = self.retries + 1
-        ADHeaderFlow.log("%s : barre trop de côté (%.2f m), recule et recommence (%d/%d)", name, side, self.retries, ADHeaderDropTask.RETRIES)
-        self:setState(ADHeaderDropTask.STATE_BACK)
-        return
-    end
-    ADHeaderFlow.log("%s : barre trop de côté (%.2f m, le long %.2f m), abandon", name, side, along)
-    self:finish("missed")
+    self:retryApproach(string.format("barre trop de côté : %.2f m, le long %.2f m", side, along), name)
 end
 
 -- nouvel essai : marche arrière tout droit jusqu'à APPROACH m de la place

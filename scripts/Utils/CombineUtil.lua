@@ -242,7 +242,36 @@ function AutoDrive.getAISizeMarkerWidth(object)
     return retWidth
 end
 
+-- (20/11) outil avant replié (ensileuse ou moissonneuse sur la route, barre repliée) : largeur de transport, pas
+-- celle de travail (les capteurs avant prenaient toute la barre dépliée, plus de passage nulle part). La largeur de
+-- travail reste gardée (ad.frontToolWidth) pour le champ
+function AutoDrive.isFrontToolFolded(vehicle)
+    if ADPathCalculator == nil or ADPathCalculator.isToolFolded == nil then
+        return false
+    end
+    local implements = AutoDrive.getAllImplements(vehicle, false)
+    for _, implement in pairs(implements or {}) do
+        if implement ~= vehicle and implement.components ~= nil and implement.components[1] ~= nil then
+            local toolX, toolY, toolZ = getWorldTranslation(implement.components[1].node)
+            local _, _, offsetZ = AutoDrive.worldToLocal(vehicle, toolX, toolY, toolZ)
+            if offsetZ > 0 and ADPathCalculator.isToolFolded(implement) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local getFrontWorkingWidth
 function AutoDrive.getFrontToolWidth(vehicle, forced)
+    local width = getFrontWorkingWidth(vehicle, forced)
+    if width ~= nil and width > ADPathCalculator.FOLDED_TOOL_WIDTH and AutoDrive.isFrontToolFolded(vehicle) then
+        return ADPathCalculator.FOLDED_TOOL_WIDTH
+    end
+    return width
+end
+
+getFrontWorkingWidth = function(vehicle, forced)
     if vehicle.ad ~= nil and vehicle.ad.frontToolWidth ~= nil and not (forced == true) then
         return vehicle.ad.frontToolWidth
     end

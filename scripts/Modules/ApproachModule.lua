@@ -133,7 +133,7 @@ function ADApproachModule:getTrainWidth()
     if implements ~= nil then
         for _, implement in pairs(implements) do
             if implement ~= nil and implement.size ~= nil and implement.size.width ~= nil then
-                width = math.max(width, implement.size.width)
+                width = math.max(width, ADPathCalculator.unitWidth(implement, implement.size.width)) -- (20/11) outil replié : largeur de transport
             end
         end
     end

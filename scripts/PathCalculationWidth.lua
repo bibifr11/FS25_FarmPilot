@@ -37,6 +37,31 @@ ADPathCalculator.FOLDED_TOOL_WIDTH = 2.4        -- m, transport width counted fo
 -- ------------------------------------------------------------------------------------------------------------
 -- width the train needs to pass: tractor measured at its tyres, trailers at their size, foldable tools at their transport
 -- width (their declared size is often the unfolded one)
+-- (20/11, ensileuse Krone sur la route) outil repliable REPLIÉ (getIsUnfolded faux et plus d'à moitié replié) :
+-- sa largeur déclarée (size.width, repères de travail) est celle dépliée ; on compte la largeur de transport
+-- FOLDED_TOOL_WIDTH. Déplié (au champ) : rien ne change
+function ADPathCalculator.isToolFolded(unit)
+    local f = unit ~= nil and unit.spec_foldable or nil
+    if f == nil or f.foldingParts == nil or #f.foldingParts == 0 or unit.getIsUnfolded == nil then
+        return false
+    end
+    local ok, unfolded = pcall(unit.getIsUnfolded, unit)
+    if not ok or unfolded ~= false then
+        return false
+    end
+    local t = f.foldAnimTime or 0
+    local folded = (f.turnOnFoldDirection or 1) < 0 and t or (1 - t)
+    return folded >= 0.5
+end
+
+-- largeur d'un outil attelé pour les capteurs et les couloirs : celle de transport s'il est replié
+function ADPathCalculator.unitWidth(unit, width)
+    if width ~= nil and ADPathCalculator.isToolFolded(unit) then
+        return math.min(width, ADPathCalculator.FOLDED_TOOL_WIDTH)
+    end
+    return width
+end
+
 function ADPathCalculator.getPassageWidth(vehicle)
     local width = 0
     local units = AutoDrive.getAllUnits(vehicle)

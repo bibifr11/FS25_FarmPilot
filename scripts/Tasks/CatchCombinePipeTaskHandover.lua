@@ -60,11 +60,43 @@ CatchCombinePipeTask.HANDOVER_LOOP_COUNT = 4
 CatchCombinePipeTask.HANDOVER_LOOP_TIME = 30000
 CatchCombinePipeTask.HANDOVER_LOOP_RADIUS = 3
 CatchCombinePipeTask.HANDOVER_LOOP_REAR_TIME = 60000
+-- (20/11) raison de refuser la pointe, nil si permise
+function CatchCombinePipeTask.cropTipRefusal(combine)
+    if combine == nil then
+        return nil
+    end
+    if ADFpChopperSignals ~= nil and ADFpChopperSignals.taskOf ~= nil then
+        local ok, t = pcall(ADFpChopperSignals.taskOf, combine)
+        if ok and t ~= nil and t.chopper ~= nil and t.chopper.started ~= true then
+            return "ensileuse au depart, rien encore coupe"
+        end
+    end
+    local h = combine
+    if h.spec_combine == nil and AutoDrive.getAllImplements ~= nil then
+        for _, i in pairs(AutoDrive.getAllImplements(combine) or {}) do
+            if i ~= nil and i.spec_combine ~= nil then
+                h = i
+                break
+            end
+        end
+    end
+    local spec = h.spec_combine
+    if spec ~= nil then
+        local now = g_currentMission ~= nil and g_currentMission.time or g_time or 0
+        local last = spec.lastCuttersAreaTime
+        if type(last) ~= "number" or now - last > CatchCombinePipeTask.CROP_TIP_RECENT_CUT then
+            return "ensileuse qui n'a pas coupe depuis plus de " .. math.floor(CatchCombinePipeTask.CROP_TIP_RECENT_CUT / 1000) .. " s (entree ou depart)"
+        end
+    end
+    return nil
+end
+
 -- 25/10 22:38 (in great difficulty on the headland the corner may be cut): no route twice near the
 -- standing harvester: the chase takes over and may cut a tip of crop on its straight line for CROP_TIP_TIME
 CatchCombinePipeTask.CROP_TIP_DISTANCE = 40  -- m from the standing harvester
 CatchCombinePipeTask.CROP_TIP_ANGLE = 100    -- deg off its heading at most (not the wrong way round)
 CatchCombinePipeTask.CROP_TIP_TIME = 60000   -- ms
+CatchCombinePipeTask.CROP_TIP_RECENT_CUT = 60000 -- ms : (20/11) pointe seulement si l'ensileuse a coupé depuis moins que ça (virage de fourrière)
 
 -- ------------------------------------------------------------------------------------------------------------
 -- Commun : départ direct (appelée par CatchCombinePipeTask:setUp, machine proche et alignée)
@@ -362,6 +394,15 @@ end
 -- along the track again and again (6 back-offs in 5 min, the trailer in the maize, 21:32-21:37)
 function CatchCombinePipeTask:tryCropTipHandover(f)
     if not self:isCombineStanding() or f.cropTipDone then
+        return false
+    end
+    -- (20/11, champ 13 : benne dans le maïs au départ de l'ensileuse) pointe seulement dans un virage de fourrière,
+    -- jamais à l'entrée ni au départ : ensileuse qui n'a encore rien coupé (notre plan : départ pas fait ; sinon
+    -- dernière coupe il y a plus de CROP_TIP_RECENT_CUT ms)
+    local why = CatchCombinePipeTask.cropTipRefusal(self.combine)
+    if why ~= nil then
+        f.cropTipDone = true
+        print(string.format("[AD-Fin] %s: pas de pointe de culture coupee : %s (seulement dans un virage de fourriere), attente", tostring(self.vehicle:getName()), why))
         return false
     end
     local distance = AutoDrive.getDistanceBetween(self.vehicle, self.combine)

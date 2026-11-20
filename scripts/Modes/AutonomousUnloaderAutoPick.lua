@@ -246,7 +246,55 @@ function ADUnloaderAutoPick.harvestFillType(h)
         ft = spec.lastCuttersOutputFillType
     end
     if isUnknownFillType(ft) then
+        -- (20/11, 1.1.7.6 champ 13) ensileuse de notre plan qui attend sa benne au départ, rien encore récolté : le
+        -- produit vient de la culture devant elle (points suivants du plan), par le convertisseur de sa coupe
+        ft = ADUnloaderAutoPick.waitingChopperFillType(h)
+    end
+    if isUnknownFillType(ft) then
         return nil
+    end
+    return ft
+end
+
+function ADUnloaderAutoPick.waitingChopperFillType(h)
+    if ADFpChopperSignals == nil or ADFpChopperSignals.taskOf == nil or FSDensityMapUtil == nil
+        or FSDensityMapUtil.getFruitTypeIndexAtWorldPos == nil then
+        return nil
+    end
+    local task = safe(ADFpChopperSignals.taskOf, h)
+    if task == nil or type(task.wps) ~= "table" or not (ADFpChopperSignals.isWaiting ~= nil and safe(ADFpChopperSignals.isWaiting, h) == true) then
+        return nil
+    end
+    local fruit = nil
+    local i0 = math.max(1, task.idx or 1)
+    for i = i0, math.min(#task.wps, i0 + 40) do
+        local w = task.wps[i]
+        if w ~= nil and w.x ~= nil then
+            local index, growth = FSDensityMapUtil.getFruitTypeIndexAtWorldPos(w.x, w.z)
+            if index ~= nil and index ~= 0 and growth ~= nil and growth ~= 0
+                and not (FruitType ~= nil and (index == FruitType.MEADOW or index == FruitType.GRASS)) then
+                fruit = index
+                break
+            end
+        end
+    end
+    if fruit == nil then
+        return nil
+    end
+    local ft = nil
+    local units = AutoDrive.getAllImplements ~= nil and AutoDrive.getAllImplements(h) or {}
+    for _, o in pairs(units) do
+        local c = o ~= nil and o.spec_cutter or nil
+        if c ~= nil and c.fruitTypeConverter ~= nil and c.fruitTypeConverter[fruit] ~= nil then
+            ft = c.fruitTypeConverter[fruit].fillTypeIndex
+            break
+        end
+    end
+    if ft == nil and g_fruitTypeManager ~= nil and g_fruitTypeManager.getFillTypeIndexByFruitTypeIndex ~= nil then
+        ft = safe(g_fruitTypeManager.getFillTypeIndexByFruitTypeIndex, g_fruitTypeManager, fruit)
+    end
+    if not isUnknownFillType(ft) then
+        trace("%s: rien encore recolte, produit pris dans la culture devant elle (%s) : %s", nameOf(h), tostring(fruit), fillTypeLabel(ft))
     end
     return ft
 end
